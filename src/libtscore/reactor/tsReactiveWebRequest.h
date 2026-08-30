@@ -99,9 +99,9 @@ namespace ts {
 
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
+        class Guts;
 
-        SystemGuts*      _guts = nullptr;
+        Guts*            _guts = nullptr;
         WebRequestArgs   _args {};
         WebRequestStatus _status {};
     };

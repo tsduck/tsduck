@@ -139,13 +139,13 @@ namespace {
 // System-specific parts are stored in a private structure.
 //----------------------------------------------------------------------------
 
-class ts::ReactiveWebRequest::SystemGuts: private ReactorHandlerInterface
+class ts::ReactiveWebRequest::Guts: private ReactorHandlerInterface
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(Guts);
 public:
     // Constructor with a reference to parent WebRequest.
-    SystemGuts(ReactiveWebRequest& request);
-    virtual ~SystemGuts() override;
+    Guts(ReactiveWebRequest& request);
+    virtual ~Guts() override;
 
     // Check if transfer is open.
     bool isOpen() const { return _curlm != nullptr; }
@@ -157,7 +157,13 @@ public:
     bool start(HandlerType* handler, const ObjectPtr& user_data);
 
     // Initialize non-blocking state of one transfer attempt.
-    bool initTransferState();
+    bool startTransfer();
+
+    // Continue processing the transfer based on events on a file descriptor (or CURL_SOCKET_TIMEOUT).
+    bool continueTransfer(int fd, int event_mask);
+
+    // Abort the current transfer.
+    bool abort(bool silent);
 
     // Build error messages from curl_multi and curl_easy.
     template<typename ENUM> UString message(const UString& title, ENUM code, const char* (*strerror)(ENUM));
@@ -166,20 +172,22 @@ public:
 
 private:
     ReactiveWebRequest& _request;                     // Reference to parent instance.
-    EventId             _open_event {};               // Call open_handler.
-    bool                _open_called = false;         // Open_handler was called.
+    EventId             _event {};                    // Some event occurred, maybe call a handler.
+    bool                _open_done = false;           // Open URL is complete.
+    bool                _open_called = false;         // Open handler was called.
+    bool                _aborted = false;             // The transfer is aborted by the user.
     int                 _open_error = SYS_SUCCESS;    // Error code of open operation.
     HandlerType*        _handler = nullptr;           // Application-defined handler.
     ObjectPtr           _handler_data {};             // User-data for _handler.
     ::CURLM*            _curlm = nullptr;             // "curl multi" handler, for global curl access.
     ::CURL*             _curl = nullptr;              // "curl easy" handler, for one transfer.
     ::curl_slist*       _headers = nullptr;           // Request headers.
-    bool                _aborted = false;             // The transfer is aborted by the user.
     bool                _can_retry = false;           // Can retry the connection later.
     size_t              _retries = 0;                 // Remaining retry count, if _can_retry.
     cn::milliseconds    _retry_interval {};           // Interval between two retries.
-    ByteBlock           _received_data {};            // Received data, filled by CurlWriteCallback(), emptied by receive().
+    ByteBlockPtr        _received_data {};            // Received data, filled by CurlWriteCallback(), emptied by receive callback.
     size_t              _total_received_size = 0;     // All received data.
+    int                 _running_handles = 0;         // Number of active handles inside curl. 0 means all completed.
     char                _error[CURL_ERROR_SIZE] {0};  // Error message buffer for libcurl (CURLOPT_ERRORBUFFER).
 
     // Libcurl callback informed about what to wait for.
@@ -197,6 +205,8 @@ private:
     // Implementation of ReactorHandlerInterface.
     virtual void handleTimer(Reactor& reactor, EventId id) override;
     virtual void handleUserEvent(Reactor& reactor, EventId id) override;
+    virtual void handleReadReady(Reactor& reactor, EventId id, int error_code) override;
+    virtual void handleWriteReady(Reactor& reactor, EventId id, int error_code) override;
 };
 
 
@@ -204,17 +214,17 @@ private:
 // System-specific constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::ReactiveWebRequest::SystemGuts::SystemGuts(ReactiveWebRequest& request) :
+ts::ReactiveWebRequest::Guts::Guts(ReactiveWebRequest& request) :
     _request(request)
 {
 }
 
-ts::ReactiveWebRequest::SystemGuts::~SystemGuts()
+ts::ReactiveWebRequest::Guts::~Guts()
 {
     reset(true);
 }
 
-void ts::ReactiveWebRequest::SystemGuts::reset(bool full)
+void ts::ReactiveWebRequest::Guts::reset(bool full)
 {
     if (_headers != nullptr) {
         ::curl_slist_free_all(_headers);
@@ -235,15 +245,16 @@ void ts::ReactiveWebRequest::SystemGuts::reset(bool full)
         _curlm = nullptr;
     }
 
-    if (_open_event.isValid()) {
-        _request.reactor().deleteEvent(_open_event, true);
-        _open_event.invalidate();
+    if (_event.isValid()) {
+        _request.reactor().deleteEvent(_event, true);
+        _event.invalidate();
     }
 
-    _open_called = false;
+    _open_done = _open_called = false;
     _open_error = SYS_SUCCESS;
-    _received_data.clear();
+    _received_data.reset();
     _total_received_size = 0;
+    _running_handles = 0;
     _error[0] = 0;
 
     // These fields must be preserved when opening a URL in various retries.
@@ -264,7 +275,7 @@ void ts::ReactiveWebRequest::SystemGuts::reset(bool full)
 
 ts::ReactiveWebRequest::ReactiveWebRequest(Reactor& reactor) :
     ReactiveBase(reactor),
-    _guts(new SystemGuts(*this))
+    _guts(new Guts(*this))
 {
 }
 
@@ -283,7 +294,7 @@ ts::ReactiveWebRequest::~ReactiveWebRequest()
 //----------------------------------------------------------------------------
 
 template<typename ENUM>
-ts::UString ts::ReactiveWebRequest::SystemGuts::message(const UString& title, ENUM code, const char* (*strerror)(ENUM))
+ts::UString ts::ReactiveWebRequest::Guts::message(const UString& title, ENUM code, const char* (*strerror)(ENUM))
 {
     UString msg(title);
     msg.append(u", ");
@@ -303,10 +314,35 @@ ts::UString ts::ReactiveWebRequest::SystemGuts::message(const UString& title, EN
 
 
 //----------------------------------------------------------------------------
-// Start the open operation in SystemGuts.
+// Start the operation of opening an URL.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveWebRequest::SystemGuts::start(HandlerType* handler, const ObjectPtr& user_data)
+bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const UString& url, const ObjectPtr& user_data)
+{
+    if (LibCurlInit::Instance().init_status != 0) {
+        report().error(u"libcurl initialization (curl_global_init) failed");
+        return false;
+    }
+    else if (url.empty()) {
+        report().error(u"no URL specified");
+        return false;
+    }
+    else if (_guts->isOpen()) {
+        report().error(u"internal error, transfer already started, cannot download %s", url);
+        return false;
+    }
+    else {
+        _status.reset(url);
+        return _guts->start(handler, user_data);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Start the open operation in Guts.
+//----------------------------------------------------------------------------
+
+bool ts::ReactiveWebRequest::Guts::start(HandlerType* handler, const ObjectPtr& user_data)
 {
     _handler = handler;
     _handler_data = user_data;
@@ -318,7 +354,7 @@ bool ts::ReactiveWebRequest::SystemGuts::start(HandlerType* handler, const Objec
     _can_retry = _retries > 0;
 
     // Start the first try.
-    return initTransferState();
+    return startTransfer();
 }
 
 
@@ -355,10 +391,11 @@ bool ts::ReactiveWebRequest::SystemGuts::start(HandlerType* handler, const Objec
 // Initialize non-blocking state of one transfer attempt.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveWebRequest::SystemGuts::initTransferState()
+bool ts::ReactiveWebRequest::Guts::startTransfer()
 {
     // Make sure we start from a clean state. Preserve opening data.
     reset(false);
+    _received_data = std::make_shared<ByteBlock>();
 
     // Success will be set to true at the end, if no failure occurs.
     bool success = false;
@@ -368,7 +405,7 @@ bool ts::ReactiveWebRequest::SystemGuts::initTransferState()
     // Use a "do {} while (false)" pattern to allow early "break" and jump to cleanup in case of error.
     do {
         // Prepare a user event for the open handler.
-        if (_handler != nullptr && !(_open_event = _request.reactor().newEvent(this)).isValid()) {
+        if (_handler != nullptr && !(_event = _request.reactor().newEvent(this)).isValid()) {
             break;
         }
 
@@ -379,9 +416,9 @@ bool ts::ReactiveWebRequest::SystemGuts::initTransferState()
         }
 
         // Set the callbacks that libcurl will call on socket actions and timers.
-        TS_MULTI_OPT(CURLMOPT_SOCKETFUNCTION, &SystemGuts::CurlSocketCallback);
+        TS_MULTI_OPT(CURLMOPT_SOCKETFUNCTION, &Guts::CurlSocketCallback);
         TS_MULTI_OPT(CURLMOPT_SOCKETDATA, this);
-        TS_MULTI_OPT(CURLMOPT_TIMERFUNCTION, &SystemGuts::CurlTimerCallback);
+        TS_MULTI_OPT(CURLMOPT_TIMERFUNCTION, &Guts::CurlTimerCallback);
         TS_MULTI_OPT(CURLMOPT_TIMERDATA, this);
 
         // Initialize curl_easy.
@@ -437,9 +474,9 @@ bool ts::ReactiveWebRequest::SystemGuts::initTransferState()
         TS_EASY_OPT(CURLOPT_NOSIGNAL, 1L);
 
         // Set the response callbacks.
-        TS_EASY_OPT(CURLOPT_WRITEFUNCTION, &SystemGuts::CurlWriteCallback);
+        TS_EASY_OPT(CURLOPT_WRITEFUNCTION, &Guts::CurlWriteCallback);
         TS_EASY_OPT(CURLOPT_WRITEDATA, this);
-        TS_EASY_OPT(CURLOPT_HEADERFUNCTION, &SystemGuts::CurlHeaderCallback);
+        TS_EASY_OPT(CURLOPT_HEADERFUNCTION, &Guts::CurlHeaderCallback);
         TS_EASY_OPT(CURLOPT_HEADERDATA, this);
 
         // Follow redirections. Hard-coded limit of 32 redirections max.
@@ -492,8 +529,8 @@ bool ts::ReactiveWebRequest::SystemGuts::initTransferState()
             break;
         }
 
-        // End of initialization sequence. Inform the cleanup phase that we succeeded.
-        success = true;
+        // End of initialization sequence. Start the actual transfer.
+        success = continueTransfer(CURL_SOCKET_TIMEOUT, 0);
 
     } while (false);
 
@@ -506,12 +543,31 @@ bool ts::ReactiveWebRequest::SystemGuts::initTransferState()
 
 
 //----------------------------------------------------------------------------
+// Continue processing the transfer based on events on a file descriptor (or CURL_SOCKET_TIMEOUT).
+//----------------------------------------------------------------------------
+
+bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
+{
+    // Execute whatever curl can do without blocking.
+    ::CURLMcode status = ::curl_multi_socket_action(_curlm, fd, event_mask, &_running_handles);
+    if (status != ::CURLM_OK) {
+        _request.report().error(multiMessage(u"curl processing error", status));
+        return false;
+    }
+
+    //@@@@@
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Libcurl callback informed about what to wait for.
 //----------------------------------------------------------------------------
 
-int ts::ReactiveWebRequest::SystemGuts::CurlSocketCallback(::CURL* easy, ::curl_socket_t socket, int what, void* clientp, void* socketp)
+int ts::ReactiveWebRequest::Guts::CurlSocketCallback(::CURL* easy, ::curl_socket_t socket, int what, void* clientp, void* socketp)
 {
-    const auto guts = static_cast<SystemGuts*>(clientp);
+    const auto guts = static_cast<Guts*>(clientp);
     if (guts == nullptr) {
         return -1; // error
     }
@@ -549,9 +605,9 @@ int ts::ReactiveWebRequest::SystemGuts::CurlSocketCallback(::CURL* easy, ::curl_
 // Libcurl callback to receive timeout values.
 //----------------------------------------------------------------------------
 
-int ts::ReactiveWebRequest::SystemGuts::CurlTimerCallback(::CURLM* multi, long timeout_ms, void* clientp)
+int ts::ReactiveWebRequest::Guts::CurlTimerCallback(::CURLM* multi, long timeout_ms, void* clientp)
 {
-    const auto guts = static_cast<SystemGuts*>(clientp);
+    const auto guts = static_cast<Guts*>(clientp);
     if (guts == nullptr) {
         return -1; // error
     }
@@ -566,9 +622,9 @@ int ts::ReactiveWebRequest::SystemGuts::CurlTimerCallback(::CURLM* multi, long t
 // Libcurl callback for writing received data.
 //----------------------------------------------------------------------------
 
-size_t ts::ReactiveWebRequest::SystemGuts::CurlWriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
+size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-    const auto guts = static_cast<SystemGuts*>(userdata);
+    const auto guts = static_cast<Guts*>(userdata);
     if (guts == nullptr) {
         return CURL_WRITEFUNC_ERROR;
     }
@@ -579,14 +635,16 @@ size_t ts::ReactiveWebRequest::SystemGuts::CurlWriteCallback(char* ptr, size_t s
         // With libcurl, there is no way to be notified of "end of connection", after response headers.
         // If this is the first response data chunk, then this is the "end of connection".
         // Need to notify the application of end of startOpen().
-        if (guts->_total_received_size == 0 && guts->_handler != nullptr && !guts->_open_called) {
+        if (guts->_total_received_size == 0) {
+            guts->_open_done = true;
             guts->_open_error = SYS_SUCCESS;
-            guts->_request.reactor().signalEvent(guts->_open_event);
+            guts->_request.reactor().signalEvent(guts->_event);
         }
 
         // Store response data in the SystemGuts buffer.
+        assert(guts->_received_data != nullptr);
         const size_t chunk_size = size * nmemb;
-        guts->_received_data.append(ptr, chunk_size);
+        guts->_received_data->append(ptr, chunk_size);
         guts->_total_received_size += chunk_size;
         return chunk_size;
     }
@@ -597,9 +655,9 @@ size_t ts::ReactiveWebRequest::SystemGuts::CurlWriteCallback(char* ptr, size_t s
 // Libcurl callback callback that receives header data.
 //----------------------------------------------------------------------------
 
-size_t ts::ReactiveWebRequest::SystemGuts::CurlHeaderCallback(char* buffer, size_t size, size_t nitems, void* userdata)
+size_t ts::ReactiveWebRequest::Guts::CurlHeaderCallback(char* buffer, size_t size, size_t nitems, void* userdata)
 {
-    const auto guts = static_cast<SystemGuts*>(userdata);
+    const auto guts = static_cast<Guts*>(userdata);
     if (guts == nullptr) {
         return 0; // error
     }
@@ -616,9 +674,41 @@ size_t ts::ReactiveWebRequest::SystemGuts::CurlHeaderCallback(char* buffer, size
 // Handle a timer from the Reactor.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveWebRequest::SystemGuts::handleTimer(Reactor& reactor, EventId id)
+void ts::ReactiveWebRequest::Guts::handleTimer(Reactor& reactor, EventId id)
 {
-    //@@@
+    // Inform curl that a timeout may have elapsed and continue processing.
+    continueTransfer(CURL_SOCKET_TIMEOUT, 0);
+}
+
+
+//----------------------------------------------------------------------------
+// Handle a read-ready event in a Reactor.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::handleReadReady(Reactor& reactor, EventId id, int error_code)
+{
+    // Inform curl that something has happened on the socket. We do not specify an event mask (set to 0).
+    // We let curl decide what to do on the socket (in, out, err). We could specify CURL_CSELECT_IN (and
+    // possibly CURL_CSELECT_ERR). However, we need to process all events on the socket at the same time,
+    // in and out, while the Reactor separately notifies read and write.
+    SysSocketType sock = reactor.getSocket(id);
+    if (sock >= 0) {
+        continueTransfer(sock, 0);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Handle a write-ready event in a Reactor.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::handleWriteReady(Reactor& reactor, EventId id, int error_code)
+{
+    // See comment in handleReadReady().
+    SysSocketType sock = reactor.getSocket(id);
+    if (sock >= 0) {
+        continueTransfer(sock, 0);
+    }
 }
 
 
@@ -626,38 +716,41 @@ void ts::ReactiveWebRequest::SystemGuts::handleTimer(Reactor& reactor, EventId i
 // Handle a user-defined event in a Reactor.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveWebRequest::SystemGuts::handleUserEvent(Reactor& reactor, EventId id)
+void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
 {
-    // Call open handler if necessary.
-    if (id == _open_event && _handler != nullptr && !_open_called) {
+    // Filter events.
+    if (id != _event) {
+        return;
+    }
+
+    // Process aborted request (and return).
+    if (_aborted) {
+        if (_handler != nullptr) {
+            if (_open_called) {
+                // Open callback already called, report the cancelation in receive callback.
+                _handler->handleWebReceive(_request, nullptr, SYS_CANCELED, _handler_data);
+            }
+            else {
+                _handler->handleWebOpen(_request, SYS_CANCELED, _handler_data);
+            }
+        }
+        reset(true);
+        return;
+    }
+
+    // End of open operation (and return on error).
+    if (_open_done && !_open_called) {
         _open_called = true;
-        _handler->handleWebOpen(_request, _open_error, _handler_data);
+        if (_handler != nullptr) {
+            _handler->handleWebOpen(_request, _open_error, _handler_data);
+        }
+        if (!SysSuccess(_open_error)) {
+            reset(true);
+            return;
+        }
     }
-}
 
-
-//----------------------------------------------------------------------------
-// Start the operation of opening an URL.
-//----------------------------------------------------------------------------
-
-bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const UString& url, const ObjectPtr& user_data)
-{
-    if (LibCurlInit::Instance().init_status != 0) {
-        report().error(u"libcurl initialization (curl_global_init) failed");
-        return false;
-    }
-    else if (url.empty()) {
-        report().error(u"no URL specified");
-        return false;
-    }
-    else if (_guts->isOpen()) {
-        report().error(u"internal error, transfer already started, cannot download %s", url);
-        return false;
-    }
-    else {
-        _status.reset(url);
-        return _guts->start(handler, user_data);
-    }
+    //@@@@@
 }
 
 
@@ -667,9 +760,20 @@ bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const U
 
 bool ts::ReactiveWebRequest::abort(bool silent)
 {
-    //@@@@
-    report().error(u"ReactiveWebRequest is not yet implemented");
-    return false;
+    return _guts->abort(silent);
+}
+
+bool ts::ReactiveWebRequest::Guts::abort(bool silent)
+{
+    if (_curlm == nullptr || _curl == nullptr) {
+        _request.report().log(SilentLevel(silent), u"web request not in progress, cannot abort");
+        return false;
+    }
+    else {
+        _aborted = true;
+        _request.reactor().signalEvent(_event);
+        return true;
+    }
 }
 
 #endif // TS_NO_CURL

@@ -76,6 +76,7 @@ public:
     virtual bool deleteEvent(EventId id, bool silent) override;
     virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
+    virtual SysSocketType getSocket(EventId id) override;
     virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteReadNotify(EventId id, bool silent) override;
     virtual bool deleteReadNotify(SysSocketType sock, bool silent) override;
@@ -750,6 +751,17 @@ bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
         ::close(evd->fd);
         return true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the system-specific file descriptor or handle for an I/O notification.
+//----------------------------------------------------------------------------
+
+ts::SysSocketType ts::Reactor::Guts::getSocket(EventId id)
+{
+    EventData* evd = reinterpret_cast<EventData*>(id._ptr);
+    return _reactor.validateEventData(evd, true) && (evd->type & (EVT_READ | EVT_WRITE)) != 0 ? evd->fd : SYS_SOCKET_INVALID;
 }
 
 

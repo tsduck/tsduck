@@ -450,6 +450,16 @@ bool ts::Reactor::cancelProcessTermination(EventId id, bool silent)
 
 
 //----------------------------------------------------------------------------
+// Get the system-specific file descriptor or handle for an I/O notification.
+//----------------------------------------------------------------------------
+
+ts::SysSocketType ts::Reactor::getSocket(EventId id)
+{
+    return checkOpen(false) ? _guts->getSocket(id) : SYS_SOCKET_INVALID;
+}
+
+
+//----------------------------------------------------------------------------
 // Asynchronous I/O notifications.
 //----------------------------------------------------------------------------
 

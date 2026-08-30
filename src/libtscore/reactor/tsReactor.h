@@ -271,6 +271,17 @@ namespace ts {
         bool cancelProcessTermination(EventId id, bool silent = false);
 
         //--------------------------------------------------------------------
+        // ALL I/O EVENTS (ASYNCHRONOUS AND IMMEDIATE)
+        //--------------------------------------------------------------------
+
+        //!
+        //! Get the system-specific file descriptor or handle for an asynchronous or immediate I/O notification.
+        //! @param [in] id Event id, as previously returned by newAsynchronousIO(), newReadNotify(), or newWriteNotify().
+        //! @return The associated system-specific file descriptor or handle, or SYS_SOCKET_INVALID is there is none.
+        //!
+        SysSocketType getSocket(EventId id);
+
+        //--------------------------------------------------------------------
         // ASYNCHRONOUS I/O EVENTS
         //--------------------------------------------------------------------
 
@@ -416,6 +427,7 @@ namespace ts {
             virtual void* newEvent(ReactorHandlerInterface* handler) = 0;
             virtual bool signalEvent(EventId id) = 0;
             virtual bool deleteEvent(EventId id, bool silent) = 0;
+            virtual SysSocketType getSocket(EventId id) = 0;
             virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) = 0;
             virtual void* newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle);
             virtual bool cancelProcessTermination(EventId id, bool silent) = 0;
