@@ -34,9 +34,12 @@ ts::ByteBlock::ByteBlock(const void* data, size_type size) :
     }
 }
 
-ts::ByteBlock::ByteBlock(const ByteBlock& bb, size_type start, size_type count)
+ts::ByteBlock::ByteBlock(const ByteBlock& bb, size_type start, size_type count) :
+    ByteVector(std::min(count, bb.size() - std::min(start, bb.size())))
 {
-    copy(bb, start, count);
+    if (size() > 0) {
+        MemCopy(&(*this)[0], &bb[start], size());
+    }
 }
 
 ts::ByteBlock::ByteBlock(ByteBlock&& bb) :

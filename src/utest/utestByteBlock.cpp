@@ -100,6 +100,32 @@ TSUNIT_DEFINE_TEST(Constructors)
     for (auto x : t1.b) {
         TSUNIT_EQUAL(42, x);
     }
+
+    ts::ByteBlock v4 {0, 1, 2, 3, 4};
+    TSUNIT_EQUAL(5, v4.size());
+    TSUNIT_EQUAL(0, v4[0]);
+    TSUNIT_EQUAL(1, v4[1]);
+    TSUNIT_EQUAL(2, v4[2]);
+    TSUNIT_EQUAL(3, v4[3]);
+    TSUNIT_EQUAL(4, v4[4]);
+
+    ts::ByteBlock v5(v4);
+    TSUNIT_EQUAL(5, v5.size());
+    TSUNIT_ASSERT(v5 == v4);
+
+    ts::ByteBlock v6(v4, 2);
+    TSUNIT_EQUAL(3, v6.size());
+    TSUNIT_EQUAL(2, v6[0]);
+    TSUNIT_EQUAL(3, v6[1]);
+    TSUNIT_EQUAL(4, v6[2]);
+
+    ts::ByteBlock v7(v4, 3, 7);
+    TSUNIT_EQUAL(2, v7.size());
+    TSUNIT_EQUAL(3, v7[0]);
+    TSUNIT_EQUAL(4, v7[1]);
+
+    ts::ByteBlock v8(v4, 8);
+    TSUNIT_EQUAL(0, v8.size());
 }
 
 TSUNIT_DEFINE_TEST(Find)
