@@ -126,6 +126,6 @@ namespace ts {
 
         // Implementation of ReactiveStreamHandlerInterface.
         virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleReadStream(ReactiveStream& stream, const ByteBlockPtr& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
     };
 }

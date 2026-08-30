@@ -27,6 +27,7 @@ namespace ts {
     //!
     class ByteBlock: public std::vector<uint8_t>
     {
+        TS_DEFAULT_ASSIGMENTS(ByteBlock);
     public:
         // Implementation note: This class is exported out of the TSDuck library
         // and is used by many applications. Normally, the class should be exported
@@ -64,6 +65,20 @@ namespace ts {
         //! @param [in] size Initial size of the block.
         //!
         TSCOREDLL ByteBlock(const void* data, size_type size);
+
+        //!
+        //! Copy constructor, from a partial data block.
+        //! @param [in] bb Data block to copy.
+        //! @param [in] start Start index in @a bb. Copy nothing if after end of @a bb.
+        //! @param [in] count Number of bytes to copy. Extra bytes after end of @a bb are ignored.
+        //!
+        TSCOREDLL ByteBlock(const ByteBlock& bb, size_type start = 0, size_type count = NPOS);
+
+        //!
+        //! Move constructor.
+        //! @param [in,out] bb Data block to move.
+        //!
+        TSCOREDLL ByteBlock(ByteBlock&& bb);
 
         //!
         //! Constructor from a C string.
@@ -111,7 +126,7 @@ namespace ts {
         //! Replace the content of a byte block from another byte block.
         //! @param [in] bb Copy data from this byte block.
         //! @param [in] start Start index in @a bb. Copy nothing if after end of @a bb.
-        //! @param [in] count Number of bytes to copy. Extra bytes afet end of @a bb are ignored.
+        //! @param [in] count Number of bytes to copy. Extra bytes after end of @a bb are ignored.
         //!
         TSCOREDLL void copy(const ByteBlock& bb, size_type start = 0, size_type count = NPOS);
 

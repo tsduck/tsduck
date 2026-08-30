@@ -10,5 +10,4 @@
 
 ts::ReactiveWebHandlerInterface::~ReactiveWebHandlerInterface() {}
 void ts::ReactiveWebHandlerInterface::handleWebOpen(ts::ReactiveWebRequest&, int, const ObjectPtr&) {}
-void ts::ReactiveWebHandlerInterface::handleWebReceive(ts::ReactiveWebRequest&, int, const ObjectPtr&) {}
-void ts::ReactiveWebHandlerInterface::handleWebClosed(ts::ReactiveWebRequest&, int, const ObjectPtr&) {}
+void ts::ReactiveWebHandlerInterface::handleWebReceive(ts::ReactiveWebRequest&, void*, size_t, int, const ObjectPtr&) {}

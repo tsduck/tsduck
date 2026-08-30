@@ -33,6 +33,7 @@ namespace ts {
         //! Handle a dequeued message from a message queue.
         //! @param [in,out] queue Message queue for which the handler is invoked.
         //! @param [in,out] msg A shared pointer to the dequeued message.
+        //! The handler may safely copy the shared pointer, the pointed message will not be modified by teh ReactiveMessageQueue.
         //! The pointer is null if the enqueued message was a null pointer.
         //! @param [in] user_data Application-specific shared pointer which was passed by the application.
         //!

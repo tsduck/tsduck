@@ -340,6 +340,15 @@ namespace ts {
         bool deleteReadNotify(EventId id, bool silent = false);
 
         //!
+        //! Delete a notification of read-ready or read-completion, by file descriptor or handle.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
+        //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
+        //! @param [in] silent If true, do not report errors through the logger.
+        //! @return True on success, false on error.
+        //!
+        bool deleteReadNotify(SysSocketType sock, bool silent = false);
+
+        //!
         //! Add in the reactor a notification of write-ready or read-completion on a system file descriptor.
         //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
         //! @param [in] handler Address of a handler to call when the operation is ready. Return an error if set as @c nullptr.
@@ -356,6 +365,15 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool deleteWriteNotify(EventId id, bool silent = false);
+
+        //!
+        //! Delete a notification of write-ready or write-completion, by file descriptor or handle.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
+        //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
+        //! @param [in] silent If true, do not report errors through the logger.
+        //! @return True on success, false on error.
+        //!
+        bool deleteWriteNotify(SysSocketType sock, bool silent = false);
 
         //--------------------------------------------------------------------
         // DEBUG
@@ -407,8 +425,10 @@ namespace ts {
             virtual bool deleteAsynchronousIO(EventId id, bool silent);
             virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool deleteReadNotify(EventId id, bool silent);
+            virtual bool deleteReadNotify(SysSocketType sock, bool silent);
             virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool deleteWriteNotify(EventId id, bool silent);
+            virtual bool deleteWriteNotify(SysSocketType sock, bool silent);
         };
 
         // The class Guts is defined as a subclass of GutBase in the system-specific source code.

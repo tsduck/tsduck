@@ -10,4 +10,4 @@
 
 ts::ReactiveStreamHandlerInterface::~ReactiveStreamHandlerInterface() {}
 void ts::ReactiveStreamHandlerInterface::handleWriteStream(ReactiveStream&, int, const ObjectPtr&) {}
-void ts::ReactiveStreamHandlerInterface::handleReadStream(ReactiveStream&, const ByteBlock&, ReactiveInputControl&, int, const ObjectPtr&) {}
+void ts::ReactiveStreamHandlerInterface::handleReadStream(ReactiveStream&, const ByteBlockPtr&, ReactiveInputControl&, int, const ObjectPtr&) {}

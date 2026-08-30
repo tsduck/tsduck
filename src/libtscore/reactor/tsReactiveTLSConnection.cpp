@@ -47,7 +47,7 @@ void ts::ReactiveTLSConnection::reset()
     _recv_user_data.reset();
     _recv_control.reset();
     _recv_tls_data.clear();
-    _recv_clear_data.clear();
+    _recv_clear_data = std::make_shared<ByteBlock>();
     // Don't overwrite _accept_handler / _accept_user_data, it is set before connection.
 }
 
@@ -129,9 +129,8 @@ void ts::ReactiveTLSConnection::callReceiveError(int error_code)
     }
     // Report error to application. Report EOF only once.
     if (_recv_handler != nullptr && (error_code != SYS_EOF || !_eof_reported)) {
-        static const ByteBlock empty_data;
         _recv_control.reset();
-        _recv_handler->handleReadStream(*this, empty_data, _recv_control, error_code, _recv_user_data);
+        _recv_handler->handleReadStream(*this, nullptr, _recv_control, error_code, _recv_user_data);
         _eof_reported = _eof_reported || error_code == SYS_EOF;
     }
 }
@@ -462,25 +461,30 @@ void ts::ReactiveTLSConnection::processQueuedOperations()
 // Called when a receive operation completes.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLSConnection::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLSConnection::handleReadStream(ReactiveStream& stream, const ByteBlockPtr& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (!SysSuccess(error_code)) {
         // Report receive errors to application.
         callReceiveError(error_code);
     }
+    else if (data == nullptr) {
+        // Should not happen if error_code is success.
+        assert(false);
+        return;
+    }
     else if (_sctx.needSend()) {
         // Cannot feed the TLS context if it needs to send. Buffer TLS protocol data for later processing.
-        _recv_tls_data.append(data);
+        _recv_tls_data.append(*data);
     }
     else {
         // Consume previously buffered TLS data first.
         size_t done = handleReceivedData(_recv_tls_data, error_code);
         if (done >= _recv_tls_data.size()) {
             // All previous TLS data processed, we can submit more from input, directly from reception buffer.
-            done = handleReceivedData(data, error_code);
-            if (done < data.size()) {
+            done = handleReceivedData(*data, error_code);
+            if (done < data->size()) {
                 // Not everything could be processed, buffer it.
-                _recv_tls_data.copy(data, done);
+                _recv_tls_data.copy(*data, done);
             }
             else {
                 _recv_tls_data.clear();
@@ -489,10 +493,10 @@ void ts::ReactiveTLSConnection::handleReadStream(ReactiveStream& stream, const B
         else {
             // Not all previous data processed, can't submit more, store all incoming data in TLS data buffer.
             _recv_tls_data.erase(0, done);
-            _recv_tls_data.append(data);
+            _recv_tls_data.append(*data);
             // Retry with more data.
             done = handleReceivedData(_recv_tls_data, error_code);
-            if (done < data.size()) {
+            if (done < _recv_tls_data.size()) {
                 // Not everything could be processed.
                 _recv_tls_data.erase(0, done);
             }
@@ -521,7 +525,7 @@ size_t ts::ReactiveTLSConnection::handleReceivedData(const ByteBlock& tls_data, 
 
         // Submit one chunk of TLS protocol to TLS context.
         size_t ret_size = 0;
-        if (!_sctx.provideReceivedData(tls_data.data() + start, tls_data.size() - start, ret_size, _recv_clear_data)) {
+        if (!_sctx.provideReceivedData(tls_data.data() + start, tls_data.size() - start, ret_size, *_recv_clear_data)) {
             // TLS error while processing received data.
             if (!_sctx.eof() && !_user_requests.empty()) {
                 // Not an end-of-file and there is a pending command, maybe a handshake error, abort that command.

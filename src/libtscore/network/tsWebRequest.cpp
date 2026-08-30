@@ -12,8 +12,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
-#include "tsErrCodeReport.h"
-#include "tsURL.h"
 #include "tsFeatures.h"
 
 

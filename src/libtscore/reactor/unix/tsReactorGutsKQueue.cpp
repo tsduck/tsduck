@@ -88,8 +88,10 @@ public:
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
     virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteReadNotify(EventId id, bool silent) override;
+    virtual bool deleteReadNotify(SysSocketType sock, bool silent) override;
     virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteWriteNotify(EventId id, bool silent) override;
+    virtual bool deleteWriteNotify(SysSocketType sock, bool silent) override;
 
 private:
     // File descriptor for kqueue().
@@ -105,6 +107,9 @@ private:
     // We store the event type in the MSB of the index. We assume that a file descriptor is always less than 2^56.
     static uint64_t FileDescIndex(EventType type, int fd) { return (uint64_t(type) << 56) | uint64_t(fd); }
 
+    // Retrieve an event data for a given file descriptor and event type.
+    EventData* getEventData(EventType type, int fd);
+
     // Retrieve or allocate/register an event data for a given file descriptor and event type.
     EventData* newEventData(EventType type, int fd);
 
@@ -114,6 +119,7 @@ private:
     // Common code for event deletion.
     // When ident_is_evd is true, the kqueue ident is the EventData pointer. When false, the kqueue ident is the file descriptor.
     bool deleteFilter(EventId, EventType, bool ident_is_evd, ::kevent_filter_t, bool silent);
+    bool deleteFilter(SysSocketType, EventType, bool ident_is_evd, ::kevent_filter_t, bool silent);
     bool sysDelete(EventData*, bool ident_is_evd, ::kevent_filter_t, bool silent);
 
     // Common code for EV_SET() + kevent().
@@ -134,10 +140,9 @@ ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 // EventData management.
 //----------------------------------------------------------------------------
 
-// Retrieve or allocate/register an event data for a given file descriptor.
-ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd)
+// Retrieve an event data for a given file descriptor.
+ts::Reactor::EventData* ts::Reactor::Guts::getEventData(EventType type, int fd)
 {
-    // Check if the file descriptor already has an EventData for that event type.
     if (fd >= 0) {
         const auto it = _file_descs_map.find(FileDescIndex(type, fd));
         if (it != _file_descs_map.end()) {
@@ -154,14 +159,25 @@ ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd)
             }
         }
     }
+    return nullptr;
+}
+
+// Retrieve or allocate/register an event data for a given file descriptor.
+ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd)
+{
+    // Check if the file descriptor already has an EventData for that event type.
+    EventData* evd = getEventData(type, fd);
 
     // Allocate and register a new EventData.
-    EventData* evd = _reactor.newEventData(type);
-    evd->type = type;
-    if (fd >= 0) {
-        evd->fd = fd;
-        _file_descs_map.insert(std::make_pair(FileDescIndex(type, fd), evd));
+    if (evd == nullptr) {
+        evd = _reactor.newEventData(type);
+        evd->type = type;
+        if (fd >= 0) {
+            evd->fd = fd;
+            _file_descs_map.insert(std::make_pair(FileDescIndex(type, fd), evd));
+        }
     }
+
     return evd;
 }
 
@@ -561,6 +577,11 @@ bool ts::Reactor::Guts::deleteReadNotify(EventId id, bool silent)
     return deleteFilter(id, EVT_READ, false, EVFILT_READ, silent);
 }
 
+bool ts::Reactor::Guts::deleteReadNotify(SysSocketType sock, bool silent)
+{
+    return deleteFilter(sock, EVT_READ, false, EVFILT_READ, silent);
+}
+
 
 //----------------------------------------------------------------------------
 // Add in the reactor a notification of write-ready or read-completion.
@@ -592,6 +613,11 @@ bool ts::Reactor::Guts::deleteWriteNotify(EventId id, bool silent)
     return deleteFilter(id, EVT_WRITE, false, EVFILT_WRITE, silent);
 }
 
+bool ts::Reactor::Guts::deleteWriteNotify(SysSocketType sock, bool silent)
+{
+    return deleteFilter(sock, EVT_WRITE, false, EVFILT_WRITE, silent);
+}
+
 
 //----------------------------------------------------------------------------
 // Common code for event deletion.
@@ -604,6 +630,20 @@ bool ts::Reactor::Guts::deleteFilter(EventId id, EventType type, bool ident_is_e
     if (success) {
         success = sysDelete(evd, ident_is_evd, filter, silent);
         deleteEventData(evd);
+    }
+    return success;
+}
+
+bool ts::Reactor::Guts::deleteFilter(SysSocketType sock, EventType type, bool ident_is_evd, ::kevent_filter_t filter, bool silent)
+{
+    EventData* evd = getEventData(type, sock);
+    bool success = evd != nullptr;
+    if (success) {
+        success = sysDelete(evd, ident_is_evd, filter, silent);
+        deleteEventData(evd);
+    }
+    else {
+        _reactor.report().log(SilentLevel(silent), u"reactor error: no notification set on file descriptor %d, cannot delete it", sock);
     }
     return success;
 }

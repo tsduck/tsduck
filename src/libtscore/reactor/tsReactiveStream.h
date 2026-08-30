@@ -144,12 +144,13 @@ namespace ts {
         //!
         //! Invoke the receive handler as many times as possible on a data buffer.
         //! @param [in,out] data Data buffer containing the received data. On output, data which are processed by the handler are removed.
+        //! The buffer may be reallocated if all data were processed.
         //! @param [in,out] control Input control. On input, this is the previously returned value from the handler. Modified by the handler.
         //! @param [in] handler Application handler.
         //! @param [in] error_code Receive error code. If not success, the handler is called exactly once.
         //! @param [in] user_data User data for the handler.
         //!
-        void processReceiveBuffer(ByteBlock& data, ReactiveInputControl& control, ReactiveStreamHandlerInterface* handler, int error_code, const ObjectPtr& user_data);
+        void processReceiveBuffer(ByteBlockPtr& data, ReactiveInputControl& control, ReactiveStreamHandlerInterface* handler, int error_code, const ObjectPtr& user_data);
 
         // Inherited from ReactiveBase.
         virtual void processQueuedOperations() override;
@@ -186,11 +187,11 @@ namespace ts {
         public:
             ReactiveStreamHandlerInterface* handler = nullptr;
             ReactiveInputControl control {};
-            ByteBlock data {};
-            bool      blocking = false;  // Perform a blocking I/O in the completion queue.
-            bool      new_data = false;  // Some new data were received since last time we examined the buffer.
-            size_t    next_read = 0;     // Previously read in data but not yet consumed by application.
-            size_t    buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE;
+            ByteBlockPtr data {};           // Received data buffer. Used as shared pointer to pass ownership to receive callback.
+            bool         blocking = false;  // Perform a blocking I/O in the completion queue.
+            bool         new_data = false;  // Some new data were received since last time we examined the buffer.
+            size_t       next_read = 0;     // Previously read in data but not yet consumed by application.
+            size_t       buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE;
         };
 
         // ReactiveStream private fields.

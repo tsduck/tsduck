@@ -13,7 +13,7 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::ByteBlock::ByteBlock(size_type size) :
@@ -21,18 +21,10 @@ ts::ByteBlock::ByteBlock(size_type size) :
 {
 }
 
-//----------------------------------------------------------------------------
-// Constructor, initialized with size bytes of specified value
-//----------------------------------------------------------------------------
-
 ts::ByteBlock::ByteBlock(size_type size, uint8_t value) :
     ByteVector(size, value)
 {
 }
-
-//----------------------------------------------------------------------------
-// Constructor from a data block
-//----------------------------------------------------------------------------
 
 ts::ByteBlock::ByteBlock(const void* data, size_type size) :
     ByteVector(size)
@@ -42,9 +34,15 @@ ts::ByteBlock::ByteBlock(const void* data, size_type size) :
     }
 }
 
-//----------------------------------------------------------------------------
-// Constructor from a C string
-//----------------------------------------------------------------------------
+ts::ByteBlock::ByteBlock(const ByteBlock& bb, size_type start, size_type count)
+{
+    copy(bb, start, count);
+}
+
+ts::ByteBlock::ByteBlock(ByteBlock&& bb) :
+    ByteVector(std::move(bb))
+{
+}
 
 ts::ByteBlock::ByteBlock(const char* str) :
     ByteVector(str == nullptr ? 0 : std::strlen(str))
@@ -53,10 +51,6 @@ ts::ByteBlock::ByteBlock(const char* str) :
         MemCopy(data(), str, size());
     }
 }
-
-//----------------------------------------------------------------------------
-// Constructor from an initializer list.
-//----------------------------------------------------------------------------
 
 ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
     ByteVector(init)
@@ -85,19 +79,13 @@ ts::ByteBlock::size_type ts::ByteBlock::find(uint8_t value, size_type start, siz
 void ts::ByteBlock::copy(const void* data_, size_type size_)
 {
     resize(data_ == nullptr ? 0 : size_);
-    if (size() > 0) {
-        MemCopy(data(), data_, size());
-    }
+    MemCopy(data(), data_, size());
 }
-
-//----------------------------------------------------------------------------
-// Replace the content of a byte block from another byte block.
-//----------------------------------------------------------------------------
 
 void ts::ByteBlock::copy(const ByteBlock& bb, size_type start, size_type count)
 {
     start = std::min(start, bb.size());
-    count = std::min(bb.size() - start, count);
+    count = std::min(count, bb.size() - start);
     copy(&bb[start], count);
 }
 

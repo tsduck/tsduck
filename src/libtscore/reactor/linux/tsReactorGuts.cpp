@@ -78,8 +78,10 @@ public:
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
     virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteReadNotify(EventId id, bool silent) override;
+    virtual bool deleteReadNotify(SysSocketType sock, bool silent) override;
     virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteWriteNotify(EventId id, bool silent) override;
+    virtual bool deleteWriteNotify(SysSocketType sock, bool silent) override;
 
 private:
     // File descriptor for epoll().
