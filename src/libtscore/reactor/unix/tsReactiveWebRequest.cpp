@@ -368,7 +368,7 @@ bool ts::ReactiveWebRequest::Guts::start(HandlerType* handler, const ObjectPtr& 
     // Get retry count and interval for the URL's host.
     _retries = 0;
     LibCurlInit::Instance().getRetry(_request._status.originalURL(), _retries, _retry_interval);
-    _request.report().log(2, u"downloading %s, curl retries: %d, interval: %!s", _request._status.originalURL(), _retries, _retry_interval);
+    _request.reactor().trace(u"downloading %s, curl retries: %d, interval: %!s", _request._status.originalURL(), _retries, _retry_interval);
     _can_retry = _retries > 0;
 
     // Start the first try.
@@ -583,12 +583,12 @@ bool ts::ReactiveWebRequest::Guts::curlGetInfo(int severity, const UChar* name, 
 
 
 //----------------------------------------------------------------------------
-// Continue processing the transfer based on events on a file descriptor (or CURL_SOCKET_TIMEOUT).
+// Continue processing the transfer based on events on a file descriptor.
 //----------------------------------------------------------------------------
 
 bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
 {
-    _request.report().log(2, u"continue curl transfer, fd = %d, event_mask = 0x%02X", fd, event_mask);
+    _request.reactor().trace(u"continue curl transfer, fd = %d, event_mask = 0x%02X", fd, event_mask);
 
     // Severity of error is just debug in case of possible retry.
     const int severity = _can_retry ? Severity::Debug : Severity::Error;
@@ -656,7 +656,7 @@ int ts::ReactiveWebRequest::Guts::CurlSocketCallback(::CURL* easy, ::curl_socket
     else {
         // Only INOUT enables read & write notification. If only IN or OUT is specified, the other one should be disabled.
         // Because we may disable a notification which was not set, we ignore errors on disabled.
-        guts->_request.report().log(2, u"curl socket callback, fd = %d, what = %d", fd, what);
+        guts->_request.reactor().trace(u"curl socket callback, fd = %d, what = %d", fd, what);
         bool success = true;
         Reactor& reactor(guts->_request.reactor());
         switch (what) {
@@ -696,7 +696,7 @@ int ts::ReactiveWebRequest::Guts::CurlTimerCallback(::CURLM* multi, long timeout
     }
     else if (timeout_ms < 0) {
         // Disarm curl's timer. Usually, curl uses only one at a time, but we support more. So, disarm all.
-        guts->_request.reactor().report().log(2, u"curl disarms timer");
+        guts->_request.reactor().trace(u"curl disarms timer");
         for (const auto& id : guts->_curl_timers) {
             guts->_request.reactor().cancelTimer(id);
         }
@@ -710,7 +710,7 @@ int ts::ReactiveWebRequest::Guts::CurlTimerCallback(::CURLM* multi, long timeout
     }
     else {
         // Set a timer, usually only one at a time.
-        guts->_request.reactor().report().log(2, u"curl arms %d ms timer", timeout_ms);
+        guts->_request.reactor().trace(u"curl arms %d ms timer", timeout_ms);
         EventId id = guts->_request.reactor().newTimer(guts, cn::milliseconds(timeout_ms), false);
         if (id.isValid()) {
             guts->_curl_timers.insert(id);
@@ -734,7 +734,7 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
         return CURL_WRITEFUNC_ERROR;
     }
     else {
-        guts->_request.reactor().report().log(2, u"curl write callback, size: %d, nmemb: %d", size, nmemb);
+        guts->_request.reactor().trace(u"curl write callback, size: %d, nmemb: %d", size, nmemb);
 
         // After receiving some data, it is no longer possible to retry the connection.
         guts->_can_retry = false;
@@ -772,7 +772,7 @@ size_t ts::ReactiveWebRequest::Guts::CurlHeaderCallback(char* buffer, size_t siz
         return 0; // error
     }
     else {
-        guts->_request.reactor().report().log(2, u"curl header callback, size: %d, nitems: %d", size, nitems);
+        guts->_request.reactor().trace(u"curl header callback, size: %d, nitems: %d", size, nitems);
         // Store the headers in the request status.
         const size_t total_size = size * nitems;
         guts->_request._status.processReponseHeaders(UString::FromUTF8(buffer, total_size), guts->_request.report());

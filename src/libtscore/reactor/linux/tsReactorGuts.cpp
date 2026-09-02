@@ -182,7 +182,7 @@ void ts::Reactor::Guts::deleteEventData(EventData* evd, EventType type)
     evd->type = EventType(evd->type & ~type);
     if (evd->type != 0) {
         // Another event type remains, don't delete the EventData, don't remove the association with the file descriptor.
-        _reactor.trace(u"keep EventData: %X, remaining type %X", uintptr_t(evd), evd->type);
+        _reactor.trace(u"keep EventData: %X, remaining type 0x%X", uintptr_t(evd), evd->type);
     }
     else {
         // The EventData is no longer used.
@@ -814,7 +814,7 @@ bool ts::Reactor::Guts::deleteReadNotify(SysSocketType sock, bool silent)
     EventData* evd = getEventData(sock);
     bool success = evd != nullptr && (evd->type | EVT_READ) != 0;
     if (success) {
-        success = sysDeleteWrite(evd, silent);
+        success = sysDeleteRead(evd, silent);
         deleteEventData(evd, EVT_READ);
     }
     return success;
