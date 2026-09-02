@@ -53,6 +53,12 @@ namespace ts {
         const UString& finalURL() const { return _final_url; }
 
         //!
+        //! Set the final URL of the actual download operation.
+        //! @param [in] url The final URL.
+        //!
+        void setFinalURL(const UString& url) { _final_url = url; }
+
+        //!
         //! Process a list of response headers.
         //! Set response headers and HTTP status when present.
         //! When header "Location" is found, set the final URL to the specified redirection.
@@ -144,7 +150,7 @@ namespace ts {
 
         //!
         //! Get the value of one response header.
-        //! @param [in] name Header name, case sensitive.
+        //! @param [in] name Header name, not case sensitive.
         //! @return Header value or an empty string when the header is not found.
         //! If the header is present more than once, the first value is returned.
         //!

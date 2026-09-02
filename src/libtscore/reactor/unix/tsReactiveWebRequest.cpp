@@ -153,8 +153,34 @@ public:
     // Close and cleanup everything. If 'full' is true, also reset fields which are set for opening an URL.
     void reset(bool full);
 
-    // Start the trandfer operation.
+    // Start the transfer operation.
     bool start(HandlerType* handler, const ObjectPtr& user_data);
+
+    // Abort the current transfer.
+    bool abort(bool silent);
+
+private:
+    ReactiveWebRequest& _request;                       // Reference to parent instance.
+    EventId             _event {};                      // Some event occurred, maybe call a handler.
+    bool                _push_transfer = false;         // Continue transfer in a reactor callback.
+    bool                _open_done = false;             // Open URL is complete.
+    bool                _open_called = false;           // Open handler was called.
+    bool                _aborted = false;               // The transfer is aborted by the user.
+    bool                _completed = false;             // The transfer is complete.
+    int                 _completion_code = SYS_SUCCESS; // Error code of open operation.
+    HandlerType*        _handler = nullptr;             // Application-defined handler.
+    ObjectPtr           _handler_data {};               // User-data for _handler.
+    ::CURLM*            _curlm = nullptr;               // "curl multi" handler, for global curl access.
+    ::CURL*             _curl = nullptr;                // "curl easy" handler, for one transfer.
+    ::curl_slist*       _headers = nullptr;             // Request headers.
+    bool                _can_retry = false;             // Can retry the connection later.
+    size_t              _retries = 0;                   // Remaining retry count, if _can_retry.
+    cn::milliseconds    _retry_interval {};             // Interval between two retries.
+    EventId             _retry_timer {};                // Reactor timer for next retry.
+    std::set<EventId>   _curl_timers {};                // Set of timers for curl.
+    ByteBlockPtr        _received_data {};              // Received data, filled by CurlWriteCallback(), emptied by receive callback.
+    int                 _running_handles = 0;           // Number of active handles inside curl. 0 means all completed.
+    char                _error[CURL_ERROR_SIZE] {0};    // Error message buffer for libcurl (CURLOPT_ERRORBUFFER).
 
     // Initialize non-blocking state of one transfer attempt.
     bool startTransfer();
@@ -162,33 +188,16 @@ public:
     // Continue processing the transfer based on events on a file descriptor (or CURL_SOCKET_TIMEOUT).
     bool continueTransfer(int fd, int event_mask);
 
-    // Abort the current transfer.
-    bool abort(bool silent);
+    // Terminate the transfer and call the application handler.
+    void terminateTransfer(int error_code);
 
     // Build error messages from curl_multi and curl_easy.
     template<typename ENUM> UString message(const UString& title, ENUM code, const char* (*strerror)(ENUM));
     UString easyMessage(const UString& title, ::CURLcode code) { return message(title, code, ::curl_easy_strerror); }
     UString multiMessage(const UString& title, ::CURLMcode code) { return message(title, code, ::curl_multi_strerror); }
 
-private:
-    ReactiveWebRequest& _request;                     // Reference to parent instance.
-    EventId             _event {};                    // Some event occurred, maybe call a handler.
-    bool                _open_done = false;           // Open URL is complete.
-    bool                _open_called = false;         // Open handler was called.
-    bool                _aborted = false;             // The transfer is aborted by the user.
-    int                 _open_error = SYS_SUCCESS;    // Error code of open operation.
-    HandlerType*        _handler = nullptr;           // Application-defined handler.
-    ObjectPtr           _handler_data {};             // User-data for _handler.
-    ::CURLM*            _curlm = nullptr;             // "curl multi" handler, for global curl access.
-    ::CURL*             _curl = nullptr;              // "curl easy" handler, for one transfer.
-    ::curl_slist*       _headers = nullptr;           // Request headers.
-    bool                _can_retry = false;           // Can retry the connection later.
-    size_t              _retries = 0;                 // Remaining retry count, if _can_retry.
-    cn::milliseconds    _retry_interval {};           // Interval between two retries.
-    ByteBlockPtr        _received_data {};            // Received data, filled by CurlWriteCallback(), emptied by receive callback.
-    size_t              _total_received_size = 0;     // All received data.
-    int                 _running_handles = 0;         // Number of active handles inside curl. 0 means all completed.
-    char                _error[CURL_ERROR_SIZE] {0};  // Error message buffer for libcurl (CURLOPT_ERRORBUFFER).
+    // Get a curl information.
+    template <typename Arg> bool curlGetInfo(int severity, const UChar* name, ::CURLINFO info, Arg arg);
 
     // Libcurl callback informed about what to wait for.
     static int CurlSocketCallback(::CURL* easy, ::curl_socket_t socket, int what, void* clientp, void* socketp);
@@ -226,6 +235,11 @@ ts::ReactiveWebRequest::Guts::~Guts()
 
 void ts::ReactiveWebRequest::Guts::reset(bool full)
 {
+    for (const auto& id : _curl_timers) {
+        _request.reactor().cancelTimer(id);
+    }
+    _curl_timers.clear();
+
     if (_headers != nullptr) {
         ::curl_slist_free_all(_headers);
         _headers = nullptr;
@@ -250,10 +264,14 @@ void ts::ReactiveWebRequest::Guts::reset(bool full)
         _event.invalidate();
     }
 
-    _open_done = _open_called = false;
-    _open_error = SYS_SUCCESS;
+    if (_retry_timer.isValid()) {
+        _request.reactor().cancelTimer(_retry_timer, true);
+        _retry_timer.invalidate();
+    }
+
+    _push_transfer = _open_done = _open_called = _completed = false;
+    _completion_code = SYS_SUCCESS;
     _received_data.reset();
-    _total_received_size = 0;
     _running_handles = 0;
     _error[0] = 0;
 
@@ -350,7 +368,7 @@ bool ts::ReactiveWebRequest::Guts::start(HandlerType* handler, const ObjectPtr& 
     // Get retry count and interval for the URL's host.
     _retries = 0;
     LibCurlInit::Instance().getRetry(_request._status.originalURL(), _retries, _retry_interval);
-    _request.report().debug(u"curl retries: %d, interval: %!s", _retries, _retry_interval);
+    _request.report().log(2, u"downloading %s, curl retries: %d, interval: %!s", _request._status.originalURL(), _retries, _retry_interval);
     _can_retry = _retries > 0;
 
     // Start the first try.
@@ -530,6 +548,7 @@ bool ts::ReactiveWebRequest::Guts::startTransfer()
         }
 
         // End of initialization sequence. Start the actual transfer.
+        _request._status.setContentSize(0);
         success = continueTransfer(CURL_SOCKET_TIMEOUT, 0);
 
     } while (false);
@@ -543,19 +562,82 @@ bool ts::ReactiveWebRequest::Guts::startTransfer()
 
 
 //----------------------------------------------------------------------------
+// Get a curl information.
+//----------------------------------------------------------------------------
+
+template <typename Arg>
+bool ts::ReactiveWebRequest::Guts::curlGetInfo(int severity, const UChar* name, ::CURLINFO info, Arg arg)
+{
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(disabled-macro-expansion)
+    const ::CURLcode status = ::curl_easy_getinfo(_curl, info, arg);
+    TS_POP_WARNING()
+    if (status == ::CURLE_OK) {
+        return true;
+    }
+    else {
+        _request.report().log(severity, u"error getting download info for %s: %s", _request.status().originalURL(), easyMessage(name, status));
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Continue processing the transfer based on events on a file descriptor (or CURL_SOCKET_TIMEOUT).
 //----------------------------------------------------------------------------
 
 bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
 {
+    _request.report().log(2, u"continue curl transfer, fd = %d, event_mask = 0x%02X", fd, event_mask);
+
+    // Severity of error is just debug in case of possible retry.
+    const int severity = _can_retry ? Severity::Debug : Severity::Error;
+
     // Execute whatever curl can do without blocking.
-    ::CURLMcode status = ::curl_multi_socket_action(_curlm, fd, event_mask, &_running_handles);
-    if (status != ::CURLM_OK) {
-        _request.report().error(multiMessage(u"curl processing error", status));
+    ::CURLMcode mstatus = ::curl_multi_socket_action(_curlm, fd, event_mask, &_running_handles);
+    if (mstatus != ::CURLM_OK) {
+        _request.report().error(multiMessage(u"curl processing error", mstatus));
         return false;
     }
 
-    //@@@@@
+    // Drain the message queue from libcurl.
+    ::CURLMsg* msg = nullptr;
+    int msg_count = 0;
+    while ((msg = ::curl_multi_info_read(_curlm, &msg_count)) != nullptr) {
+        // Transfer completion is the only defined message type.
+        if (msg->msg == ::CURLMSG_DONE) {
+            _completed = true;
+
+            // We use only one curl_easy, it must be this one.
+            assert(msg->easy_handle == _curl);
+
+            // Can we retry in case of failure?
+            if (_can_retry) {
+                _can_retry = --_retries > 0;
+            }
+
+            // Transfer status.
+            if (msg->data.result != ::CURLE_OK) {
+                _completion_code = SYS_ERROR;
+                _request.report().log(severity, u"error downloading %s", _request.status().originalURL());
+                _request.report().log(severity, easyMessage(nullptr, msg->data.result));
+            }
+            else {
+                // Get HTTP status code and final URL (in case of redirections).
+                long http_status = 0;
+                if (curlGetInfo(severity, u" CURLINFO_RESPONSE_CODE", CURLINFO_RESPONSE_CODE, &http_status)) {
+                    _request._status.setHttpStatus(int(http_status));
+                }
+                char* final_url = nullptr;
+                if (curlGetInfo(severity, u"CURLINFO_EFFECTIVE_URL", CURLINFO_EFFECTIVE_URL, &final_url) && final_url != nullptr) {
+                    _request._status.setFinalURL(UString::FromUTF8(final_url));
+                }
+            }
+
+            // Process the transfer completion in some later reactor handler.
+            _request.reactor().signalEvent(_event);
+        }
+    }
 
     return true;
 }
@@ -565,7 +647,7 @@ bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
 // Libcurl callback informed about what to wait for.
 //----------------------------------------------------------------------------
 
-int ts::ReactiveWebRequest::Guts::CurlSocketCallback(::CURL* easy, ::curl_socket_t socket, int what, void* clientp, void* socketp)
+int ts::ReactiveWebRequest::Guts::CurlSocketCallback(::CURL* easy, ::curl_socket_t fd, int what, void* clientp, void* socketp)
 {
     const auto guts = static_cast<Guts*>(clientp);
     if (guts == nullptr) {
@@ -574,23 +656,24 @@ int ts::ReactiveWebRequest::Guts::CurlSocketCallback(::CURL* easy, ::curl_socket
     else {
         // Only INOUT enables read & write notification. If only IN or OUT is specified, the other one should be disabled.
         // Because we may disable a notification which was not set, we ignore errors on disabled.
+        guts->_request.report().log(2, u"curl socket callback, fd = %d, what = %d", fd, what);
         bool success = true;
         Reactor& reactor(guts->_request.reactor());
         switch (what) {
             case CURL_POLL_IN:
-                success = reactor.newReadNotify(guts, socket).isValid();
-                reactor.deleteWriteNotify(socket, true);
+                success = reactor.newReadNotify(guts, fd).isValid();
+                reactor.deleteWriteNotify(fd, true);
                 break;
             case CURL_POLL_OUT:
-                success = reactor.newWriteNotify(guts, socket).isValid();
-                reactor.deleteReadNotify(socket, true);
+                success = reactor.newWriteNotify(guts, fd).isValid();
+                reactor.deleteReadNotify(fd, true);
                 break;
             case CURL_POLL_INOUT:
-                success = reactor.newReadNotify(guts, socket).isValid() && reactor.newWriteNotify(guts, socket).isValid();
+                success = reactor.newReadNotify(guts, fd).isValid() && reactor.newWriteNotify(guts, fd).isValid();
                 break;
             case CURL_POLL_REMOVE:
-                reactor.deleteWriteNotify(socket, true);
-                reactor.deleteReadNotify(socket, true);
+                reactor.deleteWriteNotify(fd, true);
+                reactor.deleteReadNotify(fd, true);
                 break;
             case CURL_POLL_NONE:
             default:
@@ -611,9 +694,31 @@ int ts::ReactiveWebRequest::Guts::CurlTimerCallback(::CURLM* multi, long timeout
     if (guts == nullptr) {
         return -1; // error
     }
+    else if (timeout_ms < 0) {
+        // Disarm curl's timer. Usually, curl uses only one at a time, but we support more. So, disarm all.
+        guts->_request.reactor().report().log(2, u"curl disarms timer");
+        for (const auto& id : guts->_curl_timers) {
+            guts->_request.reactor().cancelTimer(id);
+        }
+        guts->_curl_timers.clear();
+        return 0; // success
+    }
+    else if (timeout_ms == 0) {
+        // Just call curl again later.
+        guts->_push_transfer = true;
+        return 0; // success
+    }
     else {
-        const EventId id = guts->_request.reactor().newTimer(guts, cn::milliseconds(timeout_ms), false);
-        return id.isValid() ? 0 : -1;
+        // Set a timer, usually only one at a time.
+        guts->_request.reactor().report().log(2, u"curl arms %d ms timer", timeout_ms);
+        EventId id = guts->_request.reactor().newTimer(guts, cn::milliseconds(timeout_ms), false);
+        if (id.isValid()) {
+            guts->_curl_timers.insert(id);
+            return 0; // success
+        }
+        else {
+            return -1; // error
+        }
     }
 }
 
@@ -629,23 +734,28 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
         return CURL_WRITEFUNC_ERROR;
     }
     else {
+        guts->_request.reactor().report().log(2, u"curl write callback, size: %d, nmemb: %d", size, nmemb);
+
         // After receiving some data, it is no longer possible to retry the connection.
         guts->_can_retry = false;
 
         // With libcurl, there is no way to be notified of "end of connection", after response headers.
         // If this is the first response data chunk, then this is the "end of connection".
         // Need to notify the application of end of startOpen().
-        if (guts->_total_received_size == 0) {
+        if (guts->_request._status.contentSize() == 0) {
             guts->_open_done = true;
-            guts->_open_error = SYS_SUCCESS;
+            guts->_completion_code = SYS_SUCCESS;
             guts->_request.reactor().signalEvent(guts->_event);
         }
 
-        // Store response data in the SystemGuts buffer.
+        // Store response data in the SystemGuts buffer only if a callback was specified.
         assert(guts->_received_data != nullptr);
         const size_t chunk_size = size * nmemb;
-        guts->_received_data->append(ptr, chunk_size);
-        guts->_total_received_size += chunk_size;
+        if (guts->_handler != nullptr) {
+            guts->_received_data->append(ptr, chunk_size);
+            guts->_request.reactor().signalEvent(guts->_event);
+        }
+        guts->_request._status.addContentSize(chunk_size);
         return chunk_size;
     }
 }
@@ -662,6 +772,7 @@ size_t ts::ReactiveWebRequest::Guts::CurlHeaderCallback(char* buffer, size_t siz
         return 0; // error
     }
     else {
+        guts->_request.reactor().report().log(2, u"curl header callback, size: %d, nitems: %d", size, nitems);
         // Store the headers in the request status.
         const size_t total_size = size * nitems;
         guts->_request._status.processReponseHeaders(UString::FromUTF8(buffer, total_size), guts->_request.report());
@@ -676,8 +787,24 @@ size_t ts::ReactiveWebRequest::Guts::CurlHeaderCallback(char* buffer, size_t siz
 
 void ts::ReactiveWebRequest::Guts::handleTimer(Reactor& reactor, EventId id)
 {
-    // Inform curl that a timeout may have elapsed and continue processing.
-    continueTransfer(CURL_SOCKET_TIMEOUT, 0);
+    if (id == _retry_timer) {
+        // This a retry after a connection failure.
+        _retry_timer.invalidate();
+
+        // In case of restart failure, give up. Errors were already reported. We are in a reactor callback, we can directly call
+        // the user handler. Moreover, the _event id has been reset by the failure and we cannot signal the event.
+        if (!startTransfer() && _handler != nullptr) {
+            _handler->handleWebOpen(_request, _aborted ? SYS_CANCELED : SYS_ERROR, _handler_data);
+            reset(true);
+        }
+    }
+    else if (_curl_timers.contains(id)) {
+        // This is a time we set for curl (in CurlTimerCallback).
+        _curl_timers.erase(id);
+
+        // Inform curl that a timeout may have elapsed and continue processing.
+        continueTransfer(CURL_SOCKET_TIMEOUT, 0);
+    }
 }
 
 
@@ -723,18 +850,17 @@ void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
         return;
     }
 
+    // Continue curl's transfer. This was requested in a curl's callback but couldn't be done there.
+    if (_push_transfer) {
+        _push_transfer = false;
+        if (!_aborted && !_completed) {
+            continueTransfer(CURL_SOCKET_TIMEOUT, 0);
+        }
+    }
+
     // Process aborted request (and return).
     if (_aborted) {
-        if (_handler != nullptr) {
-            if (_open_called) {
-                // Open callback already called, report the cancelation in receive callback.
-                _handler->handleWebReceive(_request, nullptr, SYS_CANCELED, _handler_data);
-            }
-            else {
-                _handler->handleWebOpen(_request, SYS_CANCELED, _handler_data);
-            }
-        }
-        reset(true);
+        terminateTransfer(SYS_CANCELED);
         return;
     }
 
@@ -742,15 +868,48 @@ void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
     if (_open_done && !_open_called) {
         _open_called = true;
         if (_handler != nullptr) {
-            _handler->handleWebOpen(_request, _open_error, _handler_data);
+            _handler->handleWebOpen(_request, _completion_code, _handler_data);
         }
-        if (!SysSuccess(_open_error)) {
+        if (!SysSuccess(_completion_code)) {
             reset(true);
             return;
         }
     }
 
-    //@@@@@
+    // Report received data.
+    if (_received_data != nullptr && !_received_data->empty()) {
+        // In case of null handler, we never save the received data.
+        assert(_handler != nullptr);
+        _handler->handleWebReceive(_request, _received_data, SYS_SUCCESS, _handler_data);
+        // Let the ownership of the data pointer to the handler object if necessary.
+        _received_data = std::make_shared<ByteBlock>();
+    }
+
+    // Report transfer termination.
+    if (_completed) {
+        terminateTransfer(_completion_code);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Terminate the transfer and call the application handler.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::terminateTransfer(int error_code)
+{
+    if (_handler != nullptr) {
+        // Terminating the transfer during open means error or successful empty response. We must call the open handler.
+        if (!_open_called) {
+            _handler->handleWebOpen(_request, error_code, _handler_data);
+        }
+        // A successful completion means "end of file" and it must be reported as such.
+        // In case of error after open, report that error code.
+        if (_open_called || SysSuccess(error_code)) {
+            _handler->handleWebReceive(_request, nullptr, SysSuccess(error_code) ? SYS_EOF : error_code, _handler_data);
+        }
+    }
+    reset(true);
 }
 
 

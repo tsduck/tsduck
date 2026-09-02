@@ -41,8 +41,13 @@ void ts::WebRequestStatus::reset(const UString& url)
 
 ts::UString ts::WebRequestStatus::reponseHeader(const UString& name) const
 {
-    const auto it = _response_headers.find(name);
-    return it == _response_headers.end() ? UString() : it->second;
+    // Header names are not case sensitive, we need to do an exensive search.
+    for (const auto& h : _response_headers) {
+        if (h.first.similar(name)) {
+            return h.second;
+        }
+    }
+    return UString();
 }
 
 

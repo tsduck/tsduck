@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
+#include "tsReactiveWebRequest.h"
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
 #include "tsReportBuffer.h"
@@ -21,6 +22,7 @@
 #include "tsErrCodeReport.h"
 #include "tsjson.h"
 #include "tsjsonValue.h"
+#include "tsReactor.h"
 #include "tsunit.h"
 
 
@@ -37,6 +39,7 @@ class WebRequestTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(NonExistentHost);
     TSUNIT_DECLARE_TEST(InvalidURL);
     TSUNIT_DECLARE_TEST(Post);
+    TSUNIT_DECLARE_TEST(Reactive);
 
 public:
     virtual void beforeTest() override;
@@ -260,4 +263,79 @@ TSUNIT_DEFINE_TEST(Post)
             TSUNIT_EQUAL(post, jv->value(u"data").toString());
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Test cases using reactors.
+//----------------------------------------------------------------------------
+
+namespace {
+    class HandlerWeb: public ts::ReactiveWebHandlerInterface
+    {
+    private:
+        ts::ReactiveWebRequest& _request; // just to check the address in handlers.
+
+    public:
+        bool open_called = false;
+        bool receive_called = false;
+
+        HandlerWeb(ts::ReactiveWebRequest& req) : _request(req) {}
+
+        virtual void handleWebOpen(ts::ReactiveWebRequest& request, int error_code, const ts::ObjectPtr& user_data) override
+        {
+            tsunit::Test::debug() << "TestWebRequest::Reactive::handleWebOpen, error code: " << error_code << std::endl;
+            open_called = true;
+            TSUNIT_ASSERT(&request == &_request);
+            TSUNIT_ASSERT(ts::SysSuccess(error_code));
+
+            tsunit::Test::debug() << "    HTTP status: " << request.status().httpStatus() << std::endl;
+            tsunit::Test::debug() << "    Original URL: \"" << request.status().originalURL() << "\"" << std::endl;
+            tsunit::Test::debug() << "    Final URL: \"" << request.status().finalURL() << "\"" << std::endl;
+            tsunit::Test::debug() << "    Announced content size: " << request.status().announcedContentSize() << std::endl;
+            tsunit::Test::debug() << "    Content size: " << request.status().contentSize() << std::endl;
+            tsunit::Test::debug() << "    MIME type: \"" << request.status().mimeType() << "\"" << std::endl;
+            tsunit::Test::debug() << "    Header count: " << request.status().responseHeaders().size() << std::endl;
+            for (const auto& h : request.status().responseHeaders()) {
+                tsunit::Test::debug() << "    - " << h.first << ": " << h.second << std::endl;
+            }
+        }
+
+        virtual void handleWebReceive(ts::ReactiveWebRequest& request, const ts::ByteBlockPtr& data, int error_code, const ts::ObjectPtr& user_data) override
+        {
+            receive_called = true;
+            TSUNIT_ASSERT(&request == &_request);
+            if (error_code == ts::SYS_EOF) {
+                // End of transfer.
+                tsunit::Test::debug() << "TestWebRequest::Reactive::handleWebReceive, end of session" << std::endl;
+                tsunit::Test::debug() << "    Content size: " << request.status().contentSize() << std::endl;
+                request.reactor().exitEventLoop();
+            }
+            else {
+                TSUNIT_ASSERT(data != nullptr);
+                tsunit::Test::debug() << "TestWebRequest::Reactive::handleWebReceive, error code: " << error_code << ", size: " << data->size() << std::endl;
+                TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
+            }
+        }
+    };
+}
+
+TSUNIT_DEFINE_TEST(Reactive)
+{
+    ts::Reactor reactor(&CERR);
+    ts::ReactiveWebRequest request(reactor);
+    HandlerWeb test(request);
+
+    TSUNIT_ASSERT(!reactor.isOpen());
+    TSUNIT_ASSERT(reactor.open());
+    TSUNIT_ASSERT(reactor.isOpen());
+
+    TSUNIT_ASSERT(request.start(&test, u"http://tsduck.io"));
+    TSUNIT_ASSERT(reactor.processEventLoop());
+    TSUNIT_ASSERT(test.open_called);
+    TSUNIT_ASSERT(test.receive_called);
+
+    TSUNIT_ASSERT(reactor.isOpen());
+    TSUNIT_ASSERT(reactor.close());
+    TSUNIT_ASSERT(!reactor.isOpen());
 }
