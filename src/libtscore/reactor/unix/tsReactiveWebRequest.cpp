@@ -935,4 +935,41 @@ bool ts::ReactiveWebRequest::Guts::abort(bool silent)
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Get the version of the underlying HTTP library.
+//----------------------------------------------------------------------------
+
+ts::UString ts::WebRequest::GetLibraryVersion()
+{
+    UString result(u"libcurl");
+
+    // Enforce libcurl initialization.
+    LibCurlInit::Instance();
+
+    // Check if runtime version is same as compiled one.
+    bool same = false;
+
+    // Get version from libcurl.
+    const ::curl_version_info_data* info = ::curl_version_info(CURLVERSION_NOW);
+    if (info != nullptr) {
+        same = info->version_num == LIBCURL_VERSION_NUM;
+        if (info->version != nullptr) {
+            result.format(u": %s", info->version);
+        }
+        if (info->ssl_version != nullptr) {
+            result.format(u", ssl: %s", info->ssl_version);
+        }
+        if (info->libz_version != nullptr) {
+            result.format(u", libz: %s", info->libz_version);
+        }
+    }
+
+    // Add compilation version if different.
+    if (!same) {
+        result.format(u", compiled with %s", LIBCURL_VERSION);
+    }
+    return result;
+}
+
 #endif // TS_NO_CURL

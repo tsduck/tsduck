@@ -83,6 +83,7 @@ public:
     virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
     virtual void* newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle) override;
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
+    virtual SysSocketType getSocket(EventId id) override;
     virtual void* newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool cancelAsynchronousIO(EventId id, bool silent) override;
     virtual bool cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent) override;
@@ -634,6 +635,18 @@ bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
         evd->handle = nullptr;
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the system-specific file descriptor or handle for an I/O notification.
+//----------------------------------------------------------------------------
+
+ts::SysSocketType ts::Reactor::Guts::getSocket(EventId id)
+{
+    // Windows types SOCKET and HANDLE have the same binary representation and are interchangeable.
+    EventData* evd = reinterpret_cast<EventData*>(id._ptr);
+    return _reactor.validateEventData(evd, true) && (evd->type & EVT_ASYNC) != 0 ? ::SOCKET(evd->handle) : SYS_SOCKET_INVALID;
 }
 
 
