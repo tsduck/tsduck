@@ -335,7 +335,7 @@ ts::UString ts::ReactiveWebRequest::Guts::message(const UString& title, ENUM cod
 // Start the operation of opening an URL.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const UString& url, const ObjectPtr& user_data)
+bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const UString& url, size_t buffer_size, const ObjectPtr& user_data)
 {
     if (LibCurlInit::Instance().init_status != 0) {
         report().error(u"libcurl initialization (curl_global_init) failed");

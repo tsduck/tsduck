@@ -51,12 +51,6 @@ namespace ts {
         StreamInterface& stream() { return _stream; }
 
         //!
-        //! Default buffer size for receive operations.
-        //! @see startReadStream()
-        //!
-        static constexpr size_t DEFAULT_RECEIVE_BUFFER_SIZE = 4096;
-
-        //!
         //! Start the operation of reading data from the stream.
         //! Reading operation is permanent and @a handler is called whenever incoming data are available.
         //! @param [in] handler Handler class to call each time data are received. The method handleReadStream() will be called
@@ -66,7 +60,7 @@ namespace ts {
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
+        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Start the operation of writing data to the stream.
@@ -191,7 +185,7 @@ namespace ts {
             bool         blocking = false;  // Perform a blocking I/O in the completion queue.
             bool         new_data = false;  // Some new data were received since last time we examined the buffer.
             size_t       next_read = 0;     // Previously read in data but not yet consumed by application.
-            size_t       buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE;
+            size_t       buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE;
         };
 
         // ReactiveStream private fields.

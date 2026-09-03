@@ -196,7 +196,7 @@ bool ts::Reactor::Guts::close(bool silent)
             // Free the EventData only if it was validated. Cases where an invalid EventData remains
             // in a reactor are bugs. In that case, we don't try to delete it (a memory leak is still
             // better than a potential double-free which may lead to memory corruption).
-            delete evd;
+            _reactor.deleteEventData(evd, evd->type);
         }
         else {
             // Invalid EventData, errors already displayed.
@@ -628,7 +628,7 @@ bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
         ::CloseHandle(evd->job_object);
         evd->job_object = nullptr;
     }
-    
+
     // If the process was opened by id, we must close the handle.
     if (evd->close_handle) {
         ::CloseHandle(evd->handle);

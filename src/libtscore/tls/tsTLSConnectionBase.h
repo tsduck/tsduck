@@ -76,7 +76,7 @@ namespace ts {
     protected:
         //!
         //! Constructor is accessible to subclasses only.
-        //! 
+        //!
         TLSConnectionBase() = default;
 
     private:

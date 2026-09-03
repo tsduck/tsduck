@@ -60,7 +60,7 @@ namespace ts {
         virtual ~ReactiveTLSConnection() override;
         virtual bool startConnect(ReactiveTCPConnectionHandlerInterface* handler, const IPSocketAddress& addr, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual void whenAccepted(ReactiveTCPConnectionHandlerInterface* handler, const ObjectPtr& user_data = ObjectPtr()) override;
-        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr()) override;
+        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual bool startWriteStream(ReactiveStreamHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual void cancelReadWriteStream(bool silent = false) override;
         virtual bool startCloseWriter(ReactiveStreamHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr()) override;

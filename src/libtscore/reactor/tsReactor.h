@@ -514,8 +514,8 @@ namespace ts {
         void endOfEventProcessing()
         {
             // Swap the sets of deleted events.
+            _deleted_previous_current.clear();
             _deleted_previous_current.swap(_deleted_current);
-            _deleted_current.clear();
         }
 
         // Allocate a new EventData that is not a reuse of a recently deallocated one in _deleted_previous_current.

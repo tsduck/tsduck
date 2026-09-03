@@ -109,7 +109,7 @@ namespace ts {
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //! The final status of the I/O will be transmitted in the @a handler.
         //!
-        bool startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size = ReactiveStream::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
+        bool startReadText(ReactiveTextStreamHandlerInterface* handler, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
     private:
         // The send user-data is a buffer containing the formatted binary data to send.

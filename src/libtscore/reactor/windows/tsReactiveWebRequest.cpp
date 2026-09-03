@@ -61,7 +61,7 @@ public:
     void reset();
 
     // Start the transfer operation.
-    bool start(HandlerType* handler, const UString& url, const ObjectPtr& user_data);
+    bool start(HandlerType* handler, const UString& url, size_t buffer_size, const ObjectPtr& user_data);
 
     // Abort the current transfer.
     bool abort(bool silent);
@@ -69,6 +69,9 @@ public:
 private:
     // Type of asynchronous operation in progress.
     enum AsyncOp {AsyncNone, AsyncInternetOpenUrl, AsyncInternetConnect, AsyncHttpOpenRequest, AsyncHttpSendRequest, AsyncInternetReadFile};
+
+    // Name of these operations.
+    static const UChar* AsyncName(AsyncOp op);
 
     // Guts private fields.
     ReactiveWebRequest&  _request;                 // Reference to parent instance.
@@ -78,6 +81,8 @@ private:
     volatile ::HINTERNET _inet = nullptr;          // Handle to all Internet operations.
     volatile ::HINTERNET _inet_connect = nullptr;  // Handle to connection operations (POST request only).
     volatile ::HINTERNET _inet_request = nullptr;  // Handle to URL request operations.
+    bool                 _aborting = false;        // Abort operation in progress.
+    bool                 _open_completed = false;  // Open operation completed, now receiving content.
     bool                 _use_http = false;
     bool                 _use_https = false;
     bool                 _use_insecure = false;
@@ -85,22 +90,41 @@ private:
     void*                _post_data = nullptr;
     ::DWORD              _post_size = 0;
     ::DWORD              _url_flags = 0;
+    size_t               _buffer_size = 0;         // Default size for receive buffer.
+    ::DWORD              _received_size = 0;       // Size of received data, asynchronously set by InternetReadFile().
+    ByteBlockPtr         _received_data {};        // Received data.
     AsyncOp              _async_op = AsyncNone;    // Current asynchronous operation.
     UString              _host {};                 // String buffer for host name (InternetConnectW).
     UString              _user {};                 // String buffer for user name (InternetConnectW).
     UString              _pass {};                 // String buffer for password (InternetConnectW).
+    UString              _path {};                 // String buffer for URL path+query (HttpOpenRequestW).
     UString              _request_headers {};      // Buffer for all request headers.
     ::WCHAR*             _headers_addr = nullptr;  // Request headers address, for WinInet calls.
     ::DWORD              _headers_len = 0;         // Request headers length, for WinInet calls.
 
     // Guts private fields which can be used in the status callback, from a WinInet internal thread.
+    // Only one asynchronous operation is started at a time. So each value which is set from a callback
+    // will be processed before the next asynchronous operation is started. Because these fields are
+    // used from the WinInet internal callback thread and the reactor thread, a mutex must be used.
     std::mutex                             _mutex {};         // Protect access to all following fields.
-    ByteBlockPtr                           _received_data {}; // Received data, filled by WinInetStatusCallback(), emptied by receive callback.
-    std::optional<UString>                 _last_url {};      // Last redirected URL as set in the callback.
-    std::optional<::INTERNET_ASYNC_RESULT> _async_result {};  // Last completion as set in the callback.
+    std::optional<UString>                 _last_url {};      // Last INTERNET_STATUS_REDIRECT callback.
+    std::optional<::HINTERNET>             _last_handle {};   // Last INTERNET_STATUS_HANDLE_CREATED callback.
+    std::optional<::INTERNET_ASYNC_RESULT> _async_result {};  // Last INTERNET_STATUS_REQUEST_COMPLETE callback.
+
+    // Mark the start of an asynchronous operation.
+    void calling(AsyncOp op);
+
+    // Notify the successful synchronous completion of the current operation.
+    void synchronousCompletion();
+
+    // Complete/abort the operation, call the appropriate handler.
+    void completeOperation(int error_code);
 
     // Transmit response headers to the WebRequest.
     void transmitResponseHeaders();
+
+    // Start a receive operation. Complete the request on error.
+    void startReceive();
 
     // WinInet status callback. Can be called from another thread (internal WinInet thread).
     static void CALLBACK WinInetStatusCallback(::HINTERNET handle, ::DWORD_PTR context, ::DWORD status, void* info, ::DWORD info_size);
@@ -145,20 +169,23 @@ void ts::ReactiveWebRequest::Guts::reset()
 
     _handler = nullptr;
     _handler_data.reset();
-    _use_http = _use_https = _use_post = _use_insecure = false;
+    _aborting = _open_completed = _use_http = _use_https = _use_post = _use_insecure = false;
     _post_data = nullptr;
-    _post_size = _url_flags = 0;
+    _post_size = _url_flags = _received_size = 0;
+    _buffer_size = 0;
+    _received_data.reset();
     _async_op = AsyncNone;
     _host.clear();
     _user.clear();
     _pass.clear();
+    _path.clear();
     _request_headers.clear();
     _headers_addr = nullptr;
     _headers_len = 0;
 
     std::lock_guard<std::mutex> lock(_mutex);
-    _received_data.reset();
     _last_url.reset();
+    _last_handle.reset();
     _async_result.reset();
 }
 
@@ -184,6 +211,68 @@ ts::ReactiveWebRequest::~ReactiveWebRequest()
 
 
 //----------------------------------------------------------------------------
+// Name of asynchronous operations.
+//----------------------------------------------------------------------------
+
+const ts::UChar* ts::ReactiveWebRequest::Guts::AsyncName(AsyncOp op)
+{
+    switch (op) {
+        case AsyncNone:             return u"no asynchronous function";
+        case AsyncInternetOpenUrl:  return u"InternetOpenUrl";
+        case AsyncInternetConnect:  return u"InternetConnect";
+        case AsyncHttpOpenRequest:  return u"HttpOpenRequest";
+        case AsyncHttpSendRequest:  return u"HttpSendRequest";
+        case AsyncInternetReadFile: return u"InternetReadFile";
+        default:                    return u"unknown asynchronous function";
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Mark the start of an asynchronous operation.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::calling(AsyncOp op)
+{
+    _request.reactor().trace(u"calling %s", AsyncName(op));
+    _async_op = op;
+}
+
+
+//----------------------------------------------------------------------------
+// Notify the successful synchronous completion of an operation.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::synchronousCompletion()
+{
+    _request.reactor().trace(u"%s synchronous completion", AsyncName(_async_op));
+    _async_result.emplace();
+    _async_result->dwResult = true;  // success
+    _async_result->dwError = ERROR_SUCCESS;
+    _request.reactor().signalEvent(_event);
+}
+
+
+//----------------------------------------------------------------------------
+// Complete/abort the operation, call the appropriate handler.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::completeOperation(int error_code)
+{
+    if (_handler != nullptr) {
+        // Report the completion in open handler if not yet called, in receive handler otherwise.
+        if (_open_completed) {
+            _handler->handleWebReceive(_request, nullptr, error_code, _handler_data);
+        }
+        else {
+            _handler->handleWebOpen(_request, error_code, _handler_data);
+        }
+    }
+    reset();
+}
+
+
+//----------------------------------------------------------------------------
 // Macro to set an option on the Internet handle.
 //----------------------------------------------------------------------------
 
@@ -200,12 +289,12 @@ ts::ReactiveWebRequest::~ReactiveWebRequest()
 // Start the operation of opening an URL.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const UString& url, const ObjectPtr& user_data)
+bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const UString& url, size_t buffer_size, const ObjectPtr& user_data)
 {
-    return _guts->start(handler, url, user_data);
+    return _guts->start(handler, url, buffer_size, user_data);
 }
 
-bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, const UString& url, const ObjectPtr& user_data)
+bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, const UString& url, size_t buffer_size, const ObjectPtr& user_data)
 {
     if (url.empty()) {
         _request.report().error(u"no URL specified");
@@ -218,7 +307,19 @@ bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, c
 
     // Make sure we start from a clean state.
     reset();
-    _received_data = std::make_shared<ByteBlock>();
+
+    // WinInet does not user overlapped I/O and cannot be directly integrated into IOCP.
+    // An asynchronous WinInet operation invokes an application-defined callback from a WinInet internal thread.
+    // Our callback will signal the following event to get back into the reactor.
+    _event = _request.reactor().newEvent(this);
+    if (!_event.isValid()) {
+        return false;
+    }
+
+    // Application-defined values.
+    _handler = handler;
+    _handler_data = user_data;
+    _buffer_size = std::max<size_t>(buffer_size, 256);  // enforce a minimal buffer size
 
     // URL characteristics.
     _request._status.reset(url);
@@ -319,32 +420,31 @@ bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, c
 
     if (!_use_post && !_use_insecure) {
         // This can be handled by InternetOpenUrl() in one call.
-        _async_op = AsyncInternetOpenUrl;
+        calling(AsyncInternetOpenUrl);
         _inet_request = ::InternetOpenUrlW(_inet, _request._status.originalURL().wc_str(), _headers_addr, _headers_len, _url_flags, ::DWORD_PTR(this));
-        ::DWORD err = ::GetLastError();
         if (_inet_request != nullptr) {
-            // Synchronous completion, simulate an asynchronous one.
-            _async_result.emplace();
-            _async_result->dwResult = true; // success
-            _async_result->dwError = ERROR_SUCCESS;
-            _request.reactor().signalEvent(_event);
+            synchronousCompletion();
         }
-        else if (err != ERROR_IO_PENDING) {
+        else if (::GetLastError() != ERROR_IO_PENDING) {
             // Actual error, not an asynchronous completion.
-            _request.report().error(u"error opening URL %s: %s", url, WinErrorMessage(err));
+            _request.report().error(u"error opening URL %s: %s", url, WinErrorMessage(::GetLastError()));
             return false;
         }
-        // Else, asynchronous completion. The status callback INTERNET_STATUS_HANDLE_CREATED will provide
-        // the handle value and the callback INTERNET_STATUS_REQUEST_COMPLETE will signal the final status.
     }
     else {
         // This is an HTTP(S) case that InternetOpenUrl() cannot handle.
         // We need to split the URL.
         const URL u(url);
+        uint16_t port = u.getPort();
         _host = u.getHost();
         _user = u.getUserName();
         _pass = u.getPassword();
-        uint16_t port = u.getPort();
+        _path = u.getPath();
+        const UString query (u.getQuery());
+        if (!query.empty()) {
+            _path.append(u'?');
+            _path.append(query);
+        }
         if (port == 0) {
             // Use default port.
             port = _use_https ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT;
@@ -355,90 +455,248 @@ bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, c
         }
 
         // Connect to the host.
-        _async_op = AsyncInternetConnect;
+        calling(AsyncInternetConnect);
         _inet_connect = ::InternetConnectW(_inet, _host.wc_str(), port,
                                            _user.empty() ? nullptr : _user.wc_str(),
                                            _pass.empty() ? nullptr : _pass.wc_str(),
                                            INTERNET_SERVICE_HTTP, _url_flags, ::DWORD_PTR(this));
-        ::DWORD err = ::GetLastError();
         if (_inet_connect != nullptr) {
-            // Synchronous completion, simulate an asynchronous one.
-            _async_result.emplace();
-            _async_result->dwResult = true;  // success
-            _async_result->dwError = ERROR_SUCCESS;
-            _request.reactor().signalEvent(_event);
+            synchronousCompletion();
         }
-        else if (err != ERROR_IO_PENDING) {
+        else if (::GetLastError() != ERROR_IO_PENDING) {
             // Actual error, not an asynchronous completion.
-            _request.report().error(u"error connecting to host %s: %s", _host, WinErrorMessage(err));
+            _request.report().error(u"error connecting to host %s: %s", _host, WinErrorMessage(::GetLastError()));
             return false;
         }
-        // Else, asynchronous completion. The status callback INTERNET_STATUS_HANDLE_CREATED will provide
-        // the handle value and the callback INTERNET_STATUS_REQUEST_COMPLETE will signal the final status.
     }
 
-    /*@@@@
+    return true;
+}
 
 
-            // Build the request.
-            const wchar_t* accept_types[] = {L"*SLASH*", nullptr};
-            UString path(url.getPath());
-            UString query(url.getQuery());
-            if (!query.empty()) {
-                path.append(u'?');
-                path.append(query);
-            }
-            _inet_request = ::HttpOpenRequestW(_inet_connect, use_post ? L"POST" : L"GET", path.wc_str(), nullptr, nullptr, accept_types, flags | INTERNET_FLAG_RELOAD, 0);
-            if (_inet_request == nullptr) {
-                error(u"error opening request to " + _previous_url);
-                clear();
-                return false;
-            }
+//----------------------------------------------------------------------------
+// Start a receive operation. Complete the request on error.
+//----------------------------------------------------------------------------
 
-            // Set additional insecure flags after HttpOpenRequest() and before HttpSendRequest().
-            if (use_https && use_insecure) {
-                // Get current security flags.
-                ::DWORD cur_flags = 0;
-                ::DWORD ret_size = ::DWORD(sizeof(cur_flags));
-                if (!::InternetQueryOptionW(_inet_request, INTERNET_OPTION_SECURITY_FLAGS, &cur_flags, &ret_size)) {
-                    error(u"error getting security flags on HTTP request");
-                    clear();
-                    return false;
-                }
-                // Now add other insecure flags.
-                cur_flags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID | SECURITY_FLAG_IGNORE_REVOCATION | SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-                if (!::InternetSetOptionW(_inet_request, INTERNET_OPTION_SECURITY_FLAGS, &cur_flags, ::DWORD(sizeof(cur_flags)))) {
-                    error(u"error setting insecure mode");
-                    clear();
-                    return false;
-                }
-            }
+void ts::ReactiveWebRequest::Guts::startReceive()
+{
+    // Use a new receive buffer. The shared pointer will be left to the receive handler class later.
+    _received_data = std::make_shared<ByteBlock>(_buffer_size);
 
-            // POST data to send. HttpSendRequestW needs a non-const pointer but the data are unmodified.
-            void* post_data = nullptr;
-            ::DWORD post_size = 0;
-            if (use_post) {
-                post_data = const_cast<uint8_t*>(_request.args().postData().data());
-                post_size = ::DWORD(_request.args().postData().size());
-            }
+    // The received size will be asynchronously set by InternetReadFile().
+    _received_size = 0;
 
-            // Send the request.
-            if (!::HttpSendRequestW(_inet_request, header_address, header_length, post_data, post_size)) {
-                error(u"error sending request to " + _previous_url);
-                clear();
-                return false;
-            }
+    // Start the asynchronous data reception.
+    calling(AsyncInternetReadFile);
+    if (::InternetReadFile(_inet_request, _received_data->data(), ::DWORD(_received_data->size()), &_received_size)) {
+        synchronousCompletion();
+    }
+    else {
+        const ::DWORD err = ::GetLastError();
+        if (err != ERROR_IO_PENDING) {
+            // Actual error, not an asynchronous completion.
+            _request.report().error(u"error receiving data from %s: %s", _host, WinErrorMessage(err));
+            completeOperation(err);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// WinInet status callback.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::WinInetStatusCallback(::HINTERNET handle, ::DWORD_PTR context, ::DWORD status, void* info, ::DWORD info_size)
+{
+    // The context of the WinInet handle is the address of the request's guts.
+    const auto guts = reinterpret_cast<Guts*>(context);
+    if (guts != nullptr && info != nullptr) {
+        // Warning: this callback can be called in the context of a WinInet internal thread.
+        // Make sure that all accesses in guts are properly synchronized. Do NOT use the report()
+        // of the reactor since most reactors are single-threaded and use a non-thread-safe report.
+        if (status == INTERNET_STATUS_REDIRECT) {
+            // About to redirect to a new URL.
+            std::lock_guard<std::mutex> lock(guts->_mutex);
+            guts->_last_url.emplace(static_cast<::WCHAR*>(info), size_t(info_size));
+            guts->_request.reactor().signalEvent(guts->_event);
+        }
+        else if (status == INTERNET_STATUS_HANDLE_CREATED && info_size >= sizeof(::HINTERNET)) {
+            // Intermediate phase where a handle is created.
+            std::lock_guard<std::mutex> lock(guts->_mutex);
+            guts->_last_handle = *static_cast<::HINTERNET*>(info);
+            guts->_request.reactor().signalEvent(guts->_event);
+        }
+        else if (status == INTERNET_STATUS_REQUEST_COMPLETE && info_size >= sizeof(::INTERNET_ASYNC_RESULT)) {
+            // An asynchronous operation is complete.
+            std::lock_guard<std::mutex> lock(guts->_mutex);
+            guts->_async_result = *static_cast<::INTERNET_ASYNC_RESULT*>(info);
+            guts->_request.reactor().signalEvent(guts->_event);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Handle a user-defined event in a Reactor.
+//----------------------------------------------------------------------------
+
+void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
+{
+    // Filter events.
+    if (id != _event) {
+        return;
+    }
+
+    // Local copies of a completion values, outside lock.
+    std::optional<UString> url;
+    std::optional<::HINTERNET> handle;
+    std::optional<::INTERNET_ASYNC_RESULT> result;
+
+    // Process data from the WinInet status callback under lock.
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        url.swap(_last_url);
+        handle.swap(_last_handle);
+        result.swap(_async_result);
+    }
+
+    // Abort the overall operation only if no asynchronous operation is in progress (or it just completed).
+    if (_aborting && (_async_op == AsyncNone || _async_result.has_value())) {
+        completeOperation(SYS_CANCELED);
+        return;
+    }
+
+    // Process URL redirection.
+    if (url.has_value() && !url->empty()) {
+        _request.report().debug(u"redirected to %s", *url);
+        _request._status.setFinalURL(*url);
+    }
+
+    // Process asynchronously received handles.
+    if (handle.has_value()) {
+        _request.reactor().trace(u"%s handle asynchronously received: @%X", AsyncName(_async_op), uintptr_t(*handle));
+        if (_async_op == AsyncInternetOpenUrl || _async_op == AsyncHttpOpenRequest) {
+            _inet_request = *handle;
+        }
+        else if (_async_op == AsyncInternetConnect) {
+            _inet_connect = *handle;
+        }
+    }
+
+    // Process asynchronous operation completion.
+    if (result.has_value()) {
+        _request.reactor().trace(u"processing %s completion", AsyncName(_async_op));
+
+        // No more operation in progress.
+        const AsyncOp op = _async_op;
+        _async_op = AsyncNone;
+
+        // If the asynchronous operation failed, terminate the request now.
+        if (result->dwResult == 0 && !SysSuccess(result->dwError)) {
+            _request.report().error(u"error downloading %s: %s", _request._status.finalURL(), WinErrorMessage(result->dwError));
+            completeOperation(result->dwError);
+            return;
         }
 
-        // Send the response headers to the WebRequest object.
-        // Do not expect any response header from "file:" URL.
-        if (!_previous_url.starts_with(u"file:")) {
-            transmitResponseHeaders();
+        // Process transfer progress.
+        switch (op) {
+            case AsyncInternetConnect: {
+                // Build the request.
+                static const wchar_t* accept_types[] = {L"*/*", nullptr};
+                calling(AsyncHttpOpenRequest);
+                _inet_request = ::HttpOpenRequestW(_inet_connect, _use_post ? L"POST" : L"GET", _path.wc_str(), nullptr, nullptr,
+                                                   accept_types, _url_flags | INTERNET_FLAG_RELOAD, ::DWORD_PTR(this));
+                ::DWORD err = ::GetLastError();
+                if (_inet_request != nullptr) {
+                    synchronousCompletion();
+                }
+                else if (err != ERROR_IO_PENDING) {
+                    // Actual error, not an asynchronous completion.
+                    _request.report().error(u"error opening request to %s: %s", _request._status.originalURL(), WinErrorMessage(err));
+                    completeOperation(err);
+                }
+                break;
+            }
+            case AsyncHttpOpenRequest: {
+                // Set additional insecure flags after HttpOpenRequest() and before HttpSendRequest().
+                if (_use_https && _use_insecure) {
+                    // Get current security flags.
+                    ::DWORD cur_flags = 0;
+                    ::DWORD ret_size = ::DWORD(sizeof(cur_flags));
+                    if (!::InternetQueryOptionW(_inet_request, INTERNET_OPTION_SECURITY_FLAGS, &cur_flags, &ret_size)) {
+                        ::DWORD err = ::GetLastError();
+                        _request.report().error(u"error getting security flags on HTTP request: %s", WinErrorMessage(err));
+                        completeOperation(err);
+                        return;
+                    }
+                    // Now add other insecure flags.
+                    cur_flags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID | SECURITY_FLAG_IGNORE_REVOCATION | SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+                    if (!::InternetSetOptionW(_inet_request, INTERNET_OPTION_SECURITY_FLAGS, &cur_flags, ::DWORD(sizeof(cur_flags)))) {
+                        ::DWORD err = ::GetLastError();
+                        _request.report().error(u"error setting insecure mode on HTTPS request: %s", WinErrorMessage(err));
+                        completeOperation(err);
+                        return;
+                    }
+                }
+
+                // POST data to send. HttpSendRequestW needs a non-const pointer but the data are unmodified.
+                void* post_data = nullptr;
+                ::DWORD post_size = 0;
+                if (_use_post) {
+                    post_data = const_cast<uint8_t*>(_request.args().postData().data());
+                    post_size = ::DWORD(_request.args().postData().size());
+                }
+
+                // Send the request.
+                calling(AsyncHttpSendRequest);
+                if (!::HttpSendRequestW(_inet_request, _headers_addr, _headers_len, post_data, post_size)) {
+                    ::DWORD err = ::GetLastError();
+                    _request.report().error(u"error sending HTTP request: %s", WinErrorMessage(err));
+                    completeOperation(err);
+                }
+                break;
+            }
+            case AsyncHttpSendRequest:
+            case AsyncInternetOpenUrl: {
+                // Connection complete either after InternetOpenUrl or InternetConnect/HttpOpenRequest/HttpSendRequest.
+                // Send the response headers to the WebRequest object.
+                transmitResponseHeaders();
+                _open_completed = true;
+                if (_handler != nullptr) {
+                    _handler->handleWebOpen(_request, SYS_SUCCESS, _handler_data);
+                }
+
+                // Start receiving the content.
+                startReceive();
+                break;
+            }
+            case AsyncInternetReadFile: {
+                if (_received_size == 0) {
+                    // Successful reception of zero bytes means end of file.
+                    completeOperation(SYS_EOF);
+                }
+                else {
+                    // Adjust received size.
+                    _received_data->resize(size_t(_received_size));
+                    _request._status.addContentSize(_received_data->size());
+                    // Pass data to the application.
+                    if (_handler != nullptr) {
+                        _handler->handleWebReceive(_request, _received_data, SYS_SUCCESS, _handler_data);
+                    }
+                    // Let the ownership of the shared pointer to the application.
+                    _received_data.reset();
+                    // Start next receive operation.
+                    startReceive();
+                }
+                break;
+            }
+            case AsyncNone:
+            default: {
+                _request.report().debug(u"completion of unexpected asynchronous operation: %d", op);
+                break;
+            }
         }
-
-    @@@*/
-
-    return false; //@@@
+    }
 }
 
 
@@ -482,81 +740,6 @@ void ts::ReactiveWebRequest::Guts::transmitResponseHeaders()
 
 
 //----------------------------------------------------------------------------
-// WinInet status callback.
-//----------------------------------------------------------------------------
-
-void ts::ReactiveWebRequest::Guts::WinInetStatusCallback(::HINTERNET handle, ::DWORD_PTR context, ::DWORD status, void* info, ::DWORD info_size)
-{
-    // The context of the WinInet handle is the address of the request's guts.
-    const auto guts = reinterpret_cast<Guts*>(context);
-    if (guts != nullptr && info != nullptr) {
-        // Warning: this callback can be called in the context of a WinInet internal thread.
-        // Make sure that all accesses in guts are properly synchronized. Do NOT use the report()
-        // of the reactor since most reactors are single-threaded and use a non-thread-safe report.
-        if (status == INTERNET_STATUS_REDIRECT) {
-            // About to redirect to a new URL.
-            std::lock_guard<std::mutex> lock(guts->_mutex);
-            guts->_last_url.emplace(static_cast<::WCHAR*>(info), size_t(info_size));
-            guts->_request.reactor().signalEvent(guts->_event);
-        }
-        else if (status == INTERNET_STATUS_HANDLE_CREATED && info_size >= sizeof(::INTERNET_ASYNC_RESULT)) {
-            // Intermediate phase where a handle is created. We can directly update the handle in the Guts
-            // because the handles are volatile and this callback is invoked when the corresponding handle
-            // in Guts is unused (because it is being created).
-            const ::HINTERNET h = ::HINTERNET(static_cast<::INTERNET_ASYNC_RESULT*>(info)->dwResult);
-            if (guts->_async_op == AsyncInternetOpenUrl || guts->_async_op == AsyncHttpOpenRequest) {
-                guts->_inet_request = h;
-            }
-            else if (guts->_async_op == AsyncInternetConnect) {
-                guts->_inet_connect = h;
-            }
-            else {
-                // Shouldn't get there.
-                assert(false);
-            }
-        }
-        else if (status == INTERNET_STATUS_REQUEST_COMPLETE && info_size >= sizeof(::INTERNET_ASYNC_RESULT)) {
-            // An asynchronous operation is complete.
-            std::lock_guard<std::mutex> lock(guts->_mutex);
-            guts->_async_result = *static_cast<::INTERNET_ASYNC_RESULT*>(info);
-            guts->_request.reactor().signalEvent(guts->_event);
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Handle a user-defined event in a Reactor.
-//----------------------------------------------------------------------------
-
-void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
-{
-    // Filter events.
-    if (id == _event) {
-        // Local copy of a completion status, outside lock.
-        std::optional<::INTERNET_ASYNC_RESULT> result;
-
-        // Process data from the WinInet status callback under lock.
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            result.swap(_async_result);
-            if (!_last_url.has_value()) {
-                if (!_last_url->empty()) {
-                    _request._status.setFinalURL(*_last_url);
-                }
-                _last_url.reset();
-            }
-        }
-
-        // Process asynchronous request completion.
-        if (result.has_value()) {
-            //@@@
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Abort the operation of receiving data from the web request.
 //----------------------------------------------------------------------------
 
@@ -567,5 +750,21 @@ bool ts::ReactiveWebRequest::abort(bool silent)
 
 bool ts::ReactiveWebRequest::Guts::abort(bool silent)
 {
-    return false; //@@@
+    if (_inet == nullptr) {
+        _request.report().log(SilentLevel(silent), u"no transfer in progress, cannot abort");
+        return false;
+    }
+    else {
+        _aborting = true;
+        if (_async_op == AsyncNone) {
+            // No asynchronous operation in progress, abort in user event reactor handler.
+            _request.reactor().signalEvent(_event);
+        }
+        else {
+            // Closing the main Internet handle should propagate the abort on current asynchronous operation.
+            ::InternetCloseHandle(_inet);
+            _inet = nullptr;
+        }
+        return true;
+    }
 }

@@ -326,11 +326,15 @@ TSUNIT_DEFINE_TEST(Reactive)
     ts::ReactiveWebRequest request(reactor);
     HandlerWeb test(request);
 
+    const ts::UString url(ts::GetEnvironment(u"TSUNIT_REACTIVE_WEB_URL", u"http://tsduck.io"));
+    const size_t buffer_size = ts::GetIntEnvironment(u"TSUNIT_REACTIVE_WEB_BUFFER_SIZE", ts::Device::DEFAULT_RECEIVE_BUFFER_SIZE);
+    debug() << "WebRequestTest::Reactive: downloading " << url << ", buffer size: " << buffer_size << std::endl;
+
     TSUNIT_ASSERT(!reactor.isOpen());
     TSUNIT_ASSERT(reactor.open());
     TSUNIT_ASSERT(reactor.isOpen());
 
-    TSUNIT_ASSERT(request.start(&test, u"http://tsduck.io"));
+    TSUNIT_ASSERT(request.start(&test, url, buffer_size));
     TSUNIT_ASSERT(reactor.processEventLoop());
     TSUNIT_ASSERT(test.open_called);
     TSUNIT_ASSERT(test.receive_called);

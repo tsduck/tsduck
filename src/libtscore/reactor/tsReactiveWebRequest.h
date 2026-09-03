@@ -75,10 +75,11 @@ namespace ts {
         //! The transfer is complete when the handler methods handleWebOpen() or handleWebReceive() report an error. The transfer is considered
         //! successful when handleWebReceive() receives the error SYS_EOF.
         //! @param [in] url The complete URL to fetch.
+        //! @param [in] buffer_size Size of input buffers to receive data.
         //! @param [in] user_data A shared pointer which will be passed unmodified to @a handler.
         //! @return True on success, false on error. Success means that the I/O was successfully started.
         //!
-        bool start(ReactiveWebHandlerInterface* handler, const UString& url, const ObjectPtr& user_data = ObjectPtr());
+        bool start(ReactiveWebHandlerInterface* handler, const UString& url, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
         //!
         //! Abort the operation of receiving data from the web request.

@@ -13,5 +13,5 @@
       <AdditionalDependencies>tslibext_foo.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
+
 </Project>

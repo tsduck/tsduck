@@ -98,7 +98,7 @@ namespace ts {
         //! Constructor is accessible to subclasses only.
         //!
         TLSServerBase() = default;
-        
+
     private:
         TLSArgs _tls_args {};
     };
