@@ -12,45 +12,89 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
-#include "tsFeatures.h"
+#include "tsReactiveWebRequest.h"
 
 
 //----------------------------------------------------------------------------
-// Register for options --version and --support.
+// Guts implementation of WebRequest.
+// We use the reactive implementation as portable back-end.
 //----------------------------------------------------------------------------
 
-#if defined(TS_NO_CURL) && !defined(TS_WINDOWS)
-    #define SUPPORT ts::Features::UNSUPPORTED
-#else
-    #define SUPPORT ts::Features::SUPPORTED
-#endif
+class ts::WebRequest::Guts: public ReactiveWebHandlerInterface
+{
+    TS_NOBUILD_NOCOPY(Guts);
+public:
+    // Constructor with a reference to parent WebRequest.
+    Guts(WebRequest& parent) : request(parent) {}
+    virtual ~Guts() override;
 
-TS_REGISTER_FEATURE(u"http", u"Web library", SUPPORT, ts::WebRequest::GetLibraryVersion);
+    WebRequest&        request;
+    Reactor            reactor {&request};
+    ReactiveWebRequest reactive {reactor};
+    bool               open_called = false;
+    int                open_status = SYS_SUCCESS;
+    int                in_status = SYS_SUCCESS;
+    ByteBlockPtr       in_data {};
+    size_t             in_start = 0;
+    std::ofstream      out_file {};
+
+    // Implementation of ReactiveWebHandlerInterface.
+    virtual void handleWebOpen(ReactiveWebRequest&, int, const ObjectPtr&) override;
+    virtual void handleWebReceive(ReactiveWebRequest&, const ByteBlockPtr&, int, const ObjectPtr&) override;
+};
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::WebRequest::WebRequest(Report* report, bool non_blocking) :
-    Device(report, non_blocking)
+ts::WebRequest::WebRequest(Report* report) :
+    ReporterBase(report),
+    _guts(new Guts(*this))
 {
-    allocateGuts();
 }
 
-ts::WebRequest::WebRequest(ReporterBase* delegate, bool non_blocking) :
-    Device(delegate, non_blocking)
+ts::WebRequest::WebRequest(ReporterBase* delegate) :
+    ReporterBase(delegate),
+    _guts(new Guts(*this))
 {
-    allocateGuts();
 }
 
 ts::WebRequest::~WebRequest()
 {
     if (_guts != nullptr) {
-        deleteGuts();
+        delete _guts;
         _guts = nullptr;
     }
-    _args.deleteTemporaryCookiesFile(report());
+}
+
+ts::WebRequest::Guts::~Guts()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Directly delegated methods.
+//----------------------------------------------------------------------------
+
+ts::WebRequestArgs& ts::WebRequest::args()
+{
+    return _guts->reactive.args();
+}
+
+const ts::WebRequestArgs& ts::WebRequest::args() const
+{
+    return _guts->reactive.args();
+}
+
+const ts::WebRequestStatus& ts::WebRequest::status() const
+{
+    return _guts->reactive.status();
+}
+
+bool ts::WebRequest::isOpen() const
+{
+    return _guts->reactive.isOpen();
 }
 
 
@@ -58,24 +102,142 @@ ts::WebRequest::~WebRequest()
 // Open an URL and start the transfer.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::open(const UString& url, IOSB* iosb)
+bool ts::WebRequest::open(const UString& url, size_t buffer_size)
 {
-    if (url.empty()) {
-        report().error(u"no URL specified");
-        return false;
-    }
-
-    if (_is_open) {
+    if (isOpen() || _guts->reactor.isOpen()) {
         report().error(u"internal error, transfer already started, cannot download %s", url);
         return false;
     }
 
-    _status.reset(url);
-    _interrupted = false;
+    // Initialize the internal guts.
+    _guts->open_called = false;
+    _guts->open_status = _guts->in_status = SYS_SUCCESS;
+    _guts->in_data.reset();
+    _guts->in_start = 0;
 
-    // System-specific transfer initialization.
-    _is_open = startTransfer(iosb);
-    return _is_open;
+    if (!_guts->reactor.open()) {
+        return false;
+    }
+
+    // Start the transfer in the reactive environment.
+    if (!_guts->reactive.start(_guts, url, buffer_size)) {
+        _guts->reactor.close();
+    }
+
+    // Loop on events until the open callback is invoked.
+    while (!_guts->open_called) {
+        _guts->reactor.processEventLoop();
+    }
+
+    // Report the open status.
+    const bool status = SysSuccess(_guts->open_status);
+    if (!status) {
+        abort();
+    }
+    SetLastSysErrorCode(_guts->open_status);
+    return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked when the URL is open.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::Guts::handleWebOpen(ReactiveWebRequest& req, int error_code, const ObjectPtr& user_data)
+{
+    open_called = true;
+    open_status = error_code;
+    reactor.exitEventLoop(open_status);
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked when data are received.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::Guts::handleWebReceive(ReactiveWebRequest& req, const ByteBlockPtr& data, int error_code, const ObjectPtr& user_data)
+{
+    in_status = error_code;
+    if (data != nullptr && out_file.is_open()) {
+        // Save data to a file.
+        data->write(out_file);
+    }
+    else if (in_data == nullptr || in_start >= in_data->size()) {
+        // Internal buffer is unused.
+        in_data = data;
+        in_start = 0;
+    }
+    else if (data != nullptr) {
+        // Append to internal buffer.
+        in_data->append(*data);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Receive data.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::receive(void* buffer, size_t max_size, size_t& ret_size)
+{
+    ret_size = 0;
+
+    if (!_guts->reactive.isOpen()) {
+        report().error(u"web request is not open");
+        return false;
+    }
+
+    // Receive data until there are some in the input buffer.
+    while (SysSuccess(_guts->in_status) && (_guts->in_data == nullptr || _guts->in_start >= _guts->in_data->size())) {
+        _guts->reactor.processEventLoop();
+    }
+
+    // If there are some data in the buffer, return them.
+    if (_guts->in_data != nullptr && _guts->in_start < _guts->in_data->size()) {
+        ret_size = std::min(max_size, _guts->in_data->size() - _guts->in_start);
+        MemCopy(buffer, _guts->in_data->data() + _guts->in_start, ret_size);
+        _guts->in_start += ret_size;
+        if (_guts->in_start >= _guts->in_data->size()) {
+            // All buffer is used, drop it.
+            _guts->in_data.reset();
+        }
+        return true;
+    }
+
+    // If there is nothing to receive, EOF is not an error (just ret_size == 0).
+    SetLastSysErrorCode(_guts->in_status);
+    return _guts->in_status == SYS_EOF;
+}
+
+
+//----------------------------------------------------------------------------
+// Close the transfer.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::close()
+{
+    // Wait for completion of all I/O.
+    abort();
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Abort a transfer in progress.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::abort()
+{
+    if (_guts->reactor.isOpen()) {
+        // Abort all I/O.
+        _guts->reactive.abort(true);
+        // Wait for an error, which can be EOF if the transfer was already completed.
+        while (SysSuccess(_guts->in_status)) {
+            _guts->reactor.processEventLoop();
+        }
+        // Close the reactor.
+        _guts->reactor.close(true);
+    }
 }
 
 
@@ -83,47 +245,25 @@ bool ts::WebRequest::open(const UString& url, IOSB* iosb)
 // Download the content of the URL as binary data.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunk_size)
+bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlockPtr& data, size_t chunk_size)
 {
-    data.clear();
-
-    // The request must be in blocking mode.
-    if (!checkNonBlocking(false, u"WebRequest::downloadBinaryContent")) {
-        return false;
-    }
+    // Abort current transfer, if any.
+    abort();
+    data = nullptr;
 
     // Transfer initialization.
-    if (!open(url)) {
+    if (!open(url, chunk_size)) {
         return false;
     }
 
-    // Initialize download buffers.
-    size_t received_size = 0;
-    data.reserve(_status.announcedContentSize());
-    data.resize(chunk_size);
-    bool success = true;
-
-    for (;;) {
-        // Transfer one chunk.
-        size_t this_size = 0;
-        success = receive(data.data() + received_size, data.size() - received_size, this_size);
-        received_size += std::min(this_size, data.size() - received_size);
-
-        // Error or end of transfer.
-        if (!success || this_size == 0) {
-            break;
-        }
-
-        // Enlarge the buffer for next chunk.
-        // Don't do that too often in case of very short transfers.
-        if (data.size() - received_size < chunk_size / 2) {
-            data.resize(received_size + chunk_size);
-        }
+    // Receive data in the buffer.
+    while (SysSuccess(_guts->in_status)) {
+        _guts->reactor.processEventLoop();
     }
 
-    // Resize data buffer to actually transfered size.
-    data.resize(received_size);
-    return close() && success;
+    // Return the data.
+    data.swap(_guts->in_data);
+    return _guts->in_status == SYS_EOF;
 }
 
 
@@ -134,10 +274,10 @@ bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlock& data, 
 bool ts::WebRequest::downloadTextContent(const UString& url, UString& text, size_t chunk_size)
 {
     // Download the content as raw binary data.
-    ByteBlock data;
-    if (downloadBinaryContent(url, data, chunk_size)) {
+    ByteBlockPtr data;
+    if (downloadBinaryContent(url, data, chunk_size) && data != nullptr) {
         // Convert to UTF-8.
-        text.assignFromUTF8(reinterpret_cast<const char*>(data.data()), data.size());
+        text.assignFromUTF8(reinterpret_cast<const char*>(data->data()), data->size());
         // Remove all CR, just keep the LF.
         text.remove(u'\r');
         return true;
@@ -156,46 +296,35 @@ bool ts::WebRequest::downloadTextContent(const UString& url, UString& text, size
 
 bool ts::WebRequest::downloadFile(const UString& url, const fs::path& file_name, size_t chunk_size)
 {
-    // The request must be in blocking mode.
-    if (!checkNonBlocking(false, u"WebRequest::downloadFile")) {
+    // Abort current transfer, if any.
+    abort();
+
+    // Create the output file.
+    _guts->out_file.open(file_name, std::ios::out | std::ios::binary);
+    if (!_guts->out_file) {
+        report().error(u"error creating file %s", file_name);
         return false;
     }
 
     // Transfer initialization.
-    if (!open(url)) {
+    if (!open(url, chunk_size)) {
+        _guts->out_file.close();
         return false;
     }
 
-    // Create the output file.
-    std::ofstream file(file_name, std::ios::out | std::ios::binary);
-    if (!file) {
-        report().error(u"error creating file %s", file_name);
-        close();
-        return false;
+    // Receive data in the file.
+    while (SysSuccess(_guts->in_status)) {
+        _guts->reactor.processEventLoop();
     }
 
-    std::vector<char> buffer(chunk_size);
-    bool success = true;
-
-    for (;;) {
-        // Transfer one chunk.
-        size_t thisSize = 0;
-        success = receive(buffer.data(), buffer.size(), thisSize);
-
-        // Error or end of transfer.
-        if (!success || thisSize == 0) {
-            break;
-        }
-
-        file.write(buffer.data(), thisSize);
-        if (!file) {
-            report().error(u"error saving download to %s", file_name);
-            success = false;
-            break;
-        }
+    // Check file errors.
+    const bool file_error = !_guts->out_file;
+    if (file_error) {
+        report().error(u"error writing to file %s", file_name);
     }
 
-    // Resize data buffer to actually transfered size.
-    file.close();
-    return close() && success;
+    // Close the reactor and file.
+    _guts->reactor.close(true);
+    _guts->out_file.close();
+    return SysSuccess(_guts->in_status) && !file_error;
 }

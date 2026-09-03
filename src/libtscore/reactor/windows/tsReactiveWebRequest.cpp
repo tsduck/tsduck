@@ -23,6 +23,7 @@
 #include "tsWinUtils.h"
 #include "tsWinModuleInfo.h"
 #include "tsURL.h"
+#include "tsFeatures.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <wininet.h>
@@ -32,6 +33,13 @@
 #if defined(TS_MSC)
     #pragma comment(lib, "Wininet.lib")
 #endif
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+TS_REGISTER_FEATURE(u"http", u"Web library", ts::Features::SUPPORTED, ts::ReactiveWebRequest::GetLibraryVersion);
 
 
 //----------------------------------------------------------------------------
@@ -56,6 +64,9 @@ public:
     // Constructor with a reference to parent WebRequest.
     Guts(ReactiveWebRequest& request);
     virtual ~Guts() override;
+
+    // Check if transfer is open.
+    bool isOpen() const { return _inet != nullptr && !_aborting; }
 
     // Close and cleanup everything.
     void reset();
@@ -736,6 +747,16 @@ void ts::ReactiveWebRequest::Guts::transmitResponseHeaders()
 
     // Pass the headers to the WebRequest.
     _request._status.processReponseHeaders(headers, _request.report());
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the transfer is in progress.
+//----------------------------------------------------------------------------
+
+bool ts::ReactiveWebRequest::isOpen() const
+{
+    return _guts->isOpen();
 }
 
 

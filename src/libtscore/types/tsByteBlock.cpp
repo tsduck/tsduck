@@ -61,6 +61,16 @@ ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
 }
 
 //----------------------------------------------------------------------------
+// Get a reference to an empty ByteBlock.
+//----------------------------------------------------------------------------
+
+const ts::ByteBlock& ts::ByteBlock::EMPTY()
+{
+    static const ByteBlock data;
+    return data;
+}
+
+//----------------------------------------------------------------------------
 // Find the first occurrence of a byte value in a byte block.
 //----------------------------------------------------------------------------
 

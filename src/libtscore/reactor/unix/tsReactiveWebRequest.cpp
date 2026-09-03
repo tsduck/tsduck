@@ -26,6 +26,20 @@
 
 #include "tsReactiveWebRequest.h"
 #include "tsEnvironment.h"
+#include "tsFeatures.h"
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_CURL)
+#define SUPPORT ts::Features::UNSUPPORTED
+#else
+#define SUPPORT ts::Features::SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"http", u"Web library", SUPPORT, ts::ReactiveWebRequest::GetLibraryVersion);
 
 
 //----------------------------------------------------------------------------
@@ -143,18 +157,18 @@ class ts::ReactiveWebRequest::Guts: private ReactorHandlerInterface
 {
     TS_NOBUILD_NOCOPY(Guts);
 public:
-    // Constructor with a reference to parent WebRequest.
+    // Constructor with a reference to parent ReactiveWebRequest.
     Guts(ReactiveWebRequest& request);
     virtual ~Guts() override;
 
     // Check if transfer is open.
-    bool isOpen() const { return _curlm != nullptr; }
+    bool isOpen() const { return _curlm != nullptr && !_aborted; }
 
     // Close and cleanup everything. If 'full' is true, also reset fields which are set for opening an URL.
     void reset(bool full);
 
     // Start the transfer operation.
-    bool start(HandlerType* handler, const ObjectPtr& user_data);
+    bool start(HandlerType* handler, size_t buffer_size, const ObjectPtr& user_data);
 
     // Abort the current transfer.
     bool abort(bool silent);
@@ -170,6 +184,7 @@ private:
     int                 _completion_code = SYS_SUCCESS; // Error code of open operation.
     HandlerType*        _handler = nullptr;             // Application-defined handler.
     ObjectPtr           _handler_data {};               // User-data for _handler.
+    size_t              _buffer_size = 0;               // Default size for receive buffer.
     ::CURLM*            _curlm = nullptr;               // "curl multi" handler, for global curl access.
     ::CURL*             _curl = nullptr;                // "curl easy" handler, for one transfer.
     ::curl_slist*       _headers = nullptr;             // Request headers.
@@ -269,6 +284,7 @@ void ts::ReactiveWebRequest::Guts::reset(bool full)
         _retry_timer.invalidate();
     }
 
+    _buffer_size = 0;
     _push_transfer = _open_done = _open_called = _completed = false;
     _completion_code = SYS_SUCCESS;
     _received_data.reset();
@@ -351,7 +367,7 @@ bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const U
     }
     else {
         _status.reset(url);
-        return _guts->start(handler, user_data);
+        return _guts->start(handler, buffer_size, user_data);
     }
 }
 
@@ -360,10 +376,13 @@ bool ts::ReactiveWebRequest::start(ReactiveWebHandlerInterface* handler, const U
 // Start the open operation in Guts.
 //----------------------------------------------------------------------------
 
-bool ts::ReactiveWebRequest::Guts::start(HandlerType* handler, const ObjectPtr& user_data)
+bool ts::ReactiveWebRequest::Guts::start(HandlerType* handler, size_t buffer_size, const ObjectPtr& user_data)
 {
     _handler = handler;
     _handler_data = user_data;
+
+    // Enforce a buffer size within curl's limits.
+    _buffer_size = std::min<size_t>(std::max<size_t>(buffer_size, 1024), CURL_MAX_READ_SIZE);
 
     // Get retry count and interval for the URL's host.
     _retries = 0;
@@ -490,6 +509,9 @@ bool ts::ReactiveWebRequest::Guts::startTransfer()
 
         // Disable signals to avoid interferences between SIGALRM and timeouts.
         TS_EASY_OPT(CURLOPT_NOSIGNAL, 1L);
+
+        // Read buffer size.
+        TS_EASY_OPT(CURLOPT_BUFFERSIZE, long(_buffer_size));
 
         // Set the response callbacks.
         TS_EASY_OPT(CURLOPT_WRITEFUNCTION, &Guts::CurlWriteCallback);
@@ -914,6 +936,16 @@ void ts::ReactiveWebRequest::Guts::terminateTransfer(int error_code)
 
 
 //----------------------------------------------------------------------------
+// Check if the transfer is in progress.
+//----------------------------------------------------------------------------
+
+bool ts::ReactiveWebRequest::isOpen() const
+{
+    return _guts->isOpen();
+}
+
+
+//----------------------------------------------------------------------------
 // Abort the operation of receiving data from the web request.
 //----------------------------------------------------------------------------
 
@@ -940,7 +972,7 @@ bool ts::ReactiveWebRequest::Guts::abort(bool silent)
 // Get the version of the underlying HTTP library.
 //----------------------------------------------------------------------------
 
-ts::UString ts::WebRequest::GetLibraryVersion()
+ts::UString ts::ReactiveWebRequest::GetLibraryVersion()
 {
     UString result(u"libcurl");
 

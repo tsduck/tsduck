@@ -95,7 +95,7 @@ namespace ts {
         //! Valid after call(), until next call() or this instance is destroyed.
         //! @return A constant reference to binary response.
         //!
-        const ByteBlock& response() const { return _response; }
+        const ByteBlock& response() const { return _response != nullptr ? *_response : ByteBlock::EMPTY(); }
 
         //!
         //! Get the response in text form (interpreted from UTF-8).
@@ -114,9 +114,9 @@ namespace ts {
         bool getResponseJSON(json::ValuePtr& value) const;
 
     private:
-        RestArgs   _args;
-        WebRequest _request {this};
-        ByteBlock  _response {};
-        UString    _accept {};
+        RestArgs     _args;
+        WebRequest   _request {this};
+        ByteBlockPtr _response {};
+        UString      _accept {};
     };
 }

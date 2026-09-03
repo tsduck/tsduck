@@ -82,6 +82,12 @@ namespace ts {
         bool start(ReactiveWebHandlerInterface* handler, const UString& url, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr());
 
         //!
+        //! Check if the transfer is in progress.
+        //! @return True if the transfer is in progress.
+        //!
+        bool isOpen() const;
+
+        //!
         //! Abort the operation of receiving data from the web request.
         //! If the transfer is in progress, the handler methods handleWebOpen() or handleWebReceive() report the error SYS_CANCELED.
         //! @param [in] silent If true, do not report errors through the logger.

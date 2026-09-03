@@ -88,9 +88,14 @@ bool ts::RestClient::call(const UString& api, const UString& post_data)
 
 void ts::RestClient::getResponseText(UString& response) const
 {
-    response.assignFromUTF8(reinterpret_cast<const char*>(_response.data()), _response.size());
-    response.remove(u'\r');
-    response.trim(false, true);
+    if (_response == nullptr) {
+        response.clear();
+    }
+    else {
+        response.assignFromUTF8(reinterpret_cast<const char*>(_response->data()), _response->size());
+        response.remove(u'\r');
+        response.trim(false, true);
+    }
 }
 
 

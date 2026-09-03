@@ -94,8 +94,9 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     ts::WebRequest request(&report());
 
     // Test binary download
-    ts::ByteBlock data;
+    ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(url, data));
+    TSUNIT_ASSERT(data != nullptr);
 
     debug() << "WebRequestTest::testURL:" << std::endl
             << "    Original URL: " << request.status().originalURL() << std::endl
@@ -103,7 +104,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
             << "    HTTP status: " << request.status().httpStatus() << std::endl
             << "    Content size: " << request.status().contentSize() << std::endl;
 
-    TSUNIT_ASSERT(!data.empty());
+    TSUNIT_ASSERT(!data->empty());
     TSUNIT_EQUAL(url, request.status().originalURL());
     TSUNIT_ASSERT(!request.status().finalURL().empty());
     if (expectRedirection) {
@@ -152,7 +153,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     debug() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
     TSUNIT_ASSERT(!fileContent.empty());
     if (expectInvariant) {
-        TSUNIT_ASSERT(fileContent == data);
+        TSUNIT_ASSERT(fileContent == *data);
     }
 }
 
@@ -193,8 +194,9 @@ TSUNIT_DEFINE_TEST(NoRedirection)
     ts::WebRequest request(&report());
     request.args().setAutoRedirect(false);
 
-    ts::ByteBlock data;
+    ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(u"http://www.github.com/", data));
+    TSUNIT_ASSERT(data != nullptr);
 
     debug() << "WebRequestTest::testNoRedirection:" << std::endl
             << "    Original URL: " << request.status().originalURL() << std::endl
@@ -212,7 +214,7 @@ TSUNIT_DEFINE_TEST(NonExistentHost)
     ts::ReportBuffer<ts::ThreadSafety::None> rep;
     ts::WebRequest request(&rep);
 
-    ts::ByteBlock data;
+    ts::ByteBlockPtr data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://non.existent.fake-domain/", data));
 
     debug() << "WebRequestTest::testNonExistentHost: " << rep.messages() << std::endl;
@@ -223,7 +225,7 @@ TSUNIT_DEFINE_TEST(InvalidURL)
     ts::ReportBuffer<ts::ThreadSafety::None> rep;
     ts::WebRequest request(&rep);
 
-    ts::ByteBlock data;
+    ts::ByteBlockPtr data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"pouette://tagada/tsoin/tsoin", data));
 
     debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;

@@ -47,6 +47,12 @@ namespace ts {
         using ByteVector = std::vector<uint8_t>;
 
         //!
+        //! Get a reference to an empty ByteBlock.
+        //! @return A constant reference to an empty ByteBlock.
+        //!
+        TSCOREDLL static const ByteBlock& EMPTY();
+
+        //!
         //! Default constructor.
         //! @param [in] size Initial size in bytes of the block.
         //!
