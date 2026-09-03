@@ -86,6 +86,9 @@ private:
     ::DWORD              _post_size = 0;
     ::DWORD              _url_flags = 0;
     AsyncOp              _async_op = AsyncNone;    // Current asynchronous operation.
+    UString              _host {};                 // String buffer for host name (InternetConnectW).
+    UString              _user {};                 // String buffer for user name (InternetConnectW).
+    UString              _pass {};                 // String buffer for password (InternetConnectW).
     UString              _request_headers {};      // Buffer for all request headers.
     ::WCHAR*             _headers_addr = nullptr;  // Request headers address, for WinInet calls.
     ::DWORD              _headers_len = 0;         // Request headers length, for WinInet calls.
@@ -146,6 +149,9 @@ void ts::ReactiveWebRequest::Guts::reset()
     _post_data = nullptr;
     _post_size = _url_flags = 0;
     _async_op = AsyncNone;
+    _host.clear();
+    _user.clear();
+    _pass.clear();
     _request_headers.clear();
     _headers_addr = nullptr;
     _headers_len = 0;
@@ -328,14 +334,16 @@ bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, c
             _request.report().error(u"error opening URL %s: %s", url, WinErrorMessage(err));
             return false;
         }
+        // Else, asynchronous completion. The status callback INTERNET_STATUS_HANDLE_CREATED will provide
+        // the handle value and the callback INTERNET_STATUS_REQUEST_COMPLETE will signal the final status.
     }
     else {
         // This is an HTTP(S) case that InternetOpenUrl() cannot handle.
         // We need to split the URL.
         const URL u(url);
-        UString host(u.getHost());
-        UString user(u.getUserName());
-        UString pass(u.getPassword());
+        _host = u.getHost();
+        _user = u.getUserName();
+        _pass = u.getPassword();
         uint16_t port = u.getPort();
         if (port == 0) {
             // Use default port.
@@ -347,15 +355,26 @@ bool ts::ReactiveWebRequest::Guts::start(ReactiveWebHandlerInterface* handler, c
         }
 
         // Connect to the host.
-        _inet_connect = ::InternetConnectW(_inet, host.wc_str(), port,
-                                           user.empty() ? nullptr : user.wc_str(),
-                                           pass.empty() ? nullptr : pass.wc_str(),
+        _async_op = AsyncInternetConnect;
+        _inet_connect = ::InternetConnectW(_inet, _host.wc_str(), port,
+                                           _user.empty() ? nullptr : _user.wc_str(),
+                                           _pass.empty() ? nullptr : _pass.wc_str(),
                                            INTERNET_SERVICE_HTTP, _url_flags, ::DWORD_PTR(this));
-        if (_inet_connect == nullptr) {
-            error(u"error connecting to host " + host);
-            clear();
+        ::DWORD err = ::GetLastError();
+        if (_inet_connect != nullptr) {
+            // Synchronous completion, simulate an asynchronous one.
+            _async_result.emplace();
+            _async_result->dwResult = true;  // success
+            _async_result->dwError = ERROR_SUCCESS;
+            _request.reactor().signalEvent(_event);
+        }
+        else if (err != ERROR_IO_PENDING) {
+            // Actual error, not an asynchronous completion.
+            _request.report().error(u"error connecting to host %s: %s", _host, WinErrorMessage(err));
             return false;
         }
+        // Else, asynchronous completion. The status callback INTERNET_STATUS_HANDLE_CREATED will provide
+        // the handle value and the callback INTERNET_STATUS_REQUEST_COMPLETE will signal the final status.
     }
 
     /*@@@@
@@ -484,20 +503,16 @@ void ts::ReactiveWebRequest::Guts::WinInetStatusCallback(::HINTERNET handle, ::D
             // Intermediate phase where a handle is created. We can directly update the handle in the Guts
             // because the handles are volatile and this callback is invoked when the corresponding handle
             // in Guts is unused (because it is being created).
-            const ::HINTERNET handle = ::HINTERNET(static_cast<::INTERNET_ASYNC_RESULT*>(info)->dwResult);
-
-            switch (guts->_async_op) {
-                case AsyncInternetOpenUrl:
-                    _inet_request = handle;
-                    break;
-                case AsyncInternetConnect:
-                case AsyncHttpOpenRequest:
-                case AsyncHttpSendRequest:
-                case AsyncInternetReadFile:
-                case AsyncNone:
-                default:
-                    break;
-                //@@@
+            const ::HINTERNET h = ::HINTERNET(static_cast<::INTERNET_ASYNC_RESULT*>(info)->dwResult);
+            if (guts->_async_op == AsyncInternetOpenUrl || guts->_async_op == AsyncHttpOpenRequest) {
+                guts->_inet_request = h;
+            }
+            else if (guts->_async_op == AsyncInternetConnect) {
+                guts->_inet_connect = h;
+            }
+            else {
+                // Shouldn't get there.
+                assert(false);
             }
         }
         else if (status == INTERNET_STATUS_REQUEST_COMPLETE && info_size >= sizeof(::INTERNET_ASYNC_RESULT)) {
