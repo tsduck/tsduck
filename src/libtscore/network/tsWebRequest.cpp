@@ -109,7 +109,7 @@ bool ts::WebRequest::open(const UString& url, size_t buffer_size)
         return false;
     }
 
-    // Initialize the internal guts.
+    // Initialize the internal guts. Don't reset out_file.
     _guts->open_called = false;
     _guts->open_status = _guts->in_status = SYS_SUCCESS;
     _guts->in_data.reset();
@@ -122,6 +122,7 @@ bool ts::WebRequest::open(const UString& url, size_t buffer_size)
     // Start the transfer in the reactive environment.
     if (!_guts->reactive.start(_guts, url, buffer_size)) {
         _guts->reactor.close();
+        return false;
     }
 
     // Loop on events until the open callback is invoked.
@@ -147,7 +148,9 @@ void ts::WebRequest::Guts::handleWebOpen(ReactiveWebRequest& req, int error_code
 {
     open_called = true;
     open_status = error_code;
-    reactor.exitEventLoop(open_status);
+
+    // Exit event loop at end of open, so that WebRequest::open() can get control back.
+    reactor.exitEventLoop();
 }
 
 
@@ -158,9 +161,15 @@ void ts::WebRequest::Guts::handleWebOpen(ReactiveWebRequest& req, int error_code
 void ts::WebRequest::Guts::handleWebReceive(ReactiveWebRequest& req, const ByteBlockPtr& data, int error_code, const ObjectPtr& user_data)
 {
     in_status = error_code;
+
+    // Collect input data.
     if (data != nullptr && out_file.is_open()) {
         // Save data to a file.
         data->write(out_file);
+        // Report file error.
+        if (!out_file && SysSuccess(in_status)) {
+            in_status = SYS_ERROR;
+        }
     }
     else if (in_data == nullptr || in_start >= in_data->size()) {
         // Internal buffer is unused.
@@ -170,6 +179,11 @@ void ts::WebRequest::Guts::handleWebReceive(ReactiveWebRequest& req, const ByteB
     else if (data != nullptr) {
         // Append to internal buffer.
         in_data->append(*data);
+    }
+
+    // Exit event loop error (including EOF), so that WebRequest::receive() can get control back.
+    if (!SysSuccess(error_code)) {
+        reactor.exitEventLoop(open_status);
     }
 }
 
@@ -187,7 +201,7 @@ bool ts::WebRequest::receive(void* buffer, size_t max_size, size_t& ret_size)
         return false;
     }
 
-    // Receive data until there are some in the input buffer.
+    // Receive data until error or until there are some data in the input buffer.
     while (SysSuccess(_guts->in_status) && (_guts->in_data == nullptr || _guts->in_start >= _guts->in_data->size())) {
         _guts->reactor.processEventLoop();
     }
@@ -317,14 +331,8 @@ bool ts::WebRequest::downloadFile(const UString& url, const fs::path& file_name,
         _guts->reactor.processEventLoop();
     }
 
-    // Check file errors.
-    const bool file_error = !_guts->out_file;
-    if (file_error) {
-        report().error(u"error writing to file %s", file_name);
-    }
-
     // Close the reactor and file.
     _guts->reactor.close(true);
     _guts->out_file.close();
-    return SysSuccess(_guts->in_status) && !file_error;
+    return _guts->in_status == SYS_EOF;
 }

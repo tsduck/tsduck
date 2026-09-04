@@ -204,7 +204,7 @@ private:
     bool continueTransfer(int fd, int event_mask);
 
     // Terminate the transfer and call the application handler.
-    void terminateTransfer(int error_code);
+    void terminateTransfer();
 
     // Build error messages from curl_multi and curl_easy.
     template<typename ENUM> UString message(const UString& title, ENUM code, const char* (*strerror)(ENUM));
@@ -331,17 +331,18 @@ template<typename ENUM>
 ts::UString ts::ReactiveWebRequest::Guts::message(const UString& title, ENUM code, const char* (*strerror)(ENUM))
 {
     UString msg(title);
-    msg.append(u", ");
+    if (!msg.empty()) {
+        msg.append(u", ");
+    }
     const char* err = strerror(code);
     if (err != nullptr && err[0] != 0) {
-        msg.append(UString::FromUTF8(err));
+        msg.format(u"%s", err);
     }
     else {
         msg.format(u"error code %d", int(code));
     }
     if (_error[0] != 0) {
-        msg.append(u", ");
-        msg.append(UString::FromUTF8(_error));
+        msg.format(u", %s", _error);
     }
     return msg;
 }
@@ -618,6 +619,8 @@ bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
     // Execute whatever curl can do without blocking.
     ::CURLMcode mstatus = ::curl_multi_socket_action(_curlm, fd, event_mask, &_running_handles);
     if (mstatus != ::CURLM_OK) {
+        _completed = true;
+        _completion_code = SYS_ERROR;
         _request.report().error(multiMessage(u"curl processing error", mstatus));
         return false;
     }
@@ -643,6 +646,7 @@ bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
                 _completion_code = SYS_ERROR;
                 _request.report().log(severity, u"error downloading %s", _request.status().originalURL());
                 _request.report().log(severity, easyMessage(nullptr, msg->data.result));
+                return false;
             }
             else {
                 // Get HTTP status code and final URL (in case of redirections).
@@ -825,7 +829,9 @@ void ts::ReactiveWebRequest::Guts::handleTimer(Reactor& reactor, EventId id)
         _curl_timers.erase(id);
 
         // Inform curl that a timeout may have elapsed and continue processing.
-        continueTransfer(CURL_SOCKET_TIMEOUT, 0);
+        if (!continueTransfer(CURL_SOCKET_TIMEOUT, 0)) {
+            terminateTransfer();
+        }
     }
 }
 
@@ -841,8 +847,8 @@ void ts::ReactiveWebRequest::Guts::handleReadReady(Reactor& reactor, EventId id,
     // possibly CURL_CSELECT_ERR). However, we need to process all events on the socket at the same time,
     // in and out, while the Reactor separately notifies read and write.
     SysSocketType sock = reactor.getSocket(id);
-    if (sock >= 0) {
-        continueTransfer(sock, 0);
+    if (sock >= 0 && !continueTransfer(sock, 0)) {
+        terminateTransfer();
     }
 }
 
@@ -855,8 +861,8 @@ void ts::ReactiveWebRequest::Guts::handleWriteReady(Reactor& reactor, EventId id
 {
     // See comment in handleReadReady().
     SysSocketType sock = reactor.getSocket(id);
-    if (sock >= 0) {
-        continueTransfer(sock, 0);
+    if (sock >= 0 && !continueTransfer(sock, 0)) {
+        terminateTransfer();
     }
 }
 
@@ -875,14 +881,15 @@ void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
     // Continue curl's transfer. This was requested in a curl's callback but couldn't be done there.
     if (_push_transfer) {
         _push_transfer = false;
-        if (!_aborted && !_completed) {
-            continueTransfer(CURL_SOCKET_TIMEOUT, 0);
+        if (!_aborted && !_completed && !continueTransfer(CURL_SOCKET_TIMEOUT, 0)) {
+            terminateTransfer();
+            return;
         }
     }
 
     // Process aborted request (and return).
     if (_aborted) {
-        terminateTransfer(SYS_CANCELED);
+        terminateTransfer();
         return;
     }
 
@@ -909,7 +916,7 @@ void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
 
     // Report transfer termination.
     if (_completed) {
-        terminateTransfer(_completion_code);
+        terminateTransfer();
     }
 }
 
@@ -918,17 +925,20 @@ void ts::ReactiveWebRequest::Guts::handleUserEvent(Reactor& reactor, EventId id)
 // Terminate the transfer and call the application handler.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveWebRequest::Guts::terminateTransfer(int error_code)
+void ts::ReactiveWebRequest::Guts::terminateTransfer()
 {
+    if (_aborted) {
+        _completion_code = SYS_CANCELED;
+    }
     if (_handler != nullptr) {
         // Terminating the transfer during open means error or successful empty response. We must call the open handler.
         if (!_open_called) {
-            _handler->handleWebOpen(_request, error_code, _handler_data);
+            _handler->handleWebOpen(_request, _completion_code, _handler_data);
         }
         // A successful completion means "end of file" and it must be reported as such.
         // In case of error after open, report that error code.
-        if (_open_called || SysSuccess(error_code)) {
-            _handler->handleWebReceive(_request, nullptr, SysSuccess(error_code) ? SYS_EOF : error_code, _handler_data);
+        if (_open_called || SysSuccess(_completion_code)) {
+            _handler->handleWebReceive(_request, nullptr, SysSuccess(_completion_code) ? SYS_EOF : _completion_code, _handler_data);
         }
     }
     reset(true);

@@ -93,7 +93,8 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 {
     ts::WebRequest request(&report());
 
-    // Test binary download
+    debug() << "WebRequestTest::testURL: Test binary download" << std::endl;
+
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(url, data));
     TSUNIT_ASSERT(data != nullptr);
@@ -114,7 +115,8 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         TSUNIT_ASSERT(request.status().finalURL().starts_with(u"https:"));
     }
 
-    // Test text download.
+    debug() << "WebRequestTest::testURL: Test text download" << std::endl;
+
     if (expectTextContent) {
         ts::UString text;
         TSUNIT_ASSERT(request.downloadTextContent(url, text));
@@ -134,7 +136,8 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         }
     }
 
-    // Test file download
+    debug() << "WebRequestTest::testURL: Test file download" << std::endl;
+
     TSUNIT_ASSERT(!fs::exists(_temp_file_name));
     TSUNIT_ASSERT(request.downloadFile(url, _temp_file_name));
     TSUNIT_ASSERT(fs::exists(_temp_file_name));
