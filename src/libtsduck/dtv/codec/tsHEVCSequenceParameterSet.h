@@ -50,6 +50,18 @@ namespace ts {
         uint8_t chroma() const;
 
         //!
+        //! The SubWidthC variable (see H.265, section 6.2).
+        //! @return The SubWidthC variable.
+        //!
+        uint32_t subWidthC() const;
+
+        //!
+        //! The SubHeightC variable (see H.265, section 6.2).
+        //! @return The SubHeightC variable.
+        //!
+        uint32_t subHeightC() const;
+
+        //!
         //! Frame width in pixels.
         //! @return The frame width in pixels.
         //!

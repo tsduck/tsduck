@@ -30,14 +30,38 @@ uint8_t ts::HEVCSequenceParameterSet::chroma() const
     return valid ? uint8_t(chroma_format_idc) : 0;
 }
 
+uint32_t ts::HEVCSequenceParameterSet::subWidthC() const
+{
+    return chroma() == 1 || chroma() == 2 ? 2 : 1;
+}
+
+uint32_t ts::HEVCSequenceParameterSet::subHeightC() const
+{
+    return chroma() == 1 ? 2 : 1;
+}
+
 uint32_t ts::HEVCSequenceParameterSet::frameWidth() const
 {
-    return valid ? pic_width_in_luma_samples : 0;
+    if (!valid) {
+        return 0;
+    }
+    uint32_t width = pic_width_in_luma_samples;
+    if (conformance_window_flag) {
+        width -= subWidthC() * (conf_win_left_offset + conf_win_right_offset);
+    }
+    return width;
 }
 
 uint32_t ts::HEVCSequenceParameterSet::frameHeight() const
 {
-    return valid ? pic_height_in_luma_samples : 0;
+    if (!valid) {
+        return 0;
+    }
+    uint32_t height = pic_height_in_luma_samples;
+    if (conformance_window_flag) {
+        height -= subHeightC() * (conf_win_top_offset + conf_win_bottom_offset);
+    }
+    return height;
 }
 
 

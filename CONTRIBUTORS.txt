@@ -32,6 +32,7 @@ Christophe Massiot
 Athanasios Oikonomou
 Masayuki Nagamachi
 Frédéric Peignot
+Daniel Piñeiro
 Antti Plathan
 Yannick Potin
 Ubaldo Porcheddu
