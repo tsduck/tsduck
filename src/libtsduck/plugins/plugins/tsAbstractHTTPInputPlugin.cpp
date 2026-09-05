@@ -172,7 +172,11 @@ bool ts::AbstractHTTPInputPlugin::stopTransfer()
 
 bool ts::AbstractHTTPInputPlugin::receiveURL(WebRequest& request, void* buffer, size_t max_size, size_t& ret_size)
 {
+    bool res = request.receive(buffer, max_size, ret_size); //@@@
+    debug(u"received %d bytes, status = %s", ret_size, res); return res; //@@@
+    /*@@@
     return request.receive(buffer, max_size, ret_size);
+    @@@*/
 }
 
 

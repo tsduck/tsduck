@@ -250,6 +250,8 @@ ts::ReactiveWebRequest::Guts::~Guts()
 
 void ts::ReactiveWebRequest::Guts::reset(bool full)
 {
+    _request.report().debug(u"closing reactive web request (full = %s)", full);
+
     for (const auto& id : _curl_timers) {
         _request.reactor().cancelTimer(id);
     }
@@ -656,7 +658,10 @@ bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
                 }
                 char* final_url = nullptr;
                 if (curlGetInfo(severity, u"CURLINFO_EFFECTIVE_URL", CURLINFO_EFFECTIVE_URL, &final_url) && final_url != nullptr) {
-                    _request._status.setFinalURL(UString::FromUTF8(final_url));
+                    // Do not update the final URL if similar to the original one. The reason is that, when auto-redirection is
+                    // disabled, the "effective URL" is the original URL (not redirected) after the final URL has been set from
+                    // a "Location" response header.
+                    _request._status.setFinalURL(UString::FromUTF8(final_url), !_request._args.autoRedirect());
                 }
             }
 

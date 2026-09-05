@@ -55,8 +55,10 @@ namespace ts {
         //!
         //! Set the final URL of the actual download operation.
         //! @param [in] url The final URL.
+        //! @param [in] only_if_different If true, do not set the final URL if @a url is the same value as the original URL.
+        //! If false (the default), the final URL is unconditionally set with the value of @a url.
         //!
-        void setFinalURL(const UString& url) { _final_url = url; }
+        void setFinalURL(const UString& url, bool only_if_different = false);
 
         //!
         //! Process a list of response headers.

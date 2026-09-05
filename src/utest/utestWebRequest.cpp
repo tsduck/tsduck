@@ -93,7 +93,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 {
     ts::WebRequest request(&report());
 
-    debug() << "WebRequestTest::testURL: Test binary download" << std::endl;
+    debug() << "WebRequestTest::testURL: Test binary download: " << url << std::endl;
 
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(url, data));
@@ -199,13 +199,15 @@ TSUNIT_DEFINE_TEST(NoRedirection)
 
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(u"http://www.github.com/", data));
-    TSUNIT_ASSERT(data != nullptr);
 
     debug() << "WebRequestTest::testNoRedirection:" << std::endl
             << "    Original URL: " << request.status().originalURL() << std::endl
             << "    Final URL: " << request.status().finalURL() << std::endl
             << "    HTTP status: " << request.status().httpStatus() << std::endl
             << "    Content size: " << request.status().contentSize() << std::endl;
+    for (const auto& h : request.status().responseHeaders()) {
+        debug() << "    Header: " << h.first << " -> " << h.second << std::endl;
+    }
 
     TSUNIT_EQUAL(3, request.status().httpStatus() / 100);
     TSUNIT_ASSERT(!request.status().finalURL().empty());

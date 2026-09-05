@@ -79,6 +79,18 @@ ts::UString ts::WebRequestStatus::mimeType(bool simple, bool lowercase) const
 
 
 //----------------------------------------------------------------------------
+// Set the final URL of the actual download operation.
+//----------------------------------------------------------------------------
+
+void ts::WebRequestStatus::setFinalURL(const UString& url, bool only_if_different)
+{
+    if (!only_if_different || !url.similar(_original_url)) {
+        _final_url = url;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Process a list of response headers.
 //----------------------------------------------------------------------------
 
@@ -125,7 +137,7 @@ void ts::WebRequestStatus::processReponseHeaders(const UString& text, Report& re
 
             // Process specific headers.
             if (name.similar(u"Location")) {
-                _final_url = value;
+                setFinalURL(value);
                 report.debug(u"redirected to %s", _final_url);
             }
             else if (name.similar(u"Content-length") && value.toInteger(size)) {
