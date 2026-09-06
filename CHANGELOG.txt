@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4782 (August 2026)
+VERSION 3.45-4788 (September 2026)
 
 [NEW] New commands and plugins:
 
@@ -45,12 +45,14 @@ VERSION 3.45-4782 (August 2026)
     system descriptor.
   * Fixed issue #1742:  In plugin "spliceinject",  a cue was not injected  when
     close to the PTS wrap-down point at 2^33.
-  * HEVC frame dimensions now apply SPS conformance window offsets instead of
+  * HEVC  frame  dimensions now apply SPS conformance window offsets instead of
     always reporting coded dimensions.
   * In input plugin "hls" with option --save-files, the playlist files were not
     correctly saved when their URL contained a query (after '?').  This problem
     affected playlist files only.  The HLS segments were correctly saved in all
     cases.
+  * In plugin "eitinject", when deleting an event (metadata attribute="delete")
+    a crash could happen in rare cases.
 
 [REG] Regressions:
 

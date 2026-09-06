@@ -141,7 +141,6 @@ bool ts::InfluxRequest::send()
     args().setRequestHeader(u"Authorization", u"Token " + _args.token);
     args().setRequestHeader(u"Accept", u"application/json");
     args().setPostData(_builder, u"text/plain; charset=utf-8");
-    report().debug(u"@@@@ sending InFlux request");
 
     // Send the request.
     UString response;

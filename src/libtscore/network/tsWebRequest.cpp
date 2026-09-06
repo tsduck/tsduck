@@ -118,13 +118,11 @@ bool ts::WebRequest::open(const UString& url, size_t buffer_size)
     _guts->recv_start = 0;
 
     if (!_guts->reactor.open()) {
-        report().debug(u"@@@@ reactor open error");
         return false;
     }
 
     // Start the transfer in the reactive environment.
     if (!_guts->reactive.start(_guts, url, buffer_size)) {
-        report().debug(u"@@@@ web start error");
         _guts->reactor.close();
         return false;
     }
@@ -133,7 +131,6 @@ bool ts::WebRequest::open(const UString& url, size_t buffer_size)
     while (!_guts->open_called) {
         _guts->reactor.processEventLoop();
     }
-    report().debug(u"@@@@ web open error code: %d", _guts->open_status);
 
     // Report the open status.
     const bool status = SysSuccess(_guts->open_status);
@@ -283,7 +280,6 @@ bool ts::WebRequest::downloadBinaryContent(const UString& url, ByteBlockPtr& dat
 
     // Transfer initialization.
     if (!open(url, chunk_size)) {
-        report().debug(u"@@@@ web open error");
         return false;
     }
 

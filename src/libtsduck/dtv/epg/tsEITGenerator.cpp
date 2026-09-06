@@ -226,14 +226,14 @@ bool ts::EITGenerator::deleteEvent(const ServiceIdTriplet& service, uint16_t eve
         // Look for the event in this service.
         for (auto iseg = srv.segments.begin(); !success && iseg != srv.segments.end(); ++iseg) {
             auto& events((*iseg)->events);
-            for (auto iev = events.begin(); !success && iev != events.end(); ++iev) {
+            for (auto iev = events.begin(); !success && iev != events.end(); ) {
                 if ((*iev)->event_id == event_id) {
                     // Found the event with same id.
                     success = true;
                     _duck.report().log(2, u"delete event id %n, %s, starting %s", event_id, service, (*iev)->start_time);
 
-                    // Remove event from segment and service.
-                    events.erase(iev);
+                    // Remove event from segment and service. Adjust iev iterator in list.
+                    iev = events.erase(iev);
                     srv.event_ids.erase(event_id);
 
                     // Mark all EIT schedule in this segment as to be regenerated.
@@ -251,6 +251,10 @@ bool ts::EITGenerator::deleteEvent(const ServiceIdTriplet& service, uint16_t eve
                             break;
                         }
                     }
+                }
+                else {
+                    // Not that event, only iterate using iev.
+                    ++iev;
                 }
             }
         }
