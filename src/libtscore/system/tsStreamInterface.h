@@ -93,7 +93,7 @@ namespace ts {
         //! This method applies to asynchronous I/O only (Windows), not immediate I/O (UNIX).
         //! @param [in,out] iosb Address of the IOSB structure which was used when readStream() or writeStream() was called.
         //! @return True on success, false on error.
-        //! 
+        //!
         virtual bool asyncCompletedStream(Device::IOSB* iosb) = 0;
 
         //!

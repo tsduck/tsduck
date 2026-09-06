@@ -83,6 +83,7 @@ public:
     virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
     virtual void* newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle) override;
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
+    virtual SysSocketType getSocket(EventId id) override;
     virtual void* newAsynchronousIO(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool cancelAsynchronousIO(EventId id, bool silent) override;
     virtual bool cancelAndWaitAsynchronousIO(EventId id, Device::IOSB& iosb, bool silent) override;
@@ -297,14 +298,14 @@ void ts::Reactor::Guts::processEventLoop()
 
             // Process the event, based on a copy of the EventData block.
             if (evd.type == EVT_EVENT) {
-                _reactor.trace(u"IOCP: event #%d, user event completed", i);
+                _reactor.trace(u"IOCP: event #%d, user event completed, id 0x%X", i, uintptr_t(sysevd));
                 // Call the user event callback.
                 if (evd.handler != nullptr) {
                     evd.handler->handleUserEvent(_reactor, id);
                 }
             }
             else if (evd.type == EVT_TIMER) {
-                _reactor.trace(u"IOCP: event #%d, timer completed", i);
+                _reactor.trace(u"IOCP: event #%d, timer completed, id 0x%X", i, uintptr_t(sysevd));
                 if (!evd.repeat) {
                     // In case of one-shot event, the timer must be explicitly closed.
                     sysDeleteTimer(sysevd, true);
@@ -317,7 +318,7 @@ void ts::Reactor::Guts::processEventLoop()
                 }
             }
             else if (evd.type == EVT_PROC) {
-                _reactor.trace(u"IOCP: event #%d, process terminated", i);
+                _reactor.trace(u"IOCP: event #%d, process terminated, id 0x%X", i, uintptr_t(sysevd));
                 bool process_terminated = true;
                 // The field dwNumberOfBytesTransferred of the event is the message type.
                 const ::DWORD msg = ::DWORD(sysev.dwNumberOfBytesTransferred);
@@ -349,7 +350,7 @@ void ts::Reactor::Guts::processEventLoop()
             }
             else if (evd.type == EVT_ASYNC) {
                 // Asynchronous I/O. Try to find the IOSB from the OVERLAPPED address.
-                _reactor.trace(u"IOCP: event #%d, asynchronous I/O completed, overlapped @%X", i, uintptr_t(sysev.lpOverlapped));
+                _reactor.trace(u"IOCP: event #%d, asynchronous I/O completed, id 0x%X, overlapped @%X", i, uintptr_t(sysevd), uintptr_t(sysev.lpOverlapped));
                 Device::IOSB* iosb = Device::IOSB::ParentIOSB(sysev.lpOverlapped);
                 if (iosb == nullptr) {
                     _reactor.report().error(u"reactor received an asynchronous I/O completion without identified IOSB");
@@ -627,13 +628,25 @@ bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
         ::CloseHandle(evd->job_object);
         evd->job_object = nullptr;
     }
-    
+
     // If the process was opened by id, we must close the handle.
     if (evd->close_handle) {
         ::CloseHandle(evd->handle);
         evd->handle = nullptr;
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the system-specific file descriptor or handle for an I/O notification.
+//----------------------------------------------------------------------------
+
+ts::SysSocketType ts::Reactor::Guts::getSocket(EventId id)
+{
+    // Windows types SOCKET and HANDLE have the same binary representation and are interchangeable.
+    EventData* evd = reinterpret_cast<EventData*>(id._ptr);
+    return _reactor.validateEventData(evd, true) && (evd->type & EVT_ASYNC) != 0 ? ::SOCKET(evd->handle) : SYS_SOCKET_INVALID;
 }
 
 

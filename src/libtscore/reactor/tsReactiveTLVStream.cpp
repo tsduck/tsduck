@@ -97,7 +97,7 @@ bool ts::ReactiveTLVStream::startReceive(ReactiveTLVStreamHandlerInterface* hand
 // Invoked when binary data is received from the TCP connection.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteBlockPtr& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     // Ignore all inputs if no handler is defined.
     if (_receive_handler == nullptr) {
@@ -105,6 +105,10 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
     }
 
     // Report errors to application.
+    if (SysSuccess(error_code) && data == nullptr) {
+        // Shouldn't get there.
+        error_code = SYS_ERROR;
+    }
     if (!SysSuccess(error_code)) {
         _receive_handler->handleReceiveMessage(*this, nullptr, error_code, _receive_user_data);
         return;
@@ -112,15 +116,15 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
 
     // We need at least the size of a header.
     const size_t header_size = _protocol.headerSize();
-    if (data.size() < header_size) {
+    if (data->size() < header_size) {
         control.used_size = 0;
         control.min_next_size = header_size;
         return;
     }
 
     // Get total message size, header and payload. Make sure we have enough to decode the message.
-    const size_t msg_size = header_size + GetUInt16(data.data() + _protocol.lengthOffset());
-    if (data.size() < msg_size) {
+    const size_t msg_size = header_size + GetUInt16(data->data() + _protocol.lengthOffset());
+    if (data->size() < msg_size) {
         control.used_size = 0;
         control.min_next_size = msg_size;
         return;
@@ -131,7 +135,7 @@ void ts::ReactiveTLVStream::handleReadStream(ReactiveStream& stream, const ByteB
 
     // Analyze the message.
     tlv::MessagePtr msg;
-    tlv::MessageFactory mf(data.data(), msg_size, _protocol);
+    tlv::MessageFactory mf(data->data(), msg_size, _protocol);
     if (mf.errorStatus() == tlv::OK) {
         mf.factory(msg);
         if (msg != nullptr) {

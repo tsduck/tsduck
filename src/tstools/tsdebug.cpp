@@ -1060,6 +1060,10 @@ ts::URLCommands::URLCommands(CommandLine& cmdline, int flags)
     cmd->help(u"insecure", u"With https, do not verify the certificate of the server.");
     cmd->option(u"output", 'o', Args::FILENAME);
     cmd->help(u"output", u"Save response in the specified file.");
+    cmd->option(u"post", 'p', Args::STRING);
+    cmd->help(u"post", u"Send a POST request with the specified string data.");
+    cmd->option(u"repeat", 'r', Args::POSITIVE);
+    cmd->help(u"repeat", u"Repeat the operation the specified number of times.");
 }
 
 ts::URLCommands::~URLCommands()
@@ -1077,42 +1081,55 @@ ts::CommandStatus ts::URLCommands::geturl(const UString& command, Args& args)
     const UString url(args.value(u""));
     fs::path output;
     UStringList headers;
+    UString post_data;
+    const size_t repeat_count = args.intValue<size_t>(u"repeat", 1);
+    const bool repeat = repeat_count > 1;
     args.getPathValue(output, u"output");
     args.getValues(headers, u"header");
+    args.getValue(post_data, u"post");
 
     WebRequest request(&args);
-    request.setInsecure(insecure);
-    for (const auto& h : headers) {
-        const size_t colon = h.find(':');
-        request.setRequestHeader(h.substr(0, colon).toTrimmed(), colon == NPOS ? u"" : h.substr(colon+1).toTrimmed());
-    }
 
-    UString response;
-    if (output.empty()) {
-        // Display text response.
-        if (!request.downloadTextContent(url, response)) {
-            return CommandStatus::ERROR;
+    for (size_t count = 1; count <= repeat_count; ++count) {
+        if (repeat) {
+            args.info(u"======== Iteration #%d", count);
         }
-    }
-    else {
-        // Save output in a file.
-        if (!request.downloadFile(url, output)) {
-            return CommandStatus::ERROR;
+        request.args().setInsecure(insecure);
+        for (const auto& h : headers) {
+            const size_t colon = h.find(':');
+            request.args().setRequestHeader(h.substr(0, colon).toTrimmed(), colon == NPOS ? u"" : h.substr(colon + 1).toTrimmed());
         }
-    }
+        if (!post_data.empty()) {
+            request.args().setPostData(post_data);
+        }
 
-    args.info(u"==== Request");
-    args.info(u"HTTP status: %d", request.httpStatus());
-    args.info(u"Original URL: %d", request.originalURL());
-    args.info(u"Final URL: %d", request.finalURL());
-    args.info(u"==== Response headers");
-    for (const auto& h : request.responseHeaders()) {
-        args.info(u"%s: %s", h.first, h.second);
-    }
-    if (output.empty()) {
-        args.info(u"==== Response content");
-        response.trim(false, true);
-        args.info(response);
+        UString response;
+        if (output.empty()) {
+            // Display text response.
+            if (!request.downloadTextContent(url, response)) {
+                return CommandStatus::ERROR;
+            }
+        }
+        else {
+            // Save output in a file.
+            if (!request.downloadFile(url, output)) {
+                return CommandStatus::ERROR;
+            }
+        }
+
+        args.info(u"==== Request");
+        args.info(u"HTTP status: %d", request.status().httpStatus());
+        args.info(u"Original URL: %d", request.status().originalURL());
+        args.info(u"Final URL: %d", request.status().finalURL());
+        args.info(u"==== Response headers");
+        for (const auto& h : request.status().responseHeaders()) {
+            args.info(u"%s: %s", h.first, h.second);
+        }
+        if (output.empty()) {
+            args.info(u"==== Response content");
+            response.trim(false, true);
+            args.info(response);
+        }
     }
     return CommandStatus::SUCCESS;
 }

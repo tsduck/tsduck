@@ -106,8 +106,10 @@ bool ts::Reactor::GutsBase::cancelAndWaitAsynchronousIO(EventId, Device::IOSB&, 
 bool ts::Reactor::GutsBase::deleteAsynchronousIO(EventId, bool) { TS_NO_AIO; return false; }
 void* ts::Reactor::GutsBase::newReadNotify(ReactorHandlerInterface*, SysSocketType) { TS_NO_NBIO; return nullptr; }
 bool ts::Reactor::GutsBase::deleteReadNotify(EventId, bool) { TS_NO_NBIO; return false; }
+bool ts::Reactor::GutsBase::deleteReadNotify(SysSocketType, bool) { TS_NO_NBIO; return false; }
 void* ts::Reactor::GutsBase::newWriteNotify(ReactorHandlerInterface*, SysSocketType) { TS_NO_NBIO; return nullptr; }
-bool ts::Reactor::GutsBase::deleteWriteNotify(EventId id, bool silent) { TS_NO_NBIO; return false; }
+bool ts::Reactor::GutsBase::deleteWriteNotify(EventId, bool) { TS_NO_NBIO; return false; }
+bool ts::Reactor::GutsBase::deleteWriteNotify(SysSocketType, bool) { TS_NO_NBIO; return false; }
 
 
 //----------------------------------------------------------------------------
@@ -448,6 +450,16 @@ bool ts::Reactor::cancelProcessTermination(EventId id, bool silent)
 
 
 //----------------------------------------------------------------------------
+// Get the system-specific file descriptor or handle for an I/O notification.
+//----------------------------------------------------------------------------
+
+ts::SysSocketType ts::Reactor::getSocket(EventId id)
+{
+    return checkOpen(false) ? _guts->getSocket(id) : SYS_SOCKET_INVALID;
+}
+
+
+//----------------------------------------------------------------------------
 // Asynchronous I/O notifications.
 //----------------------------------------------------------------------------
 
@@ -494,6 +506,11 @@ bool ts::Reactor::deleteReadNotify(EventId id, bool silent)
     return checkOpen(silent) && id.isValid() && _guts->deleteReadNotify(id, silent);
 }
 
+bool ts::Reactor::deleteReadNotify(SysSocketType sock, bool silent)
+{
+    return checkOpen(silent) && _guts->deleteReadNotify(sock, silent);
+}
+
 ts::EventId ts::Reactor::newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock)
 {
     EventId id;
@@ -506,4 +523,9 @@ ts::EventId ts::Reactor::newWriteNotify(ReactorHandlerInterface* handler, SysSoc
 bool ts::Reactor::deleteWriteNotify(EventId id, bool silent)
 {
     return checkOpen(silent) && id.isValid() && _guts->deleteWriteNotify(id, silent);
+}
+
+bool ts::Reactor::deleteWriteNotify(SysSocketType sock, bool silent)
+{
+    return checkOpen(silent) && _guts->deleteWriteNotify(sock, silent);
 }

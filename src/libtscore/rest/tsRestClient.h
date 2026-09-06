@@ -72,14 +72,14 @@ namespace ts {
         //! Valid after call().
         //! @return The HTTP status code.
         //!
-        int httpStatus() const { return _request.httpStatus(); }
+        int httpStatus() const { return _request.status().httpStatus(); }
 
         //!
         //! Get all response headers.
         //! Valid after call(), until next call() or this instance is destroyed.
         //! @return A constant reference to a map of response headers.
         //!
-        const UStringToUStringMultiMap& responseHeaders() const { return _request.responseHeaders(); }
+        const UStringToUStringMultiMap& responseHeaders() const { return _request.status().responseHeaders(); }
 
         //!
         //! Get the MIME type in the response headers.
@@ -88,14 +88,14 @@ namespace ts {
         //! @param [in] lowercase Force lowercase in the result.
         //! @return The MIME type.
         //!
-        UString mimeType(bool simple = true, bool lowercase = true) const { return _request.mimeType(simple, lowercase); }
+        UString mimeType(bool simple = true, bool lowercase = true) const { return _request.status().mimeType(simple, lowercase); }
 
         //!
         //! Get the response in binary format.
         //! Valid after call(), until next call() or this instance is destroyed.
         //! @return A constant reference to binary response.
         //!
-        const ByteBlock& response() const { return _response; }
+        const ByteBlock& response() const { return _response != nullptr ? *_response : ByteBlock::EMPTY(); }
 
         //!
         //! Get the response in text form (interpreted from UTF-8).
@@ -114,9 +114,9 @@ namespace ts {
         bool getResponseJSON(json::ValuePtr& value) const;
 
     private:
-        RestArgs   _args;
-        WebRequest _request {this};
-        ByteBlock  _response {};
-        UString    _accept {};
+        RestArgs     _args;
+        WebRequest   _request {this};
+        ByteBlockPtr _response {};
+        UString      _accept {};
     };
 }

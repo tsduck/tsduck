@@ -37,6 +37,7 @@ namespace ts {
     //!
     class TSCOREDLL KeyTable
     {
+        TS_DEFAULT_COPY_MOVE(KeyTable);
     public:
         //!
         //! Constructor.

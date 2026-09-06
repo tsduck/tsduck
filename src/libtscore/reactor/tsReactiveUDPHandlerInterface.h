@@ -43,7 +43,8 @@ namespace ts {
         //!
         //! Handle the reception of a UDP datagram.
         //! @param [in,out] sock UDP socket for which the handler is invoked.
-        //! @param [in] data Safe pointer to the received data packet.
+        //! @param [in] data Safe pointer to the received data packet. Can be null in case of error.
+        //! The handler may safely copy the shared pointer, the pointed data will not be modified by the ReactiveUDPSocker.
         //! @param [in] sender Socket address of the sender.
         //! @param [in] destination Socket address of the packet destination. Useful in multicast packets.
         //! @param [in] timestamp Receive timestamp in micro-seconds. If the value is negative, no timestamp is available.

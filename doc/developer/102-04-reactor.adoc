@@ -16,13 +16,14 @@ specific explanations first.
 
 ==== Multithreading vs. event dispatching
 
-Generally speaking, computing relies on three types of resources: CPU, memory,
-and I/O.  Most applications primarily need one type of resource which may become
-a bottleneck, a limiting factor which must be specifically addressed.
+Generally speaking, computing relies on three major types of resources: CPU,
+memory, and I/O. Most applications primarily need one type of resource which
+may become a bottleneck, a limiting factor which must be specifically
+addressed.
 
 * CPU-bound applications need more processing power than one CPU can
-provide. Ideally, they simultaneously use several CPUs of the same machine, or
-even several machines.
+provide. Ideally, they simultaneously use several CPU cores of the same
+machine, or even several machines.
 
 * Memory-bound applications need mode memory than the machine can provide. They
 need additional storage media or remotely-accessible memory, and swap between
@@ -129,7 +130,9 @@ it is not possible to develop portable applications. It is not possible to
 develop libraries which are based on a reactor API and smoothly integrate them
 in all event dispatching applications. As an example, libsrt proposes a
 "non-blocking I/O" mode but it is based on a specific libsrt API and it can be
-used only in applications which use libsrt as their reactor.
+used only in applications which use libsrt as their reactor. When several
+libraries only accept their own specific model as event dispatcher, they cannot
+be used in the same application.
 
 ===== Multithreading vs. reactor comparison
 
@@ -172,7 +175,7 @@ a|[.compact-list]
 
 |===
 
-==== Immediate I/O and asynchronous I/O
+==== Blocking I/O vs. immediate I/O vs. asynchronous I/O
 
 Traditional I/Os suspend the execution of the calling thread until the I/O
 operation completes. We call this "blocking I/O". In an event-dispatching
@@ -185,8 +188,9 @@ systems use immediate I/O and Windows uses asynchronous I/O. An application
 doesn't have the choice between immediate I/O and asynchronous I/O. This is
 imposed by the operating system.
 
-Because the two models impose different data management strategies on the
-application, it is particularly challenging to define a portable Reactor API.
+Because these two models of "non-blocking I/O" impose different data management
+strategies on the application, it is particularly challenging to define a
+portable Reactor API.
 
 ===== Immediate I/O (UNIX)
 
@@ -194,11 +198,11 @@ An "immediate I/O" is ... immediate. Either it immediately completes or
 immediately fails but it never blocks. When an immediate I/O fails because it
 is not possible to immediately complete (e.g. because no incoming data is
 available), the process can be notified by the kernel when an I/O becomes
-possible. There are two possible I/O events: "read-ready" and "write-ready",
-when a read or write operation becomes possible. Note that "ready" does not mean
-"guaranteed". On a read-ready event, for instance, the application shall retry
-the read operation. It will likely immediately succeed but it may also fail
-again (spurious read-ready event).
+possible. There are two main types of I/O events: "read-ready" and
+"write-ready", when a read or write operation becomes possible. Note that
+"ready" does not mean "guaranteed". On a read-ready event, for instance, the
+application shall retry the read operation. It will likely immediately succeed
+but it may also fail again (spurious read-ready event).
 
 NOTE: The documentation of {unix} uses the term "non-blocking" for immediate I/O.
 In a pure UNIX context, this is appropriate because those I/Os don't block.
@@ -224,9 +228,10 @@ I/O event notification.
 * macOS, FreeBSD, and other BSD systems use a mechanism named "kqueue" (kernel
   queue).
 
-* Linux uses a mechanism named "epoll" (event poll). There is also a more recent
-  mechanism named "io_uring". It is more complex and particularly suited for
-  extremely large servers. Currently, TSDuck uses epoll, not io_uring.
+* Linux uses a mechanism named "epoll" (event poll). There is also a more
+  recent mechanism named "io_uring". It is more complex and particularly suited
+  for extremely large servers. Currently, TSDuck uses epoll on Linux, not
+  io_uring.
 
 There are some limitations to the UNIX immediate I/O model:
 
@@ -274,12 +279,13 @@ Microsoft Windows uses the name "overlapped I/O" instead of asynchronous
 I/O. The event synchronization mechanism is named I/O Completion Port, or IOCP
 in short.
 
-Asynchronous I/O have an important impact on the data buffer management in the
-application. When a read operation starts, for instance, the address and size of
-the buffer are remembered in the kernel. This memory buffer is then written in
-the background, when data arrive. This means that the application must not reuse
-the buffer before the confirmation that the I/O completed, either successfully
-or with an error. If the application frees a data buffer during an asynchronous
+Asynchronous I/O has an important impact on the data buffer management in the
+application. When a read operation starts, for instance, the address and size
+of the buffer are remembered in the kernel. This memory buffer is then written
+in the background, when data arrive as part of the read operation in
+progress. This means that the application must not reuse the memory of that
+buffer before the confirmation that the I/O completed, either successfully or
+with an error. If the application frees a data buffer during an asynchronous
 I/O, the following dangerous scenario becomes possible: the freed buffer is
 reused by some other part of the application and some precious data are stored
 there; then the asynchronous I/O continues and incoming data erase the reused
@@ -452,14 +458,16 @@ The `Reactor` and the associated reactive classes handle the following features:
 * Process. An event handler is called when a process which was created by
   classref:ForkPipe[] terminates.
 
+* Web requests (HTTP, HTTPS, FTP), based on URL.
+
 * Worker delegation. When an event handler needs to run some lengthy computing,
-  or call a library with blocking I/O, it cannot do that sequentially because it
-  would block the reactor. Instead, it should delegate that treatment to a
-  "worker" thread. A completion event handler will be called in the reactor when
-  the delegated task completes. There is a pool of a maximum number of worker
-  threads. A delegated task is either executed in an idle worker thread,
-  executed in a newly created worker thread if none were idle, queued for later
-  execution if the maximum number of worker threads is reached.
+  or call a library with blocking I/O, it cannot sequentially do that because
+  it would block the reactor. Instead, it should delegate that treatment to a
+  "worker" thread. A completion event handler will be called in the reactor
+  when the delegated task completes. There is a pool of a maximum number of
+  worker threads. A delegated task is either executed in an idle worker thread,
+  executed in a newly created worker thread if none were idle, or queued for
+  later execution if the maximum number of worker threads is reached.
 
 Timers, user-events and process terminations are directly handled in class
 `Reactor`.
@@ -516,6 +524,15 @@ to read and write text lines or TLV (tag, length, value) messages. Thus, it is
 possible to indifferently exchange these data formats over files, pipes, TCP or
 TLS connections.
 
+Class classref:WebRequest[] handles all forms of Web requests, based on URL
+(HTTP, HTTPS, FTP). This class is implemented using high-level system-specific
+libraries: libcurl on {unix}, WinInet on Windows. Because these libraries don't
+expose their I/Os, class classref:WebRequest[] is not a subclass of
+classref:Device[]. Therefore, unlike subclasses of classref:Device[],
+classref:WebRequest[] can be used in blocking mode only and an entirely
+different class classref:ReactiveWebRequest[] is available for non-blocking
+I/O.
+
 ===== Reactive I/O classes
 
 On the right side of the Reactor class diagram, the hierarchy of subclasses of
@@ -542,8 +559,9 @@ classref:ReactiveTCPConnection[] and classref:TCPConnection[].
 
 The reactive handler interfaces are implemented by the application-defined
 classes.  When an application starts a non-blocking I/O, it specifies the
-handler which must be called upon completion. This is the address of an instance
-of an application class which implements the required handler.
+handler which must be called upon completion. This is the address of an
+instance of an application class which implements the required handler
+interface class.
 
 The following diagram summarizes all reactive handler interfaces, with their
 methods, and which reactive class calls them.
@@ -560,7 +578,19 @@ events.  Its methods `handleReadReady()`, `handleWriteReady()`, and
 `handleAsynchronousIO()` are used only inside the reactive I/O classes and are
 normally never used by an application.
 
-As a final note, the class classref:ReactiveServer[] implements a
+Class classref:ReactiveWebRequest[] handles all forms of Web requests, based on
+URL (HTTP, HTTPS, FTP). Like class classref:WebRequest[], it is based on
+high-level system-specific libraries: libcurl on {unix}, WinInet on
+Windows. Because these libraries don't expose their I/Os, class
+classref:ReactiveWebRequest[] is not a subclass of
+classref:ReactiveDevice[]. It is a direct subclass of classref:ReactiveBase[]
+Similarly, classref:ReactiveWebRequest[] handles its own non-blocking I/Os
+using specific modes of libcurl and WinInet. Unlike other types of reactive I/O
+classes, it does not use a separate instance of classref:WebRequest[].
+
+===== Sample reactor-based application
+
+The TSCore library contains class classref:ReactiveServer[] which implements a
 general-purpose TCP server in a `Reactor` environment. It is suitable to
 implement all kinds of servers, including SSL/TLS servers.  An instance of
 classref:ReactiveServer[] automatically creates application-defined session
@@ -568,8 +598,6 @@ objects when incoming clients connect and automatically deletes the session
 object when they disconnect. The session objects are created by an instance of
 classref:ReactiveServerFactoryInterface[]. The session object class must
 implement classref:ReactiveServerSessionInterface[].
-
-===== Sample reactor-based application
 
 The TSDuck source code repository contains a sample TCP server based on
 classref:ReactiveServer[] in subdirectory

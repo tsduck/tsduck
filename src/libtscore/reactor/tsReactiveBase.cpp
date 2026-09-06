@@ -33,7 +33,10 @@ ts::ReactiveBase::~ReactiveBase()
 // Create, if necessary, the dedicated user event for signalQueuedOperations().
 bool ts::ReactiveBase::createSignalQueuedOperations()
 {
-    return _queued_ops_event_id.isValid() || (_queued_ops_event_id = _reactor.newEvent(this)).isValid();
+    if (!_queued_ops_event_id.isValid()) {
+        _queued_ops_event_id = _reactor.newEvent(this);
+    }
+    return _queued_ops_event_id.isValid();
 }
 
 // Trigger the execution of processQueuedOperations() from another thread.

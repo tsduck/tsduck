@@ -14,7 +14,7 @@
 #pragma once
 #include "tsDevice.h"
 #include "tsWebRequestArgs.h"
-#include "tsReport.h"
+#include "tsWebRequestStatus.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"
 
@@ -35,7 +35,7 @@ namespace ts {
     //! is used (system configuration on Windows, http_proxy environment on
     //! Unix systems).
     //!
-    class TSCOREDLL WebRequest: public Device
+    class TSCOREDLL WebRequest: public ReporterBase
     {
         TS_NOBUILD_NOCOPY(WebRequest);
     public:
@@ -43,16 +43,14 @@ namespace ts {
         //! Constructor.
         //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
-        //! @param [in] non_blocking It true, the Web request is initially set in non-blocking mode.
         //!
-        explicit WebRequest(Report* report, bool non_blocking = false);
+        explicit WebRequest(Report* report);
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
-        //! @param [in] non_blocking It true, the Web request is initially set in non-blocking mode.
         //!
-        explicit WebRequest(ReporterBase* delegate, bool non_blocking = false);
+        explicit WebRequest(ReporterBase* delegate);
 
         //!
         //! Destructor.
@@ -60,298 +58,37 @@ namespace ts {
         virtual ~WebRequest() override;
 
         //!
-        //! Default TCP port for HTTP.
+        //! Access the Web request arguments to get or set them.
+        //! @return A non-const reference to the Web request arguments.
         //!
-        static constexpr uint16_t DEFAULT_HTTP_PORT = 80;
+        WebRequestArgs& args();
 
         //!
-        //! Default TCP port for HTTPS.
+        //! Access the Web request arguments to get them.
+        //! @return A const reference to the Web request arguments.
         //!
-        static constexpr uint16_t DEFAULT_HTTPS_PORT = 443;
+        const WebRequestArgs& args() const;
 
         //!
-        //! Set the connection timeout for this request.
-        //! @param [in] timeout Connection timeout in milliseconds.
+        //! Access the Web request status.
+        //! @return A const reference to the Web request status.
         //!
-        void setConnectionTimeout(cn::milliseconds timeout) { _connection_timeout = timeout; }
-
-        //!
-        //! Set the timeout for each receive operation.
-        //! @param [in] timeout Reception timeout in milliseconds.
-        //!
-        void setReceiveTimeout(cn::milliseconds timeout) { _receive_timeout = timeout; }
-
-        //!
-        //! Set the optional proxy host and port for this request.
-        //! @param [in] host Proxy host name or address.
-        //! @param [in] port Proxy port number.
-        //!
-        void setProxyHost(const UString& host, uint16_t port);
-
-        //!
-        //! Set the optional proxy authentication for this request.
-        //! @param [in] user Proxy user name.
-        //! @param [in] password Proxy user's password.
-        //!
-        void setProxyUser(const UString& user, const UString& password);
-
-        //!
-        //! Set the default proxy host and port for all subsequent requests.
-        //! @param [in] host Proxy host name or address.
-        //! @param [in] port Proxy port number.
-        //!
-        static void SetDefaultProxyHost(const UString& host, uint16_t port);
-
-        //!
-        //! Set the default proxy authentication for all subsequent requests.
-        //! @param [in] user Proxy user name.
-        //! @param [in] password Proxy user's password.
-        //!
-        static void SetDefaultProxyUser(const UString& user, const UString& password);
-
-        //!
-        //! Get the current actual proxy host.
-        //! @return A constant reference to the proxy host name.
-        //!
-        const UString& proxyHost() const;
-
-        //!
-        //! Get the current actual proxy port number.
-        //! @return The proxy port number.
-        //!
-        uint16_t proxyPort() const;
-
-        //!
-        //! Get the current actual proxy user name.
-        //! @return A constant reference to the proxy user name.
-        //!
-        const UString& proxyUser() const;
-
-        //!
-        //! Get the current actual proxy user password.
-        //! @return A constant reference to the proxy user password.
-        //!
-        const UString& proxyPassword() const;
-
-        //!
-        //! Enable the use of cookies for all requests using this instance.
-        //! @param [in] file_name The name of the file to use to load and store cookies.
-        //! On Windows, there is an implicit per-user cookie repository and @a fileName
-        //! is ignored. On Unix systems, this file is used to store and retrieve cookies
-        //! in the libcurl format. When @a fileName is empty, use a temporary file name.
-        //!
-        void enableCookies(const fs::path& file_name = fs::path());
-
-        //!
-        //! Disable the use of cookies for all requests.
-        //! Cookies are initially disabled by default.
-        //!
-        void disableCookies();
-
-        //!
-        //! Get the file name to use for cookies for all requests using this instance.
-        //! - On Linux, return the current cookie file name, possibly the name of a
-        //!   temporary file if EnableCookies() was called with an empty string.
-        //! - On Windows, the cookie repository is defined per user. There is no specific
-        //!   per-application file and this method always report an empty string.
-        //! @return The cookie file name.
-        //!
-        fs::path getCookiesFileName() const;
-
-        //!
-        //! Delete the cookies file, if one was defined.
-        //! @return True on success, false on error.
-        //!
-        bool deleteCookiesFile() const;
-
-        //!
-        //! Default user agent string ("tsduck").
-        //!
-        static constexpr const UChar* DEFAULT_USER_AGENT = u"tsduck";
-
-        //!
-        //! Set the user agent name to use in HTTP headers.
-        //! @param [in] name The user agent name. If empty, DEFAULT_USER_AGENT is used.
-        //!
-        void setUserAgent(const UString& name = UString()) { _user_agent = name.empty() ? DEFAULT_USER_AGENT : name; }
-
-        //!
-        //! Get the current user agent name to use in HTTP headers.
-        //! @return A constant reference to the user agent name to use in HTTP headers.
-        //!
-        const UString& userAgent() const { return _user_agent; }
-
-        //!
-        //! Enable compression.
-        //! Compression is disabled by default.
-        //! @param [in] on Boolean setting compression on or off.
-        //!
-        void enableCompression(bool on = true) { _use_compression = on; }
-
-        //!
-        //! Enable or disable HTTPS security (certificate validation).
-        //! Certificate validation is enabled by default.
-        //! @param [in] on If true, disable certificate validation.
-        //!
-        void setInsecure(bool on = true) { _insecure = on; }
-
-        //!
-        //! Enable or disable the automatic redirection of HTTP requests.
-        //! This option is active by default.
-        //! @param [in] on If true, allow automatic redirection of HTTP requests.
-        //!
-        void setAutoRedirect(bool on) { _auto_redirect = on; }
-
-        //!
-        //! Set various arguments from command line.
-        //! @param [in] args Command line arguments.
-        //!
-        void setArgs(const WebRequestArgs& args);
-
-        //!
-        //! Set a header which will be sent with the request.
-        //! If the same header already exists with another value, a new header is added.
-        //! @param [in] name The header name.
-        //! @param [in] value The header value.
-        //!
-        void setRequestHeader(const UString& name, const UString& value);
-
-        //!
-        //! Delete all headers with a given name.
-        //! @param [in] name The header name.
-        //!
-        void deleteRequestHeader(const UString& name);
-
-        //!
-        //! Clear all headers which will be sent with the request.
-        //!
-        void clearRequestHeaders();
-
-        //!
-        //! Set data to POST.
-        //! The request will be a POST one.
-        //! @param [in] data Text POST data. The text will be sent in UTF-8 format.
-        //! @param [in] content_type The content type to set in the request headers.
-        //! The default "Content-Type" header is "text/plain; charset=utf-8", which is usually appropriate.
-        //! When set to the empty string, no header is set.
-        //!
-        void setPostData(const UString& data, const UString content_type = u"text/plain; charset=utf-8");
-
-        //!
-        //! Set data to POST.
-        //! The request will be a POST one.
-        //! @param [in] data Binary POST data.
-        //!
-        void setPostData(const ByteBlock& data);
-
-        //!
-        //! Clear previous POST data.
-        //! The request will be a GET one.
-        //!
-        void clearPostData();
+        const WebRequestStatus& status() const;
 
         //!
         //! Open an URL and start the transfer.
         //! For HTTP request, perform all redirections and get response headers.
         //! @param [in] url The complete URL to fetch.
-        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the request must be in non-blocking mode.
-        //! When null, the request must be in blocking mode (the default). See the description of IOSB.
-        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
-        //! "reactive classes", which work in combination with a Reactor.
+        //! @param [in] buffer_size Size of input buffers to receive data.
         //! @return True on success, false on error.
         //!
-        bool open(const UString& url, IOSB* iosb = nullptr);
+        bool open(const UString& url, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE);
 
         //!
         //! Check if a transfer is open.
         //! @return True if a transfer is open, false otherwise.
         //!
-        bool isOpen() const { return _is_open; }
-
-        //!
-        //! Get the HTTP status code (200, 404, etc).
-        //! @return The HTTP status code.
-        //!
-        int httpStatus() const { return _http_status; }
-
-        //!
-        //! Check if the HTTP status code indicates success.
-        //! The HTTP status codes are classified as follow (Wikipedia):
-        //! - 1xx informational response – the request was received, continuing process
-        //! - 2xx successful – the request was successfully received, understood, and accepted
-        //! - 3xx redirection – further action needs to be taken in order to complete the request
-        //! - 4xx client error – the request contains bad syntax or cannot be fulfilled
-        //! - 5xx server error – the server failed to fulfil an apparently valid request
-        //! @return True if the HTTP status code indicates success.
-        //!
-        bool httpSuccess() const { return _http_status < 400; }
-
-        //!
-        //! Check if the HTTP status code indicates a client error.
-        //! @return True if the HTTP status code indicates a client error.
-        //!
-        bool httpClientError() const { return _http_status >= 400 && _http_status < 500; }
-
-        //!
-        //! Check if the HTTP status code indicates a server error.
-        //! @return True if the HTTP status code indicates a server error.
-        //!
-        bool httpServerError() const { return _http_status >= 500 && _http_status < 600; }
-
-        //!
-        //! Get the announced content size in bytes.
-        //! This is the value which was sent in the content headers.
-        //! This may be zero, this may not be the actual size of the content to download.
-        //! @return Announced content size in bytes.
-        //!
-        size_t announcedContentSize() const { return _header_content_size; }
-
-        //!
-        //! Get all response headers.
-        //! @param [out] headers A multimap of all response headers.
-        //!
-        void getResponseHeaders(UStringToUStringMultiMap& headers) const { headers = _response_headers; }
-
-        //!
-        //! Get all response headers.
-        //! @return A constant reference to a map of response headers.
-        //!
-        const UStringToUStringMultiMap& responseHeaders() const { return _response_headers; }
-
-        //!
-        //! Get the value of one header.
-        //! @param [in] name Header name, case sensitive.
-        //! @return Header value or an empty string when the header is not found.
-        //! If the header is present more than once, the first value is returned.
-        //!
-        UString reponseHeader(const UString& name) const;
-
-        //!
-        //! Get the MIME type in the response headers.
-        //! @param [in] simple If true, simple type name. If false, return the full specification with options.
-        //! @param [in] lowercase Force lowercase in the result.
-        //! @return The MIME type.
-        //!
-        UString mimeType(bool simple = true, bool lowercase = true) const;
-
-        //!
-        //! Get the original URL, as set by setURL().
-        //! @return The original URL.
-        //!
-        UString originalURL() const { return _original_url; }
-
-        //!
-        //! Get the final URL of the actual download operation.
-        //!
-        //! It can be different from originalURL() if some HTTP redirections were performed.
-        //! When called before a download operation, return originalURL().
-        //!
-        //! If redirections are disabled using setAutoRedirect() and the site
-        //! returned a redirection, finalURL() returns the redirected URL.
-        //!
-        //! @return The final / redirected URL.
-        //!
-        UString finalURL() const { return _final_url; }
+        bool isOpen() const;
 
         //!
         //! Receive data.
@@ -360,14 +97,10 @@ namespace ts {
         //! @param [in] max_size Size in bytes of the reception buffer.
         //! @param [out] ret_size Size in bytes of the received data. Will never be larger than @a max_size.
         //! When @a ret_size is zero, this is the end of the transfer.
-        //! @param [in,out] iosb Address of an IOSB structure. If non-null, the request must be in non-blocking mode.
-        //! When null, the request must be in blocking mode (the default). See the description of IOSB.
-        //! Important: The parameter @a iosb should not be used by applications. It should be used only by
-        //! "reactive classes", which work in combination with a Reactor.
         //! @return True on success, false on error. A successful end of transfer is reported when
         //! @a ret_size is zero and the returned value is true.
         //!
-        bool receive(void* buffer, size_t max_size, size_t& ret_size, IOSB* iosb = nullptr);
+        bool receive(void* buffer, size_t max_size, size_t& ret_size);
 
         //!
         //! Close the transfer.
@@ -382,26 +115,15 @@ namespace ts {
         void abort();
 
         //!
-        //! Get the size in bytes of the downloaded content.
-        //! @return Size in bytes of the downloaded content.
-        //!
-        size_t contentSize() const { return _content_size; }
-
-        //!
-        //! Default download chunk size for bulk transfers.
-        //!
-        static constexpr size_t DEFAULT_CHUNK_SIZE = 64 * 1024;
-
-        //!
         //! Download the content of the URL as binary data in one operation.
         //! The open/read/close session is embedded in this method.
         //! The request must be in blocking mode (the default).
         //! @param [in] url The complete URL to fetch.
-        //! @param [out] data The content of the URL.
+        //! @param [out] data The content of the URL in a shred pointer. Null in case of error.
         //! @param [in] chunk_size Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadBinaryContent(const UString& url, ByteBlock& data, size_t chunk_size = DEFAULT_CHUNK_SIZE);
+        bool downloadBinaryContent(const UString& url, ByteBlockPtr& data, size_t chunk_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE);
 
         //!
         //! Download the content of the URL as text in one operation.
@@ -414,7 +136,7 @@ namespace ts {
         //! @param [in] chunk_size Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadTextContent(const UString& url, UString& text, size_t chunk_size = DEFAULT_CHUNK_SIZE);
+        bool downloadTextContent(const UString& url, UString& text, size_t chunk_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE);
 
         //!
         //! Download the content of the URL in a file in one operation.
@@ -426,57 +148,12 @@ namespace ts {
         //! @param [in] chunk_size Individual download chunk size.
         //! @return True on success, false on error.
         //!
-        bool downloadFile(const UString& url, const fs::path& file_name, size_t chunk_size = DEFAULT_CHUNK_SIZE);
-
-        //!
-        //! Get the version of the underlying HTTP library.
-        //! @return The library version.
-        //!
-        static UString GetLibraryVersion();
+        bool downloadFile(const UString& url, const fs::path& file_name, size_t chunk_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE);
 
     private:
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
-
-        UString          _user_agent {DEFAULT_USER_AGENT};
-        UString          _original_url {};
-        UString          _final_url {};
-        cn::milliseconds _connection_timeout {};
-        cn::milliseconds _receive_timeout {};
-        UString          _proxy_host {};
-        uint16_t         _proxy_port = 0;
-        UString          _proxy_user {};
-        UString          _proxy_password {};
-        bool             _use_cookies = false;
-        bool             _auto_redirect = true;
-        bool             _use_compression = false;
-        bool             _insecure = false;
-        bool             _delete_cookies_file = false; // delete the cookies file on close
-        fs::path         _cookies_file_name {};
-        UStringToUStringMultiMap _request_headers {};  // all request headers (to send)
-        UStringToUStringMultiMap _response_headers {}; // all response headers (received)
-        ByteBlock        _post_data {};                // if non empty, use a POST request
-        int              _http_status = 0;             // 200, 404, etc.
-        size_t           _content_size = 0;            // actually downloaded size
-        size_t           _header_content_size = 0;     // content size, as announced in response header
-        volatile bool    _is_open = false;             // the transfer is open/started.
-        volatile bool    _interrupted = false;         // interrupted by application-defined handler
-        SystemGuts*      _guts = nullptr;              // system-specific data
-
-        static UString   _default_proxy_host;
-        static uint16_t  _default_proxy_port;
-        static UString   _default_proxy_user;
-        static UString   _default_proxy_assword;
-
-        // Allocate and deallocate guts (depend on implementations).
-        void allocateGuts();
-        void deleteGuts();
-
-        // Process a list of response headers. Header lines are terminated by LF or CRLF.
-        void processReponseHeaders(const UString& text);
-
-        // System-specific transfer initialization.
-        bool startTransfer(IOSB* iosb);
+        class Guts;
+        Guts* _guts = nullptr;
     };
 }

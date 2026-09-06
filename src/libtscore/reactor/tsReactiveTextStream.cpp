@@ -157,23 +157,27 @@ bool ts::ReactiveTextStream::startReadText(ReactiveTextStreamHandlerInterface* h
 // Invoked when binary data is received from the stream device.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveTextStream::handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveTextStream::handleReadStream(ReactiveStream& stream, const ByteBlockPtr& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data)
 {
     if (_receive_handler != nullptr) {
         if (!SysSuccess(error_code)) {
             // Report an error to application.
             _receive_handler->handleTextLine(*this, UString(), error_code, _receive_user_data);
         }
+        else if (data == nullptr) {
+            // Report an error to application.
+            _receive_handler->handleTextLine(*this, UString(), SYS_ERROR, _receive_user_data);
+        }
         else {
             // Loop on searching for line-feed. Stop if a handler stopped the socket.
             size_t lf = NPOS;
             size_t start = 0;
-            while (start < data.size() && (lf = data.find('\n', start)) != NPOS && _stream.stream().isReadStream()) {
+            while (start < data->size() && (lf = data->find('\n', start)) != NPOS && _stream.stream().isReadStream()) {
                 assert(lf >= start);
-                assert(lf < data.size());
+                assert(lf < data->size());
                 // Found a complete line.
                 ts::UString line;
-                line.assignFromUTF8(reinterpret_cast<const char*>(data.data() + start), lf - start);
+                line.assignFromUTF8(reinterpret_cast<const char*>(data->data() + start), lf - start);
                 // Remove potential carriage-return before line-feed.
                 while (!line.empty() && line.back() == '\r') {
                     line.pop_back();

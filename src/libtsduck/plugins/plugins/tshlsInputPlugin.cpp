@@ -174,8 +174,7 @@ bool ts::hls::InputPlugin::getOptions()
 
     // Enable authentication tokens from master playlist to media playlist and from media playlists to media segments.
     // On Linux and macOS, use a specific cookies file to make sure that all Web requests use the same one.
-    web_args.use_cookies = true;
-    web_args.cookies_file = TempFile(u".cookies");
+    web_args.enableCookies();
 
     if (present(u"live")) {
         // With live streams, start at the last segment.
@@ -434,7 +433,6 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     // Open the segment.
     const UString seg_url(seg.urlString());
     debug(u"downloading segment %s", seg_url);
-    request.enableCookies(web_args.cookies_file);
     return request.open(seg_url);
 }
 
@@ -497,13 +495,15 @@ bool ts::hls::InputPlugin::initSegmentDecryption(WebRequest& request, const Medi
         return false;
     }
     debug(u"downloading decryption key %s", key_url);
-    if (!request.downloadBinaryContent(key_url, _seg_key)) {
+    ByteBlockPtr keyp;
+    if (!request.downloadBinaryContent(key_url, keyp) || keyp == nullptr) {
         return false;
     }
-    if (_seg_key.size() != required_key_size) {
-        error(u"invalid key size for HLS encryption method \"%s\", got %d bytes, expected %d", seg.key.method, _seg_key.size(), required_key_size);
+    if (keyp->size() != required_key_size) {
+        error(u"invalid key size for HLS encryption method \"%s\", got %d bytes, expected %d", seg.key.method, keyp->size(), required_key_size);
         return false;
     }
+    _seg_key = *keyp;
 
     // The possible segment size is computed from the segment bitrate and duraction, if specified.
     _seg_size = size_t(ByteDistance(seg.bitrate, seg.duration));
@@ -530,8 +530,8 @@ bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t 
     // The first time, download the entire encrypted segment in memory.
     if (_seg_next == NPOS) {
         // Try to preallocate a large enough buffer.
-        static constexpr size_t chunk_size = WebRequest::DEFAULT_CHUNK_SIZE;
-        const size_t size = std::max(chunk_size, std::max(_seg_size, request.announcedContentSize())) + 128;
+        static constexpr size_t chunk_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE;
+        const size_t size = std::max(chunk_size, std::max(_seg_size, request.status().announcedContentSize())) + 128;
         if (size > _seg_data.size()) {
             _seg_data.resize(size);
         }

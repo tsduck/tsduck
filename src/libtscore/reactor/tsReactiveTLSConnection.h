@@ -60,7 +60,7 @@ namespace ts {
         virtual ~ReactiveTLSConnection() override;
         virtual bool startConnect(ReactiveTCPConnectionHandlerInterface* handler, const IPSocketAddress& addr, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual void whenAccepted(ReactiveTCPConnectionHandlerInterface* handler, const ObjectPtr& user_data = ObjectPtr()) override;
-        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr()) override;
+        virtual bool startReadStream(ReactiveStreamHandlerInterface* handler, size_t buffer_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual bool startWriteStream(ReactiveStreamHandlerInterface* handler, const void* data, size_t size, const ObjectPtr& user_data = ObjectPtr()) override;
         virtual void cancelReadWriteStream(bool silent = false) override;
         virtual bool startCloseWriter(ReactiveStreamHandlerInterface* handler, bool silent = false, const ObjectPtr& user_data = ObjectPtr()) override;
@@ -77,7 +77,7 @@ namespace ts {
 
         // Implementation of ReactiveStreamHandlerInterface (inherited through ReactiveTCPConnectionHandlerInterface).
         virtual void handleWriteStream(ReactiveStream& stream, int error_code, const ObjectPtr& user_data) override;
-        virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
+        virtual void handleReadStream(ReactiveStream& stream, const ByteBlockPtr& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data) override;
 
     private:
         // Each of these requests may need several exchanges of TLS protocol. The request must be
@@ -112,7 +112,7 @@ namespace ts {
         ObjectPtr            _recv_user_data {};        // User data for data reception.
         ReactiveInputControl _recv_control {};          // User control of input data.
         ByteBlock            _recv_tls_data {};         // Incoming TLS data which cannot be processed now.
-        ByteBlock            _recv_clear_data {};       // Incoming clear data.
+        ByteBlockPtr         _recv_clear_data {};       // Incoming clear data. Used as shared pointer to pass ownership to receive callback.
         HandlerType*         _accept_handler = nullptr; // User handler for accepted session, at TLS level.
         ObjectPtr            _accept_user_data {};      // User data for _accept_handler.
 

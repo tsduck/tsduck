@@ -44,7 +44,10 @@ namespace ts {
         //!
         //! Handle the reception of data from a read operation on a stream.
         //! @param [in,out] stream Stream device for which the handler is invoked.
-        //! @param [in] data Received data.
+        //! @param [in] data Shared pointer to the received data. Can be the null pointer in case of error.
+        //! The handler may safely copy the shared pointer, the pointed data will not be modified by the ReactiveStream.
+        //! If the returned @a control specifies that not all input was used, the remaining data in the buffer will
+        //! be reallocated in a new ByteBlock in the ReactiveStream, after handleReadStream() returns.
         //! @param [in,out] control Input control data that the handler may update according to the usage of @a data.
         //! @param [in] error_code System-specific error code, including:
         //! - SYS_SUCCESS on success.
@@ -52,6 +55,6 @@ namespace ts {
         //! - SYS_ERROR in case of unknown error.
         //! @param [in] user_data The user-data shared pointer which was passed to startReadStream().
         //!
-        virtual void handleReadStream(ReactiveStream& stream, const ByteBlock& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data);
+        virtual void handleReadStream(ReactiveStream& stream, const ByteBlockPtr& data, ReactiveInputControl& control, int error_code, const ObjectPtr& user_data);
     };
 }

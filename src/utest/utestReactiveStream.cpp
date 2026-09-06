@@ -100,9 +100,9 @@ namespace {
             }
         }
 
-        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override
+        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlockPtr& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override
         {
-            tsunit::Test::debug() << "handle read: size: " << data.size() << ", read messages: " << read_messages << ", error code: " << error_code << std::endl;
+            tsunit::Test::debug() << "handle read: size: " << data->size() << ", read messages: " << read_messages << ", error code: " << error_code << std::endl;
             TSUNIT_ASSERT(&stream.stream() == &_file);
 
             if (error_code == ts::SYS_EOF) {
@@ -111,12 +111,12 @@ namespace {
             }
             TSUNIT_ASSERT(ts::SysSuccess(error_code));
 
-            if (data.size() < sizeof(size_t)) {
+            if (data->size() < sizeof(size_t)) {
                 control.used_size = 0;
                 control.min_next_size = sizeof(size_t);
             }
             else {
-                const size_t* value = reinterpret_cast<const size_t*>(data.data());
+                const size_t* value = reinterpret_cast<const size_t*>(data->data());
                 control.used_size = sizeof(size_t);
                 control.min_next_size = sizeof(size_t);
 

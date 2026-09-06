@@ -37,7 +37,7 @@ if (-not $MSBuild) {
 # A function to invoke MSBuild.
 function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
-    & $MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $target 
+    & $MSBuild $SolutionFileName /nologo /maxcpucount /property:Configuration=$configuration /property:Platform=$platform $target
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
     }

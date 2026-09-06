@@ -271,6 +271,17 @@ namespace ts {
         bool cancelProcessTermination(EventId id, bool silent = false);
 
         //--------------------------------------------------------------------
+        // ALL I/O EVENTS (ASYNCHRONOUS AND IMMEDIATE)
+        //--------------------------------------------------------------------
+
+        //!
+        //! Get the system-specific file descriptor or handle for an asynchronous or immediate I/O notification.
+        //! @param [in] id Event id, as previously returned by newAsynchronousIO(), newReadNotify(), or newWriteNotify().
+        //! @return The associated system-specific file descriptor or handle, or SYS_SOCKET_INVALID is there is none.
+        //!
+        SysSocketType getSocket(EventId id);
+
+        //--------------------------------------------------------------------
         // ASYNCHRONOUS I/O EVENTS
         //--------------------------------------------------------------------
 
@@ -340,6 +351,15 @@ namespace ts {
         bool deleteReadNotify(EventId id, bool silent = false);
 
         //!
+        //! Delete a notification of read-ready or read-completion, by file descriptor or handle.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
+        //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
+        //! @param [in] silent If true, do not report errors through the logger.
+        //! @return True on success, false on error.
+        //!
+        bool deleteReadNotify(SysSocketType sock, bool silent = false);
+
+        //!
         //! Add in the reactor a notification of write-ready or read-completion on a system file descriptor.
         //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
         //! @param [in] handler Address of a handler to call when the operation is ready. Return an error if set as @c nullptr.
@@ -356,6 +376,15 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool deleteWriteNotify(EventId id, bool silent = false);
+
+        //!
+        //! Delete a notification of write-ready or write-completion, by file descriptor or handle.
+        //! This method is normally never used in applications. It is used only by "reactive I/O classes", in the immediate I/O model.
+        //! @param [in] sock A system-specific file descriptor or handle. This can be a socket or something else.
+        //! @param [in] silent If true, do not report errors through the logger.
+        //! @return True on success, false on error.
+        //!
+        bool deleteWriteNotify(SysSocketType sock, bool silent = false);
 
         //--------------------------------------------------------------------
         // DEBUG
@@ -398,6 +427,7 @@ namespace ts {
             virtual void* newEvent(ReactorHandlerInterface* handler) = 0;
             virtual bool signalEvent(EventId id) = 0;
             virtual bool deleteEvent(EventId id, bool silent) = 0;
+            virtual SysSocketType getSocket(EventId id) = 0;
             virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) = 0;
             virtual void* newProcessHandleTermination(ReactorHandlerInterface* handler, SysHandleType process_handle);
             virtual bool cancelProcessTermination(EventId id, bool silent) = 0;
@@ -407,8 +437,10 @@ namespace ts {
             virtual bool deleteAsynchronousIO(EventId id, bool silent);
             virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool deleteReadNotify(EventId id, bool silent);
+            virtual bool deleteReadNotify(SysSocketType sock, bool silent);
             virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock);
             virtual bool deleteWriteNotify(EventId id, bool silent);
+            virtual bool deleteWriteNotify(SysSocketType sock, bool silent);
         };
 
         // The class Guts is defined as a subclass of GutBase in the system-specific source code.
@@ -482,8 +514,8 @@ namespace ts {
         void endOfEventProcessing()
         {
             // Swap the sets of deleted events.
+            _deleted_previous_current.clear();
             _deleted_previous_current.swap(_deleted_current);
-            _deleted_current.clear();
         }
 
         // Allocate a new EventData that is not a reuse of a recently deallocated one in _deleted_previous_current.

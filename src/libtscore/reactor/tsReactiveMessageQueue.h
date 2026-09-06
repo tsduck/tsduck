@@ -64,6 +64,12 @@ namespace ts {
         //!
         void startReceive(ReactiveMessageQueueHandlerInterface<MSG>* handler, const ObjectPtr& user_data = ObjectPtr());
 
+        //!
+        //! Remove the subscription to the message queue.
+        //! New messages are no longer delivered.
+        //!
+        void stopReceive();
+
     protected:
         // Inherited from ReactiveBase.
         virtual void processQueuedOperations() override;
@@ -117,6 +123,17 @@ void ts::ReactiveMessageQueue<MSG>::startReceive(ReactiveMessageQueueHandlerInte
 
     // Force the creation of the internal user event and trigger an initial queue check (if not empty).
     signalQueuedOperations();
+}
+
+// Remove the subscription to the message queue.
+template <typename MSG>
+void ts::ReactiveMessageQueue<MSG>::stopReceive()
+{
+    if (_subscribed) {
+        _subscribed = false;
+        _queue.cancelSubscription(this);
+        deactivateQueuedOperations(true);
+    }
 }
 
 // Called when a message is enqueued. Called from any thread.

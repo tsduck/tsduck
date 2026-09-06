@@ -76,10 +76,13 @@ public:
     virtual bool deleteEvent(EventId id, bool silent) override;
     virtual void* newProcessIdTermination(ReactorHandlerInterface* handler, SysProcessIdType pid) override;
     virtual bool cancelProcessTermination(EventId id, bool silent) override;
+    virtual SysSocketType getSocket(EventId id) override;
     virtual void* newReadNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteReadNotify(EventId id, bool silent) override;
+    virtual bool deleteReadNotify(SysSocketType sock, bool silent) override;
     virtual void* newWriteNotify(ReactorHandlerInterface* handler, SysSocketType sock) override;
     virtual bool deleteWriteNotify(EventId id, bool silent) override;
+    virtual bool deleteWriteNotify(SysSocketType sock, bool silent) override;
 
 private:
     // File descriptor for epoll().
@@ -95,6 +98,7 @@ private:
     // Retrieve or allocate/register an event data for a given file descriptor.
     // There is only one EventData per file descriptor, sharing EVT_READ and EVT_WRITE.
     // On return, new_type is true is the EventData is new or if it didn't contain that EventType.
+    EventData* getEventData(int fd);
     EventData* newEventData(EventType type, int fd, bool& new_type);
 
     // Deregister and delete an EventData if no longer used after removing an event type.
@@ -125,19 +129,16 @@ ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
 // EventData management.
 //----------------------------------------------------------------------------
 
-// Retrieve or allocate/register an event data for a given file descriptor.
-ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd, bool& new_type)
+// Retrieve an event data for a given file descriptor.
+ts::Reactor::EventData* ts::Reactor::Guts::getEventData(int fd)
 {
-    // Check if the file descriptor already has an EventData.
     if (fd >= 0) {
         const auto it = _file_descs_map.find(fd);
         if (it != _file_descs_map.end()) {
             if (Canary::Error(&it->second->canary) == nullptr) {
                 // Found a valid EventData for the same file descriptor. Add the event.
-                assert(it->second->fd == fd);
-                new_type = (it->second->type & type) != type;
-                it->second->type = EventType(type | it->second->type);
                 _reactor.trace(u"reuse EventData @%X, type 0x%X", uintptr_t(it->second), it->second->type);
+                assert(it->second->fd == fd);
                 return it->second;
             }
             else {
@@ -147,14 +148,29 @@ ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd, 
             }
         }
     }
+    return nullptr;
+}
 
-    // Allocate and register a new EventData.
-    EventData* evd = _reactor.newEventData(type);
-    evd->type = type;
-    new_type = true;
-    if (fd >= 0) {
-        evd->fd = fd;
-        _file_descs_map.insert(std::make_pair(fd, evd));
+// Retrieve or allocate/register an event data for a given file descriptor.
+ts::Reactor::EventData* ts::Reactor::Guts::newEventData(EventType type, int fd, bool& new_type)
+{
+    // Check if the file descriptor already has an EventData.
+    EventData* evd = getEventData(fd);
+
+    if (evd != nullptr) {
+        // Check/add type on existing EventData.
+        new_type = (evd->type & type) != type;
+        evd->type = EventType(evd->type | type);
+    }
+    else {
+        // Allocate and register a new EventData.
+        evd = _reactor.newEventData(type);
+        evd->type = type;
+        new_type = true;
+        if (fd >= 0) {
+            evd->fd = fd;
+            _file_descs_map.insert(std::make_pair(fd, evd));
+        }
     }
     return evd;
 }
@@ -166,7 +182,7 @@ void ts::Reactor::Guts::deleteEventData(EventData* evd, EventType type)
     evd->type = EventType(evd->type & ~type);
     if (evd->type != 0) {
         // Another event type remains, don't delete the EventData, don't remove the association with the file descriptor.
-        _reactor.trace(u"keep EventData: %X, remaining type %X", uintptr_t(evd), evd->type);
+        _reactor.trace(u"keep EventData: %X, remaining type 0x%X", uintptr_t(evd), evd->type);
     }
     else {
         // The EventData is no longer used.
@@ -739,6 +755,17 @@ bool ts::Reactor::Guts::sysDeleteProcess(EventData* evd, bool silent)
 
 
 //----------------------------------------------------------------------------
+// Get the system-specific file descriptor or handle for an I/O notification.
+//----------------------------------------------------------------------------
+
+ts::SysSocketType ts::Reactor::Guts::getSocket(EventId id)
+{
+    EventData* evd = reinterpret_cast<EventData*>(id._ptr);
+    return _reactor.validateEventData(evd, true) && (evd->type & (EVT_READ | EVT_WRITE)) != 0 ? evd->fd : SYS_SOCKET_INVALID;
+}
+
+
+//----------------------------------------------------------------------------
 // Add in the reactor a notification of read-ready or read-completion.
 //----------------------------------------------------------------------------
 
@@ -775,6 +802,17 @@ bool ts::Reactor::Guts::deleteReadNotify(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
     bool success = _reactor.validateEventData(evd, silent);
+    if (success) {
+        success = sysDeleteRead(evd, silent);
+        deleteEventData(evd, EVT_READ);
+    }
+    return success;
+}
+
+bool ts::Reactor::Guts::deleteReadNotify(SysSocketType sock, bool silent)
+{
+    EventData* evd = getEventData(sock);
+    bool success = evd != nullptr && (evd->type | EVT_READ) != 0;
     if (success) {
         success = sysDeleteRead(evd, silent);
         deleteEventData(evd, EVT_READ);
@@ -829,6 +867,17 @@ bool ts::Reactor::Guts::deleteWriteNotify(EventId id, bool silent)
 {
     EventData* evd = reinterpret_cast<EventData*>(id._ptr);
     bool success = _reactor.validateEventData(evd, silent);
+    if (success) {
+        success = sysDeleteWrite(evd, silent);
+        deleteEventData(evd, EVT_WRITE);
+    }
+    return success;
+}
+
+bool ts::Reactor::Guts::deleteWriteNotify(SysSocketType sock, bool silent)
+{
+    EventData* evd = getEventData(sock);
+    bool success = evd != nullptr && (evd->type | EVT_WRITE) != 0;
     if (success) {
         success = sysDeleteWrite(evd, silent);
         deleteEventData(evd, EVT_WRITE);

@@ -7,11 +7,12 @@
 * [Current status](#current-status)
   * [Core Reactor](#core-reactor)
   * [Socket layer, including TLS](#socket-layer-including-tls)
+  * [Files and pipes](#files-and-pipes)
   * [Presentation layer (Text, TLV)](#presentation-layer-text-tlv)
   * [Generic server](#generic-server)
-  * [Message queues](#message-queues)
+  * [Message queue](#message-queue)
   * [Worker delegation](#worker-delegation)
-  * [Remaining work](#remaining-work)
+  * [Web request](#web-request)
 
 ## Summary
 
@@ -95,10 +96,15 @@ An event loop shall include the following features:
 
 ## Current status
 
+All above features are now implemented in the TSCore library. See the relevant chapter
+in the [TSDuck Developer Guide](https://tsduck.io/docs/tsduck-dev.html#reactorevents)
+for a high-level description. It includes a diagram of all I/O classes which illustrates
+the relationships between the class `Reactor` and all related I/O and "reactive" classes.
+
 ### Core Reactor
 
 Class `Reactor` is implemented. Based on epoll (Linux), kqueue (macOS and BSD), I/O
-Completion Ports (Windows). Timers, user events, and synchronization on process
+Completion Ports (IOCP, Windows). Timers, user events, and synchronization on process
 termination are included. Immediate I/O (epoll, kqueue) and asynchronous I/O (IOCP)
 are implemented using distinct API's.
 
@@ -112,9 +118,8 @@ instance of `Reactor` to dispatch events.
 `Reactor` and reactive classes never block. They only implement services to "start
 something". When that "something" completes, a handler interface classes is called.
 
-For more details on the relationships between the class `Reactor` and all related
-I/O and "reactive" classes, see the
-[Reactor class diagram](https://github.com/tsduck/tsduck-presentations/blob/master/diagrams/reactor-class-diagram.pdf).
+The TSDuck Developer Guide includes a [diagram](https://tsduck.io/docs/tsduck-dev.html#_reactive_io_classes)
+of the relationships between the reactive classes and the handler interface classes.
 
 ### Socket layer, including TLS
 
@@ -147,10 +152,12 @@ per client connection.
 Using a user-supplied factory class, any kind of transport (clear TCP or TLS)
 and any kind of data presentation (raw, text lines, TLV) can be used.
 
-See a sample class diagram
-[here](https://github.com/tsduck/tsduck-presentations/blob/master/diagrams/reactive-server.pdf).
+The TSDuck Developer Guide includes a
+[diagram](https://tsduck.io/docs/tsduck-dev.html#_sample_reactor_based_application)
+which illustrates the archtecture of a server application, based on class
+`ReactiveServer`.
 
-### Message queues
+### Message queue
 
 Template class `ReactiveMessageQueue` is a wrapper around an instance of template
 class `MessageQueue` which receives the messages in a reactor context.
@@ -163,6 +170,11 @@ in the context of a worker thread to perform the lengthy task. The other one
 is used in the context of the reactor thread to notify the application of the
 completion of the delegated task.
 
-### Remaining work
+### Web request
 
-- HTTP session (libcurl, WinInet).
+Class `ReactiveWebRequest` implements a non-blocking API for Web requests
+(HTTP, HTTPS, FTP) based on libcurl (UNIX systemes) or WinInet (Windows).
+
+Because these libraries have distinct architectures, it was easier to hide their
+API in `ReactiveWebRequest` and reimplement the blcoking verion, `WebRequest`,
+using an internal `Reactor` and an instance of `ReactiveWebRequest`.

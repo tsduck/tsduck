@@ -337,7 +337,7 @@ bool ts::ReactiveStream::startReadStream(ReactiveStreamHandlerInterface* handler
     req = std::make_shared<ReceiveRequest>();
     req->handler = handler;
     req->buffer_size = buffer_size;
-    req->data.resize(buffer_size);
+    req->data = std::make_shared<ByteBlock>(buffer_size);
     req->blocking = !device().isSupportedByReactor();
     _pending_receive = std::make_shared<IOSB>();
     _pending_receive->app_data = user_data;
@@ -351,7 +351,7 @@ bool ts::ReactiveStream::startReadStream(ReactiveStreamHandlerInterface* handler
     else if constexpr (ReactorSupport::UseAsynchronousIO()) {
         // Start the first receive operation. Even if it immediately completes, an asynchronous I/O completion will be posted.
         size_t retsize = 0;
-        if (!_stream.readStream(req->data.data(), req->data.size(), retsize, nullptr, _pending_receive.get())) {
+        if (!_stream.readStream(req->data->data(), req->data->size(), retsize, nullptr, _pending_receive.get())) {
             _pending_receive.reset();
             return false;
         }
@@ -372,16 +372,16 @@ void ts::ReactiveStream::handleReadReady(Reactor& reactor, EventId id, int error
 
         auto req = std::dynamic_pointer_cast<ReceiveRequest>(_pending_receive->react_data);
         assert(req != nullptr);
-        assert(req->next_read <= req->data.size());
+        assert(req->next_read <= req->data->size());
 
         // Enlarge buffer if no room left.
-        if (req->next_read == req->data.size()) {
-            req->data.resize(req->data.size() + req->buffer_size);
+        if (req->next_read == req->data->size()) {
+            req->data->resize(req->data->size() + req->buffer_size);
         }
 
         // Try to receive once.
         size_t retsize = 0;
-        if (!_stream.readStream(req->data.data() + req->next_read, req->data.size() - req->next_read, retsize, nullptr, _pending_receive.get())) {
+        if (!_stream.readStream(req->data->data() + req->next_read, req->data->size() - req->next_read, retsize, nullptr, _pending_receive.get())) {
             // Receive error.
             req->new_data = true;
             _pending_receive->error_code = LastSysErrorCode();
@@ -423,9 +423,8 @@ void ts::ReactiveStream::processReceiveBuffer()
     req->new_data = false;
 
     // Resize the data buffer to the exact received size for the handler.
-    // Keep the previous size, will restore it later, hoping that there will be no reallocation / memory move.
-    const size_t previous_size = req->data.size();
-    req->data.resize(req->next_read);
+    const size_t previous_size = req->data->size();
+    req->data->resize(req->next_read);
 
     // Loop on calls to handler, when the handler uses only a part of the buffer.
     processReceiveBuffer(req->data, req->control, req->handler, _pending_receive->error_code, _pending_receive->app_data);
@@ -440,9 +439,9 @@ void ts::ReactiveStream::processReceiveBuffer()
         else {
             // Restore previous buffer size, hoping that there will be no reallocation / memory move.
             assert(req == std::dynamic_pointer_cast<ReceiveRequest>(_pending_receive->react_data));
-            assert(previous_size >= req->data.size());
-            req->next_read = req->data.size();
-            req->data.resize(previous_size);
+            assert(previous_size >= req->data->size());
+            req->next_read = req->data->size();
+            req->data->resize(previous_size);
         }
     }
 }
@@ -452,17 +451,19 @@ void ts::ReactiveStream::processReceiveBuffer()
 // Invoke the receive handler as many times as possible on a data buffer.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveStream::processReceiveBuffer(ByteBlock& data, ReactiveInputControl& control, ReactiveStreamHandlerInterface* handler, int error_code, const ObjectPtr& user_data)
+void ts::ReactiveStream::processReceiveBuffer(ByteBlockPtr& data, ReactiveInputControl& control, ReactiveStreamHandlerInterface* handler, int error_code, const ObjectPtr& user_data)
 {
+    assert(data != nullptr);
+
     // Loop on calls to handler, when the handler uses only a part of the buffer.
     // Check if we have the required condition to call the handler.
     // Always call the handler once in case of error.
     while (!SysSuccess(error_code) ||
-           (!data.empty() &&
+           (!data->empty() &&
             // Need a minimum amount of received data.
-            (!control.min_next_size.has_value() || data.size() >= control.min_next_size.value()) &&
+            (!control.min_next_size.has_value() || data->size() >= control.min_next_size.value()) &&
             // Need a specific delimiter byte in the received data.
-            (!control.next_delimiter.has_value() || data.find(control.next_delimiter.value()) != NPOS)))
+            (!control.next_delimiter.has_value() || data->find(control.next_delimiter.value()) != NPOS)))
     {
         // Default values for the input control, may be updated later by the handler.
         control.reset();
@@ -478,13 +479,13 @@ void ts::ReactiveStream::processReceiveBuffer(ByteBlock& data, ReactiveInputCont
         }
 
         // Adjust unread data in the buffer.
-        if (control.used_size.value_or(NPOS) < data.size()) {
-            // The buffer was not entirely read by the application, compact it.
-            data.erase(0, control.used_size.value());
+        if (!control.used_size.has_value() || *control.used_size >= data->size()) {
+            // All data were used by the callback. Let the shared pointer under the control of the called object and reallocate a new one.
+            data = std::make_shared<ByteBlock>();
         }
         else {
-            // The buffer was entirely read, no need to move memory.
-            data.clear();
+            // The buffer was not entirely read by the application. Collect the remaining data.
+            data = std::make_shared<ByteBlock>(*data, *control.used_size);
         }
     }
 }
@@ -544,7 +545,7 @@ void ts::ReactiveStream::handleAsynchronousIO(Reactor& reactor, EventId id, Devi
             }
             // Update the request result.
             recv->new_data = true;
-            recv->next_read = std::min(recv->next_read + io_size, recv->data.size());
+            recv->next_read = std::min(recv->next_read + io_size, recv->data->size());
             // Directly call processReceiveBuffer() because we are in reactor handler context.
             processReceiveBuffer();
             // Start the next receive operation if necesary.
@@ -554,12 +555,12 @@ void ts::ReactiveStream::handleAsynchronousIO(Reactor& reactor, EventId id, Devi
             }
             else {
                 // Enlarge buffer if no room left.
-                if (recv->next_read >= recv->data.size()) {
-                    recv->data.resize(recv->data.size() + recv->buffer_size);
+                if (recv->next_read >= recv->data->size()) {
+                    recv->data->resize(recv->data->size() + recv->buffer_size);
                 }
                 // Start the next receive.
                 size_t retsize = 0;
-                if (!_stream.readStream(recv->data.data() + recv->next_read, recv->data.size() - recv->next_read, retsize, nullptr, _pending_receive.get())) {
+                if (!_stream.readStream(recv->data->data() + recv->next_read, recv->data->size() - recv->next_read, retsize, nullptr, _pending_receive.get())) {
                     // Failed to start a new receive, stop receiving.
                     _pending_receive.reset();
                 }

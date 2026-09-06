@@ -42,7 +42,7 @@ namespace ts {
     //! Overlapped I/O can be used on named pipes only.
     //! - https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-overlapped-i-o
     //! - https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-client
-    //! 
+    //!
     class TSCOREDLL SysPipe: public ReporterBase
     {
         TS_NOBUILD_NOCOPY(SysPipe);
@@ -68,7 +68,7 @@ namespace ts {
 
         //!
         //! Pipe creation flags.
-        //! 
+        //!
         enum Flags {
             NONE          = 0x0000,  //!< No creation flag, use all default.
             READ_ASYNC    = 0x0001,  //!< Set the read end in immediate / asynchronous mode.

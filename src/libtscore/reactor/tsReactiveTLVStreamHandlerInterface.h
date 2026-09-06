@@ -33,6 +33,7 @@ namespace ts {
         //! Handle the reception of one valid message.
         //! @param [in,out] sock TCP socket for which the handler is invoked.
         //! @param [in] msg Pointer to a received decoded message. Can be null in case of error.
+        //! The handler may safely copy the shared pointer, the pointed message will not be modified by the ReactiveTLVStream.
         //! @param [in] error_code System-specific error code, including:
         //! - SYS_SUCCESS on success.
         //! - SYS_EOF on end of input or if the peer has disconnected,
@@ -45,6 +46,7 @@ namespace ts {
         //! Handle the termination of message send operation.
         //! @param [in,out] sock TCP socket for which the handler is invoked.
         //! @param [in] msg Pointer the serialized content of the message. Can be null in case of error.
+        //! The handler may safely copy the shared pointer, the pointed message will not be modified by the ReactiveTLVStream.
         //! @param [in] error_code System-specific error code, including:
         //! - SYS_SUCCESS on success.
         //! - SYS_EOF if the handler is called as a completion of "close write" or "send EOF", whatever it means for the stream device.

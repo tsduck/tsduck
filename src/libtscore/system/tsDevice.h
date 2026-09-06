@@ -98,6 +98,12 @@ namespace ts {
         virtual ~Device() override;
 
         //!
+        //! Default buffer size for receive operations.
+        //! This constant is used as default value in several I/O classes.
+        //!
+        static constexpr size_t DEFAULT_RECEIVE_BUFFER_SIZE = 16 * 1024;
+
+        //!
         //! Set the device in non-blocking mode.
         //!
         //! Important: Usually, this method must be called before opening the device, whatever it means.

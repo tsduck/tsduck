@@ -165,7 +165,7 @@ X-Echo-Header: Accept: */*
 
 Without option `-k` (insecure), we would get this:
 ~~~
-$ curl https://localhost:7777/ -i 
+$ curl https://localhost:7777/ -i
 curl: (60) SSL certificate problem: unable to get local issuer certificate
 More details here: https://curl.se/docs/sslcerts.html
 

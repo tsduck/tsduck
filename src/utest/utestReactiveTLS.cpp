@@ -151,7 +151,7 @@ namespace {
         virtual void handleTimer(ts::Reactor& reactor, ts::EventId id) override;
         virtual void handleTCPConnected(ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlockPtr& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -214,20 +214,21 @@ namespace {
         TSUNIT_ASSERT(&stream == &_rclient);
     }
 
-    void TestClient::handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    void TestClient::handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlockPtr& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
-        _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
+        _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data->size() << std::endl;
         TSUNIT_ASSERT(&stream == &_rclient);
         TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
+        TSUNIT_ASSERT(data != nullptr);
 
         // Need at least 4 bytes.
-        if (data.size() < sizeof(uint32_t)) {
+        if (data->size() < sizeof(uint32_t)) {
             control.used_size = 0;
             control.min_next_size = sizeof(uint32_t);
         }
         else {
             // Verify response.
-            const uint32_t response = *reinterpret_cast<const uint32_t*>(data.data());
+            const uint32_t response = *reinterpret_cast<const uint32_t*>(data->data());
             control.used_size = sizeof(uint32_t);
             _debug << "TestClient::handleTCPReceive, client id: " << _client_id << ", request: " << _request << ", response: " << response << std::endl;
             TSUNIT_EQUAL(_request + 1, response);
@@ -284,7 +285,7 @@ namespace {
         virtual ts::ReactiveTCPConnection& getConnection() override;
         virtual void handleTCPAccepted(ts::ReactiveTCPServer& server, ts::ReactiveTCPConnection& sock, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override;
-        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
+        virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlockPtr& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override;
         virtual void handleTCPClosed(ts::ReactiveTCPConnection& sock, const ts::ObjectPtr& user_data) override;
     };
 
@@ -328,7 +329,7 @@ namespace {
         TSUNIT_ASSERT(&stream == &_rclient);
     }
 
-    void TestServerConnection::handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlock& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
+    void TestServerConnection::handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlockPtr& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data)
     {
         TSUNIT_ASSERT(&stream == &_rclient);
         if (error_code == ts::SYS_EOF) {
@@ -337,15 +338,16 @@ namespace {
             TSUNIT_ASSERT(_rclient.startClose(this));
         }
         else {
-            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data.size() << std::endl;
+            TSUNIT_ASSERT(data != nullptr);
+            _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", error code: " << error_code << ", size: " << data->size() << std::endl;
             TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
             // Need at least 4 bytes.
-            if (data.size() < sizeof(uint32_t)) {
+            if (data->size() < sizeof(uint32_t)) {
                 control.used_size = 0;
                 control.min_next_size = sizeof(uint32_t);
             }
             else {
-                const uint32_t request = *reinterpret_cast<const uint32_t*>(data.data());
+                const uint32_t request = *reinterpret_cast<const uint32_t*>(data->data());
                 _debug << "TestServerConnection::handleTCPReceive, client id: " << _client_id << ", request: " << request << std::endl;
                 control.used_size = sizeof(uint32_t);
                 _response = request + 1;
