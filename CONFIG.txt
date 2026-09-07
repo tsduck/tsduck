@@ -32,6 +32,7 @@ NOGITHUB          # No version check, no download, no upgrade from GitHub (for d
 NOHWACCEL         # Disable hardware acceleration such as crypto instructions.
 NOPCSTD           # Remove the std=c++17 flag from libtsduck's pkg-config file.
 NODOC             # Do not build the documentation, install TSDuck without documentation.
+ROBOTWEAX_SRT_DIR # Installation root directory of Robotweax SRT, optional replacement for standard libsrt.
 
 # Options to define the representation of bitrates
 # ------------------------------------------------
@@ -47,6 +48,7 @@ CXXFLAGS_EXTRA    # Additional user-specified C++ compilation flags.
 CPPFLAGS_EXTRA    # Additional user-specified preprocessor flags.
 LDFLAGS_EXTRA     # Additional user-specified linker flags.
 ARFLAGS_EXTRA     # Additional user-specified archiver flags.
+SOFLAGS_EXTRA     # Additional user-specified options when creating shared object libraries.
 LDLIBS_EXTRA      # Additional user-specified libraries.
 ASSERTIONS        # Keep assertions in release mode (assertions are always on in debug mode).
 DEBUG             # Compile with debug information and no optimization.

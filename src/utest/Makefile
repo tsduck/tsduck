@@ -28,7 +28,7 @@ $(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 # 2) Using static library. Skip plugin tests since they use the shared object.
 # Add libraries which are otherwise only used by the libtsduck shared object.
 $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) $(STATIC_LIBTSDUCK) $(STATIC_LIBTSCORE)
-	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LIBTSCORE_LDLIBS) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
+	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS_EXTRA) $(LDFLAGS) $^ $(LIBTSCORE_LDLIBS) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 
 # Run tests.
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.

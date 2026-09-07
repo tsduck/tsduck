@@ -47,7 +47,7 @@ $(OBJDIR)/tsduck.o: $(TSDUCK_H)
 $(OBJDIR)/tsduck.o: CXXFLAGS_INCLUDES += -I$(dir $(TSDUCK_H))
 
 # Specific compilation options:
-CXXFLAGS_INCLUDES += $(LIBTSDUCK_CXXFLAGS_INCLUDES)
+CXXFLAGS_EXTRA += $(LIBTSDUCK_CXXFLAGS_INCLUDES)
 $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
 # By default, both static and dynamic libraries are created but only use
@@ -61,7 +61,7 @@ libs: $(if $(NOSTATIC),,$(STATIC_LIBTSDUCK)) $(if $(STATIC),,$(SHARED_LIBTSDUCK)
 # otherwise the command line is too long when the directory path is long.
 $(SHARED_LIBTSDUCK): $(OBJS) $(SHARED_LIBTSCORE)
 	$(call LOG,[LD] $@) cd $(OBJDIR); \
-	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) -L$(dir $(SHARED_LIBTSCORE)) -ltscore \
+	$(CXX) $(SOFLAGS_EXTRA) $(SOFLAGS) $(LDFLAGS_EXTRA) $(LDFLAGS) $(notdir $(OBJS)) -L$(dir $(SHARED_LIBTSCORE)) -ltscore \
 	    $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
@@ -108,7 +108,7 @@ endif
 # otherwise the command line is too long when the directory path is long.
 $(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB)
 	$(call LOG,[AR] $@) cd $(OBJDIR); \
-	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB))
+	$(AR) $(ARFLAGS_EXTRA) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB))
 
 # Installation targets.
 .PHONY: install-tools install-devel

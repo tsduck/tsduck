@@ -68,7 +68,8 @@ libs: $(if $(NOSTATIC),,$(STATIC_LIBTSCORE)) $(if $(STATIC),,$(SHARED_LIBTSCORE)
 # otherwise the command line is too long when the directory path is long.
 $(SHARED_LIBTSCORE): $(OBJS)
 	$(call LOG,[LD] $@) cd $(OBJDIR); \
-	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(LIBTSCORE_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(CXX) $(SOFLAGS_EXTRA) $(SOFLAGS) $(LDFLAGS_EXTRA) $(LDFLAGS) $(notdir $(OBJS)) \
+	    $(LIBTSCORE_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # Build the static library using one single big 'ar'. There are so many object files
 # that this is much faster than individual 'ar' commands per object module.
@@ -78,7 +79,7 @@ OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tscore.o,$(OBJS))
 
 $(STATIC_LIBTSCORE): $(OBJS_STATIC_LIB)
 	$(call LOG,[AR] $@) cd $(OBJDIR); \
-	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB))
+	$(AR) $(ARFLAGS_EXTRA) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB))
 
 # Installation targets.
 .PHONY: install-tools install-devel

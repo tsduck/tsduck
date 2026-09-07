@@ -73,11 +73,11 @@ $(eval $(call _SHELL_LINES,$(_ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VAR
 # Compilation rules
 
 $(OBJDIR)/%.o: %.cpp
-	$(call LOG,[CXX] $<) mkdir -p $(OBJDIR); $(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(call LOG,[CXX] $<) mkdir -p $(OBJDIR); $(CXX) $(CXXFLAGS_EXTRA) $(CXXFLAGS) -c -o $@ $<
 $(BINDIR)/%: $(OBJDIR)/%.o
-	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
+	$(call LOG,[LD] $@) $(CXX) $(LDFLAGS_EXTRA) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
-	$(call LOG,[LD] $@) $(CXX) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(call LOG,[LD] $@) $(CXX) $(SOFLAGS_EXTRA) $(SOFLAGS) $(LDFLAGS_EXTRA) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # Static linking.
 
@@ -118,7 +118,8 @@ static:
 
 $(OBJDIR)/%.dep: %.cpp
 	$(call LOG,[DEP] $<) mkdir -p $(OBJDIR); \
-	$(CXX) -MM $(CPPFLAGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || rm -f $@
+	$(CXX) -MM $(LIBTSCORE_CXXFLAGS_INCLUDES) $(LIBTSDUCK_CXXFLAGS_INCLUDES) $(CPPFLAGS_EXTRA) $(CPPFLAGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ \
+	    || rm -f $@
 
 NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
           flawfinder cloc listvars scan-build unixify
@@ -185,4 +186,4 @@ listvars:
 
 .PHONY: cxxmacros
 cxxmacros:
-	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort
+	@$(CPP) $(CXXFLAGS_EXTRA) $(CXXFLAGS) -x c++ -dM /dev/null | sort

@@ -53,7 +53,8 @@ libs: $(if $(NOSTATIC),,$(STATIC_LIBTSDEKTEC)) $(if $(STATIC),,$(SHARED_LIBTSDEK
 $(SHARED_LIBTSDEKTEC): $(OBJS) $(DTAPI_OBJECT) $(SHARED_LIBTSDUCK) $(SHARED_LIBTSCORE)
 	@echo '  [DTAPI] using $(DTAPI_OBJECT)'
 	$(call LOG,[LD] $@) cd $(OBJDIR); \
-	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) -L$(dir $(SHARED_LIBTSCORE)) -ltsduck -ltscore \
+	$(CXX) $(SOFLAGS_EXTRA) $(SOFLAGS) $(LDFLAGS_EXTRA) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) \
+	    -L$(dir $(SHARED_LIBTSCORE)) -ltsduck -ltscore \
 	    $(LIBTSDEKTEC_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # Build the static library.
@@ -61,7 +62,7 @@ $(SHARED_LIBTSDEKTEC): $(OBJS) $(DTAPI_OBJECT) $(SHARED_LIBTSDUCK) $(SHARED_LIBT
 # otherwise the command line is too long when the directory path is long.
 $(STATIC_LIBTSDEKTEC): $(OBJS) $(DTAPI_OBJECT)
 	$(call LOG,[AR] $@) cd $(OBJDIR); \
-	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS)) $(DTAPI_OBJECT)
+	$(AR) $(ARFLAGS_EXTRA) $(ARFLAGS) $@ $(notdir $(OBJS)) $(DTAPI_OBJECT)
 
 # Installation targets.
 .PHONY: install-tools install-devel

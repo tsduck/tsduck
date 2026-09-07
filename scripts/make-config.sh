@@ -642,7 +642,7 @@ fi
 CPPFLAGS='$(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) $(CPPFLAGS_EXTRA)'
 CXXFLAGS='$(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_ASAN) $(CXXFLAGS_UBSAN) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_NO_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_TARGET) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)'
 LDFLAGS='$(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_UBSAN) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA) $(LDFLAGS_LINKER)'
-ARFLAGS='$(ARFLAGS_ADD) $(ARFLAGS_EXTRA)'
+ARFLAGS='$(ARFLAGS_ADD)'
 
 # Java compiler.
 if [[ -z $NOJAVA$JAVA_DONE ]]; then
@@ -697,7 +697,14 @@ if [[ -n $CROSS$CROSS_TARGET ]]; then
 fi
 if [[ -z $NOSRT$SRT_DONE ]]; then
     # SRT not disabled, check if libsrt is available.
-    [[ -z $(exist-wildcard /usr/include/srt/*.h $ALTDEVROOT/include/srt/*.h) ]] && NOSRT=1
+    if [[ -n $ROBOTWEAX_SRT_DIR ]]; then
+        # Alternative Robotweax SRT implementation.
+        [[ -e $ROBOTWEAX_SRT_DIR/lib/libsrt.a ]] || NOSRT=1
+        [[ -e $ROBOTWEAX_SRT_DIR/include/srt/srt.h ]] || NOSRT=1
+    else
+        # Standard Haivision libsrt.
+        [[ -z $(exist-wildcard /usr/include/srt/*.h $ALTDEVROOT/include/srt/*.h) ]] && NOSRT=1
+    fi
     SRT_DONE=1
 fi
 if [[ -z $NORIST$RIST_DONE ]]; then
@@ -857,7 +864,12 @@ if [[ -n $NOSDEFL ]]; then
 fi
 if [[ -n $NOSRT ]]; then
     LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_SRT=1"
+elif [[ -n $ROBOTWEAX_SRT_DIR ]]; then
+    # Alternative Robotweax SRT implementation.
+    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $ROBOTWEAX_SRT_DIR/lib/libsrt.a -lcrypto"
+    LIBTSDUCK_CXXFLAGS_INCLUDES="-DTS_USE_ROBOTWEAX_SRT -I$ROBOTWEAX_SRT_DIR/include $LIBTSDUCK_CXXFLAGS_INCLUDES"
 else
+    # Standard Haivision SRT.
     LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lsrt"
 fi
 if [[ -n $NORIST ]]; then
