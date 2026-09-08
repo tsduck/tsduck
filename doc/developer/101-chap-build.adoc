@@ -875,6 +875,64 @@ $ nix develop ./pkg/nix
 [nix-shell]$ make test
 ----
 
+[#altbuild]
+==== Build with alternative libraries
+
+This section documents how to build TSDuck using some alternatives to the
+standard libraries which are used by default.
+
+[#robotweax]
+===== Build with Robotweax SRT library
+
+By default, on all operating systems, the SRT library is the Haivision libsrt
+(see <<Haivision-SRT>>). This library is available in standard package managers
+for all operating systems. Haivision is the company which originally specified
+the SRT protocol and they published the first open source implementation of an
+SRT library.
+
+Later, Robotweax, a company which was founded by former Haivision employees,
+published an alternative version of the SRT library (see
+<<Robotweax-SRT>>). This library was designed to be compatible with the original
+libsrt and interoperable with it. It is expected to be lighter, with a more
+modern implementation, than the original libsrt.
+
+By default, TSDuck is built with the original libsrt, as installed on the build
+system. It is possible to build TSDuck with the Robotweax SRT library, even if
+the standard libsrt is installed on the build system. Because the Robotweax SRT
+library is not, or not yet, available as a standard package in common operating
+systems, you have to build it locally first.
+
+[.usage]
+Building with Robotweax SRT on UNIX systems
+
+To build Robotweax SRT and install it on a specific directory, for instance
+`/opt/robotweax`, use the following commands:
+
+[source,shell]
+----
+$ git clone https://github.com/Robotweax/srt.git robotweax-srt
+$ cd robotweax-srt
+$ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+$ cmake --build build --parallel
+$ cmake --install build --prefix /opt/robotweax
+----
+
+Then, build TSDuck with symbol or environment variable `ROBOTWEAX_SRT_DIR`
+pointing to the Robotweax SRT installation prefix:
+
+[source,shell]
+----
+$ make ROBOTWEAX_SRT_DIR=/opt/robotweax
+----
+
+You may of course install Robotweax SRT anywhere else and use other common
+`make` options, especially `-j` to parallelize the huge TSDuck build.
+
+[.usage]
+Building with Robotweax SRT on Windows systems
+
+To be completed...
+
 [#instfiles]
 ==== Installer files summary
 

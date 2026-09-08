@@ -54,6 +54,7 @@
 * [[[GAMMA]]] "Design Patterns, Elements of Reusable Object-Oriented Software",
   Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides, Addison-Wesley, 1995.
 * [[[GITHUB-CI]]] GitHub Actions documentation, https://docs.github.com/en/actions
+* [[[Haivision-SRT]]] Haivision original SRT library, https://github.com/Haivision/srt/
 * [[[ISO-14882]]] ISO/IEC 14882, "Programming Languages - C++", 1998 (the C++98 standard).
 * [[[ISO-14882-11]]] ISO/IEC 14882:2011, "Programming Languages - C++", 2011 (the C++11 standard).
 * [[[ISO-14882-14]]] ISO/IEC 14882:2014, "Programming Languages - C++", 2014 (the C++14 standard).
@@ -65,6 +66,7 @@
   Scott Meyers, Addison-Wesley, 2008.
 * [[[MEYERS-STL]]] "Effective STL, 50 Specific Ways to Improve Your Use of the Standard Template Library",
   Scott Meyers, Addison-Wesley, 2001.
+* [[[Robotweax-SRT]]] Robotweax alternative SRT library, https://github.com/Robotweax/srt/
 * [[[STROUSTRUP]]] "The C++ Programming Language, Special Edition", Bjarne Stroustrup, Addison-Wesley, 2000.
 * [[[TSDuck]]] TSDuck Web site, {home}
 * [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, {repo}issues

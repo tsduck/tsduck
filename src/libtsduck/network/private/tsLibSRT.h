@@ -9,6 +9,18 @@
 //!  @file
 //!  Safely include the libsrt definitions.
 //!
+//!  By default, the standard Haivision SRT library is used.
+//!
+//!  As an alternative, the Robotweax SRT library can be used. First, it must
+//!  be built and installed in some directory. Then build TSDuck with:
+//!
+//!    make ROBOTWEAX_SRT_DIR=/where/robotweax-srt/is/installed
+//!
+//!  This definition translates to:
+//!
+//!  - Compiler: -DTS_USE_ROBOTWEAX_SRT -I$ROBOTWEAX_SRT_DIR/include
+//!  - Linker: $ROBOTWEAX_SRT_DIR/lib/libsrt.a -lcrypto
+//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -52,21 +64,24 @@
 
     // If we want to use Robotweax SRT, make sure we included the right header, not the one from libsrt.
     #if defined(TS_USE_ROBOTWEAX_SRT) && !defined(ROBOTWEAX_SRT_COMPAT_SRT_H) && !defined(ROBOTWEAX_SRT_FLAT_COMPAT_HEADER_H)
-        #error "Configured to use Robotweax SRT but seems to use the standard srt.h"
+        #error "Configured to use Robotweax SRT but seems to use the standard srt/srt.h"
     #endif
 
     // The header access_control.h was introduced in version 1.4.2.
     // On Windows, access_control.h was missing in the binary installer before 1.5.3.
-    // With Robotweax SRT, access_control.h is not yet present.
     #if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
         using SRT_RejectReason = SRT_REJECT_REASON;
     #else
         #define HAS_SRT_ACCESS_CONTROL 1
         using SRT_RejectReason = int;
-        #if (defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)) || defined(TS_USE_ROBOTWEAX_SRT)
+        #if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
             #define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
         #else
             #include <srt/access_control.h>
+            // Similar sanity check if we use Robotweax SRT.
+            #if defined(TS_USE_ROBOTWEAX_SRT) && !defined(ROBOTWEAX_SRT_COMPAT_ACCESS_CONTROL_H)
+                #error "Configured to use Robotweax SRT but seems to use the standard srt/access_control.h"
+            #endif
         #endif
     #endif
 
