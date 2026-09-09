@@ -370,18 +370,29 @@ ts::UString ts::SRTSocket::GetLibraryVersion()
 
     // Get the version from the dynamic library we have now.
     int32_t iversion = 0;
+    int32_t rversion = 0;
     ::SRTSOCKET sock = ::srt_create_socket();
     if (sock != SRT_INVALID_SOCK) {
         int len = sizeof(iversion);
         if (::srt_getsockflag(sock, SRTO_VERSION, &iversion, &len) < 0) {
             iversion = 0;
         }
+#if defined(ROBOTWEAX_SRT_VERSION_VALUE)
+        // With Robotweax SRT, SRTO_VERSION gives the SRT compatibility version.
+        // The version of the Robotweax SRT library is given by SRTO_ROBOTWEAX_VERSION.
+        if (::srt_getsockflag(sock, SRTO_ROBOTWEAX_VERSION, &rversion, &len) < 0) {
+            rversion = 0;
+        }
+#endif
         ::srt_close(sock);
     }
 
     if (iversion != 0) {
         // Version of current library successfully retrieved.
         version.format(u"libsrt version %d.%d.%d", iversion >> 16, (iversion >> 8) & 0xFF, iversion & 0xFF);
+        if (rversion != 0) {
+            version.format(u" (Robotweax SRT version %d.%d.%d)", rversion >> 16, (rversion >> 8) & 0xFF, rversion & 0xFF);
+        }
     }
     else {
         // Failed to get version, just get the compiled version.
