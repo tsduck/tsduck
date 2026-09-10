@@ -34,6 +34,7 @@
 |OOP |Object-Oriented Programming
 |RTFM |The Most Important Acronym For Developers (yes, it is)
 |RTTI |Run-Time Type Information (C++)
+|SDK |Software Development Kit
 |SFINAE |Substitution Failure Is Not An Error (C++)
 |STL |Standard Template Library (C++)
 |TDD |Test-Driven Development

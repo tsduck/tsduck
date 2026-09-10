@@ -363,45 +363,60 @@ namespace {
 
 ts::UString ts::SRTSocket::GetLibraryVersion()
 {
-    UString version;
+    UString version, library;
 
     // Initialize SRT.
     SRTInit::Instance();
 
     // Get the version from the dynamic library we have now.
-    int32_t iversion = 0;
-    int32_t rversion = 0;
     ::SRTSOCKET sock = ::srt_create_socket();
     if (sock != SRT_INVALID_SOCK) {
-        int len = sizeof(iversion);
-        if (::srt_getsockflag(sock, SRTO_VERSION, &iversion, &len) < 0) {
-            iversion = 0;
+        int32_t value = 0;
+        int len = sizeof(value);
+        if (::srt_getsockflag(sock, SRTO_VERSION, &value, &len) == 0) {
+            version.format(u"libsrt version %d.%d.%d", value >> 16, (value >> 8) & 0xFF, value & 0xFF);
+            #if defined(ROBOTWEAX_SRT_VERSION_VALUE)
+                // With Robotweax SRT, SRTO_VERSION gives the SRT compatibility version.
+                // The version of the Robotweax SRT library is given by SRTO_ROBOTWEAX_VERSION.
+                len = sizeof(value);
+                if (::srt_getsockflag(sock, SRTO_ROBOTWEAX_VERSION, &value, &len) == 0) {
+                    library.format(u"Robotweax SRT version %d.%d.%d", value >> 16, (value >> 8) & 0xFF, value & 0xFF);
+                    #if ROBOTWEAX_SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(0, 2, 4)
+                        // Starting with version 0.2.4, the cryptographic backend can be retrieved.
+                        len = sizeof(value);
+                        if (::srt_getsockflag(sock, SRTO_ROBOTWEAX_CRYPTO_BACKEND, &value, &len) == 0) {
+                            static const std::map<int, const UChar*> backend_names {
+                                {ROBOTWEAX_SRT_CRYPTO_BACKEND_OPENSSL, u"OpenSSL"},
+                                {ROBOTWEAX_SRT_CRYPTO_BACKEND_BCRYPT,  u"Microsoft BCrypt"},
+                            };
+                            const auto it = backend_names.find(value);
+                            if (it != backend_names.end()) {
+                                library.format(u" with %s backend", it->second);
+                            }
+                            else {
+                                library.format(u" with unknown backend #%d", value);
+                            }
+                        }
+                    #endif
+                }
+            #endif
         }
-#if defined(ROBOTWEAX_SRT_VERSION_VALUE)
-        // With Robotweax SRT, SRTO_VERSION gives the SRT compatibility version.
-        // The version of the Robotweax SRT library is given by SRTO_ROBOTWEAX_VERSION.
-        if (::srt_getsockflag(sock, SRTO_ROBOTWEAX_VERSION, &rversion, &len) < 0) {
-            rversion = 0;
-        }
-#endif
         ::srt_close(sock);
     }
 
-    if (iversion != 0) {
-        // Version of current library successfully retrieved.
-        version.format(u"libsrt version %d.%d.%d", iversion >> 16, (iversion >> 8) & 0xFF, iversion & 0xFF);
-        if (rversion != 0) {
-            version.format(u" (Robotweax SRT version %d.%d.%d)", rversion >> 16, (rversion >> 8) & 0xFF, rversion & 0xFF);
-        }
-    }
-    else {
-        // Failed to get version, just get the compiled version.
+    // If failed to get version, just get the compiled version.
+    if (version.empty()) {
         version = u"error getting libsrt version, compiled with version ";
-#if defined(SRT_VERSION_STRING)
-        version.format(u"%s", SRT_VERSION_STRING);
-#else
-        version.format(u"%d.%d.%d", SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH);
-#endif
+        #if defined(SRT_VERSION_STRING)
+            version.format(u"%s", SRT_VERSION_STRING);
+        #else
+            version.format(u"%d.%d.%d", SRT_VERSION_MAJOR, SRT_VERSION_MINOR, SRT_VERSION_PATCH);
+        #endif
+    }
+
+    // Add the description of the library, if available.
+    if (!library.empty()) {
+        version.format(u" (%s)", library);
     }
 
     return version;

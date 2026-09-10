@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4794 (September 2026)
+VERSION 3.45-4795 (September 2026)
 
 [NEW] New commands and plugins:
 
@@ -10,10 +10,14 @@ VERSION 3.45-4794 (September 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
-  * TSDuck can be built with the library Robotweax SRT in  replacement  to  the
-    standard Haivision libsrt. Robotweax SRT is a  new  implementation  of  SRT
-    which is compatible with libsrt. By default, TSDuck remains built with  the
-    standard libsrt.
+  * TSDuck can be built with the Robotweax SRT library in  replacement  of  the
+    original Haivision libsrt. Robotweax SRT is a new implementation of the SRT
+    API which is compatible with the original libsrt.
+    - On UNIX systems (Linux, macOS, BSD),  TSDuck is  built  with  the default
+      SRT library of the system,  which is the original Haivision libsrt in all
+      cases, as of this release.
+    - On Windows, by default,  TSDuck is  now  built  with  the  Robotweax  SRT
+      library, using Microsoft BCrypt as cryptographic backend.
   * Input plugin "hls" new supports encrypted HLS with method AES-128.  The key
     files which are specified in the playlist must be accessible.
   * Plugin  "dektec"  (input):  on  DVB-S/S2  receivers,  LNB  control  is  now
@@ -57,12 +61,6 @@ VERSION 3.45-4794 (September 2026)
     cases.
   * In plugin "eitinject", when deleting an event (metadata attribute="delete")
     a crash could happen in rare cases.
-
-[REG] Regressions:
-
-  * SRT  support  has  been  removed  from  TSDuck on Windows, due to recurrent
-    issues  starting with libsrt 1.5.5. TSDuck continues to support SRT on UNIX
-    systems (Linux, macOS, FreeBSD).
 
 -------------------------------------------------------------------------------
 

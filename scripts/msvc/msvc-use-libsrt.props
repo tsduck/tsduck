@@ -1,19 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- BEGIN-SRT-DISABLE: Disable SRT on Windows because of recurrent issues with srt_cleanup() -->
-  <PropertyGroup Label="UserMacros"><TS_NO_SRT>1</TS_NO_SRT></PropertyGroup>
-  <!-- END-SRT-DISABLE -->
-
   <!-- Must be included in .vcxproj files to use the SRT library -->
 
-  <!-- Previous versions of libsrt installers had no Arm64 libraries -->
-  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_SRT)' == '' AND '$(LIBSRT)' != '' AND '$(Configuration)' != 'ASan' AND ('$(Platform)' != 'ARM64' OR Exists('$(LIBSRT)\lib\Release-Arm64'))">
-    <Import Project="$(LIBSRT)\libsrt.props"/>
-  </ImportGroup>
+  <!-- Use Robotweax SRT with BCrypt backend if present, with OpenSSL backend otherwise -->
+  <PropertyGroup>
+    <!-- Define all possible properties files -->
+    <LibSrtProps>$(LIBSRT)\libsrt.props</LibSrtProps>
+    <BCryptSrtProps>$(ROBOTWEAX_SRT_BCRYPT)\srt.props</BCryptSrtProps>
+    <OpenSslSrtProps>$(ROBOTWEAX_SRT_OPENSSL)\srt.props</OpenSslSrtProps>
+    <NoSrtProps>$(MSBuildThisFileDirectory)msvc-disable-libsrt.props</NoSrtProps>
+    <!-- By default, disable SRT -->
+    <SrtProps>$(NoSrtProps)</SrtProps>
+    <!-- If original Haivision libsrt exists, override -->
+    <SrtProps Condition="Exists('$(LibSrtProps)')">$(LibSrtProps)</SrtProps>
+    <!-- If SRT library with OpenSSL backend exists, override -->
+    <SrtProps Condition="Exists('$(OpenSslSrtProps)')">$(OpenSslSrtProps)</SrtProps>
+    <!-- If SRT library with BCrypt backend exists, override -->
+    <SrtProps Condition="Exists('$(BCryptSrtProps)')">$(BCryptSrtProps)</SrtProps>
+    <!-- If SRT is disabled anyway, always override -->
+    <SrtProps Condition="'$(TS_NO_SRT)' != ''">$(NoSrtProps)</SrtProps>
+  </PropertyGroup>
 
-  <ImportGroup Label="PropertySheets" Condition="'$(TS_NO_SRT)' != '' OR '$(LIBSRT)' == '' OR '$(Configuration)' == 'ASan' OR ('$(Platform)' == 'ARM64' AND !Exists('$(LIBSRT)\lib\Release-Arm64'))">
-    <Import Project="msvc-disable-libsrt.props"/>
+  <ImportGroup>
+    <Import Project="$(SrtProps)"/>
   </ImportGroup>
 
 </Project>

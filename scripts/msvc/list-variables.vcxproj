@@ -33,6 +33,13 @@
     <Message Text="== LIBRIST = '$(LIBRIST)'" Importance="high"/>
     <Message Text="== TS_NO_SRT = '$(TS_NO_SRT)'" Importance="high"/>
     <Message Text="== LIBSRT = '$(LIBSRT)'" Importance="high"/>
+    <Message Text="== ROBOTWEAX_SRT_BCRYPT = '$(ROBOTWEAX_SRT_BCRYPT)'" Importance="high"/>
+    <Message Text="== ROBOTWEAX_SRT_OPENSSL = '$(ROBOTWEAX_SRT_OPENSSL)'" Importance="high"/>
+    <Message Text="== LibSrtProps = '$(LibSrtProps)'" Importance="high"/>
+    <Message Text="== BCryptSrtProps = '$(BCryptSrtProps)'" Importance="high"/>
+    <Message Text="== OpenSslSrtProps = '$(OpenSslSrtProps)'" Importance="high"/>
+    <Message Text="== NoSrtProps = '$(NoSrtProps)'" Importance="high"/>
+    <Message Text="== SrtProps = '$(SrtProps)'" Importance="high"/>
     <Message Text="== TS_NO_VATEK = '$(TS_NO_VATEK)'" Importance="high"/>
     <Message Text="== DefaultVatekProps = '$(DefaultVatekProps)'" Importance="high"/>
     <Message Text="== VatekProps = '$(VatekProps)'" Importance="high"/>

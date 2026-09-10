@@ -232,7 +232,7 @@ For instance, to run the released 64-bit version of `tsp`, use:
 
 [source,powershell]
 ----
-PS D:\tsduck> bin\Release-x64\tsp.exe --version
+PS C:\tsduck> bin\Release-x64\tsp.exe --version
 tsp: TSDuck - The MPEG Transport Stream Toolkit - version 3.12-730
 ----
 
@@ -884,7 +884,7 @@ standard libraries which are used by default.
 [#robotweax]
 ===== Build with Robotweax SRT library
 
-By default, on all operating systems, the SRT library is the Haivision libsrt
+By default, on most operating systems, the SRT library is the Haivision libsrt
 (see <<Haivision-SRT>>). This library is available in standard package managers
 for all operating systems. Haivision is the company which originally specified
 the SRT protocol and they published the first open source implementation of an
@@ -896,14 +896,16 @@ published an alternative version of the SRT library (see
 libsrt and interoperable with it. It is expected to be lighter, with a more
 modern implementation, than the original libsrt.
 
-By default, TSDuck is built with the original libsrt, as installed on the build
-system. It is possible to build TSDuck with the Robotweax SRT library, even if
-the standard libsrt is installed on the build system. Because the Robotweax SRT
-library is not, or not yet, available as a standard package in common operating
-systems, you have to build it locally first.
+By default, TSDuck is built with the SRT library which is installed on the
+build system. It is possible to explicitly build TSDuck with the Robotweax SRT
+library, even if the standard libsrt is installed on the build system.
 
 [.usage]
 Building with Robotweax SRT on UNIX systems
+
+So far, Robotweax SRT is not available as a standard package in any Linux
+package manager, or Homebrew, or FreeBSD Ports. Its source code must be pulled
+from its GitHub repository and it must be locally rebuilt.
 
 To build Robotweax SRT and install it on a specific directory, for instance
 `/opt/robotweax`, use the following commands:
@@ -931,7 +933,41 @@ You may of course install Robotweax SRT anywhere else and use other common
 [.usage]
 Building with Robotweax SRT on Windows systems
 
-To be completed...
+The Robotweax team provides a binary SDK for their SRT library on Windows. It
+can be found as an asset of the corresponding release on GitHub (see
+<<Robotweax-SRT>>).
+
+The SDK exists in two versions, one with an OpenSSL cryptographic backend, and
+one with a Microsoft BCrypt (CNG) backend. The BCrypt backend uses the standard
+native Microsoft cryptographic library, as installed on all Windows
+systems. The SDK with OpenSSL backend comes with all versions of the OpenSSL
+static libraries. These OpenSSL libraries are then linked with the final
+application (i.e. `tsduck.dll` in practice).
+
+All versions of the SDK can be installed and coexist. They can also coexist
+with the Haivision libsrt package (see <<Haivision-SRT>>).
+
+On Windows, the TSDuck build system automatically selects the preferred version
+of the SRT library, depending on which are installed on the system. The first
+available and installed one is used, in order of preference:
+
+[.compact-list]
+* Robotweax SRT with Microsoft BCrypt (CNG) backend.
+* Robotweax SRT with OpenSSL backend.
+* Haivision original libsrt.
+* No SRT support.
+
+Therefore, installing the Robotweax SRT SDK is sufficient to rebuild TSDuck
+with Robotweax SRT.
+
+In case of doubt, the actual version can be displayed using options
+`--version=srt` or `--version=all`:
+
+[source,powershell]
+----
+PS C:\tsduck> bin\Release-x64\tsversion.exe --version=srt
+libsrt version 1.5.7 (Robotweax SRT version 0.2.4 with Microsoft BCrypt backend)
+----
 
 [#instfiles]
 ==== Installer files summary
