@@ -343,16 +343,20 @@ namespace {
     SRTInit::SRTInit()
     {
         CERR.debug(u"calling srt_startup()");
+        const ts::Time start(ts::Time::CurrentUTC());
         ::srt_startup();
-        CERR.debug(u"back from srt_startup()");
+        const ts::Time end(ts::Time::CurrentUTC());
+        CERR.debug(u"back from srt_startup(), %d ms", (end - start).count());
     }
 
     // Singleton destructor, cleanup SRT on application exit.
     SRTInit::~SRTInit()
     {
         CERR.debug(u"calling srt_cleanup()");
+        const ts::Time start(ts::Time::CurrentUTC());
         ::srt_cleanup();
-        CERR.debug(u"back from srt_cleanup()");
+        const ts::Time end(ts::Time::CurrentUTC());
+        CERR.debug(u"back from srt_cleanup(), %d ms", (end - start).count());
     }
 }
 

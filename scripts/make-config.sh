@@ -699,7 +699,7 @@ if [[ -z $NOSRT$SRT_DONE ]]; then
     # SRT not disabled, check if libsrt is available.
     if [[ -n $ROBOTWEAX_SRT_DIR ]]; then
         # Alternative Robotweax SRT implementation.
-        [[ -e $ROBOTWEAX_SRT_DIR/lib/librobotweax-srt.a ]] || NOSRT=1
+        [[ -e $ROBOTWEAX_SRT_DIR/lib/librobotweax-srt.a || -e $ROBOTWEAX_SRT_DIR/lib64/librobotweax-srt.a ]] || NOSRT=1
         [[ -e $ROBOTWEAX_SRT_DIR/include/robotweax-srt/srt/srt.h ]] || NOSRT=1
     else
         # Standard Haivision libsrt.
@@ -866,7 +866,9 @@ if [[ -n $NOSRT ]]; then
     LIBTSDUCK_CXXFLAGS_INCLUDES="$LIBTSDUCK_CXXFLAGS_INCLUDES -DTS_NO_SRT=1"
 elif [[ -n $ROBOTWEAX_SRT_DIR ]]; then
     # Alternative Robotweax SRT implementation.
-    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $ROBOTWEAX_SRT_DIR/lib/librobotweax-srt.a -lcrypto"
+    ROBOTWEAX_SRT_LIB="$ROBOTWEAX_SRT_DIR/lib64/librobotweax-srt.a"
+    [[ -e "$ROBOTWEAX_SRT_LIB" ]] || ROBOTWEAX_SRT_LIB="$ROBOTWEAX_SRT_DIR/lib/librobotweax-srt.a"
+    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $ROBOTWEAX_SRT_LIB -lcrypto"
     LIBTSDUCK_CXXFLAGS_INCLUDES="-I$ROBOTWEAX_SRT_DIR/include/robotweax-srt $LIBTSDUCK_CXXFLAGS_INCLUDES"
 else
     # Standard Haivision SRT.

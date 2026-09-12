@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.45-4795 (September 2026)
+VERSION 3.45-4798 (September 2026)
 
 [NEW] New commands and plugins:
 

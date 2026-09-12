@@ -19,7 +19,7 @@
 //!  This definition translates to:
 //!
 //!  - Compiler: -I$ROBOTWEAX_SRT_DIR/include/robotweax-srt
-//!  - Linker: $ROBOTWEAX_SRT_DIR/lib/librobotweax-srt.a -lcrypto
+//!  - Linker: $ROBOTWEAX_SRT_DIR/lib[64]/librobotweax-srt.a -lcrypto
 //!
 //----------------------------------------------------------------------------
 

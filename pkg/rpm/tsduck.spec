@@ -31,7 +31,7 @@ BuildRequires:  pcsc-lite-devel
 Requires:       zlib
 BuildRequires:  zlib-devel
 %endif
-%if 0%{!?nosrt:1}
+%if 0%{!?nosrt:1}%{!?altsrt:1}
 Requires:       srt-libs
 BuildRequires:  srt-devel
 %endif
@@ -72,7 +72,7 @@ Requires:       libcurl-devel
 %if 0%{!?nozlib:1}
 Requires:       zlib-devel
 %endif
-%if 0%{!?nosrt:1}
+%if 0%{!?nosrt:1}%{!?altsrt:1}
 Requires:       srt-devel
 %endif
 %if 0%{!?norist:1}

@@ -32,6 +32,7 @@ installer: tarball $(RPMBUILDROOT)
 	DTAPI_ORIGIN="$(shell $(SCRIPTSDIR)/dtapi-config.sh --tarball)" \
 	  VATEK_SRC_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --src-tarball)" \
 	  VATEK_BIN_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --bin-tarball)" \
+	  ROBOTWEAX_SRT_DIR="$(ROBOTWEAX_SRT_DIR)" \
 	  $(RPMBUILD) $(RPMBUILDFLAGS) \
 	      -D 'version $(shell $(GET_TSDUCK_VERSION) --main)' \
 	      -D 'commit $(shell $(GET_TSDUCK_VERSION) --commit)' \
@@ -39,7 +40,8 @@ installer: tarball $(RPMBUILDROOT)
 	      $(if $(MAKEFLAGS_SMP),-D '_smp_mflags $(MAKEFLAGS_SMP)') \
 	      $(if $(NOOPENSSL),-D 'noopenssl 1') \
 	      $(if $(NOZLIB),-D 'nozlib 1') \
-	      $(if $(NOSRT)$(ROBOTWEAX_SRT_DIR),-D 'nosrt 1') \
+	      $(if $(NOSRT),-D 'nosrt 1') \
+	      $(if $(ROBOTWEAX_SRT_DIR),-D 'altsrt 1') \
 	      $(if $(NORIST),-D 'norist 1') \
 	      $(if $(NOPCSC),-D 'nopcsc 1') \
 	      $(if $(NOCURL),-D 'nocurl 1') \
