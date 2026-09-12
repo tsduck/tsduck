@@ -930,6 +930,13 @@ $ make ROBOTWEAX_SRT_DIR=/opt/robotweax
 You may of course install Robotweax SRT anywhere else and use other common
 `make` options, especially `-j` to parallelize the huge TSDuck build.
 
+When building with Robotweax SRT on UNIX systems, the SRT library is statically
+linked inside the TSDuck library (`libtsduck.so` or `libtsduck.dylib`). The
+compiled TSDuck package can therefore be installed on any other system without
+deploying Robotweax SRT. This is different from the default Haivision libsrt
+where TSDuck is usually linked against the `libsrt.so` shared library and always
+uses the `libsrt.so` shared libray of the target systems.
+
 [.usage]
 Building with Robotweax SRT on Windows systems
 
@@ -945,7 +952,7 @@ static libraries. These OpenSSL libraries are then linked with the final
 application (i.e. `tsduck.dll` in practice).
 
 All versions of the SDK can be installed and coexist. They can also coexist
-with the Haivision libsrt package (see <<Haivision-SRT>>).
+with the Haivision libsrt package.
 
 On Windows, the TSDuck build system automatically selects the preferred version
 of the SRT library, depending on which are installed on the system. The first

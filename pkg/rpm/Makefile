@@ -39,7 +39,7 @@ installer: tarball $(RPMBUILDROOT)
 	      $(if $(MAKEFLAGS_SMP),-D '_smp_mflags $(MAKEFLAGS_SMP)') \
 	      $(if $(NOOPENSSL),-D 'noopenssl 1') \
 	      $(if $(NOZLIB),-D 'nozlib 1') \
-	      $(if $(NOSRT),-D 'nosrt 1') \
+	      $(if $(NOSRT)$(ROBOTWEAX_SRT_DIR),-D 'nosrt 1') \
 	      $(if $(NORIST),-D 'norist 1') \
 	      $(if $(NOPCSC),-D 'nopcsc 1') \
 	      $(if $(NOCURL),-D 'nocurl 1') \
