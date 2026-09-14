@@ -442,6 +442,22 @@ function Search-Path([string]$Name, [string]$Path = $env:Path)
     return $null
 }
 
+# Search a command in a path (.exe, .cmd, .ps1).
+function Search-Command([string]$Name, [string]$Path = $env:Path)
+{
+    $res = Search-Path $Name
+    if ($res -eq $null) {
+        $res = Search-Path "$Name.exe"
+        if ($res -eq $null) {
+            $res = Search-Path "$Name.cmd"
+            if ($res -eq $null) {
+                $res = Search-Path "$Name.ps1"
+            }
+        }
+    }
+    return $res
+}
+
 # Send a WM_SETTINGCHANGE message to all applications 
 Add-Type -Namespace Win32 -Name NativeMethods -MemberDefinition @"
   [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]

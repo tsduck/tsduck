@@ -20,6 +20,11 @@
   When used in a GitHub Action workflow, make sure that the required
   environment variables are propagated to subsequent jobs.
 
+ .PARAMETER NoDocumentation
+
+  Do not install asciidoctor and its dependencies. Install everything
+  else to build the project binaries.
+
  .PARAMETER NoDoxygen
 
   Do not install doxygen and its dependencies. Install everything else to
@@ -41,6 +46,7 @@ param(
     [switch]$ForceDownload = $false,
     [switch]$GitHubActions = $false,
     [switch]$NoDoxygen = $false,
+    [switch]$NoDocumentation = $false,
     [switch]$NoInstaller = $false,
     [switch]$NoPause = $false
 )
@@ -51,12 +57,14 @@ if (-not $NoDoxygen) {
     & "$InsDir\install-graphviz.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
     & "$InsDir\install-doxygen.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 }
+if (-not $NoDocumentation) {
+    & "$InsDir\install-asciidoctor.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+}
 if (-not $NoInstaller) {
     & "$InsDir\install-nsis.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 }
 & "$InsDir\install-git.ps1"           -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-python.ps1"        -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-asciidoctor.ps1"   -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-robotweax-srt.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-librist.ps1"       -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-java.ps1"          -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions

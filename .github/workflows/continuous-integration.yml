@@ -170,7 +170,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
-        scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoInstaller -NoPause
+        scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoDocumentation -NoInstaller -NoPause
     - name: Dependencies check
       run: |
         Write-Output "Path=${env:Path}"
