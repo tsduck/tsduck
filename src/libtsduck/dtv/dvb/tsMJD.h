@@ -50,7 +50,7 @@ namespace ts {
     //! Convert a Modified Julian Date (MJD) into a ts::Time.
     //! @param [in] mjd Address of a 2-to-5 bytes area, in the format specified by a TDT.
     //! @param [in] fmt Format of the MJD in the @a mjd area.
-    //! @param [out] time Return time.
+    //! @param [out] time Returned time.
     //! @return True on success, false in case of error.
     //!
     TSDUCKDLL bool DecodeMJD(const uint8_t* mjd, MJDFormat fmt, Time& time);

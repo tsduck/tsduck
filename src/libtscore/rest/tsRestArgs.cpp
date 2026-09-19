@@ -14,9 +14,9 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::RestArgs::RestArgs(const UString& description, const UString& prefix) :
-    SuperClass(description, prefix),
-    _opt_token(_prefix + u"token")
+ts::RestArgs::RestArgs(const UString& description_, const UString& prefix_, bool tls_default_) :
+    SuperClass(description_, prefix_, tls_default_),
+    _opt_token(prefix() + u"token")
 {
 }
 
@@ -35,9 +35,9 @@ void ts::RestArgs::defineServerArgs(Args& args)
 
     args.option(_opt_token.c_str(), 0, Args::STRING);
     args.help(_opt_token.c_str(), u"string",
-              u"Optional authentication token that clients are required to provide to the " + _description + u". "
+              u"Optional authentication token that clients are required to provide to the " + description() + u". "
               u"The default value is the value of environment variable TSDUCK_TOKEN. "
-              u"For security reasons, use only with --" + _opt_tls + u".");
+              u"For security reasons, use only " + withTLS().toLower() + u".");
 }
 
 bool ts::RestArgs::loadServerArgs(Args& args, const UChar* server_option)
@@ -57,7 +57,7 @@ void ts::RestArgs::defineClientArgs(Args& args)
 
     args.option(_opt_token.c_str(), 0, Args::STRING);
     args.help(_opt_token.c_str(), u"string",
-              u"Authentication token for the " + _description + u", if required. "
+              u"Authentication token for the " + description() + u", if required. "
               u"The default value is the value of environment variable TSDUCK_TOKEN.");
 
 }

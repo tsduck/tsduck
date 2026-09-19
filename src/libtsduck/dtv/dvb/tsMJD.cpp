@@ -62,12 +62,12 @@ bool ts::DecodeMJD(const uint8_t* mjd, MJDFormat mjd_fmt, Time& time)
         // MJD epoch is after Time epoch or else
         // MJD time is after Time epoch, fine
         time = Time::Epoch + (mjd_ms + Time::JulianEpochOffset);
+        return true;
     }
     else {
         // MJD time is before Time epoch, cannot be represented.
-        time = Time::Epoch;
+        return false;
     }
-    return true;
 }
 
 

@@ -36,8 +36,11 @@ namespace ts {
         //! @param [in] prefix Optional prefix for all command line options.
         //! Example: when @a prefix is <code>"foo"</code>, the option <code>--certificate-path</code>
         //! becomes <code>--foo-certificate-path</code>.
+        //! @param [in] tls_default If false (the default) TLS is not the default and the option <code>--tls</code>
+        //! is defined to activate it. If true, TLS is the default and the option <code>--no-tls</code> is defined
+        //! to deactivate it and use clear communication.
         //!
-        RestArgs(const UString& description = u"server", const UString& prefix = UString());
+        RestArgs(const UString& description = u"server", const UString& prefix = UString(), bool tls_default = false);
 
         // Common client and server options.
         UString auth_token {};  //!< Authentication token.
@@ -55,7 +58,7 @@ namespace ts {
         virtual bool loadServerArgs(Args& args, const UChar* server_option = nullptr) override;
         virtual bool loadClientArgs(Args& args, const UChar* server_option = nullptr) override;
 
-    protected:
-        UString _opt_token;  //!< Option name for --[prefix-]token.
+    private:
+        UString _opt_token;  //) Option name for --[prefix-]token.
     };
 }

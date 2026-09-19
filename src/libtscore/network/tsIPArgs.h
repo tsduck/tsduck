@@ -26,7 +26,7 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] description Short description of the TLS service.
+        //! @param [in] description Short description of the service.
         //! Example: <code>"control port"</code>. Use no initial cap, no final dot.
         //! @param [in] prefix Optional prefix for all command line options.
         //! Example: when @a prefix is <code>"foo"</code>, the option <code>--certificate-path</code>
@@ -103,11 +103,25 @@ namespace ts {
         //!
         bool isAllowed(const IPAddress& client) const;
 
-    protected:
-        UString _description;  //!< Short description of the TLS service.
-        UString _prefix;       //!< Option prefix, ready to use in other option names.
+        //!
+        //! Get the short description of the service, as specified in the constructor.
+        //! The result can be used in help text in subclasses for instance.
+        //! @return A constant reference to the description string.
+        //!
+        const UString& description() const { return _description; }
+
+        //!
+        //! Get the option prefix, ready to use in other option names.
+        //! If the prefix was set to a non-empty string without trailing dash, the returned string contains a trailing dash.
+        //! Example: when @a prefix was set to <code>"foo"</code> in the constructor, the returned value is <code>"foo-"</code>
+        //! @return A constant reference to the prefix string.
+        //!
+        const UString& prefix() const { return _prefix; }
 
     private:
+        UString _description;
+        UString _prefix;
+
         // Get and resolve server name and address.
         bool loadServerAddress(Args& args, const UChar* server_option);
 

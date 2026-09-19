@@ -36,8 +36,11 @@ namespace ts {
         //! @param [in] prefix Optional prefix for all command line options.
         //! Example: when @a prefix is <code>"foo"</code>, the option <code>--certificate-path</code>
         //! becomes <code>--foo-certificate-path</code>.
+        //! @param [in] tls_default If false (the default) TLS is not the default and the option <code>--tls</code>
+        //! is defined to activate it. If true, TLS is the default and the option <code>--no-tls</code> is defined
+        //! to deactivate it and use clear communication.
         //!
-        TLSArgs(const UString& description = u"server", const UString& prefix = UString());
+        TLSArgs(const UString& description = u"server", const UString& prefix = UString(), bool tls_default = false);
 
         // Common client and server options.
         bool use_tls = false;            //!< Use SSL/TLS.
@@ -51,18 +54,28 @@ namespace ts {
         // Client-specific options.
         bool insecure = false;           //!< Do not verify TLS server's certificate.
 
+        //!
+        //! Get the help string which defines the condition of using SSL/TLS.
+        //! The actual string depends if SSL/TLS is enabled by default or not.
+        //! @return A constant reference to the string "Without --[prefix-]no-tls" or "With --[prefix-]tls".
+        //!
+        const UString& withTLS() const { return _with_tls; }
+
         // Inherited methods.
         virtual void defineServerArgs(Args& args) override;
         virtual void defineClientArgs(Args& args) override;
         virtual bool loadServerArgs(Args& args, const UChar* server_option = nullptr) override;
         virtual bool loadClientArgs(Args& args, const UChar* server_option = nullptr) override;
 
-    protected:
-        UString _opt_tls;                //!< Option name for --[prefix-]tls.
-        UString _opt_insecure;           //!< Option name for --[prefix-]insecure.
-        UString _opt_certificate_store;  //!< Option name for --[prefix-]store.
-        UString _opt_certificate_path;   //!< Option name for --[prefix-]certificate-path.
-        UString _opt_key_path;           //!< Option name for --[prefix-]key-path.
-        UString _opt_ephemeral_rsa_bits; //!< Option name for --[prefix-]ephemeral-rsa-bits.
+    private:
+        bool    _tls_default;            // Use TLS by default.
+        UString _opt_tls;                // Option name for --[prefix-]tls.
+        UString _opt_no_tls;             // Option name for --[prefix-]no-tls.
+        UString _with_tls;               // Help string "Without --[prefix-]no-tls" or "With --[prefix-]tls".
+        UString _opt_insecure;           // Option name for --[prefix-]insecure.
+        UString _opt_certificate_store;  // Option name for --[prefix-]store.
+        UString _opt_certificate_path;   // Option name for --[prefix-]certificate-path.
+        UString _opt_key_path;           // Option name for --[prefix-]key-path.
+        UString _opt_ephemeral_rsa_bits; // Option name for --[prefix-]ephemeral-rsa-bits.
     };
 }

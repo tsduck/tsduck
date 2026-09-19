@@ -14,14 +14,17 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::TLSArgs::TLSArgs(const UString& description, const UString& prefix) :
-    SuperClass(description, prefix),
-    _opt_tls(_prefix + u"tls"),
-    _opt_insecure(_prefix + u"insecure"),
-    _opt_certificate_store(_prefix + u"store"),
-    _opt_certificate_path(_prefix + u"certificate-path"),
-    _opt_key_path(_prefix + u"key-path"),
-    _opt_ephemeral_rsa_bits(_prefix + u"ephemeral-rsa-bits")
+ts::TLSArgs::TLSArgs(const UString& description_, const UString& prefix_, bool tls_default_) :
+    SuperClass(description_, prefix_),
+    _tls_default(tls_default_),
+    _opt_tls(prefix() + u"tls"),
+    _opt_no_tls(prefix() + u"no-tls"),
+    _with_tls(_tls_default ? u"Without --" + _opt_no_tls : u"With --" + _opt_tls),
+    _opt_insecure(prefix() + u"insecure"),
+    _opt_certificate_store(prefix() + u"store"),
+    _opt_certificate_path(prefix() + u"certificate-path"),
+    _opt_key_path(prefix() + u"key-path"),
+    _opt_ephemeral_rsa_bits(prefix() + u"ephemeral-rsa-bits")
 {
 }
 
@@ -38,29 +41,38 @@ void ts::TLSArgs::defineServerArgs(Args& args)
 {
     SuperClass::defineServerArgs(args);
 
-    args.option(_opt_tls.c_str());
-    args.help(_opt_tls.c_str(),
-              u"The " + _description + " uses SSL/TLS. "
-              u"In that case, a server certificate is required. "
-              u"By default, use unencrypted communications.");
+
+    if (_tls_default) {
+        args.option(_opt_no_tls.c_str());
+        args.help(_opt_no_tls.c_str(),
+                  u"The " + description() + " uses unencrypted communications. "
+                  u"By default, it uses SSL/TLS communications.");
+    }
+    else {
+        args.option(_opt_tls.c_str());
+        args.help(_opt_tls.c_str(),
+                  u"The " + description() + " uses SSL/TLS. "
+                  u"In that case, a server certificate is required. "
+                  u"By default, use unencrypted communications.");
+    }
 
     args.option(_opt_certificate_path.c_str(), 0, Args::STRING);
     args.help(_opt_certificate_path.c_str(), u"name",
-              u"With --" + _opt_tls + u", path to the certificate for the " + _description + u". "
+              _with_tls + u", path to the certificate for the " + description() + u". "
               u"The default value is the value of environment variable TSDUCK_TLS_CERTIFICATE.\n"
               u"On UNIX systems, this is the path name of the certificate file in PEM format.\n"
               u"On Windows, this is the name of a certificate in the user or system store.");
 
     args.option(_opt_key_path.c_str(), 0, Args::STRING);
     args.help(_opt_key_path.c_str(), u"name",
-              u"With --" + _opt_tls + u", path to the private key for the " + _description + u". "
+              _with_tls + u", path to the private key for the " + description() + u". "
               u"The default value is the value of environment variable TSDUCK_TLS_KEY.\n"
               u"On UNIX systems, this is the path name of the private key file in PEM format.\n"
               u"On Windows, the private key is retrieved with the certificate and this parameter is unused.");
 
     args.option(_opt_certificate_store.c_str(), 0, Args::STRING);
     args.help(_opt_certificate_store.c_str(), u"name",
-              u"With --" + _opt_tls + u", path to the certificate store for the " + _description + u". "
+              _with_tls + u", path to the certificate store for the " + description() + u". "
               u"The default value is the value of environment variable TSDUCK_TLS_STORE.\n"
               u"On Windows, the possible values are \"system\" (Cert:\\LocalMachine\\My) "
               u"and \"user\" (Cert:\\CurrentUser\\My). The default is \"user\".\n"
@@ -68,12 +80,12 @@ void ts::TLSArgs::defineServerArgs(Args& args)
 
     args.option(_opt_ephemeral_rsa_bits.c_str(), 0, Args::POSITIVE);
     args.help(_opt_ephemeral_rsa_bits.c_str(),
-              u"With --" + _opt_tls + u", create an ephemeral self-signed certificate for the " + _description + u". "
+              _with_tls + u", create an ephemeral self-signed certificate for the " + description() + u". "
               u"The value specifies the size in bits of the ephemeral RSA key which it generated. "
               u"The default value is the value of environment variable TSDUCK_TLS_EPHEMERAL_RSA_BITS.\n"
               u"Keep in mind that ephemeral self-signed certificates are considered as \"invalid\" or \"insecure\" by client applications. "
               u"Be sure to disable the verification of the TLS server's certificate on the client side. "
-              u"By default, the " + _description + u" needs a designated persistent certificate.");
+              u"By default, the " + description() + u" needs a designated persistent certificate.");
 }
 
 
@@ -125,12 +137,12 @@ void ts::TLSArgs::defineClientArgs(Args& args)
 
     args.option(_opt_tls.c_str());
     args.help(_opt_tls.c_str(),
-              u"Connect to the " + _description + " using SSL/TLS. "
+              u"Connect to the " + description() + " using SSL/TLS. "
               u"By default, use unencrypted communications.");
 
     args.option(_opt_insecure.c_str());
     args.help(_opt_insecure.c_str(),
-              u"With --" + _opt_tls + u", do not verify the TLS server's certificate. "
+              _with_tls + u", do not verify the TLS server's certificate. "
               u"Use with care because it opens the door the man-in-the-middle attacks.");
 }
 

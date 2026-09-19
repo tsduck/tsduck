@@ -3,29 +3,41 @@
 **Contents:**
 
 * [Summary](#summary)
-* [Multiple inputs (tsswitch integration)](#multiple-inputs-tsswitch-integration)
-  * [Command line syntax](#command-line-syntax)
-    * [New options in tsp (copied from tsswitch)](#new-options-in-tsp-copied-from-tsswitch)
-    * [Incompatibilities with tsswitch command line](#incompatibilities-with-tsswitch-command-line)
-  * [Input buffer management](#input-buffer-management)
-* [Split points in the chain of plugins](#split-points-in-the-chain-of-plugins)
-  * [Nature of a split point](#nature-of-a-split-point)
-  * [Command line syntax](#command-line-syntax)
-  * [Miscellaneous topics](#miscellaneous-topics)
+* [Graphs of plugins and dispatch points](#graphs-of-plugins-and-dispatch-points)
+* [Command line syntax](#command-line-syntax)
+  * [Specification of dispatch points](#specification-of-dispatch-points)
+  * [Syntax rules](#syntax-rules)
+  * [Local and global options for dispatch points](#local-and-global-options-for-dispatch-points)
+  * [Required checks](#required-checks)
+* [Remote control](#remote-control)
+* [Input features of a dispatch point](#input-features-of-a-dispatch-point)
+  * [Input numbering](#input-numbering)
+  * [Input cycles removal](#input-cycles-removal)
+  * [Input modes](#input-modes)
+  * [Event notification](#event-notification)
+* [Output feature of a dispatch point](#output-feature-of-a-dispatch-point)
+* [Termination conditions](#termination-conditions)
+  * [End-of-file propagation](#end-of-file-propagation)
+  * [Abort back-propagation](#abort-back-propagation)
+  * [Glocal termination](#glocal-termination)
+* [Deprecated command and plugins](#deprecated-command-and-plugins)
+  * [Removal of command tsswitch](#removal-of-command-tsswitch)
+  * [Plugins fork and merge](#plugins-fork-and-merge)
+  * [Plugins file, ip](#plugins-file-ip)
+* [Open topics](#open-topics)
 * [Implementation planning](#implementation-planning)
 
 ## Summary
 
-Originally, the command `tsp` implements a linear chain of plugins, from one
-input plugin to one output plugin. The chain is fully synchronous, without
-packet loss, blocking when necessary.
+With TSDuck version 3, the command `tsp` implements a linear chain of plugins,
+from one input plugin to one output plugin. The chain is fully synchronous,
+without packet loss, blocking when necessary.
 
-The first idea is to allow several input plugins by moving all features of
-`tsswitch` into `tsp`. The command `tsswitch` would then be deprecated (or
-aliased to `tsp`).
+The first idea is to allow several input plugins by moving most features of
+`tsswitch` into `tsp`. The command `tsswitch` would then be removed.
 
 The second idea is to allow split points where the chain of plugins is forked
-between two chains. This is similar to a packet processing plugin `fork`
+between two or more chains. This is similar to a packet processing plugin `fork`
 running another instance of `tsp`, but staying in the same process.
 
 These two concepts were already possible to implement using `tsswitch` and
@@ -40,209 +52,362 @@ plugins `fork`. The benefits of their integration in `tsp` are:
   is using multiple [partial command line
   redirection](https://tsduck.io/docs/tsduck.html#cmd-redirection) using `@`.
 
-## Multiple inputs (tsswitch integration)
+This change is fundamental. Some commands and plugins will become obsolete. Some
+command lines will have non-backward compatible changes. Therefore, we consider
+this as a major version: TSDuck version 4.
 
-### Command line syntax
+## Graphs of plugins and dispatch points
 
-Most command line options from `tsswitch` are added to `tsp`. In case of
-conflict, the priority is to keep the compatibility with the existing syntax of
-`tsp`, assuming that there are more existing `tsp` commands in use.
+A dispatch point receives packets from one or more plugins and passes these
+packets to one or more plugins.
 
-The main difference if that `tsp` will accept multiple options `-I`.
+A dispatch point is identified by a unique name. The name is an arbitrary string
+which is defined by the user, on the command line.
 
-#### New options in tsp (copied from tsswitch)
-
-- `--allow ip-address`
-- `-c value` and `--cycle value`
-- `--delayed-switch`
-- `--event-command 'command'`
-- `--event-local-address ip-address`
-- `--event-ttl value`
-- `--event-udp ip-address:port`
-- `--event-user-data 'string'`
-- `--fast-switch`
-- `--first-input value`
-- `--infinite`
-- `--no-reuse-port` (maybe useless)
-- `-p value` and `--primary-input value`
-- `--remote [ip-address:]port`
-- `--remote-certificate-path name`
-- `--remote-key-path name`
-- `--remote-store name`
-- `--remote-tls`
-- `--remote-token string`
-- `--terminate`
-- `--udp-buffer-size value`
-
-Note that `tsp` and `tsswitch` already share several options, with the same
-semantics.
-
-Open point: the "remote" feature of `tsswitch` may be merged with the "control"
-features of `tsp`.  The options `--remote-*` would then be removed. The issue
-is that the "remote" feature uses a different communication protocol, which
-would create incompatibilities in existing configurations.
-
-#### Incompatibilities with tsswitch command line
-
-- Option `--receive-timeout` in `tsswitch` is replaced with `--input-timeout`
-  in the new `tsp` because `--receive-timeout` is already used in `tsp` with a
-  different semantics.
-
-- `-a` no longer accepted for `--allow`, it is already assigned to
-  `--add-input-stuffing`.
-
-- `-b value` and `--buffer-packets value` no longer accepted. Use the `tsp`
-  option `--buffer-size-mb` to set the size of all packet buffers. Also applies
-  to forked branches of plugins (see split points).
-
-- `-d` no longer accepted for `--delayed-switch`, it is already assigned to
-  `--debug` in `tsp`. In theory, the generic option `--debug` grabs option `-d`
-  only when no other command-specific option uses it. However, we consider that
-  many existing `tsp` commands may already use `-d` for `--debug`.
-
-- `-f` no longer accepted for `--fast-switch`. Would be too specific since
-  other input modes are no longer abbreviated.
-
-- `-i` no longer accepted for `--infinite`, it is already assigned to
-  `--ignore-joint-termination`.
-
-- `-r` no longer accepted for `--remote`, it is already assigned to
-  `--realtime`.
-
-- `-t` no longer accepted for `--terminate`, it is already assigned to
-  `--timed-log`.
-
-### Input buffer management
-
-In `tsswitch`, each input plugin has it own packet buffer. Packets are then
-copied into the output packet buffer. In `tsp`, there is one global packet
-buffer which is used by all plugins.
-
-Possible solution: Use the global packet buffer when there is only one input
-plugin and individual buffers when there are more than one input plugin. Pros:
-performance in the general case (one input plugin). Cons: more complex.
-
-## Split points in the chain of plugins
-
-### Nature of a split point
-
-At a split point, TS packets are duplicated and copied in two chains of
-plugins. In practice, there are not two new chains. There is one "main" chain
-of plugins, as before. At the split point, a new chain of plugins is created
-and packets are duplicated into the new chain. Let's call it the "forked"
-chain.
-
-Because chains of plugins can be split, let's call them "branches". At a split
-point, there are two branches. The "main branch" continues its normal flow. The
-"forked branch" starts at the split point.
-
-The main branch has one global packet buffer, as previously. The split point is
-located between two plugins and packets are copied out of the global buffer of
-the main branch at that point. The forked branch has its own global packet
-buffer. The packets are introduced in that new global buffer at the split
-point, as if it was an input plugin of the forked branch.
-
-A packet is copied from the main buffer into the forked buffer at the same time
-that packet is passed to the next plugin after the split point in the main
-branch.
-
-In the main branch, packets flow as usual, synchronously, without loss. If the
-main branch is blocked downstream and the main buffer is full, the main branch
-is blocked and packets cannot be passed to the next plugin. As a consequence,
-packets cannot be copied either in the forked branch, even if the forked branch
-is ready to process packets.
-
-We define two types of split points:
-
-- Synchronous split points.
-- Lossy (or loose) split points.
-
-Packet transmission strategies:
-
-- Synchronous split point: Packets are duplicated in the forked branch with the
-  same strategy as the main branch: synchronously, without loss, blocking when
-  necessary. As a consequence, if the forked branch is blocked downstream and
-  its buffer is full, the main branch is blocked at the split point until the
-  forked branch is unblocked.
-
-- Lossy split point: If the forked branch is blocked downstream and its buffer
-  is full, a packet is immediately passed to the next plugin in the main branch
-  and the packet is lost for the forked branch.
-
-Abort reverse transmission strategies (after an abort somewhere in the forked
-branch is transmitted back to the first plugin of the forked branch):
-
-- Synchronous split point: In the main branch, an abort is transmitted backward
-  and an "end of input" is transmitted downstream, as if the abort occurred in
-  a plugin at the split point.
-
-- Lossy split point: Nothing changes in the main branch. The forked branch is
-  declared as "dead" and no further packet will be transmitted in the forked
-  branch. The split point is considered as no longer existent.
-
-### Command line syntax
-
-The command line is linear by design and it is not easy to express the concept
-of split point. We do it in two steps. First, we identify split points inside
-the main branch. A name is assigned to each split point (it can be as simple as
-`1`, `2`, or `a`, `b`). Later, after the end of the main branch, the named
-forked branch is fully detailed with its list of plugins.
-
-The split points and full branches of plugins are identified by one-letter
-uppercase options, like `-I`, `-P`, and `-O` for plugins in a branch:
-
-- `-S name`: Identify the location of a synchronous split point with the given
-  `name`.
-
-- `-L name`: Identify the location of a lossy split point with the given
-  `name`.
-
-- `-B name`: Start the description of the branch starting at the split point
-  which is identified by the given `name`.
-
-Example (omitting the options in the plugins):
+The following `tsp` graph contains two dispatch points, named "a" and "b".
 
 ~~~
-tsp -I ip -P filter -P analyze -S a -P count -O file \
-    -B a -P pcrbitrate -P tables -L b -P zap -O srt \
-    -B b -P cat -P pmt -O rist
+                             +===+
++--+     +---+   +-------+   |...|   +-----+   +----+
+|ip|---->|zap|-->|analyze|-->X...X-->|count|-->|file|
++--+     +---+   +-------+   |. .|   +-----+   +----+
+                             | a |
+                             |. .|              +===+
++----+   +---+   +-------+   |...|   +------+   |...|   +---+   +---+
+|http|-->|zap|-->|analyze|-->X...X-->|tables|-->X...X-->|sdt|-->|srt|
++----+   +---+   +-------+   |...|   +------+   |. .|   +---+   +---+
+                             +===+              | b |
+                                                |. .|   +---+   +----+
+                                                |...X-->|pmt|-->|rist|
+                                                |...|   +---+   +----+
+                                                +===+
 ~~~
 
-The main branch of plugins starts with input plugin `ip` and ends with output
-plugin `file`. In the middle, there is a synchronous split point named `a`. The
-branch `a` starts at this split point and ends with output plugin `srt`. In the
-middle of branch `a`, there is a lossy split point named `b`. The branch `b`
-starts at this split point and ends with output plugin `rist`.
+Currently, a `tsp` plugin chain is linear. It starts with an input plugin and
+ends in an output plugin.
+
+In the proposed architecture, `tsp` now uses a graph of plugins. A graph is
+divided in several "branches". A branch is a linear chain of plugins which
+works the same way as the current version of `tsp`. A branch starts with either
+an input plugin or an output of a dispatch point. A branch ends in either an
+output plugin or an input of a dispatch point.
+
+A branch has a global packet buffer, as in `tsp` version 3. In the presence of
+dispatch points, an instance of `tsp` has several global buffers, one per
+branch. A dispatch point is responsible from moving TS packets from one global
+buffer to another.
+
+Internally, a dispatch point may be split in two distinct entities, the input
+switching/mixing part and the output spliting/duplicating part. Each part may
+have its own switching/mixing and spliting/duplicating strategy.
+
+## Command line syntax
+
+Because a command line is linear by definition, it is difficult to represent a
+graph.  Instead, a `tsp` command line is made of a list of branches. Each
+branch has an identified beginning (an input plugin or an output of a dispatch
+point) and an identified end (an output plugin or an input of a dispatch
+point). Therefore, there is no ambiguity in the identification of a branch.
+
+### Specification of dispatch points
+
+Plugins are still identified by the usual options `-I`, `-P`, `-O`. The
+following options are added to identify inputs and outputs of a dispatch point:
+
+- `-B name [options]`: Output of a dispatch point, [B]eginning of a branch.
+- `-E name [options]`: Input of a dispatch point, [E]nd of a branch.
+
+In both cases, "name" is the given name of the dispatch point. Each time an
+option `-B a` or `-E a` is found, the option defines an output or input of the
+same dispatch point named "a".
+
+Therefore, the diagram above is run using the following command. For clarity,
+the options of the various plugins were omitted.
 
 ~~~
-+--+   +------+   +-------+      +-----+   +----+
-|ip|-->|filter|-->|analyze|--a-->|count|-->|file|
-+--+   +------+   +-------+  |   +-----+   +----+
-                             |
-                             |   +----------+   +------+      +---+   +---+
-            branch a:        +-->|pcrbitrate|-->|tables|--b-->|zap|-->|srt|
-                                 +----------+   +------+  |   +---+   +---+
-                                                          |
-                                                          |   +---+   +---+   +----+
-                                           branch b:      +-->|cat|-->|pmt|-->|rist|
-                                                              +---+   +---+   +----+
+tsp -I ip -P zap -P analyze -E a \
+    -I http -P zap -P analyze -E a \
+    -B a -P count -O file \
+    -B a -P tables -E b \
+    -B b -P sdt -O srt \
+    -B b -P pmt -O rist
 ~~~
 
-### Miscellaneous topics
+Inside each branch, the order of plugins is significant. However, the branches
+may be specified in any order. The graph will be built from the specification
+of the various dispatch points, based on their name.
+
+### Syntax rules
+
+The following rules apply to the command line structure:
+
+- A branch always starts with `-I` or `-B`.
+
+- A branch always ends with `-O` or `-E`.
+
+- As a consequence of the previous rules, it is no longer possible to place the
+  options `-I` and `-O` anywhere on the command line, as it was possible with
+  TSDuck version 3, when `tsp` had one single chain of plugins.
+
+- If the first plugin in the command line is neither `-I` nor `-B`, it defaults
+  to `-I file`, meaning reading on the standard input. This is compatible with
+  the defaults of `tsp` version 3.
+
+- Similarly, if the last plugin in the command line is neither `-O` nor `-E`,
+  it defaults to `-O file`, meaning writing to the standard output.
+
+- A dispatch point is defined by all options `-E` and `-B` with the same name.
+
+- A dispatch point must have at least one `-E` and one `-B`.
+
+- A dispatch point with exactly one `-E` and one `-B` is "optimized away": it
+  is removed and the two sides of the dispatch point are merged in the same
+  branch and same global packet buffer. There are exceptions with some specific
+  options such as `-B name --lossy` where the dispatch point has a specific
+  behavior which cannot be removed.
+
+### Local and global options for dispatch points
+
+The specification of inputs and outputs of a dispatch point may have options,
+as in `-E name [options]` and `-B name [options]`.
+
+There are two types of options for `-E` and `-B`:
+
+- Local options: Some options are specific to a given input or output of a
+  dispatch point. Examples include `-E name --primary` or `-B name --lossy`.
+  These options may be specified or omitted in each reference to the dispatch
+  point, because they apply to a given input or output of the dispatch point.
+
+- Global options: Some options describe the global behavior of input or output
+  of the dispatch point. Examples include `-E name --live` or `-E name
+  --receive-timeout`.
+
+  - To avoid confusion, all these options must be grouped into the same
+    occurrence of the dispatch point on the command line. This may not be the
+    first occurrence, but all global options for a given dispatch point must be
+    specified in the same occurrence.
+  
+  - All global input options must appear in the same occurrence of `-E name`
+    for a given "name".
+
+  - All global output options must appear in the same occurrence of `-B name`
+    for a given "name".
+
+### Required checks
+
+The TS processor shall perform the following checks:
+
+- No loop: Starting from each input plugin (`-I`), walk through all possible
+  output paths of each dispatch point and check that each plugin is visited at
+  most once. Stop with an error when reaching a plugin which has already been
+  visited, starting from the same input plugin.
+
+- No partitioning: Starting from the first input plugin only, walk through all
+  possible _input and output_ paths of each dispatch point and check that all
+  plugin have been visited.
+
+## Remote control
+
+For the sake of security, clarity, and consistency, the `tsp` remote control is
+performed using the Web API only. The simple line-oriented TCP protocol,
+similar to a Telnet session, is removed. The command `tspcontrol` becomes the
+only way to control a remote `tsp` session (although it is possible to emulate
+its behavior using complex `curl` commands).
+
+By default, the communication is encrypted using TLS. Using option
+`--control-no-tls` is possible but not recommended. This should be limited to
+specific builds without OpenSSL, for constrained environments.
+
+By default, when no certificate is provided, neither on the command line nor
+using environment variables, a certificate is generated using an ephemeral
+3072-bit RSA key. This means that `tspcontrol` must be used with option
+`--insecure`.
+
+The command `tsswitch` being removed, the remote input switching capabilities
+are merged into the command `tcpcontrol`. The simple and insecure UDP mechanism
+is removed.
+
+## Input features of a dispatch point
+
+### Input numbering
+
+As with `tsswitch`, each input of a dispatch point is numbered, from 0 to N-1,
+based on the ordering on the command line. These numbers are used to remotely
+switch inputs, for instance.
+
+Note that this number is the input number of the dispatch point. This is not the
+plugin number. The numbering of all plugins on the command line remains an open
+point.
+
+### Input cycles removal
+
+The command `tsswitch` used to implement "cycles". All inputs were read in
+sequence the specified number of times (one by default) or infinitely.
+
+This was possible because `tsswitch` directly worked on input plugins and it is
+possible to restart an input plugin. In the case of graphs, the input of a
+dispatch point can be any chain of plugins, including upstream dispatch
+points. "Restarting" an input branch is not defined.
+
+Therefore, specifying a number of cycles or any feature that implies restarting
+an input plugin are removed.
+
+### Input modes
+
+Several input modes are defined:
+
+- Sequential (the default): When an input branch is active, block all other
+  input branches. No packet is lost on other branches, they will be delivered
+  when the dispatch point switches to these input branches.
+
+- Live (global option `--live`): Packets coming from other input branches are
+  dropped. No input branch is blocked but packets are lost. This mode is
+  typically used when all inputs are live streams on distinct sources.
+
+- Mix (global option `--mix`): All incoming packets are passed to output
+  branches, from all input branches, at the time they arrive. There is no
+  guarantee on the order of packets between distinct input branches or bursts of
+  packets coming from the same input. We call it "mix" and not "mux" because the
+  result is an unmanaged mixture of packets, not proper multiplexing.
+
+Associated options:
+
+- Global option `--receive-timeout value`: When no packet is received from the
+  current input branch within the specified number of milliseconds, switch to
+  the next input branch.
+
+- Local option `--first`: Specify that this input branch should be used
+  first. By default, the first input branch on the command line is used.
+
+- Local option `--primary`: Specify the input branch which is considered as
+  primary or preferred. Always try to read from that branch. If no packet is
+  present during the specified receive timeout, switch to another input
+  branch. However, whenever packets reappear on the primary branch,
+  automatically switch back to it.
+
+### Event notification
+
+All options `--event-*` from `tsswitch` are retained as global options for
+dispatch point inputs.
+
+## Output feature of a dispatch point
+
+At a dispatch point, TS packets are duplicated and copied in all output chains.
+A packet is copied from the input chain buffer into all output chains buffers at
+the same time.
+
+We define several types of output for dispatch points. The type of output is set
+in each `-B` option because it is specific to that output (they are local
+options). A dispatch point may have outputs of distinct types.
+
+- Synchronous output (the default): Packets are synchronously transmitted,
+  without loss, blocking when necessary. As a consequence, if that output branch
+  is blocked downstream and its buffer is full, input of the dispatch point as
+  well as all other output branches are blocked at the dispatch point until the
+  output branch is unblocked.
+  
+- Lossy output (local option `--lossy`): Packets are transmitted when possible
+  only. If that output branch is blocked downstream and its buffer is full, the
+  incoming packets are missed for that branch but the input chains and the
+  other outputs of the dispatch point are not blocked.
+
+- Deadly output (local option `--deadly`): Packets are transmitted when
+  possible only and the transmission stops when the first packet is dropped. In
+  that case, an end-of-file is transmitted downstream to that output branch. No
+  more packet will be passed to that output. The branch is considered as dead.
+
+## Termination conditions
+
+### End-of-file propagation
+
+An EOF condition is propagated downstream, from plugin to plugin.
+
+When an EOF reaches the input of a dispatch point, this input is considered as
+completed and another input is selected. When all inputs of a dispatch point are
+completed, an EOF condition is propagated to all output branches which are not
+already dead.
+
+### Abort back-propagation
+
+In TSDuck version 3, when an intermediate or output plugin reports a fatal
+error, an "abort" signal is propagated backward to all plugins to stop them.
+
+In the new version of `tsp` if an abort is propagated from a chain backward to
+the output of a dispatch point, the dispatch point considers that output as
+"dead" (as with "deadly" outputs). No further packet will be sent to that
+output.
+
+When all outputs of a dispatch point are dead, an abort is transmitted backward
+to all input branches of that dispatch point, regardless of the reason for the
+dead output (abort from downstream or not possible to pass a packet to a
+"deadly" output).
+
+### Glocal termination
+
+A dispatch point is considered as terminated or closed when it has sent either
+an EOF condition downstream, or an abort condition upstream, to all branches.
+
+The TS processor is fully terminated when all plugins and dispatch points are
+closed.
+
+## Deprecated command and plugins
+
+### Removal of command tsswitch
+
+The command `tsswitch` becomes obsolete and will be removed from TSDuck version 4.
+
+A legacy `tsswitch` is typically replaced with the following graph:
+
+~~~
+         +=====+
++--+     |.....|
+|ip|---->X.....|
++--+     |.....|
+         |.....|
++----+   |.. ..|   +---+
+|http|-->X. a .X-->|srt|
++----+   |.. ..|   +---+
+         |.....|
++----+   |.....|
+|rist|-->X.....|
++----+   |.....|
+         +=====+
+~~~
+
+### Plugins fork and merge
+
+The packet processing plugins `fork` and `merge` are used to duplicate the TS
+or merge it with another one, using an external command. With TSDuck version
+3, the only way to create graphs is using these plugins on other `tsp`
+commands. With TSDuck version 4, this type of usage is deprecated since complex
+graphs can be built inside one single instance of `tsp`.
+
+Note that `merge` is not strictly equivalent to a dispatch point because it
+replaces stuffing packets only.
+
+The plugins `fork` and `merge` remain useful to route TS to and from other
+commands.
+
+### Plugins file, ip
+
+The plugins `file` and `ip` exist in three forms: input plugin, output plugin
+and packet processing plugin. With TSDuck version 4, the packet processing
+versions are no longer necessary because the feature can be implemented as a
+dispatch point and the corresponding output plugin.
+
+However, to avoid rewriting more complex command line, and because these
+plugins are relatively simple, these plugins will remain unchanged.
+
+## Open topics
 
 - Suspend / restart issue: When a plugin is suspended, packets are directly
-  passed to the next plugin, without going through the suspended plugin. What
-  is the impact when the suspended plugin is just before a split point?
+  passed to the next plugin, without going through the suspended plugin. What is
+  the impact when the suspended plugin is just before a dispatch point?
 
 - Plugin numbering: Currently, plugins are sequentially numbered from 0 (input)
-  to N-1 (output). How to manage plugin numbers after split points? Solution 1:
-  restart at N to first branch, etc. Solution 2: Structured numbering which
-  branch names, eg `a.0`, `a.1`, etc. Solution 1 is probably easier to
-  implement.
+  to N-1 (output). How to manage plugin numbers after across dispatch points?
 
 ## Implementation planning
 
 As usual, there is no planning. TSDuck development is based on good will, spare
 time and unpaid work.
-
-Split points will probably be implemented first, then multiple inputs.
