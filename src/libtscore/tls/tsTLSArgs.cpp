@@ -207,7 +207,7 @@ bool ts::TLSArgs::loadArgUseTLS(Args& args)
 bool ts::TLSArgs::hasCertificate() const
 {
 #if defined(TS_WINDOWS)
-    return !certificate_path.empty() && !store_name.empty();
+    return !certificate_path.empty() && !certificate_store.empty();
 #else
     return !certificate_path.empty() && !key_path.empty();
 #endif
