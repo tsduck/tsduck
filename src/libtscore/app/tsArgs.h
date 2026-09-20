@@ -332,7 +332,7 @@ namespace ts {
         //! Add the definition of an option.
         //!
         //! This method is typically invoked in the constructor of a subclass.
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] type Option or parameter value type.
         //! @param [in] min_occur Minimum number of occurrences of this option on the command line,
@@ -366,7 +366,7 @@ namespace ts {
         //! Add the definition of an option, the value being from an enumeration type.
         //!
         //! This method is typically invoked in the constructor of a subclass.
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] enumeration List of enumeration values. The command line parameter value can be
         //! a string describing an enumeration value or directly an integer value. In the application,
@@ -392,7 +392,7 @@ namespace ts {
         //!
         //! This method is typically invoked in the constructor of a subclass of Args.
         //! @tparam NUMTYPE A subclass of AbstractNumber.
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] min_occur Minimum number of occurrences of this option on the command line.
         //! @param [in] max_occur Maximum number of occurrences. 0 means default : 1 for an option, unlimited for a parameters.
@@ -420,7 +420,7 @@ namespace ts {
         //!
         //! This method is typically invoked in the constructor of a subclass of Args.
         //! @tparam DURATION An instance of std::chrono::duration.
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] min_occur Minimum number of occurrences of this option on the command line.
         //! @param [in] max_occur Maximum number of occurrences. 0 means default : 1 for an option, unlimited for a parameters.
@@ -449,7 +449,7 @@ namespace ts {
         //! The legacy option is not documented in the help.
         //!
         //! This method is typically invoked in the constructor of a subclass of Args.
-        //! @param [in] name Long name of the legacy option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of the legacy option. 0 or u"" means a parameter, not an option.
         //! @param [in] new_name Name of the new option which replaces it.
         //! @return A reference to this instance.
         //!
@@ -462,9 +462,9 @@ namespace ts {
         //!
         //! Add the help text of an existing option.
         //!
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
-        //! @param [in] syntax String to display for the option value instead of the default "value".
-        //! For instance: "address:port" "'string'".
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
+        //! @param [in] syntax String to display for the option value instead of the default template for the
+        //! option type, for instance u"'string'".
         //! @param [in] text Help text. Unformatted, line breaks will be added automatically.
         //! @return A reference to this instance.
         //!
@@ -473,7 +473,7 @@ namespace ts {
         //!
         //! Add the help text of an existing option.
         //!
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
         //! @param [in] text Help text. Unformatted, line breaks will be added automatically.
         //! @return A reference to this instance.
         //!
@@ -483,8 +483,17 @@ namespace ts {
         }
 
         //!
+        //! Exclude an existing option from the help text for the command.
+        //! The option is hidden, or undocumented/
+        //!
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
+        //! @return A reference to this instance.
+        //!
+        Args& nohelp(const UChar* name);
+
+        //!
         //! When an option has an Names type, get a list of all valid names.
-        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] name Long name of option. 0 or u"" means a parameter, not an option.
         //! @param [in] separator The separator to be used between values, a comma by default.
         //! @return A comma-separated list of all possible names.
         //! @see Names::nameList()

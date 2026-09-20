@@ -24,6 +24,15 @@ namespace ts {
         TS_DEFAULT_COPY_MOVE(TLSServerBase);
     public:
         //!
+        //! Default key size in bits of ephemeral RSA keys when no certificate is specified.
+        //!
+        //! When no parameter specifies how the certificate shall be retrieved or generated,
+        //! a default ephemeral self-signed certificate is generated using a random RSA key
+        //! of that size.
+        //!
+        static constexpr size_t DEFAULT_RSA_BITS = 3072;
+
+        //!
         //! Set command line arguments for the server.
         //! @param [in] args TLS arguments.
         //!
@@ -86,7 +95,7 @@ namespace ts {
         //! Get the size in bits of the ephemeral RSA key which is used for the ephemeral self-signed certificate.
         //! @return Size in bits of the ephemeral RSA key. When zero, no ephemeral self-signed certificate is used.
         //!
-        size_t getEphemeralRSABits() const { return _tls_args.ephemeral_rsa_bits; }
+        size_t getEphemeralRSABits() const;
 
         //!
         //! Virtual destructor.

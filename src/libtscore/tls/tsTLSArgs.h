@@ -55,6 +55,12 @@ namespace ts {
         bool insecure = false;           //!< Do not verify TLS server's certificate.
 
         //!
+        //! Check if enough parameters are provided to specify a certificate, depending on the operating system.
+        //! @return True if enough parameters are provided to specify a certificate.
+        //!
+        bool hasCertificate() const;
+
+        //!
         //! Get the help string which defines the condition of using SSL/TLS.
         //! The actual string depends if SSL/TLS is enabled by default or not.
         //! @return A constant reference to the string "Without --[prefix-]no-tls" or "With --[prefix-]tls".
@@ -77,5 +83,8 @@ namespace ts {
         UString _opt_certificate_path;   // Option name for --[prefix-]certificate-path.
         UString _opt_key_path;           // Option name for --[prefix-]key-path.
         UString _opt_ephemeral_rsa_bits; // Option name for --[prefix-]ephemeral-rsa-bits.
+
+        // Solve the --tls / --no-tls argument.
+        bool loadArgUseTLS(Args& args);
     };
 }

@@ -41,13 +41,15 @@ ts::TLSCertificate::~TLSCertificate()
 
 bool ts::TLSCertificate::initServerCertificate(const TLSServerBase& params)
 {
+    const size_t rsa_bits = params.getEphemeralRSABits();
+
     if (isValid()) {
         // Get or create the certificate the first time only.
         return true;
     }
-    else if (params.getEphemeralRSABits() > 0) {
+    else if (rsa_bits > 0) {
         // Create an ephemeral certificate.
-        return createEphemeralCertificate(params.getEphemeralRSABits());
+        return createEphemeralCertificate(rsa_bits);
     }
     else {
         // Fetch an existing certificate.

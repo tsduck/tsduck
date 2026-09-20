@@ -75,6 +75,7 @@ class ArgsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(InvalidFraction);
     TSUNIT_DECLARE_TEST(InvalidDouble);
     TSUNIT_DECLARE_TEST(LegacyOption);
+    TSUNIT_DECLARE_TEST(NoHelp);
 
 public:
     virtual void beforeTest() override;
@@ -1027,7 +1028,6 @@ TSUNIT_DEFINE_TEST(InvalidDouble)
     TSUNIT_EQUAL(u"Error: value for option --opt must be in range 12 to 15", log.messages());
 }
 
-
 // Test case: legacy options
 TSUNIT_DEFINE_TEST(LegacyOption)
 {
@@ -1096,4 +1096,65 @@ TSUNIT_DEFINE_TEST(LegacyOption)
     TSUNIT_EQUAL(u"foo", args.value(u"old2"));
     TSUNIT_EQUAL(0, args.intValue<int>(u"new3"));
     TSUNIT_EQUAL(0, args.intValue<int>(u"old3"));
+}
+
+// Test case: hidden options
+TSUNIT_DEFINE_TEST(NoHelp)
+{
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+    args.option(u"opt1", '1');
+    args.help(u"opt1", u"Option 1.");
+    args.option(u"opt2", '2');
+    args.nohelp(u"opt2");
+
+    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    args.delegateReport(&log);
+
+    TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
+    TSUNIT_EQUAL(u"\n"
+                 u"{description}\n"
+                 u"\n"
+                 u"Usage: test {syntax}\n"
+                 u"\n"
+                 u"Options:\n"
+                 u"\n"
+                 u"  -d[level]\n"
+                 u"  --debug[=level]\n"
+                 u"      Produce debug traces. The default level is 1. Higher levels produce more\n"
+                 u"      messages.\n"
+                 u"\n"
+                 u"  --help\n"
+                 u"      Display this help text.\n"
+                 u"\n"
+                 u"  -1\n"
+                 u"  --opt1\n"
+                 u"      Option 1.\n"
+                 u"\n"
+                 u"  -v\n"
+                 u"  --verbose\n"
+                 u"      Produce verbose output.\n"
+                 u"\n"
+                 u"  --version[=name]\n"
+                 u"      Display the TSDuck version number.\n"
+                 u"      The 'name' must be one of \"acceleration\", \"all\", \"bitrate\", \"compiler\",\n"
+                 u"      \"crypto\", \"date\", \"dektec\", \"http\", \"integer\", \"long\", \"rist\", \"short\",\n"
+                 u"      \"srt\", \"system\", \"tls\", \"vatek\", \"zlib\".\n",
+                 log.messages());
+    log.clear();
+
+    TSUNIT_ASSERT(args.analyze(u"test", USV({u"--opt1", u"--opt2"})));
+    TSUNIT_ASSERT(args.present(u"opt1"));
+    TSUNIT_ASSERT(args.present(u"opt2"));
+
+    TSUNIT_ASSERT(args.analyze(u"test", USV({u"-1", u"-2"})));
+    TSUNIT_ASSERT(args.present(u"opt1"));
+    TSUNIT_ASSERT(args.present(u"opt2"));
+
+    TSUNIT_ASSERT(args.analyze(u"test", USV({u"-1"})));
+    TSUNIT_ASSERT(args.present(u"opt1"));
+    TSUNIT_ASSERT(!args.present(u"opt2"));
+
+    TSUNIT_ASSERT(args.analyze(u"test", USV({u"-2"})));
+    TSUNIT_ASSERT(!args.present(u"opt1"));
+    TSUNIT_ASSERT(args.present(u"opt2"));
 }

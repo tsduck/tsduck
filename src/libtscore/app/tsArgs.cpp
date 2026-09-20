@@ -630,7 +630,7 @@ void ts::Args::addOption(const IOption& opt)
 
 
 //----------------------------------------------------------------------------
-// Add the help text of an exiting option.
+// Add or remove the help text of an exiting option.
 //----------------------------------------------------------------------------
 
 ts::Args& ts::Args::help(const UChar* name, const UString& syntax, const UString& text)
@@ -638,6 +638,13 @@ ts::Args& ts::Args::help(const UChar* name, const UString& syntax, const UString
     IOption& opt(getIOption(name));
     opt.syntax = syntax;
     opt.help = text;
+    return *this;
+}
+
+ts::Args& ts::Args::nohelp(const UChar* name)
+{
+    IOption& opt(getIOption(name));
+    opt.flags |= IOPT_NOHELP;
     return *this;
 }
 

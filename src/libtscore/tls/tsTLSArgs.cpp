@@ -41,15 +41,18 @@ void ts::TLSArgs::defineServerArgs(Args& args)
 {
     SuperClass::defineServerArgs(args);
 
-
+    // We define the two options --tls and --no-tls for compatibility when we switch the default.
+    // However, only the default one is documented.
+    args.option(_opt_tls.c_str());
+    args.option(_opt_no_tls.c_str());
     if (_tls_default) {
-        args.option(_opt_no_tls.c_str());
+        args.nohelp(_opt_tls.c_str());
         args.help(_opt_no_tls.c_str(),
                   u"The " + description() + " uses unencrypted communications. "
                   u"By default, it uses SSL/TLS communications.");
     }
     else {
-        args.option(_opt_tls.c_str());
+        args.nohelp(_opt_no_tls.c_str());
         args.help(_opt_tls.c_str(),
                   u"The " + description() + " uses SSL/TLS. "
                   u"In that case, a server certificate is required. "
@@ -103,7 +106,7 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
 #endif
 
     // Load TLS server options.
-    use_tls = args.present(_opt_tls.c_str());
+    const bool ok = loadArgUseTLS(args);
     args.getValue(certificate_path, _opt_certificate_path.c_str(), GetEnvironment(u"TSDUCK_TLS_CERTIFICATE").c_str());
     args.getValue(key_path, _opt_key_path.c_str(), GetEnvironment(u"TSDUCK_TLS_KEY").c_str());
     args.getValue(certificate_store, _opt_certificate_store.c_str(), GetEnvironment(u"TSDUCK_TLS_STORE", default_store).c_str());
@@ -123,7 +126,7 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
     }
 
     // Call superclass to load other server options.
-    return SuperClass::loadServerArgs(args, server_option);
+    return SuperClass::loadServerArgs(args, server_option) && ok;
 }
 
 
@@ -134,6 +137,23 @@ bool ts::TLSArgs::loadServerArgs(Args& args, const UChar* server_option)
 void ts::TLSArgs::defineClientArgs(Args& args)
 {
     SuperClass::defineClientArgs(args);
+
+    // We define the two options --tls and --no-tls for compatibility when we switch the default.
+    // However, only the default one is documented.
+    args.option(_opt_tls.c_str());
+    args.option(_opt_no_tls.c_str());
+    if (_tls_default) {
+        args.nohelp(_opt_tls.c_str());
+        args.help(_opt_no_tls.c_str(),
+                  u"Connect to the " + description() + " using unencrypted communications. "
+                  u"By default, use SSL/TLS communications.");
+    }
+    else {
+        args.nohelp(_opt_no_tls.c_str());
+        args.help(_opt_tls.c_str(),
+                  u"Connect to the " + description() + " using SSL/TLS. "
+                  u"By default, use unencrypted communications.");
+    }
 
     args.option(_opt_tls.c_str());
     args.help(_opt_tls.c_str(),
@@ -153,7 +173,42 @@ void ts::TLSArgs::defineClientArgs(Args& args)
 
 bool ts::TLSArgs::loadClientArgs(Args& args, const UChar* server_option)
 {
-    use_tls = args.present(_opt_tls.c_str());
+    const bool ok = loadArgUseTLS(args);
     insecure = args.present(_opt_insecure.c_str());
-    return SuperClass::loadClientArgs(args, server_option);
+    return SuperClass::loadClientArgs(args, server_option) && ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Solve the --tls / --no-tls argument.
+//----------------------------------------------------------------------------
+
+bool ts::TLSArgs::loadArgUseTLS(Args& args)
+{
+    if (args.present(_opt_tls.c_str()) && args.present(_opt_no_tls.c_str())) {
+        args.error(u"options --%s and --%s are mutually exclusive", _opt_tls, _opt_no_tls);
+        return false;
+    }
+    else if (_tls_default) {
+        use_tls = !args.present(_opt_no_tls.c_str());
+        return true;
+    }
+    else {
+        use_tls = args.present(_opt_tls.c_str());
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if enough parameters are provided to specify a certificate, depending on the operating system.
+//----------------------------------------------------------------------------
+
+bool ts::TLSArgs::hasCertificate() const
+{
+#if defined(TS_WINDOWS)
+    return !certificate_path.empty() && !store_name.empty();
+#else
+    return !certificate_path.empty() && !key_path.empty();
+#endif
 }
