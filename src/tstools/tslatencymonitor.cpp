@@ -21,6 +21,7 @@
 #include "tsMain.h"
 #include "tsArgsWithPlugins.h"
 #include "tsLatencyMonitor.h"
+#include "tsDuckContext.h"
 #include "tsAsyncReport.h"
 
 TS_MAIN(MainCode);

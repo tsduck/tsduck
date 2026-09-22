@@ -38,6 +38,12 @@ CONTINUE := $(if $(findstring k,$(filter-out --%,$(MAKEFLAGS))),true,)
 
 RECURSE = for dir in $(1); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); fi; done
 
+# The function RWILDCARD is a recursive version of $(wildcard).
+# Example from current directory (empty first parameter): $(call RWILDCARD,,*.h)
+# Example from named directory (with trailing slash): $(call RWILDCARD,src/,*.h)
+
+RWILDCARD = $(wildcard $(1)$(2)) $(foreach d,$(wildcard $(1)*),$(call RWILDCARD,$(d)/,$(2)))
+
 # Some nerds define exotic shells as default. Stay to a known shell.
 # Skip initialization files to speed up and reproduceability.
 # Print all commands if SHELL_VERBOSE is defined.
@@ -64,7 +70,7 @@ _SHELL_LINES = $(subst -=EOL=-,$(NL),$(shell ($(1)) | sed 's/$$/-=EOL=-/'))
 #   excluded (the "foreach" expression in definition of _VARIABLES).
 
 _ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
-_EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% PS1 PS2 PROMPT_% DBUS_% HIST% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_%
+_EXCLUDES = ^% @% *% \%% <% >% +% -% _% ?% .% PS1 PS2 PROMPT_% DBUS_% HIST% ALL_% ANDROID_% PREPROCESS.% COMPILE.% LINK.% LINT.% CPPFLAGS CXXFLAGS %_INCLUDES GITHUB_% RECURSE RWILDCARD
 _VARIABLES = $(foreach v,$(filter-out $(_EXCLUDES),$(.VARIABLES)),$(if $(findstring $(QUOTE),$($(v))),,$(v))) ALL_INCLUDES
 $(eval $(call _SHELL_LINES,$(_ROOTDIR)/scripts/make-config.sh $(foreach v,$(_VARIABLES),$(v)='$($(v))')))
 

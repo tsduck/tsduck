@@ -13,6 +13,7 @@
 #include "tsPluginRepository.h"
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
+#include "tsDektecSupport.h"
 #include "tsunit.h"
 
 
@@ -79,10 +80,13 @@ TSUNIT_DEFINE_TEST(Embedded)
 
 TSUNIT_DEFINE_TEST(Loaded)
 {
-    ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
-    ts::PluginRepository& repo(ts::PluginRepository::Instance());
+    // The only predefined loadable plugin is "dektec", all others are included in the TSDuck library.
+    if (ts::HasDektecSupport()) {
+        ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
+        ts::PluginRepository& repo(ts::PluginRepository::Instance());
 
-    TSUNIT_ASSERT(repo.getInput(u"merge", report) == nullptr);
-    TSUNIT_ASSERT(repo.getOutput(u"merge", report) == nullptr);
-    TSUNIT_ASSERT(repo.getProcessor(u"merge", report) != nullptr);
+        TSUNIT_ASSERT(repo.getInput(u"dektec", report) != nullptr);
+        TSUNIT_ASSERT(repo.getOutput(u"dektec", report) != nullptr);
+        TSUNIT_ASSERT(repo.getProcessor(u"dektec", report) == nullptr);
+    }
 }

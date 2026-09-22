@@ -14,8 +14,8 @@ NODEPS_SRC = tsduck.cpp
 include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtsduck.
-VPATH := $(filter-out $(OTHER_OS) $(addprefix %/,$(OTHER_OS)) $(if $(NOJAVA),java/% %/java) $(if $(NOPYTHON),python/% %/python), \
-           $(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
+VPATH := $(filter-out . $(OTHER_OS) $(addprefix %/,$(OTHER_OS)) $(if $(NOJAVA),java/% %/java) $(if $(NOPYTHON),python/% %/python), \
+           $(patsubst %/,%,$(sort $(dir $(call RWILDCARD,,*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.
@@ -39,7 +39,7 @@ TSDUCK_H = $(BINDIR)/include/tsduck.h
 
 .PHONY: headers
 headers: $(TSDUCK_H)
-$(TSDUCK_H): $(wildcard *.h */*.h */*/*.h */*/*/*.h)
+$(TSDUCK_H): $(call RWILDCARD,,*.h)
 	$(call LOG,[GEN] $(notdir $@)) mkdir -p $(dir $@); \
 	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py tsduck $@
 
@@ -77,11 +77,11 @@ OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o,$(OBJS))
 
 else
 
-F_OBJ_BLOB  = $(addsuffix .o,$(addprefix $(OBJDIR)/,$(sort $(notdir $(basename $(wildcard $(1)/*.cpp $(1)/*/*.cpp))))))
+F_OBJ_BLOB  = $(addsuffix .o,$(addprefix $(OBJDIR)/,$(sort $(notdir $(basename $(call RWILDCARD,$(1)/,*.cpp))))))
 OBJS_TABLES = $(call F_OBJ_BLOB,dtv/tables)
 OBJS_DESCS  = $(call F_OBJ_BLOB,dtv/descriptors)
 OBJS_CHARS  = $(call F_OBJ_BLOB,dtv/charset)
-OBJS_PLUGS  = $(call F_OBJ_BLOB,plugins/plugins)
+OBJS_PLUGS  = $(call F_OBJ_BLOB,plugins)
 
 OBJ_ALLTABLES = $(OBJDIR)/alltables.o
 OBJ_ALLDESCS  = $(OBJDIR)/alldescriptors.o
@@ -115,7 +115,7 @@ $(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB)
 
 install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
-	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so,)
+	$(if $(MACOS),rm -f $(SYSROOT)$(USRLIBDIR)/libtsduck.so)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	$(STRIP) $(SYSROOT)$(USRLIBDIR)/$(notdir $(SHARED_LIBTSDUCK))
 	+@$(call RECURSE,config $(if $(NOPYTHON),,python) $(if $(NOJAVA),,java))

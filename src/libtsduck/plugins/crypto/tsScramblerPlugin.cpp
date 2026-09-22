@@ -1,0 +1,836 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+#include "tsScramblerPlugin.h"
+#include "tsPluginRepository.h"
+#include "tsByteBlock.h"
+#include "tsOneShotPacketizer.h"
+#include "tsBetterSystemRandomGenerator.h"
+#include "tsCADescriptor.h"
+#include "tsScramblingDescriptor.h"
+
+TS_REGISTER_PROCESSOR_PLUGIN(u"scrambler", ts::ScramblerPlugin);
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
+    ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]")
+{
+    // We need to define character sets to specify service names.
+    duck.defineArgsForCharset(*this);
+
+    option(u"", 0, STRING, 0, 1);
+    help(u"",
+         u"Specifies the optional service to scramble. "
+         u"If no service is specified, a list of PID's to scramble must be provided using --pid options. "
+         u"When PID's are provided, fixed control words must be specified as well.\n\n"
+         u"If no fixed CW is specified, a random CW is generated for each crypto-period and "
+         u"ECM's containing the current and next CW's are created and inserted in the stream. "
+         u"Crypto-periods and ECM's can be created only when a service is specified.\n\n"
+         u"If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id. "
+         u"If it is an empty string or \"-\", the first service in the PAT is scrambled. "
+         u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
+         u"The name is not case sensitive and blanks are ignored. "
+         u"If the input TS does not contain any SDT or VCT, use service ids only.");
+
+    option<BitRate>(u"bitrate-ecm", 'b');
+    help(u"bitrate-ecm",
+         u"Specifies the bitrate for ECM PID's in bits / second. The default is " +
+         UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.");
+
+    option<cn::seconds>(u"clear-period");
+    help(u"clear-period",
+         u"Set the size of the initial clear period, in seconds. "
+         u"The default value is 0, meaning that all packets are scrambled.");
+
+    option(u"component-level");
+    help(u"component-level",
+         u"Add CA_descriptors at component level in the PMT. By default, the "
+         u"CA_descriptor is added at program level.");
+
+    option(u"ignore-scrambled");
+    help(u"ignore-scrambled",
+         u"Ignore packets which are already scrambled. Since these packets "
+         u"are likely scrambled with a different control word, descrambling "
+         u"will not be possible the usual way.");
+
+    option(u"no-audio");
+    help(u"no-audio",
+         u"Do not scramble audio components in the selected service. By default, "
+         u"all audio components are scrambled.");
+
+    option(u"no-video");
+    help(u"no-video",
+         u"Do not scramble video components in the selected service. By default, "
+         u"all video components are scrambled.");
+
+    option(u"only-pid", 0, PIDVAL);
+    help(u"only-pid",
+         u"Only scramble the component from the selected service which matches the given PID. "
+         u"By default, all audio and video components of the service are scrambled.");
+
+    option(u"partial-scrambling", 0, POSITIVE);
+    help(u"partial-scrambling", u"count",
+         u"Do not scramble all packets, only one packet every \"count\" packets. "
+         u"The default value is 1, meaning that all packets are scrambled. "
+         u"Specifying higher values is a way to reduce the scrambling CPU load "
+         u"while keeping the service mostly scrambled.");
+
+    option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid", u"pid1[-pid2]",
+         u"Scramble packets with these PID values. "
+         u"Several -p or --pid options may be specified. "
+         u"By default, scramble the service which is provided as parameter.");
+
+    option(u"pid-ecm", 0, PIDVAL);
+    help(u"pid-ecm",
+         u"Specifies the new ECM PID for the service. By default, use the first "
+         u"unused PID immediately following the PMT PID. Using the default, there "
+         u"is a risk to later discover that this PID is already used. In that case, "
+         u"specify --pid-ecm with a notoriously unused PID value.");
+
+    option(u"pre-reduce-cw");
+    help(u"pre-reduce-cw",
+         u"With DVB-CSA2, when entropy reduction is on (the default), make sure that "
+         u"control words are reduced from the beginning, including when transmitted to an ECMG. "
+         u"By default, entropy reduction is applied just before encryption only, "
+         u"and the ECMG receives a full random CW, without entropy reduction. "
+         u"The default behavior is suitable to test if the CAS correctly handles entropy "
+         u"reduction without implicitly reduced control words.");
+
+    option(u"private-data", 0, HEXADATA);
+    help(u"private-data",
+         u"Specifies the private data to insert in the CA_descriptor in the PMT. "
+         u"The value must be a suite of hexadecimal digits.");
+
+    option(u"subtitles");
+    help(u"subtitles",
+         u"Scramble subtitles components in the selected service. By default, the "
+         u"subtitles components are not scrambled.");
+
+    option(u"synchronous");
+    help(u"synchronous",
+         u"Specify to synchronously generate the ECM's. By default, in real-time "
+         u"mode, the packet processing continues while generating ECM's. This option "
+         u"is always on in offline mode.");
+
+    // ECMG and scrambling options.
+    _ecmg_args.defineArgs(*this);
+    _scrambling.defineArgs(*this);
+}
+
+
+//----------------------------------------------------------------------------
+// Get options method
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::getOptions()
+{
+    // Plugin parameters.
+    duck.loadArgs(*this);
+    _use_service = present(u"");
+    _service.set(value(u""));
+    getIntValues(_scrambled_pids, u"pid");
+    _synchronous_ecmg = present(u"synchronous") || !tsp->realtime();
+    _component_level = present(u"component-level");
+    _scramble_audio = !present(u"no-audio");
+    _scramble_video = !present(u"no-video");
+    _scramble_subtitles = present(u"subtitles");
+    getIntValue(_only_pid, u"only-pid", PID_NULL);
+    _ignore_scrambled = present(u"ignore-scrambled");
+    _pre_reduce_cw = present(u"pre-reduce-cw");
+    getChronoValue(_clear_period, u"clear-period", cn::seconds(0));
+    getIntValue(_partial_scrambling, u"partial-scrambling", 1);
+    getIntValue(_ecm_pid, u"pid-ecm", PID_NULL);
+    getValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
+    getHexaValue(_ca_desc_private, u"private-data");
+
+    // Other common parameters.
+    if (!_ecmg_args.loadArgs(duck, *this) || !_scrambling.loadArgs(duck, *this)) {
+        return false;
+    }
+
+    // Set logging levels.
+    _logger.setDefaultSeverity(_ecmg_args.log_protocol);
+    _logger.setSeverity(ecmgscs::Tags::CW_provision, _ecmg_args.log_data);
+    _logger.setSeverity(ecmgscs::Tags::ECM_response, _ecmg_args.log_data);
+
+    // Scramble either a service or a list of PID's, not a mixture of them.
+    if ((_use_service + _scrambled_pids.any()) != 1) {
+        error(u"specify either a service or a list of PID's");
+        return false;
+    }
+
+    // To scramble a fixed list of PID's, we need fixed control words, otherwise the random CW's are lost.
+    if (_scrambled_pids.any() && !_scrambling.hasFixedCW()) {
+        error(u"specify control words to scramble an explicit list of PID's");
+        return false;
+    }
+
+    // Do we need to manage crypto-periods and ECM insertion?
+    _need_cp = _scrambling.fixedCWCount() != 1;
+    _need_ecm = _use_service && !_scrambling.hasFixedCW();
+
+    // Specify which ECMG <=> SCS version to use.
+    _ecmgscs.setVersion(_ecmg_args.dvbsim_version);
+    _channel_status.forceProtocolVersion(_ecmg_args.dvbsim_version);
+    _stream_status.forceProtocolVersion(_ecmg_args.dvbsim_version);
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::start()
+{
+    // Reset states
+    _conflict_pids.reset();
+    _packet_count = 0;
+    _scrambled_count = 0;
+    _ecm_cc = 0;
+    _abort = false;
+    _wait_bitrate = false;
+    _degraded_mode = false;
+    _ts_bitrate = 0;
+    _partial_clear = 0;
+    _pkt_clear_period = 0;
+    _update_pmt = false;
+    _delay_start = cn::milliseconds(0);
+    _current_cw = 0;
+    _current_ecm = 0;
+
+    // As long as the bitrate is unknown, delay changes to infinite.
+    _pkt_insert_ecm = _pkt_change_cw = _pkt_change_ecm = std::numeric_limits<PacketCounter>::max();
+
+    // Initialize the scrambling engine.
+    if (!_scrambling.start()) {
+        return false;
+    }
+
+    // Initialize ECMG.
+    if (_need_ecm) {
+        if (!_ecmg_args.ecmg_address.hasAddress()) {
+            // Without fixed control word and ECMG, we cannot do anything.
+            error(u"specify either --cw, --cw-file or --ecmg");
+            return false;
+        }
+        else if (_ecmg_args.super_cas_id == 0) {
+            error(u"--super-cas-id is required with --ecmg");
+            return false;
+        }
+        else if (!_ecmg.connect(_ecmg_args, _channel_status, _stream_status, tsp)) {
+            // Error connecting to ECMG, error message already reported
+            return false;
+        }
+        else {
+            // Now correctly connected to ECMG.
+            // Validate delay start (limit to half the crypto-period).
+            _delay_start = cn::milliseconds(_channel_status.delay_start);
+            if (_delay_start > _ecmg_args.cp_duration / 2 || _delay_start < -_ecmg_args.cp_duration / 2) {
+                error(u"crypto-period too short for this CAS, must be at least %'!s", 2 * cn::abs(_delay_start));
+                return false;
+            }
+            debug(u"crypto-period duration: %'!s, delay start: %'!s", cn::duration_cast<cn::milliseconds>(_ecmg_args.cp_duration), _delay_start);
+
+            // Create first and second crypto-periods
+            _cp[0].initCycle(this, 0);
+            if (!_cp[0].initScramblerKey()) {
+                return false;
+            }
+            _cp[1].initNext(_cp[0]);
+        }
+    }
+
+    // The PMT will be modified, initialize the PMT packetizer.
+    // Note that even without ECMG we may need to add a scrambling_descriptor in the PMT.
+    _pzer_pmt.reset();
+    _pzer_pmt.setStuffingPolicy(CyclingPacketizer::StuffingPolicy::ALWAYS);
+
+    // Initialize the list of used pids. Preset reserved PIDs.
+    _input_pids.reset();
+    _input_pids.set(PID_NULL);
+    for (PID pid = 0; pid <= 0x001F; ++pid) {
+        _input_pids.set(pid);
+    }
+
+    return !_abort;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::stop()
+{
+    // Disconnect from ECMG
+    if (_ecmg.isConnected()) {
+        _ecmg.disconnect();
+    }
+
+    // Terminate the scrambling engine.
+    _scrambling.stop();
+
+    debug(u"scrambled %'d packets in %'d PID's", _scrambled_count, _scrambled_pids.count());
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// This method processes the PMT of the service.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
+{
+    assert(_use_service);
+
+    // Need a modifiable version of the PMT.
+    PMT pmt(table);
+
+    // Collect all PIDS to scramble.
+    _scrambled_pids.reset();
+    for (const auto& it : pmt.streams) {
+        const PID pid = it.first;
+        const PMT::Stream& stream(it.second);
+        _input_pids.set(pid);
+        if (((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) && (_only_pid == PID_NULL || _only_pid == pid)) {
+            _scrambled_pids.set(pid);
+            verbose(u"starting scrambling PID %n", pid);
+        }
+    }
+
+    // Check that we have something to scramble.
+    if (_scrambled_pids.none()) {
+        error(u"no PID to scramble in service");
+        _abort = true;
+        return;
+    }
+
+    // Allocate a PID value for ECM if necessary
+    if (_need_ecm && _ecm_pid == PID_NULL) {
+        // Start at service PMT PID, then look for an unused one.
+        for (_ecm_pid = _service.getPMTPID() + 1; _ecm_pid < PID_NULL && _input_pids.test(_ecm_pid); _ecm_pid++) {}
+        if (_ecm_pid >= PID_NULL) {
+            error(u"cannot find an unused PID for ECM, try --pid-ecm");
+            _abort = true;
+        }
+        else {
+            verbose(u"using PID %n for ECM", _ecm_pid);
+        }
+    }
+
+    // Add a scrambling_descriptor in the PMT for scrambling other than DVB-CSA2.
+    if (_scrambling.scramblingType() != SCRAMBLING_DVB_CSA2) {
+        _update_pmt = true;
+        pmt.descs.add(duck, ScramblingDescriptor(_scrambling.scramblingType()));
+    }
+
+    // With ECM generation, modify the PMT
+    if (_need_ecm) {
+        _update_pmt = true;
+
+        // Create a CA_descriptor
+        CADescriptor ca_desc((_ecmg_args.super_cas_id >> 16) & 0xFFFF, _ecm_pid);
+        ca_desc.private_data = _ca_desc_private;
+
+        // Add the CA_descriptor at program level or component level
+        if (_component_level) {
+            // Add a CA_descriptor in each scrambled component
+            for (auto& it : pmt.streams) {
+                if (_scrambled_pids.test(it.first)) {
+                    it.second.descs.add(duck, ca_desc);
+                }
+            }
+        }
+        else {
+            // Add one single CA_descriptor at program level
+            pmt.descs.add(duck, ca_desc);
+        }
+    }
+
+    // Packetize the modified PMT
+    if (_update_pmt) {
+        _pzer_pmt.removeSections(TID_PMT, pmt.service_id);
+        _pzer_pmt.setPID(_service.getPMTPID());
+        _pzer_pmt.addTable(duck, pmt);
+    }
+
+    // We need to know the bitrate in order to schedule crypto-periods or ECM insertion.
+    if (_need_cp || _need_ecm) {
+        if (_ts_bitrate == 0) {
+            _wait_bitrate = true;
+            warning(u"unknown bitrate, scheduling of crypto-periods is delayed");
+        }
+        else {
+            initializeScheduling();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize ECM and CP scheduling.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::initializeScheduling()
+{
+    assert(_ts_bitrate != 0);
+
+    // Initial clear period
+    _pkt_clear_period = PacketDistance(_ts_bitrate, _clear_period);
+
+    // Next crypto-period.
+    if (_need_cp) {
+        _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
+    }
+
+    // Initialize ECM insertion.
+    if (_need_ecm) {
+        // Insert current ECM packets as soon as possible.
+        _pkt_insert_ecm = _packet_count;
+
+        // Next ECM may start before or after next crypto-period
+        _pkt_change_ecm = _delay_start > cn::milliseconds::zero() ?
+                    _pkt_change_cw + PacketDistance(_ts_bitrate, _delay_start) :
+                    _pkt_change_cw - PacketDistance(_ts_bitrate, _delay_start);
+    }
+
+    // No longer wait for bitrate.
+    if (_wait_bitrate) {
+        _wait_bitrate = false;
+        info(u"bitrate now known, %'d b/s, starting scheduling crypto-periods", _ts_bitrate);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if we are in degraded mode or if we enter degraded mode
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::inDegradedMode()
+{
+    if (!_need_ecm) {
+        // No ECM, no degraded mode.
+        return false;
+    }
+    else if (_degraded_mode) {
+        // Already in degraded mode, do not try to exit from it now.
+        return true;
+    }
+    else if (nextECM().ecmReady()) {
+        // Next ECM ready, no need to enter degraded mode.
+        return false;
+    }
+    else {
+        // Entering degraded mode
+        warning(u"Next ECM not ready, entering degraded mode");
+        return _degraded_mode = true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Try to exit from degraded mode
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::tryExitDegradedMode()
+{
+    // If not in degraded mode, nothing to do
+    if (!_degraded_mode) {
+        return true;
+    }
+    assert(_need_ecm);
+    assert(_ts_bitrate != 0);
+
+    // We are in degraded mode. If next ECM not yet ready, stay degraded
+    if (!nextECM().ecmReady()) {
+        return true;
+    }
+
+    // Next ECM is ready, at last. Exit degraded mode.
+    info(u"Next ECM ready, exiting from degraded mode");
+    _degraded_mode = false;
+
+    // Compute next CW and ECM change.
+    if (_delay_start < cn::milliseconds::zero()) {
+        // Start broadcasting ECM before beginning of crypto-period, ie. now
+        changeECM();
+        // Postpone CW change
+        _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _delay_start);
+    }
+    else {
+        // Change CW now.
+        if (!changeCW()) {
+            return false;
+        }
+        // Start broadcasting ECM after beginning of crypto-period
+        _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _delay_start);
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Perform crypto-period transition, for CW or ECM
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::changeCW()
+{
+    if (_scrambling.hasFixedCW()) {
+        // A list of fixed CW was loaded from a file.
+
+        // Point to next crypto-period
+        _current_cw = (_current_cw + 1) & 0x01;
+
+        // Determine new transition point.
+        if (_need_cp && _ts_bitrate != 0) {
+            _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
+        }
+
+        // Set next crypto-period key.
+        return _scrambling.setEncryptParity(int(_current_cw));
+    }
+    else if (!inDegradedMode()) {
+        // Random CW and ECM generation at each crypto-period.
+        // Allowed to change CW only if not in degraded mode.
+
+        // Point to next crypto-period
+        _current_cw = (_current_cw + 1) & 0x01;
+
+        // Use new control word
+        if (!currentCW().initScramblerKey()) {
+            return false;
+        }
+
+        // Determine new transition point.
+        if (_need_cp && _ts_bitrate != 0) {
+            _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
+        }
+
+        // Generate (or start generating) next ECM when using ECM(N) in cp(N)
+        if (_need_ecm && _current_ecm == _current_cw) {
+            nextCW().initNext(currentCW());
+        }
+    }
+    return true;
+}
+
+void ts::ScramblerPlugin::changeECM()
+{
+    // Allowed to change CW only if not in degraded mode
+    if (_need_ecm && _ts_bitrate != 0 && !inDegradedMode()) {
+
+        // Point to next crypto-period
+        _current_ecm = (_current_ecm + 1) & 0x01;
+
+        // Determine new transition point
+        _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
+
+        // Generate (or start generating) next ECM when using ECM(N) in cp(N)
+        if (_current_ecm == _current_cw) {
+            nextCW().initNext(currentCW());
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Packet processing method
+//----------------------------------------------------------------------------
+
+ts::PacketProcessStatus ts::ScramblerPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    // Count packets
+    _packet_count++;
+
+    // Track all input PIDs
+    const PID pid = pkt.getPID();
+    _input_pids.set(pid);
+
+    // Maintain bitrate, keep previous one if unknown
+    const BitRate br = tsp->bitrate();
+    if (br != 0) {
+        _ts_bitrate = br;
+        if (_wait_bitrate) {
+            initializeScheduling();
+        }
+    }
+
+    // Filter interesting sections to discover the service.
+    if (_use_service) {
+        _service.feedPacket(pkt);
+    }
+
+    // If the service is definitely unknown or a fatal error occured during PMT analysis, give up.
+    if (_abort || _service.nonExistentService()) {
+        return TSP_END;
+    }
+
+    // Abort if allocated PID for ECM is already present in TS.
+    if (_ecm_pid != PID_NULL && pid == _ecm_pid) {
+        error(u"ECM PID allocation conflict, used 0x%X, now found as input PID, try another --pid-ecm", pid);
+        return TSP_END;
+    }
+
+    // As long as we do not know which PID's to scramble, nullify all packets.
+    // Let predefined PID pass however since we do not need to modify the PAT, SDT, etc.
+    // The only modified PSI/SI is the PMT of the service, not in this PID range.
+    if (_scrambled_pids.none()) {
+        return pid <= PID_DVB_LAST ? TSP_OK : TSP_NULL;
+    }
+
+    // Packetize modified PMT when needed.
+    if (_update_pmt && pid == _pzer_pmt.getPID()) {
+        _pzer_pmt.getNextPacket(pkt);
+        return TSP_OK;
+    }
+
+    // Is it time to apply the next control word ?
+    if (_need_cp && _packet_count >= _pkt_change_cw && !changeCW()) {
+        return TSP_END;
+    }
+
+    // Is it time to start broadcasting the next ECM ?
+    if (_need_ecm && _packet_count >= _pkt_change_ecm) {
+        changeECM();
+    }
+
+    // Insert an ECM packet (replace a null packet) when time to do so
+    if (_need_ecm && pid == PID_NULL && _packet_count >= _pkt_insert_ecm) {
+
+        // Compute next insertion point (approximate)
+        assert(_ecm_bitrate != 0);
+        _pkt_insert_ecm += _ts_bitrate == 0 ? DEFAULT_ECM_INTER_PACKET : BitRate(_ts_bitrate / _ecm_bitrate).toInt();
+
+        // Try to exit from degraded mode, if we were in.
+        // Note that return false means unrecoverable error here.
+        if (!tryExitDegradedMode()) {
+            return TSP_END;
+        }
+
+        // Replace current null packet with an ECM packet
+        currentECM().getNextECMPacket(pkt);
+        return TSP_OK;
+    }
+
+    // If the packet has no payload, or its PID is not to be scrambled, or in the clear period, there is nothing to do.
+    if (!pkt.hasPayload() || !_scrambled_pids.test(pid) || _packet_count < _pkt_clear_period) {
+        return TSP_OK;
+    }
+
+    // If packet is already scrambled, error or ignore (do not modify packet)
+    if (pkt.isScrambled()) {
+        if (_ignore_scrambled) {
+            if (!_conflict_pids.test(pid)) {
+                verbose(u"found input scrambled packets in PID %n, ignored", pid);
+                _conflict_pids.set(pid);
+            }
+            return TSP_OK;
+        }
+        else {
+            error(u"packet already scrambled in PID %n", pid);
+            return TSP_END;
+        }
+    }
+
+    // Manage partial scrambling
+    if (_partial_clear > 0) {
+        // Do not scramble this packet
+        _partial_clear--;
+        return TSP_OK;
+    }
+    else {
+        // Scramble this packet and reinit subsequent number of packets to keep clear
+        _partial_clear = _partial_scrambling - 1;
+    }
+
+    // Scramble the packet payload.
+    if (!_scrambling.encrypt(pkt)) {
+        return TSP_END;
+    }
+    _scrambled_count++;
+
+    return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize first crypto period.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, uint16_t cp_number)
+{
+    _plugin = scrambler;
+    _cp_number = cp_number;
+
+    if (_plugin->_need_ecm) {
+        generateCW(_cw_current);
+        generateCW(_cw_next);
+        generateECM();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize crypto period following specified one.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
+{
+    _plugin = previous._plugin;
+    _cp_number = previous._cp_number + 1;
+
+    if (_plugin->_need_ecm) {
+        _cw_current = previous._cw_next;
+        generateCW(_cw_next);
+        generateECM();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Generate a new random CW.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::generateCW(ByteBlock& cw)
+{
+    BetterSystemRandomGenerator::Instance().readByteBlock(cw, _plugin->_scrambling.cwSize());
+    if (_plugin->_pre_reduce_cw && _plugin->_scrambling.entropyMode() == DVBCSA2::REDUCE_ENTROPY) {
+        assert(cw.size() == DVBCSA2::KEY_SIZE);
+        DVBCSA2::ReduceCW(cw.data());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize the scrambler with the current control word.
+//----------------------------------------------------------------------------
+
+bool ts::ScramblerPlugin::CryptoPeriod::initScramblerKey() const
+{
+    _plugin->debug(u"starting crypto-period %'d at packet %'d", _cp_number, _plugin->_packet_count);
+
+    // Change the parity of the scrambled packets.
+    // Set our random current control word if no fixed CW.
+    return _plugin->_scrambling.setEncryptParity(_cp_number) &&
+        (!_plugin->_need_ecm || _plugin->_scrambling.setCW(_cw_current, _cp_number));
+}
+
+
+//----------------------------------------------------------------------------
+// Generate the ECM for a crypto-period.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::generateECM()
+{
+    _ecm_ok = false;
+
+    if (_plugin->_synchronous_ecmg) {
+        // Synchronous ECM generation
+        ecmgscs::ECMResponse response(_plugin->_ecmgscs);
+        if (!_plugin->_ecmg.generateECM(_cp_number,
+                                        _cw_current,
+                                        _cw_next,
+                                        _plugin->_ecmg_args.access_criteria,
+                                        _plugin->_ecmg_args.cp_duration,
+                                        response))
+        {
+            // Error, message already reported
+            _plugin->_abort = true;
+        }
+        else {
+            handleECM(response);
+        }
+    }
+    else {
+        // Asynchronous ECM generation
+        if (!_plugin->_ecmg.submitECM(_cp_number,
+                                      _cw_current,
+                                      _cw_next,
+                                      _plugin->_ecmg_args.access_criteria,
+                                      _plugin->_ecmg_args.cp_duration,
+                                      this))
+        {
+            // Error, message already reported
+            _plugin->_abort = true;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked when an ECM is available, maybe in the context of an external thread
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& response)
+{
+    if (_plugin->_channel_status.section_TSpkt_flag == 0) {
+        // ECMG returns ECM in section format
+        const auto sp = std::make_shared<Section>(response.ECM_datagram);
+        if (!sp->isValid()) {
+            _plugin->error(u"ECMG returned an invalid ECM section (%d bytes)", response.ECM_datagram.size());
+            _plugin->_abort = true;
+            return;
+        }
+        // Packetize the section
+        OneShotPacketizer pzer(_plugin->duck, _plugin->_ecm_pid, true);
+        pzer.addSection(sp);
+        pzer.getPackets(_ecm);
+
+    }
+    else if (response.ECM_datagram.size() % PKT_SIZE != 0) {
+        // ECMG returns ECM in packet format, but not an integral number of packets
+        _plugin->error(u"invalid ECM size (%d bytes), not a multiple of %d", response.ECM_datagram.size(), PKT_SIZE);
+        _plugin->_abort = true;
+        return;
+    }
+    else {
+        // ECMG returns ECM in packet format
+        _ecm.resize(response.ECM_datagram.size() / PKT_SIZE);
+        MemCopy(&_ecm[0].b, response.ECM_datagram.data(), response.ECM_datagram.size());
+    }
+
+    _plugin->debug(u"got ECM for crypto-period %d, %d packets", _cp_number, _ecm.size());
+
+    _ecm_pkt_index = 0;
+
+    // Last instruction: set the volatile boolean
+    _ecm_ok = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get next ECM packet
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::getNextECMPacket(TSPacket& pkt)
+{
+    if (!_ecm_ok || _ecm.size() == 0) {
+        // No ECM, return a null packet
+        pkt = NullPacket;
+    }
+    else {
+        // Copy ECM packet
+        assert(_ecm_pkt_index < _ecm.size());
+        pkt = _ecm[_ecm_pkt_index];
+        // Move to next ECM packet
+        if (++_ecm_pkt_index >= _ecm.size()) {
+            _ecm_pkt_index = 0;
+        }
+        // Adjust PID and continuity counter in TS packet
+        pkt.setPID(_plugin->_ecm_pid);
+        pkt.setCC(_plugin->_ecm_cc);
+        _plugin->_ecm_cc = (_plugin->_ecm_cc + 1) & 0x0F;
+    }
+}

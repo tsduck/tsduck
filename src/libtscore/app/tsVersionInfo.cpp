@@ -170,7 +170,12 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         default: {
             // Look for a dynamically added feature.
-            return Features::Instance().getVersion(Features::index_t(format));
+            const Features::index_t index = Features::index_t(format);
+            UString version(Features::Instance().getVersion(index));
+            if (version.empty()) {
+                version.format(u"Feature %s is not supported on this system", Features::Instance().supportEnum().name(index));
+            }
+            return version;
         }
     }
 }

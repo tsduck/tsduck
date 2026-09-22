@@ -22,7 +22,7 @@ Write-Output "==== Dektec WinSDK download and installation procedure"
 . "$PSScriptRoot\install-common.ps1"
 
 if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
-    Exit-Script "Dektec WinSDK is not available on Arm64"
+    Write-Host "WARNING: Dektec WinSDK can be used to build Intel binaries only"
 }
 
 $ReleasePage = "http://www.dektec.com/downloads/SDK/"

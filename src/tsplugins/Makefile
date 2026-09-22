@@ -34,10 +34,10 @@ $(BINDIR)/tsplugin_dektec$(SO_SUFFIX): $(SHARED_LIBTSDEKTEC)
 
 install install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
-	$(if $(NO_TSPLUGINS),rm -rf $(addsuffix $(SO_SUFFIX),$(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(NO_TSPLUGINS)),))
-	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so,)
-	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
-	$(STRIP) $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(notdir $(SHLIBS)))
+	$(if $(NO_TSPLUGINS),rm -f $(addsuffix $(SO_SUFFIX),$(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/tsplugin_,$(NO_TSPLUGINS))))
+	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so)
+	$(if $(SHLIBS),install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck)
+	$(if $(SHLIBS),$(STRIP) $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(notdir $(SHLIBS))))
 
 else
 

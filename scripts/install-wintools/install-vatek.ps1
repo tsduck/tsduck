@@ -22,7 +22,7 @@ Write-Output "==== VATek SDK download and installation procedure"
 . "$PSScriptRoot\install-common.ps1"
 
 if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
-    Exit-Script "VATek SDK is not available on Arm64"
+    Write-Host "WARNING: VATek SDK can be used to build Intel binaries only"
 }
 
 Install-GitHub-Exe 'VisionAdvanceTechnologyInc/vatek_sdk_2' '/VATek-Win64-.*\.exe$' @("/verysilent", "/suppressmsgboxes", "/norestart") -Latest

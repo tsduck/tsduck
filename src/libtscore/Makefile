@@ -14,8 +14,7 @@ NODEPS_SRC = tscore.cpp
 include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtscore.
-VPATH := $(filter-out $(OTHER_OS) $(addprefix %/,$(OTHER_OS)), \
-           $(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp */*/*/*.cpp)))))
+VPATH := $(filter-out . $(OTHER_OS) $(addprefix %/,$(OTHER_OS)), $(patsubst %/,%,$(sort $(dir $(call RWILDCARD,,*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.
@@ -39,7 +38,7 @@ TSCORE_H = $(BINDIR)/include/tscore.h
 
 .PHONY: headers
 headers: $(TSCORE_H)
-$(TSCORE_H): $(wildcard *.h */*.h */*/*.h */*/*/*.h)
+$(TSCORE_H): $(call RWILDCARD,,*.h)
 	$(call LOG,[GEN] $(notdir $@)) mkdir -p $(dir $@); \
 	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py tscore $@
 

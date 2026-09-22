@@ -27,7 +27,7 @@ namespace ts {
         //! Destructor.
         virtual ~DektecOutputPlugin() override;
 
-        // Implementation of plugin API
+        // Implementation of plugin API.
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;

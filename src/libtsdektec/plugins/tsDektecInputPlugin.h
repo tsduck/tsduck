@@ -26,7 +26,7 @@ namespace ts {
         //! Destructor.
         virtual ~DektecInputPlugin() override;
 
-        // Implementation of plugin API
+        // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

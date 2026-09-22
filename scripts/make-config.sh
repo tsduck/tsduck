@@ -953,15 +953,15 @@ done
 
 # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
 # Maintenance: also update pkg/nsis/tsduck.nsi (Windows).
-NO_TSPLUGINS="tsplugin_drop tsplugin_file tsplugin_fork tsplugin_hls tsplugin_http tsplugin_ip tsplugin_null tsplugin_psi tsplugin_rist tsplugin_srt tsplugin_table"
+NO_TSPLUGINS="aes analyze bat bitrate_monitor boostpid cat clear continuity count craft cutoff datainject decap descrambler drop dsmcc dump duplicate dvb eit eitinject encap feed file filter flute fork fuzz hides history hls http iat identify influx inject ip isdbinfo limit merge mpe mpeextract mpeinject mux nip nipextract nit nitscan null pat pattern pcap pcradjust pcrbitrate pcrcopy pcrduplicate pcredit pcrextract pcrverify pes pidshift play pmt psi psimerge reduce regulate remap rist rmorphan rmsplice scrambler sdt sections sifilter skip slice spliceinject splicemonitor splicerestamp srt stats stuffanalyze svremove svrename svresync t2mi tables teletext time timeref timeshift timewrap trace trigger tsrename until zap"
 
 # Build a list of tools and plugins to not build or deinstall from the system tree.
 NO_TSTOOLS=
-[[ -n $NOOPENSSL ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_aes tsplugin_descrambler tsplugin_scrambler"
+[[ -n $NOOPENSSL ]] && NO_TSPLUGINS="$NO_TSPLUGINS aes descrambler scrambler"
 [[ -n $NODTAPI ]] && NO_TSTOOLS="$NO_TSTOOLS tsdektec"
-[[ -n $NODTAPI ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_dektec"
+[[ -n $NODTAPI ]] && NO_TSPLUGINS="$NO_TSPLUGINS dektec"
 [[ -n $NOHIDES ]] && NO_TSTOOLS="$NO_TSTOOLS tshides"
-[[ -n $NOHIDES ]] && NO_TSPLUGINS="$NO_TSPLUGINS tsplugin_hides"
+[[ -n $NOHIDES ]] && NO_TSPLUGINS="$NO_TSPLUGINS hides"
 [[ -n $NOVATEK ]] && NO_TSTOOLS="$NO_TSTOOLS tsvatek"
 [[ -n $NOPCSC ]] && NO_TSTOOLS="$NO_TSTOOLS tssmartcard"
 
@@ -969,7 +969,7 @@ NO_TSTOOLS=
 if [[ -z $TSPLUGINS ]]; then
     for file in $TSPLUGINSDIR/tsplugin_*.cpp; do
         name=$(fbasename $file .cpp)
-        [[ " $NO_TSPLUGINS " != *" $name "* ]] && TSPLUGINS="$TSPLUGINS $name"
+        [[ " $NO_TSPLUGINS " != *" ${name/tsplugin_/} "* ]] && TSPLUGINS="$TSPLUGINS $name"
     done
 fi
 if [[ -z $TSTOOLS ]]; then

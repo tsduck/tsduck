@@ -56,6 +56,15 @@ $UserAgent = "Wget"
 $DownloadRetryCount = 3
 $DownloadRetrySeconds = 5
 
+# Make sure that Microsoft\WindowsApps is in the Path (this is where winget should be).
+$mwapps = "$env:LOCALAPPDATA\Microsoft\WindowsApps"
+if ($mwapps -notin ($env:Path -split ';')) {
+    $env:PATH = "$env:PATH;$mwapps"
+}
+if ($GitHubActions -and ($env:GITHUB_PATH -ne $null)) {
+    Add-Content $env:GITHUB_PATH $mwapps
+}
+
 # Create the directory for external products or use default.
 if (-not $Destination) {
     $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
@@ -361,6 +370,13 @@ function Install-Standard-Msi([string]$ReleasePage, [string]$Pattern, [string]$F
     Install-Msi $Url
 }
 
+# Standard installation procedure using WinGet.
+function Install-WinGet([string]$Name)
+{
+    Check-WinGet
+    winget install --silent --accept-package-agreements --accept-source-agreements --disable-interactivity --exact --id $Name
+}
+
 # Get user environment variable.
 function Get-UserEnvironment([string]$Name)
 {
@@ -434,7 +450,7 @@ function Add-Start-Menu-Entry([string]$Name, [string]$Target, [string]$MenuSubDi
 # Search a file in a path.
 function Search-Path([string]$Name, [string]$Path = $env:Path)
 {
-    foreach ($dir in $env:Path.Split(';')) {
+    foreach ($dir in $Path.Split(';')) {
         if (Test-Path "$dir\$Name") {
             return "$dir\$Name"
         }
@@ -443,8 +459,9 @@ function Search-Path([string]$Name, [string]$Path = $env:Path)
 }
 
 # Search a command in a path (.exe, .cmd, .ps1).
-function Search-Command([string]$Name, [string]$Path = $env:Path)
+function Search-Command([string]$Name)
 {
+    # Try using the Path.
     $res = Search-Path $Name
     if ($res -eq $null) {
         $res = Search-Path "$Name.exe"
@@ -452,10 +469,33 @@ function Search-Command([string]$Name, [string]$Path = $env:Path)
             $res = Search-Path "$Name.cmd"
             if ($res -eq $null) {
                 $res = Search-Path "$Name.ps1"
+                if ($res -eq $null) {
+                    # Try using Get-Command (probably redundant).
+                    $res = Get-Command $Name -ErrorAction SilentlyContinue
+                    if ($res -ne $null) {
+                        $res = $res.Path
+                    }
+                }
             }
         }
     }
     return $res
+}
+
+# Enforce installation of winget (useful in GitHub runners).
+function Check-WinGet()
+{
+    $wg = Search-Command winget
+    if ($wg -eq $null) {
+        Write-Output "WinGet not found, checking AppxPackage"
+        $pkg = Get-AppxPackage -Name Microsoft.DesktopAppInstaller
+        if ($pkg -ne $null) {
+            Write-Output "Installing AppxPackage $($pkg.PackageFamilyName)"
+            Add-AppxPackage -RegisterByFamilyName -MainPackage $pkg.PackageFamilyName
+            $wg = Search-Command winget
+        }
+    }
+    Write-Output "WinGet path: $(if ($wg -eq $null) { 'not found' } else { $wg })"
 }
 
 # Send a WM_SETTINGCHANGE message to all applications 
