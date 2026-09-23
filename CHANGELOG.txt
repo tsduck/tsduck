@@ -2,6 +2,19 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.46-4806 (September 2026)
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Starting with version 3.46, for performance reasons, most "tsp" plugins are
+    integrated  in the TSDuck library instead of being placed in a hundredth of
+    shared  libraries,  one  per  plugin.  The capability of adding new plugins
+    using external shared libraries remains.  Specifically, the plugin "dektec"
+    remains  in  an  external  shared  library  because it is linked against an
+    additional shared library which contains non-free code from Dektec.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.45-4798 (September 2026)
 
 [NEW] New commands and plugins:

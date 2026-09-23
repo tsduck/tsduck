@@ -299,21 +299,25 @@ Many operations are provided, such as:
 [#multithread]
 ===== Multithreading
 
-TSDuck is heavily multi-threaded.
-The abstract class classref:Thread[] manages a thread.
-To define an actual thread, derive this class and implement the virtual method `main()`.
+TSDuck is heavily multi-threaded. The abstract class classref:Thread[] manages a
+thread.  To define an actual thread, derive this class and implement the virtual
+method `main()`.
 
-The class classref:ThreadAttributes[] contains all mandatory or optional attributes of a thead.
-An application typically builds a classref:ThreadAttributes[] object and then creates threads using these attributes.
+The class classref:ThreadAttributes[] contains all mandatory or optional
+attributes of a thead. An application typically builds a
+classref:ThreadAttributes[] object and then creates threads using these
+attributes.
 
 In earlier versions of TSDuck, synchronization primitives used to be implemented
-through specific classes (`ts::Mutex`, `ts::Condition`).
-They are now removed and new {cpp}11 classes such as `std::mutex` and `std::condition_variable` are used instead.
+through specific classes (`ts::Mutex`, `ts::Condition`). They are now removed
+and new {cpp}11 classes such as `std::mutex` and `std::condition_variable` are
+used instead.
 
-Note that the {cpp}11 class `std::thread` is not used.
-Its API is too limited to be useable in complex environments:
-it does not allow to customize the priority or the stack size _before_ the creation of the thread.
-Therefore, TSDuck exclusively uses classref:Thread[] and classref:ThreadAttributes[] instead.
+Note that the {cpp}11 class `std::thread` is not used. Its API is too limited
+to be useable in complex environments: it does not allow to customize the
+priority or the stack size _before_ the creation of the thread.  Therefore,
+TSDuck exclusively uses classref:Thread[] and classref:ThreadAttributes[]
+instead.
 
 TSDuck relies on {cpp} mechanisms to track the usage of resources.
 Standard classes such as `std::lock_guard` or `std::unique_lock` are used
@@ -325,118 +329,125 @@ See xref:reactorevents[xrefstyle=short] for more details.
 [#virtmem]
 ===== Virtual memory
 
-The class classref:ResidentBuffer[] implements a buffer which is locked in physical memory,
-preventing paging or swapping on this buffer.
-This is useful for large data buffers with high performance constraints.
+The class classref:ResidentBuffer[] implements a buffer which is locked in
+physical memory, preventing paging or swapping on this buffer.  This is useful
+for large data buffers with high performance constraints.
 
-This is a template class.
-The template parameter is the type of the elementary data in the buffer.
+This is a template class. The template parameter is the type of the elementary
+data in the buffer.
 
 The core data of the `tsp` processor is a `ts::ResidentBuffer<ts::TSPacket>`.
 The incoming packets are directly written into this buffer by the input plugin.
-Each packet processing plugin directly reads and writes the packets here.
-And the output plugin reads the packet there, at the very same place they were written by the input plugin.
-Given that this global buffer is locked in physical memory, the best performances are guaranteed.
+Each packet processing plugin directly reads and writes the packets here. And
+the output plugin reads the packet there, at the very same place they were
+written by the input plugin.  Given that this global buffer is locked in
+physical memory, the best performances are guaranteed.
 
-Note however that most operating systems require that the application has privileges to lock physical memory.
+Note however that most operating systems require that the application has
+privileges to lock physical memory.
 
 [#processes]
 ===== Processes
 
 To track potential memory leaks and the impact of the application on the system,
-the class classref:SystemMonitor[] creates a background thread which
-reports the process metrics of the application at regular intervals.
+the class classref:SystemMonitor[] creates a background thread which reports the
+process metrics of the application at regular intervals.
 
-The class classref:ForkPipe[] is a portable and convenient way to create a process running a specific command
-and creates an outgoing pipe from the calling application to the standard input of the created process,
-or an incoming pipe from the standard output of the created process to the calling application, or both.
-The pipes are open in binary mode (when it makes sense for the operating system)
-and can be used to pass an entire transport stream when necessary.
+The class classref:ForkPipe[] is a portable and convenient way to create a
+process running a specific command and creates an outgoing pipe from the calling
+application to the standard input of the created process, or an incoming pipe
+from the standard output of the created process to the calling application, or
+both.  The pipes are open in binary mode (when it makes sense for the operating
+system) and can be used to pass an entire transport stream when necessary.
 
 [#networking]
 ===== Networking
 
-The classes classref:IPAddress[] and classref:IPSocketAddress[] define an IP address and
-a corresponding socket address (an IP address and a port number).
+The classes classref:IPAddress[] and classref:IPSocketAddress[] define an IP
+address and a corresponding socket address (an IP address and a port number).
 Host name resolution and multicast are supported.
 
-The class classref:IPAddress[] can hold IPv4 and IPv6 addresses.
-All network operations on name resolutions and TCP or UDP sockets
-are transparently supported for IPv4 and IPv6 addresses.
+The class classref:IPAddress[] can hold IPv4 and IPv6 addresses. All network
+operations on name resolutions and TCP or UDP sockets are transparently
+supported for IPv4 and IPv6 addresses.
 
-The classes classref:TCPSocket[] and classref:UDPSocket[] implement TCP/IP and UDP/IP endpoints.
+The classes classref:TCPSocket[] and classref:UDPSocket[] implement TCP/IP and
+UDP/IP endpoints.
 
-The class classref:UDPSocket[] can be used directly to send and receive datagrams.
-Multicast is supported.
+The class classref:UDPSocket[] can be used directly to send and receive
+datagrams.  Multicast is supported.
 
-The class classref:TCPSocket[] can be used only through two subclasses.
-The subclass classref:TCPConnection[] is a TCP/IP communication endpoint, either on client or server side.
-It is used to send or receive data streams.
-The subclass classref:TCPServer[] is used to implement a TCP server.
-It accepts incoming client connections and initiates a classref:TCPConnection[] for each new connection.
-On the client side, the class classref:TCPConnection[] is directly used to connect to the server.
+The class classref:TCPSocket[] can be used only through two subclasses.  The
+subclass classref:TCPConnection[] is a TCP/IP communication endpoint, either on
+client or server side.  It is used to send or receive data streams.  The
+subclass classref:TCPServer[] is used to implement a TCP server.  It accepts
+incoming client connections and initiates a classref:TCPConnection[] for each
+new connection.  On the client side, the class classref:TCPConnection[] is
+directly used to connect to the server.
 
-Subclasses of classref:TCPConnection[] are used to implement specific protocols on top of TCP/IP.
-Currently, the available subclasses are classref:TelnetConnection[] and classref:tlv/Connection[].
-The latter is used to handle communications using the "DVB SimulCrypt head-end protocols".
-See xref:dvbprotocols[xrefstyle=short] for more details.
+The class classref:WebRequest[] performs simple Web requests using HTTP, HTTPS
+or FTP.  Using a URL, the result can be downloaded in memory or in a file.
+Multiple redirections and SSL/TLS are automatically handled.  This class is
+built on top of native system libraries, _libcurl_ on {unix}, _WinInet_ on
+Windows.
 
-The class classref:WebRequest[] performs simple Web requests using HTTP, HTTPS or FTP.
-Using a URL, the result can be downloaded in memory or in a file.
-Multiple redirections and SSL/TLS are automatically handled.
-This class is built on top of native system libraries, _libcurl_ on {unix}, _WinInet_ on Windows.
-
-In addition to straightforward communication classes using blocking I/O, TSDuck also uses event
-dispatching on non-blocking I/O ("immediate" I/O on UNIX systems or "asynchronous" I/O on Windows).
-See xref:reactorevents[xrefstyle=short] for more details.
+In addition to straightforward communication classes using blocking I/O, TSDuck
+also uses event dispatching on non-blocking I/O ("immediate" I/O on UNIX systems
+or "asynchronous" I/O on Windows).  See xref:reactorevents[xrefstyle=short] for
+more details.
 
 [#sharelibs]
 ===== Shared libraries
 
-The TSCore library contains classes to load shared libraries
-(`.dll` on Windows, `.so` on Linux and BSD, `.dylib` on macOS)
-and lookup symbols inside them in a portable way.
-These classes are typically used to load `tsp` plugins but can be used in any application.
+The TSCore library contains classes to load shared libraries (`.dll` on Windows,
+`.so` on Linux and BSD, `.dylib` on macOS) and lookup symbols inside them in a
+portable way.  These classes are typically used to load `tsp` plugins but can be
+used in any application.
 
 The class classref:SharedLibrary[] manipulates any type of shared library.
 
-The subclass classref:ApplicationSharedLibrary[] searches a shared library using TSDuck rules:
-if the file is not found "as it is", an optional prefix and a list of directories are used.
-This is how, on Windows for instance, searching the shared library named `zap` will end up loading the file `tsplugin_zap.dll`
+The subclass classref:ApplicationSharedLibrary[] searches a shared library using
+TSDuck rules: if the file is not found "as it is", an optional prefix and a list
+of directories are used.  This is how, on Windows for instance, searching the
+shared library named `dektec` will end up loading the file `tsplugin_dektec.dll`
 in the same directory as the application executable file.
 
 [#pcscinterface]
 ===== Smart-card interface
 
 Applications which interact with smart-cards shall use the PC/SC interface.
-PC/SC is a standard interface which was originally developped for Windows
-but which is also available on Linux and macOS.
+PC/SC is a standard interface which was originally developped for Windows but
+which is also available on Linux and macOS.
 
 The TSDuck library does not embed or hide PC/SC but it provides a few utilities
 like transmitting an APDU and read the response in one single function or
-searching a smart-card with some characteristics in the ATR from all connected smart-cards.
+searching a smart-card with some characteristics in the ATR from all connected
+smart-cards.
 
 All these utilities are grouped in the namespace classref:pcsc[].
 
 [#wincom]
 ===== Windows specificities
 
-The class classref:COM[] provides a portable and reliable way to make sure that the Common Object Model (COM)
-is properly initialized and terminated on Windows systems.
-This class is defined on all platforms but does nothing on non-Windows systems.
-It is consequently safe to use it everywhere without tedious conditional compilation directives.
+The class classref:COM[] provides a portable and reliable way to make sure that
+the Common Object Model (COM) is properly initialized and terminated on Windows
+systems.  This class is defined on all platforms but does nothing on non-Windows
+systems.  It is consequently safe to use it everywhere without tedious
+conditional compilation directives.
 
-Other classes manipulate Windows-specific objects and are not available on non-Windows systems.
+Other classes manipulate Windows-specific objects and are not available on
+non-Windows systems.
 
-The template class classref:ComPtr[] is the equivalent of a smart pointer for COM objects.
-The reference count of a COM object is properly incremented and decremented when
-the COM object is manipulated through a classref:ComPtr[].
-The COM object is automatically released when no more reference exists.
+The template class classref:ComPtr[] is the equivalent of a smart pointer for
+COM objects.  The reference count of a COM object is properly incremented and
+decremented when the COM object is manipulated through a classref:ComPtr[].  The
+COM object is automatically released when no more reference exists.
 
-There is little advantage to develop an intrinsicly non-portable COM object class.
-However, in order to access tuner devices, TSDuck needed a few custom internal COM classes
-to interact with the DirectShow framework.
-These internal classes needed some COM support functions which are available to applications (just in case...)
+There is little advantage to develop an intrinsicly non-portable COM object
+class.  However, in order to access tuner devices, TSDuck needed a few custom
+internal COM classes to interact with the DirectShow framework.  These internal
+classes needed some COM support functions which are available to applications
+(just in case...)
 
 [#mpegfeatures]
 ==== MPEG features

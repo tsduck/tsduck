@@ -635,44 +635,73 @@ Plugin activation options
 *-I* _name_
 
 [.optdoc]
-Designate the shared library plugin for packet input.
-By default, read packets from standard input.
+Designate the plugin for packet input. This is either a shared library name or a
+TSDuck internal pre-registered plugin name.
+
+[.optdoc]
+By default, read packets from the standard input. In practice, the default input
+plugin is `-I file` which, without parameter, reads on the standard input.
 
 [.opt]
 *-O* _name_
 
 [.optdoc]
-Designate the shared library plugin for packet output.
-By default, write packets to standard output.
+Designate the plugin for packet output. This is either a shared library name or a
+TSDuck internal pre-registered plugin name.
+
+[.optdoc]
+By default, write packets to the standard output. In practice, the default output
+plugin is `-O file` which, without parameter, writes to the standard output.
 
 [.opt]
 *-P* _name_
 
 [.optdoc]
-Designate a shared library plugin for packet processing.
-Several packet processors are allowed.
-Each packet is successively processed by each processor, in the order of the command line.
-By default, there is no processor and the packets are directly passed from the input to the output.
+Designate a plugin for packet processing. This is either a shared library name
+or a TSDuck internal pre-registered plugin name.
+
+[.optdoc]
+Several packet processors are allowed. Each packet is successively processed by
+each processor, in the order of the command line. By default, there is no
+processor and the packets are directly passed from the input to the output.
 
 The specified plugin _name_ is used to locate a shared library for the plugin
-(`.so` file on Linux, `.dylib` on macOS, `.dll` on Windows).
-On Windows, usually, all plugins files are in the same directory as the `tsp` executable.
-More generally, a plugin can be designated in a number of ways, in the following order.
-When a method fails, the next one is attempted.
+(`.so` file on Linux, `.dylib` on macOS, `.dll` on Windows).  On Windows,
+usually, all plugins files are in the same directory as the `tsp` executable.
+More generally, a plugin can be designated in a number of ways, in the following
+order.  When a method fails, the next one is attempted.
 
+* If the plugin name is pre-registered in TSDuck or if a plugin with that name
+  was already loaded, this plugin is used.
 * If the plugin name is a complete path name, with a directory, this path name is used.
 * Without directory in the plugin name, a list of directories is searched:
 ** If the environment `TSPLUGINS_PATH` is defined, a list of directories is parsed.
    Directories are separated by a semicolon `;` on Windows and a colon `:` on {unix}.
 ** The same directory as the `tsp` executable file is used as last choice.
-** In each of these directories, the file named `tsplugin_name.so` or `.dylib` or `.dll` is searched.
+** In each of these directories, the file named `tsplugin_name.so` or `.dylib`
+   or `.dll` is searched.
 ** If not found, the file `name` and then `name.so` or `.dylib` or `.dll` is searched.
 * If still not found, the standard algorithm of the operating system is applied to locate the shared library file,
   using the specified name (on Linux, see the man page of `dlopen(3)` for more details).
 
-The _input-options_, _processor-options_ and _output-options_, as specified in the general syntax of the `tsp` command,
-are specific to their corresponding plugin.
-All available plugins are documented in xref:chap-plugins[xrefstyle=short].
+The _input-options_, _processor-options_ and _output-options_, as specified in
+the general syntax of the `tsp` command, are specific to their corresponding
+plugin. All available plugins are documented in xref:chap-plugins[xrefstyle=short].
+
+Note that a plugin is uniquely defined by its name and type. Thus, `-I file`,
+`-P file`, and `-O file` are three different plugins with the same name but
+different types: input plugin, packet processing plugin, and output plugin.
+
+If plugins of different types exist with the same name and are located in an
+external shared library, they must be all defined in the same shared library.
+For instance, `-I foo` and `-O foo` are in the same library `tsplugin_foo.so`.
+This shared library, when loaded, must declare the two plugins, input and
+output, with the name "foo".
+
+In practice, for performance reasons, most plugins which are shipped with TSDuck
+are pre-registered in the TSDuck library. Only third-party plugins, or plugins
+using external dependencies such as the plugin `dektec`, are implemented in
+external shared libraries.
 
 [.usage]
 Common plugin options
