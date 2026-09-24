@@ -35,8 +35,8 @@ namespace {
         Options(int argc, char *argv[]);
 
         ts::DuckContext          duck {this};             // TSDuck execution contexts.
-        ts::UStringVector        infiles {};              // Input file names.
-        fs::path                 outfile {};              // Output file name.
+        ts::UStringVector        in_files {};             // Input file names.
+        fs::path                 out_file {};             // Output file name.
         ts::UString              model {};                // Model file name.
         ts::UStringVector        patches {};              // XML patch files.
         ts::UStringVector        sorted_tags {};          // Sort the content of these tags.
@@ -186,10 +186,10 @@ Options::Options(int argc, char *argv[]) :
     json.loadArgs(*this);
     xml_tweaks.loadArgs(*this);
 
-    getValues(infiles, u"");
+    getValues(in_files, u"");
     getValues(patches, u"patch");
     getValues(sorted_tags, u"sort");
-    getPathValue(outfile, u"output");
+    getPathValue(out_file, u"output");
     getIntValue(indent, u"indent", 2);
     getValue(xml_prefix, u"xml-line");
     getIntValue(merge_attr, u"attributes-merge", ts::xml::MergeAttributes::ADD);
@@ -221,7 +221,7 @@ Options::Options(int argc, char *argv[]) :
     use_model = tables_model || !model.empty();
 
     // An input file named "" or "-" means standard input.
-    for (auto& it : infiles) {
+    for (auto& it : in_files) {
         if (it == u"-") {
             it.clear();
         }
@@ -231,8 +231,8 @@ Options::Options(int argc, char *argv[]) :
     need_output = reformat || uncomment || merge_inputs || json.useFile() || yaml_output || from_json || expand_input;
 
     // Check if output is a directory.
-    outfile_is_dir = !outfile.empty() && fs::is_directory(outfile);
-    if (infiles.size() > 1 && !merge_inputs && !outfile.empty() && !outfile_is_dir) {
+    outfile_is_dir = !out_file.empty() && fs::is_directory(out_file);
+    if (in_files.size() > 1 && !merge_inputs && !out_file.empty() && !outfile_is_dir) {
         error(u"the specified output must be a directory when several input files are specified");
     }
 
@@ -315,7 +315,7 @@ namespace {
     void SaveDocument(Options& opt, const ts::xml::JSONConverter& model, ts::xml::Document& doc, const fs::path& infile = fs::path())
     {
         // Build output path.
-        fs::path out(opt.outfile);
+        fs::path out(opt.out_file);
         if (opt.outfile_is_dir) {
             // Build missing part.
             if (infile.empty()) {
@@ -393,13 +393,13 @@ int MainCode(int argc, char *argv[])
     patch.loadPatchFiles(opt.xml_tweaks);
     opt.exitOnError();
 
-    if (opt.merge_inputs && opt.infiles.size() > 1) {
+    if (opt.merge_inputs && opt.in_files.size() > 1) {
         // Load all input files as one merged document.
         ts::xml::Document doc(opt);
-        bool ok = LoadDocument(opt, model, doc, opt.infiles[0]);
-        for (size_t i = 1; ok && i < opt.infiles.size(); ++i) {
+        bool ok = LoadDocument(opt, model, doc, opt.in_files[0]);
+        for (size_t i = 1; ok && i < opt.in_files.size(); ++i) {
             ts::xml::Document subdoc(opt);
-            ok = LoadDocument(opt, model, subdoc, opt.infiles[i]) && doc.rootElement()->merge(subdoc.rootElement(), opt.merge_attr);
+            ok = LoadDocument(opt, model, subdoc, opt.in_files[i]) && doc.rootElement()->merge(subdoc.rootElement(), opt.merge_attr);
         }
         if (ok) {
             ProcessDocument(opt, patch, doc);
@@ -408,7 +408,7 @@ int MainCode(int argc, char *argv[])
     }
     else {
         // Process each input file one by one.
-        for (const auto& file : opt.infiles) {
+        for (const auto& file : opt.in_files) {
             ts::xml::Document doc(opt);
             if (LoadDocument(opt, model, doc, file)) {
                 ProcessDocument(opt, patch, doc);

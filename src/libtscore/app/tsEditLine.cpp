@@ -8,7 +8,7 @@
 
 #include "tsEditLine.h"
 #include "tsFileUtils.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 
 // Disable libedit on Windows.
 #if defined(TS_WINDOWS) && !defined(TS_NO_EDITLINE)
@@ -37,7 +37,7 @@ size_t      ts::EditLine::_default_history_size(100);
 //----------------------------------------------------------------------------
 
 ts::EditLine::EditLine(const UString& prompt, const UString& next_prompt, const UString& history_file, size_t history_size) :
-    _is_a_tty(StdInIsTerminal()),
+    _is_a_tty(Stdio::IsTerminal(Stdio::STDIN)),
     _prompt(prompt),
     _next_prompt(next_prompt),
     _history_file(history_file),

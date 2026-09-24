@@ -11,8 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsInputRedirector.h"
-#include "tsOutputRedirector.h"
+#include "tsStdio.h"
 #include "tsByteBlock.h"
 #include "tsTS.h"
 TS_MAIN(MainCode);
@@ -43,8 +42,8 @@ namespace {
         size_t   header_size = 0;    // header size (when packet_size > 0)
         bool     cont_sync = false;  // continuous synchronization (default: stop on error)
         bool     keep = false;       // keep packet size (default: reduce to 188 bytes)
-        fs::path infile {};          // Input file name
-        fs::path outfile {};         // Output file name
+        fs::path in_file {};         // Input file name
+        fs::path out_file {};        // Output file name
     };
 }
 
@@ -93,8 +92,8 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getPathValue(infile, u"");
-    getPathValue(outfile, u"output");
+    getPathValue(in_file, u"");
+    getPathValue(out_file, u"output");
     getIntValue(sync_size, u"sync-size", DEFAULT_SYNC_SIZE);
     getIntValue(contig_size, u"min-contiguous", DEFAULT_CONTIG_SIZE);
     getIntValue(header_size, u"header-size", 0);
@@ -253,8 +252,8 @@ bool Resynchronizer::checkSync(const uint8_t* buf, size_t buf_size, size_t pkt_s
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::InputRedirector input(opt.infile, opt);
-    ts::OutputRedirector output(opt.outfile, opt);
+    ts::Stdio::Redirector input(&opt, ts::Stdio::STDIN, opt.in_file);
+    ts::Stdio::Redirector output(&opt, ts::Stdio::STDOUT, opt.out_file);
     Resynchronizer resync(opt.keep);
 
     // Synchronization buffer

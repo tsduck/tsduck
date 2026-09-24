@@ -29,8 +29,8 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck {this};   //!< TSDuck execution context.
-        fs::path                 infile {};     //!< Input file name (empty => stdin).
+        ts::DuckContext          duck {this};  // TSDuck execution context.
+        fs::path                 in_file {};   // Input file name (empty => stdin).
         ts::TSPacketFormat       format = ts::TSPacketFormat::AUTODETECT;
         ts::DSMCCExtractorArgs   ext {};
     };
@@ -49,7 +49,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     duck.loadArgs(*this);
-    getPathValue(infile, u"");
+    getPathValue(in_file, u"");
     format = ts::LoadTSPacketFormatInputOption(*this);
     ext.loadArgs(*this);
 
@@ -69,7 +69,7 @@ int MainCode(int argc, char *argv[])
     extractor.setPID(opt.ext.pid);
 
     ts::TSFile file(&opt);
-    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
+    if (!file.openRead(opt.in_file, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 

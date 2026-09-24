@@ -20,7 +20,7 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsARIBCharset.h"
-#include "tsOutputRedirector.h"
+#include "tsStdio.h"
 #include "tsTime.h"
 TS_MAIN(MainCode);
 
@@ -40,7 +40,7 @@ namespace ts {
         bool        c_style = false;       // Output binary data in C/C++ syntax.
         bool        to_utf8 = false;       // Output decoded string as UTF-8.
         bool        to_utf16 = false;      // Output decoded string as UTF-16.
-        fs::path    outfile {};            // Output file.
+        fs::path    out_file {};           // Output file.
         UString     encode {};             // String to encode.
         ByteBlock   decode {};             // Hexadecimal content to decode.
 
@@ -120,7 +120,7 @@ ts::CharsetOptions::CharsetOptions(int argc, char *argv[]) :
 
     // Get parameter values.
     duck.loadArgs(*this);
-    getPathValue(outfile, u"output");
+    getPathValue(out_file, u"output");
     getValue(encode, u"encode");
     const UString decodeHex(value(u"decode"));
     list = present(u"list-charsets");
@@ -530,7 +530,7 @@ void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
 int MainCode(int argc, char *argv[])
 {
     ts::CharsetOptions opt(argc, argv);
-    ts::OutputRedirector output(opt.outfile, opt);
+    ts::Stdio::Redirector output(&opt, ts::Stdio::STDOUT, opt.out_file);
 
     // List of character sets names.
     if (opt.list) {

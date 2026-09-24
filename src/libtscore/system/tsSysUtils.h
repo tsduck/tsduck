@@ -326,61 +326,6 @@ namespace ts {
     }
 
     //!
-    //! Check if the standard input is a terminal.
-    //! @ingroup system
-    //! @return True if the standard input is a terminal.
-    //!
-    TSCOREDLL bool StdInIsTerminal();
-
-    //!
-    //! Check if the standard output is a terminal.
-    //! @ingroup system
-    //! @return True if the standard output is a terminal.
-    //!
-    TSCOREDLL bool StdOutIsTerminal();
-
-    //!
-    //! Check if the standard error is a terminal.
-    //! @ingroup system
-    //! @return True if the standard error is a terminal.
-    //!
-    TSCOREDLL bool StdErrIsTerminal();
-
-    //!
-    //! Put the standard input stream in binary mode.
-    //! @ingroup system
-    //!
-    //! On UNIX systems, this does not make any difference.
-    //! On Windows systems, however, in a stream which is not open in
-    //! binary mode, there is automatic translation between LF and CR-LF.
-    //! The standard input is open in text mode (non-binary).
-    //! This function forces it into binary mode.
-    //!
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //! If @a report is a subclass of ts::Args, terminate the application on error.
-    //! @see SetBinaryModeStdout()
-    //!
-    TSCOREDLL bool SetBinaryModeStdin(Report& report = CERR);
-
-    //!
-    //! Put the standard output stream in binary mode.
-    //! @ingroup system
-    //!
-    //! On UNIX systems, this does not make any difference.
-    //! On Windows systems, however, in a stream which is not open in
-    //! binary mode, there is automatic translation between LF and CR-LF.
-    //! The standard output is open in text mode (non-binary).
-    //! This function forces it into binary mode.
-    //!
-    //! @param [in,out] report Where to report errors.
-    //! @return True on success, false on error.
-    //! If @a report is a subclass of ts::Args, terminate the application on error.
-    //! @see SetBinaryModeStdout()
-    //!
-    TSCOREDLL bool SetBinaryModeStdout(Report& report = CERR);
-
-    //!
     //! Close a file descriptor on @c fork().
     //! @ingroup system
     //!

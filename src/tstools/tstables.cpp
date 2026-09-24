@@ -37,7 +37,7 @@ namespace {
         ts::TablesDisplay  display {duck};             // Table formatting.
         ts::TablesLogger   logger {display};           // Table logging.
         ts::PagerArgs      pager {this, true, true};   // Output paging options.
-        fs::path           infile {};                  // Input file name.
+        fs::path           in_file {};                 // Input file name.
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
         bool               psi_info = false;           // PSI/SI information only, no inut file.
         bool               dump_psi_repo = false;      // Dump internal state of PSI repository.
@@ -86,7 +86,7 @@ Options::Options(int argc, char *argv[]) :
     logger.loadArgs(duck, *this);
     display.loadArgs(duck, *this);
 
-    getPathValue(infile, u"");
+    getPathValue(in_file, u"");
     format = ts::LoadTSPacketFormatInputOption(*this);
 
     list_dvb_charsets = present(u"list-dvb-charset-order");
@@ -95,7 +95,7 @@ Options::Options(int argc, char *argv[]) :
     list_tables = present(u"list-tables");
     psi_info = dump_psi_repo || list_dvb_charsets || list_descriptors || list_tables;
 
-    if (psi_info && !infile.empty()) {
+    if (psi_info && !in_file.empty()) {
         error(u"no input file allowed with PSI/SI information options");
     }
 
@@ -154,7 +154,7 @@ int MainCode(int argc, char *argv[])
 
     // Open the TS file.
     ts::TSFile file(&opt);
-    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
+    if (!file.openRead(opt.in_file, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 

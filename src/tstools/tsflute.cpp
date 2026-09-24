@@ -34,7 +34,7 @@ namespace {
 
         ts::DuckContext duck {this};
         ts::UString     input_file {};
-        ts::PcapFilter  file {};
+        ts::PcapFilter  file {this};
         ts::PagerArgs   pager {this, true, true};
         ts::mcast::FluteAnalyzerArgs flute {};
     };
@@ -80,7 +80,7 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Open the pcap file.
-    if (!opt.file.open(opt.input_file, opt)) {
+    if (!opt.file.open(opt.input_file)) {
         return EXIT_FAILURE;
     }
 
@@ -103,7 +103,7 @@ int MainCode(int argc, char *argv[])
     ts::IPPacket ip;
     ts::VLANIdStack vlans;
     cn::microseconds timestamp;
-    while (opt.file.readIP(ip, vlans, timestamp, opt)) {
+    while (opt.file.readIP(ip, vlans, timestamp)) {
         analyzer.feedPacket(timestamp, ip);
     }
     opt.file.close();

@@ -17,6 +17,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgs.h"
+#include "tsErrCodeReport.h"
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
@@ -34,26 +35,22 @@ class Options: public ts::Args
 public:
     Options(int argc, char *argv[]);
     enum UpdateCommand {APPEND, PREPEND, REMOVE, STATUS};
-    ts::UString   directory;
-    ts::UString   environment;
-    UpdateCommand command;
-    bool          initialSeparator;
-    bool          finalSeparator;
-    bool          dryRun;
+    ts::UString   directory {};
+    ts::UString   environment {};
+    ts::UString   hard_link {};
+    ts::UString   sym_link {};
+    UpdateCommand command = APPEND;
+    bool          initial_separator = false;
+    bool          final_separator = false;
+    bool          dry_run = false;
 };
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Add or remove a directory to the system Path.", u"[options] directory"),
-    directory(),
-    environment(),
-    command(APPEND),
-    initialSeparator(false),
-    finalSeparator(false),
-    dryRun(false)
+    ts::Args(u"Add or remove a directory to the system Path.", u"[options] directory")
 {
     const ts::UString sep(1, ts::SEARCH_PATH_SEPARATOR);
 
-    option(u"", 0, Args::STRING, 1, 1);
+    option(u"", 0, Args::FILENAME, 1, 1);
     help(u"", u"A directory to add or remove to the system Path.");
 
     option(u"append", 'a');
@@ -68,8 +65,14 @@ Options::Options(int argc, char *argv[]) :
     option(u"final-separator", 'f');
     help(u"final-separator", u"Force a final '" + sep + u"' at the end of the system path.");
 
+    option(u"hard-link", 'h', Args::FILENAME);
+    help(u"hard-link", u"Don't update any path. Create the specified hard link pointing to the command parameter.");
+
     option(u"initial-separator", 'i');
     help(u"initial-separator", u"Force an initial '" + sep + u"' at the beginning of the system path.");
+
+    option(u"link", 'l', Args::FILENAME);
+    help(u"link", u"Don't update any path. Create the specified symbolic link pointing to the command parameter.");
 
     option(u"prepend", 'p');
     help(u"prepend", u"Prepend the directory to the system path.");
@@ -84,9 +87,11 @@ Options::Options(int argc, char *argv[]) :
 
     getValue(directory, u"");
     getValue(environment, u"environment", u"Path");
-    initialSeparator = present(u"initial-separator");
-    finalSeparator = present(u"final-separator");
-    dryRun = present(u"dry-run");
+    getValue(hard_link, u"hard-link");
+    getValue(sym_link, u"link");
+    initial_separator = present(u"initial-separator");
+    final_separator = present(u"final-separator");
+    dry_run = present(u"dry-run");
 
     if (present(u"append")) {
         command = APPEND;
@@ -142,12 +147,22 @@ int main(int argc, char* argv[])
         return EXIT_SUCCESS;
     }
 
+    // Specific case of creating symbolic or hard link.
+    if (!opt.sym_link.empty()) {
+        fs::create_symlink(opt.directory, opt.sym_link, &ts::ErrCodeReport(opt, u"error creating symbolic link", opt.sym_link));
+        return EXIT_SUCCESS;
+    }
+    if (!opt.hard_link.empty()) {
+        fs::create_hard_link(opt.directory, opt.hard_link, &ts::ErrCodeReport(opt, u"error creating hard link", opt.hard_link));
+        return EXIT_SUCCESS;
+    }
+
     // Get the Path value.
     ts::UString path(ts::Registry::GetValue(ts::Registry::SystemEnvironmentKey, opt.environment, opt));
     if (path.empty() && opt.environment.similar(u"Path")) {
         opt.fatal(u"cannot get path from registry: %s\\%s", ts::Registry::SystemEnvironmentKey, opt.environment);
     }
-    if (opt.dryRun) {
+    if (opt.dry_run) {
         opt.info(u"Previous %s value: %s", opt.environment, path);
     }
 
@@ -178,13 +193,13 @@ int main(int argc, char* argv[])
 
     // Rebuild the new Path.
     path = ts::UString::Join(dirs, ts::UString(1, ts::SEARCH_PATH_SEPARATOR));
-    if (opt.initialSeparator) {
+    if (opt.initial_separator) {
         path.insert(path.begin(), ts::SEARCH_PATH_SEPARATOR);
     }
-    if (opt.finalSeparator) {
+    if (opt.final_separator) {
         path.append(ts::SEARCH_PATH_SEPARATOR);
     }
-    if (opt.dryRun) {
+    if (opt.dry_run) {
         opt.info(u"New %s value: %s", opt.environment, path);
     }
     else {

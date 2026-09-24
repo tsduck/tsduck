@@ -18,6 +18,7 @@
 #include "tsFileUtils.h"
 #include "tsEnvironment.h"
 #include "tsSysInfo.h"
+#include "tsStdio.h"
 #include "tsErrCodeReport.h"
 #include "tsCerrReport.h"
 #include "tsRegistry.h"
@@ -660,13 +661,14 @@ TSUNIT_DEFINE_TEST(ProcessVirtualSize)
 TSUNIT_DEFINE_TEST(IsTerminal)
 {
 #if defined(TS_WINDOWS)
-    debug() << "SysUtilsTest::testIsTerminal: stdin  = \"" << ts::WinDeviceName(::GetStdHandle(STD_INPUT_HANDLE)) << "\"" << std::endl
-            << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(::GetStdHandle(STD_OUTPUT_HANDLE)) << "\"" << std::endl
-            << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(::GetStdHandle(STD_ERROR_HANDLE)) << "\"" << std::endl;
+    debug() << "SysUtilsTest::testIsTerminal: stdin  = \"" << ts::WinDeviceName(ts::Stdio::Handle(ts::Stdio::STDIN)) << "\"" << std::endl
+            << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(ts::Stdio::Handle(ts::Stdio::STDOUT)) << "\"" << std::endl
+            << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(ts::Stdio::Handle(ts::Stdio::STDERR)) << "\"" << std::endl;
 #endif
-    debug() << "SysUtilsTest::testIsTerminal: StdInIsTerminal = " << ts::UString::TrueFalse(ts::StdInIsTerminal())
-            << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
-            << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
+    debug() << "SysUtilsTest::testIsTerminal"
+            << ": stdin  IsTerminal = " << ts::UString::TrueFalse(ts::Stdio::IsTerminal(ts::Stdio::STDIN))
+            << ", stdout IsTerminal = " << ts::UString::TrueFalse(ts::Stdio::IsTerminal(ts::Stdio::STDOUT))
+            << ", stderr IsTerminal = " << ts::UString::TrueFalse(ts::Stdio::IsTerminal(ts::Stdio::STDERR))
             << std::endl;
 }
 

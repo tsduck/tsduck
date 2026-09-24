@@ -19,6 +19,7 @@
 #include "tsDuckContext.h"
 #include "tsUDPReceiver.h"
 #include "tsIPProtocols.h"
+#include "tsStdio.h"
 #include "tsArgs.h"
 TS_MAIN(MainCode);
 
@@ -41,7 +42,7 @@ namespace {
         size_t                raw_bpl = 0;               // Bytes per line in raw mode.
         uint64_t              start_offset = 0;          // Start offset in bytes
         ts::PacketCounter     max_packets = 0;           // Maximum number of packets to dump per file
-        std::vector<fs::path> infiles {};                // Input file names
+        std::vector<fs::path> in_files {};                // Input file names
         ts::TSPacketFormat    format = ts::TSPacketFormat::AUTODETECT;  // Input file format
         ts::TSDumpArgs        dump {};                   // Packet dump options
         ts::PagerArgs         pager {this, true, true};  // Output paging options
@@ -87,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
     dump.loadArgs(duck, *this);
     pager.loadArgs(*this);
 
-    getPathValues(infiles);
+    getPathValues(in_files);
     raw_file = present(u"raw-file");
     start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     getIntValue(max_packets, u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
@@ -101,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
     // Receiving from UDP means --raw-file, without files.
     udp_dump = udp.destination.hasPort();
     raw_file = raw_file || udp_dump;
-    if (udp_dump && !infiles.empty()) {
+    if (udp_dump && !in_files.empty()) {
         error(u"don't specify input files with --ip-udp");
     }
 
@@ -127,7 +128,7 @@ Options::Options(int argc, char *argv[]) :
 namespace {
     void DumpTSFile(Options& opt, const fs::path& filename, std::ostream& out)
     {
-        if (opt.infiles.size() > 1 && !opt.dump.log) {
+        if (opt.in_files.size() > 1 && !opt.dump.log) {
             out << "* File " << filename << std::endl;
         }
 
@@ -167,13 +168,14 @@ namespace {
     {
         std::istream* in = nullptr;
         std::ifstream file;
+        ts::Stdio::BinaryMode in_mode(&opt, ts::Stdio::STDIN);
 
         // Open input file (standard input if no file is specified or file name is empty).
         if (filename.empty() || filename == u"-") {
             // Use standard input.
             in = &std::cin;
             // Try to put standard input in binary mode
-            ts::SetBinaryModeStdin(opt);
+            in_mode.setBinaryMode(true);
         }
         else {
             // Dump named files. Open the file in binary mode. Will be closed by destructor.
@@ -258,7 +260,7 @@ int MainCode(int argc, char *argv[])
         // Dump UDP packets.
         DumpRawUDP(opt, out);
     }
-    else if (opt.infiles.empty()) {
+    else if (opt.in_files.empty()) {
         // Dump standard input.
         if (opt.raw_file) {
             DumpRawFile(opt, ts::UString(), out);
@@ -269,7 +271,7 @@ int MainCode(int argc, char *argv[])
     }
     else {
         // Dump named files.
-        for (const auto& name : opt.infiles) {
+        for (const auto& name : opt.in_files) {
             if (opt.raw_file) {
                 DumpRawFile(opt, name, out);
             }

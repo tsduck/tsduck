@@ -8,7 +8,7 @@
 
 #include "tsOutputPager.h"
 #include "tsFileUtils.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 
 
 //----------------------------------------------------------------------------
@@ -39,8 +39,8 @@ ts::OutputPager::~OutputPager()
 void ts::OutputPager::init(const UString& env_name, bool stdout_only)
 {
     // Check if we have a terminal.
-    const bool out_term = StdOutIsTerminal();
-    const bool err_term = StdErrIsTerminal();
+    const bool out_term = Stdio::IsTerminal(Stdio::STDOUT);
+    const bool err_term = Stdio::IsTerminal(Stdio::STDERR);
     _has_terminal = out_term || (!stdout_only && err_term);
 
     // Check if we should redirect one output.

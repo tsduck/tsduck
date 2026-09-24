@@ -43,12 +43,20 @@ namespace ts {
     //!
     class TSCOREDLL PcapStream: public PcapFilter
     {
-        TS_NOCOPY(PcapStream);
+        TS_NOBUILD_NOCOPY(PcapStream);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        PcapStream() = default;
+        explicit PcapStream(Report* report) : PcapFilter(report) {}
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        explicit PcapStream(ReporterBase* delegate) : PcapFilter(delegate) {}
 
         //!
         //! Get the address of the client peer.
@@ -84,40 +92,35 @@ namespace ts {
         //! TCP stream or end of pcap file. On output, it contains the actual number of read bytes.
         //! @param [out] timestamp Capture timestamp in microseconds since Unix epoch or -1 if none is available.
         //! If the data has been reassembled from several IP packets, this is the timestamp of the last part.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error or end of file.
         //!
-        bool readTCP(IPSocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report);
+        bool readTCP(IPSocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp);
 
         //!
         //! Check if the next data to read is at start of TCP session.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success and if the next data to read is at start of TCP session, false otherwise.
         //!
-        bool startOfStream(Report& report);
+        bool startOfStream();
 
         //!
         //! Check if the next data to read is at start of TCP session.
         //! @param [in] source Source address of the TCP stream. It must match one of the peers of the TCP session.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success and if the next data to read is at start of TCP session, false otherwise.
         //!
-        bool startOfStream(const IPSocketAddress& source, Report& report);
+        bool startOfStream(const IPSocketAddress& source);
 
         //!
         //! Check if the next data to read is at end of TCP session.
         //! @param [in] source Source address of the TCP stream. It must match one of the peers of the TCP session.
-        //! @param [in,out] report Where to report errors.
         //! @return True if the next data to read is at end of TCP session or on error, false otherwise.
         //!
-        bool endOfStream(const IPSocketAddress& source, Report& report);
+        bool endOfStream(const IPSocketAddress& source);
 
         //!
         //! Check if the TCP session is fully terminated on both sides.
-        //! @param [in,out] report Where to report errors.
         //! @return True if the TCP session is fully terminated on both sides or on error, false otherwise.
         //!
-        bool endOfSession(Report& report) { return endOfStreamByIndex(0, report) && endOfStreamByIndex(1, report); }
+        bool endOfSession() { return endOfStreamByIndex(0) && endOfStreamByIndex(1); }
 
         //!
         //! Skip the end of the current TCP session and prepare for next session.
@@ -134,7 +137,7 @@ namespace ts {
         size_t maxReassemblyQueueSize() const { return _max_queue_size; }
 
         // Inherited methods.
-        virtual bool open(const fs::path& filename, Report& report) override;
+        virtual bool open(const fs::path& filename) override;
         virtual void setBidirectionalFilter(const IPSocketAddress& addr1, const IPSocketAddress& addr2) override;
 
     private:
@@ -188,13 +191,13 @@ namespace ts {
 
         // Read IP packets and fill the two streams until one packet is read from the specified peer.
         // Index must be either ISRC, IDST or NPOS (any direction). Updated with actual index.
-        bool readStreams(size_t& index, Report& report);
+        bool readStreams(size_t& index);
 
         // Get index for source address. Report an error and return false if incorrect.
-        bool indexOf(const IPSocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const;
+        bool indexOf(const IPSocketAddress& source, bool allow_unspecified, size_t& index) const;
 
         // Check if the next data to read is at end of TCP session (by index).
-        bool endOfStreamByIndex(size_t index, Report& report);
+        bool endOfStreamByIndex(size_t index);
 
         // These methods are disabled, the corresponding filtering is imposed in this subclass.
         virtual void setProtocolFilterTCP() override;

@@ -506,6 +506,7 @@ void ts::TablesLogger::close()
         // Close files and documents.
         _xml_doc.close();
         _json_doc.close();
+        _bin_mode.restore();
         if (_bin_file.is_open()) {
             _bin_file.close();
         }
@@ -1093,7 +1094,7 @@ bool ts::TablesLogger::createBinaryFile(const fs::path& name)
 {
     if (_bin_stdout) {
         // Make sure that the standard output is in binary mode.
-        return SetBinaryModeStdout(_report);
+        return _bin_mode.setBinaryMode(true);
     }
     else {
         _report.verbose(u"creating %s", name);

@@ -38,7 +38,7 @@ namespace {
         bool               no_tdt = false;  // Do not try to get a TDT
         bool               no_tot = false;  // Do not try to get a TOT
         bool               all = false;     // Report all tables, not only the first one.
-        ts::UString        infile {};       // Input file name
+        ts::UString        in_file {};      // Input file name
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
@@ -66,7 +66,7 @@ Options::Options(int argc, char *argv[]) :
 
     duck.loadArgs(*this);
 
-    infile = value(u"");
+    in_file = value(u"");
     all = present(u"all");
     no_tdt = present(u"notdt");
     no_tot = present(u"notot");
@@ -192,7 +192,7 @@ int MainCode(int argc, char *argv[])
 
     // Open the TS file.
     ts::TSFile file(&opt);
-    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
+    if (!file.openRead(opt.in_file, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 

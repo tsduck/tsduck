@@ -15,6 +15,7 @@
 #include "tsProcessorPlugin.h"
 #include "tsFileNameGenerator.h"
 #include "tsPESDemux.h"
+#include "tsStdio.h"
 
 namespace ts {
     //!
@@ -69,6 +70,7 @@ namespace ts {
         std::ostream*     _pes_stream = nullptr;
         std::ofstream     _es_file {};
         std::ostream*     _es_stream = nullptr;
+        Stdio::BinaryMode _out_mode {this, Stdio::STDOUT};
         PESDemux          _demux;
         FileNameGenerator _pes_name_gen {};
         FileNameGenerator _es_name_gen {};

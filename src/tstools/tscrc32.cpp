@@ -14,7 +14,7 @@
 #include "tsArgs.h"
 #include "tsCRC32.h"
 #include "tsSysInfo.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 TS_MAIN(MainCode);
 
 
@@ -29,7 +29,7 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        std::vector<fs::path> infiles {};          // Input file names.
+        std::vector<fs::path> in_files {};          // Input file names.
         ts::ByteBlock         indata {};           // Raw input data.
         bool                  show_name = false;   // Show file name on input.
         bool                  accelerated = false; // Check if the computation of CRC32 is accelerated.
@@ -50,9 +50,9 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getPathValues(infiles);
+    getPathValues(in_files);
     getHexaValue(indata, u"data");
-    show_name = verbose() || infiles.size() + !indata.empty() > 1;
+    show_name = verbose() || in_files.size() + !indata.empty() > 1;
     accelerated = present(u"accelerated");
 
     exitOnError();
@@ -70,13 +70,14 @@ namespace {
         ts::UString prefix;
         std::istream* in = nullptr;
         std::ifstream file;
+        ts::Stdio::BinaryMode in_mode(&opt, ts::Stdio::STDIN);
 
         // Open input file (standard input if no file is specified or file name is empty).
         if (filename.empty() || filename == u"-") {
             // Use standard input.
             in = &std::cin;
-            // Try to put standard input in binary mode
-            ts::SetBinaryModeStdin(opt);
+            // Try to put standard input in binary mode.
+            in_mode.setBinaryMode(true);
             if (opt.show_name) {
                 prefix = u"standard input: ";
             }
@@ -133,13 +134,13 @@ int MainCode(int argc, char *argv[])
     }
 
     // Process input files.
-    if (opt.infiles.empty() && opt.indata.empty() && !opt.accelerated) {
+    if (opt.in_files.empty() && opt.indata.empty() && !opt.accelerated) {
         // Process standard input.
         ProcessFile(opt, ts::UString());
     }
     else {
         // Process named files.
-        for (const auto& name : opt.infiles) {
+        for (const auto& name : opt.in_files) {
             ProcessFile(opt, name);
         }
     }

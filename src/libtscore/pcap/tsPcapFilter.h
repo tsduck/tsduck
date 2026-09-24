@@ -28,12 +28,20 @@ namespace ts {
     //!
     class TSCOREDLL PcapFilter: public PcapFile
     {
-        TS_NOCOPY(PcapFilter);
+        TS_NOBUILD_NOCOPY(PcapFilter);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        PcapFilter() = default;
+        explicit PcapFilter(Report* report) : PcapFile(report) {}
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        explicit PcapFilter(ReporterBase* delegate) : PcapFile(delegate) {}
 
         //!
         //! Filter packets starting at the specified number.
@@ -215,8 +223,8 @@ namespace ts {
         bool loadArgs(Args& args);
 
         // Inherited methods.
-        virtual bool open(const fs::path& filename, Report& report) override;
-        virtual bool readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report) override;
+        virtual bool open(const fs::path& filename) override;
+        virtual bool readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp) override;
 
     private:
         std::set<uint8_t> _protocols {};

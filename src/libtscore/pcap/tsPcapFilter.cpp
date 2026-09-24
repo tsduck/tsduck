@@ -185,10 +185,10 @@ const ts::IPSocketAddress& ts::PcapFilter::otherFilter(const IPSocketAddress& ad
 // Open the file, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::open(const fs::path& filename, Report& report)
+bool ts::PcapFilter::open(const fs::path& filename)
 {
     // Invoke superclass.
-    const bool ok = PcapFile::open(filename, report);
+    const bool ok = PcapFile::open(filename);
     if (ok) {
         // Reinitialize filters.
         _protocols.clear();
@@ -211,12 +211,12 @@ bool ts::PcapFilter::open(const fs::path& filename, Report& report)
 // Read an IPv4 packet, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFilter::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report)
+bool ts::PcapFilter::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp)
 {
     // Read packets until one which matches all filters.
     for (;;) {
         // Invoke superclass to read next packet.
-        if (!PcapFile::readIP(packet, vlans, timestamp, report)) {
+        if (!PcapFile::readIP(packet, vlans, timestamp)) {
             return false;
         }
 
@@ -267,10 +267,10 @@ bool ts::PcapFilter::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microsecon
         }
 
         if (display_filter) {
-            report.log(_display_addresses_severity, u"selected stream %s %s %s", _source, _bidirectional_filter ? u"<->" : u"->", _destination);
+            report().log(_display_addresses_severity, u"selected stream %s %s %s", _source, _bidirectional_filter ? u"<->" : u"->", _destination);
         }
 
-        report.log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'!s", packet.size(), packet.protocolDataSize(), timestamp);
+        report().log(2, u"packet: ip size: %'d, data size: %'d, timestamp: %'!s", packet.size(), packet.protocolDataSize(), timestamp);
         return true;
     }
 }

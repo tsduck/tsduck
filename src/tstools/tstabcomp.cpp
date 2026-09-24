@@ -14,7 +14,7 @@
 #include "tsDuckContext.h"
 #include "tsSectionFileArgs.h"
 #include "tsxmlTweaks.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 TS_MAIN(MainCode);
 
 
@@ -188,12 +188,16 @@ namespace {
         const bool decompile = opt.decompile || in_type == ts::SectionFormat::BINARY;
         const ts::SectionFormat out_type = compile ? ts::SectionFormat::BINARY : (opt.to_json ? ts::SectionFormat::JSON : ts::SectionFormat::XML);
 
+        // Potentially set/restore standard streams in binary mode.
+        ts::Stdio::BinaryMode in_mode(&opt, ts::Stdio::STDIN);
+        ts::Stdio::BinaryMode out_mode(&opt, ts::Stdio::STDOUT);
+
         // Set standard input or output in binary mode when necessary.
         if (use_std_in && decompile) {
-            ts::SetBinaryModeStdin(opt);
+            in_mode.setBinaryMode(true);
         }
         if (use_std_out && compile) {
-            ts::SetBinaryModeStdout(opt);
+            out_mode.setBinaryMode(true);
         }
 
         // Compute output file name with default file type.

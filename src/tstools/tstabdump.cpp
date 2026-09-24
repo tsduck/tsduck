@@ -19,7 +19,7 @@
 #include "tsUDPReceiver.h"
 #include "tsTablesLogger.h"
 #include "tsIPProtocols.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 #include "tsPagerArgs.h"
 TS_MAIN(MainCode);
 
@@ -40,7 +40,7 @@ namespace {
         ts::PagerArgs         pager {this, true, true};  // Output paging options.
         ts::UDPReceiverArgs   udp {};                    // Options about receiving UDP tables
         ts::duck::Protocol    duck_protocol {};          // To analyze incoming UDP messages
-        std::vector<fs::path> infiles {};                // Input file names
+        std::vector<fs::path> in_files {};                // Input file names
         ts::CRC32::Validation crc_validation = ts::CRC32::CHECK;  // Validation of CRC32 in input sections
         size_t                max_tables = 0;            // Max number of tables to dump.
         size_t                max_invalid_udp = 16;      // Max number of invalid UDP messages before giving up.
@@ -89,12 +89,12 @@ Options::Options(int argc, char *argv[]) :
     display.loadArgs(duck, *this);
     udp.loadArgs(*this);
 
-    getPathValues(infiles, u"");
+    getPathValues(in_files, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());
     no_encapsulation = present(u"no-encapsulation");
     crc_validation = present(u"ignore-crc32") ? ts::CRC32::IGNORE : ts::CRC32::CHECK;
 
-    if (!infiles.empty() && udp.destination.hasPort()) {
+    if (!in_files.empty() && udp.destination.hasPort()) {
         error(u"specify input files or --ip-udp, but not both");
     }
 
@@ -187,8 +187,11 @@ namespace {
 namespace {
     bool DumpFile(Options& opt, const ts::UString& file_name)
     {
+        // Potentially set/restore standard streams in binary mode.
+        ts::Stdio::BinaryMode in_mode(&opt, ts::Stdio::STDIN);
+
         // Report file name in case of multiple files
-        if (opt.verbose() && opt.infiles.size() > 1) {
+        if (opt.verbose() && opt.in_files.size() > 1) {
             opt.pager.output() << "* File: " << file_name << std::endl << std::endl;
         }
 
@@ -198,8 +201,8 @@ namespace {
         file.setCRCValidation(opt.crc_validation);
 
         if (file_name.empty()) {
-            // no input file specified, use standard input
-            SetBinaryModeStdin(opt);
+            // No input file specified, use standard input
+            in_mode.setBinaryMode(true);
             ok = file.loadBinary(std::cin);
         }
         else {
@@ -236,11 +239,11 @@ int MainCode(int argc, char *argv[])
     if (opt.udp.destination.hasPort()) {
         ok = DumpUDP(opt);
     }
-    else if (opt.infiles.size() == 0) {
+    else if (opt.in_files.size() == 0) {
         ok = DumpFile(opt, u"");
     }
     else {
-        for (const auto& it : opt.infiles) {
+        for (const auto& it : opt.in_files) {
             ok = DumpFile(opt, it) && ok;
         }
     }

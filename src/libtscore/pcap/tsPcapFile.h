@@ -12,8 +12,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReport.h"
+#include "tsReporterBase.h"
 #include "tsMemory.h"
+#include "tsStdio.h"
 #include "tsTime.h"
 #include "tsIPPacket.h"
 #include "tsPcap.h"
@@ -32,27 +33,34 @@ namespace ts {
     //! @see https://tools.ietf.org/pdf/draft-tuexen-opsawg-pcapng-04.pdf (PCAP-ng)
     //! @see https://datatracker.ietf.org/doc/draft-tuexen-opsawg-pcapng/ (PCAP-ng tracker)
     //!
-    class TSCOREDLL PcapFile
+    class TSCOREDLL PcapFile: public ReporterBase
     {
-        TS_NOCOPY(PcapFile);
+        TS_NOBUILD_NOCOPY(PcapFile);
     public:
         //!
-        //! Default constructor.
+        //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        PcapFile() = default;
+        explicit PcapFile(Report* report) : ReporterBase(report) {}
 
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        explicit PcapFile(ReporterBase* delegate) : ReporterBase(delegate) {}
+     
         //!
         //! Destructor.
         //!
-        virtual ~PcapFile();
+        virtual ~PcapFile() override;
 
         //!
         //! Open the file for read.
         //! @param [in] filename File name. If empty or "-", use standard input.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const fs::path& filename, Report& report);
+        virtual bool open(const fs::path& filename);
 
         //!
         //! Check if the file is open.
@@ -74,10 +82,9 @@ namespace ts {
         //! @param [out] packet Received IP packet.
         //! @param [out] vlans Stack of VLAN encapsulation from which the packet is extracted.
         //! @param [out] timestamp Capture timestamp in microseconds since Unix epoch or -1 if none is available.
-        //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        virtual bool readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp, Report& report);
+        virtual bool readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds& timestamp);
 
         //!
         //! Get the number of captured packets so far.
@@ -170,22 +177,23 @@ namespace ts {
             cn::microseconds time_offset {0};  // Offset to add to all time stamps.
         };
 
-        bool             _error = false;          // Error was set, may be logical error, not a file error.
-        std::istream*    _in = nullptr;           // Point to actual input stream.
-        std::ifstream    _file {};                // Input file (when it is a named file).
-        UString          _name {};                // Saved file name for messages.
-        bool             _be = false;             // The file use a big-endian representation.
-        bool             _ng = false;             // Pcapng format (not pcap).
-        uint16_t         _major = 0;              // File format major version.
-        uint16_t         _minor = 0;              // File format minor version.
-        uint64_t         _file_size = 0;          // Number of bytes read so far.
-        uint64_t         _packet_count = 0;       // Count of captured packets.
-        uint64_t         _ip_packet_count = 0;    // Count of captured IP packets.
-        uint64_t         _packets_size = 0;       // Total size in bytes of captured packets.
-        uint64_t         _ip_packets_size = 0;    // Total size in bytes of captured IP packets.
-        cn::microseconds _first_timestamp {-1};   // Timestamp of first packet in file.
-        cn::microseconds _last_timestamp {-1};    // Timestamp of last packet in file.
-        std::vector<InterfaceDesc> _if {};        // Capture interfaces by index, only one in pcap files.
+        bool              _error = false;          // Error was set, may be logical error, not a file error.
+        std::istream*     _in = nullptr;           // Point to actual input stream.
+        std::ifstream     _file {};                // Input file (when it is a named file).
+        Stdio::BinaryMode _inmode {this, Stdio::STDIN};  // Save/restore binary mode on stdin.
+        UString           _name {};                // Saved file name for messages.
+        bool              _be = false;             // The file use a big-endian representation.
+        bool              _ng = false;             // Pcapng format (not pcap).
+        uint16_t          _major = 0;              // File format major version.
+        uint16_t          _minor = 0;              // File format minor version.
+        uint64_t          _file_size = 0;          // Number of bytes read so far.
+        uint64_t          _packet_count = 0;       // Count of captured packets.
+        uint64_t          _ip_packet_count = 0;    // Count of captured IP packets.
+        uint64_t          _packets_size = 0;       // Total size in bytes of captured packets.
+        uint64_t          _ip_packets_size = 0;    // Total size in bytes of captured IP packets.
+        cn::microseconds  _first_timestamp {-1};   // Timestamp of first packet in file.
+        cn::microseconds  _last_timestamp {-1};    // Timestamp of last packet in file.
+        std::vector<InterfaceDesc> _if {};         // Capture interfaces by index, only one in pcap files.
 
         // Report an error (if fmt is not empty), set error indicator, return false.
         bool error()
@@ -194,25 +202,25 @@ namespace ts {
             return false;
         }
         template <class... Args>
-        bool error(Report& report, const UChar* fmt, Args&&... args)
+        bool error(const UChar* fmt, Args&&... args)
         {
-            report.error(fmt, std::forward<ArgMixIn>(args)...);
+            report().error(fmt, std::forward<ArgMixIn>(args)...);
             return error();
         }
 
         // Read exactly "size" bytes. Return false if not enough bytes before eof.
-        bool readall(uint8_t* data, size_t size, Report& report);
+        bool readall(uint8_t* data, size_t size);
 
         // Read a file / section header, starting from a magic number which was read as big endian.
-        bool readHeader(uint32_t magic, Report& report);
+        bool readHeader(uint32_t magic);
 
         // Analyze a pcap-ng interface description.
-        bool analyzeNgInterface(const uint8_t* data, size_t size, Report& report);
+        bool analyzeNgInterface(const uint8_t* data, size_t size);
 
         // Read a pcap-ng block. The 32-bit block type has already been read.
         // Start at "Block total length". Read complete block, including the two length fields.
         // Return only the block body.
-        bool readNgBlockBody(uint32_t block_type, ByteBlock& body, Report& report);
+        bool readNgBlockBody(uint32_t block_type, ByteBlock& body);
 
         // Read 32 or 16 bits using the endianness.
         uint16_t get16(const void* addr) const { return _be ? GetUInt16BE(addr) : GetUInt16LE(addr); }

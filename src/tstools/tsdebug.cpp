@@ -25,9 +25,10 @@
 #include "tsTextStream.h"
 #include "tsWebRequest.h"
 #include "tsTLSArgs.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 #include "tsIPUtils.h"
 #include "tsjsonValue.h"
+#include "tsErrCodeReport.h"
 #if defined(TS_WINDOWS)
     #include "tsWinUtils.h"
     #include "tsWinModuleInfo.h"
@@ -116,6 +117,82 @@ ts::CommandStatus ts::ErrorCommands::error(const UString& command, Args& args)
         std::cout << UString::Format(u"%X: \"%s\"", code, message) << std::endl;
     }
 
+    return CommandStatus::SUCCESS;
+}
+
+
+//----------------------------------------------------------------------------
+// Symbolic/hard link commands.
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class LinkCommands: public CommandLineHandler
+    {
+        TS_NOBUILD_NOCOPY(LinkCommands);
+    public:
+        LinkCommands(CommandLine& cmdline, int flags);
+        virtual ~LinkCommands() override;
+
+    private:
+        // Command handlers.
+        CommandStatus link(const UString&, Args&);
+    };
+}
+
+ts::LinkCommands::LinkCommands(CommandLine& cmdline, int flags)
+{
+    Args* cmd = cmdline.command(u"link", u"Create or read a symbolic link", u"[options] link", flags);
+    cmdline.setCommandLineHandler(this, &LinkCommands::link, u"link");
+    cmd->option(u"", 0, Args::FILENAME, 1, 1);
+    cmd->help(u"", u"Name of the symbolic link.");
+    cmd->option(u"directory", 'd');
+    cmd->help(u"directory", u"Create a symbolic link to a directory. Meaningful on Windows only.");
+    cmd->option(u"hard", 'h');
+    cmd->help(u"hard", u"Create a hard link instead of a symbolic one.");
+    cmd->option(u"target", 't', Args::FILENAME);
+    cmd->help(u"target", u"Create a link to the specified target. Without that option, the link only read.");
+}
+
+ts::LinkCommands::~LinkCommands()
+{
+}
+
+ts::CommandStatus ts::LinkCommands::link(const UString& command, Args& args)
+{
+    const UString linkname(args.value(u""));
+    const UString target(args.value(u"target"));
+    const bool is_hard = args.present(u"hard");
+    const bool is_dir = args.present(u"directory");
+
+    if (target.empty()) {
+        // Read the link.
+        if (!fs::exists(linkname)) {
+            args.error(u"%s does not exist", linkname);
+            return CommandStatus::ERROR;
+        }
+        else if (fs::is_symlink(linkname)) {
+                const fs::path tname = fs::read_symlink(linkname, &ErrCodeReport(args, u"error reading symlink", linkname));
+            if (!tname.empty()) {
+                args.info(u"%s -> %s", linkname, tname);
+            }
+        }
+        else {
+            const auto hcount = fs::hard_link_count(linkname, &ErrCodeReport(args, u"error reading hard link count", linkname));
+            args.info(u"not a symbolic link, hard link count: %d", hcount);
+        }
+    }
+    else if (is_hard) {
+        // Create a hard link.
+        fs::create_hard_link(target, linkname, &ErrCodeReport(args, u"error creating hard link", linkname));
+    }
+    else if (is_dir) {
+        // Create a symbolic link to a directory.
+        fs::create_directory_symlink(target, linkname, &ErrCodeReport(args, u"error creating directory symlink", linkname));
+    }
+    else {
+        // Create a symbolic link to a file.
+        fs::create_symlink(target, linkname, &ErrCodeReport(args, u"error creating symlink", linkname));
+    }
     return CommandStatus::SUCCESS;
 }
 
@@ -311,7 +388,7 @@ bool ts::ZlibCommands::loadInput(ByteBlock& input, Report& report)
     }
     else {
         if (input_file.empty()) {
-            SetBinaryModeStdin(report);
+            ts::Stdio::BinaryMode in_mode(&report, ts::Stdio::STDIN, true);
             input.read(std::cin);
         }
         else if (!input.loadFromFile(input_file, std::numeric_limits<size_t>::max(), &report)) {
@@ -337,7 +414,8 @@ bool ts::ZlibCommands::saveOutput(const ByteBlock& output, Report& report)
     }
     else {
         if (output_file.empty()) {
-            return SetBinaryModeStdout(report) && output.write(std::cout);
+            ts::Stdio::BinaryMode out_mode(&report, ts::Stdio::STDOUT, true);
+            return bool(output.write(std::cout));
         }
         else {
             return output.saveToFile(output_file, &report);
@@ -1288,6 +1366,7 @@ namespace ts {
         // Internal subcommands.
         static constexpr int flags = Args::NO_VERBOSE;
         ErrorCommands        err {cmdline, flags};
+        LinkCommands         link {cmdline, flags};
         ZlibCommands         zlib {cmdline, flags};
         NetworkCommands      net {cmdline, flags};
         SendRecvCommands     sendrecv {cmdline, flags};

@@ -60,7 +60,7 @@ namespace {
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]")
 {
-    ts::PcapFilter file;
+    ts::PcapFilter file(this);
     file.defineArgs(*this);
     pager.defineArgs(*this);
 
@@ -331,7 +331,7 @@ namespace {
 
     private:
         Options&        _opt;
-        ts::PcapFilter  _file {};
+        ts::PcapFilter  _file {&_opt};
         DisplayInterval _interval;                      // Display stats by time intervals.
         StatBlock       _global_stats {};               // Global stats
         std::map<StreamId,StatBlock> _streams_stats {}; // Stats per data stream.
@@ -348,7 +348,7 @@ namespace {
 bool FileAnalysis::analyze(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file)) {
         return false;
     }
 
@@ -361,7 +361,7 @@ bool FileAnalysis::analyze(std::ostream& out)
     ts::IPPacket ip;
     ts::VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds::zero();
-    while (_file.readIP(ip, vlans, timestamp, _opt)) {
+    while (_file.readIP(ip, vlans, timestamp)) {
         _global_stats.addPacket(ip, timestamp);
         if (_opt.list_streams) {
             _streams_stats[{vlans, ip.source(), ip.destination(), ip.protocol()}].addPacket(ip, timestamp);
@@ -548,13 +548,13 @@ namespace {
         TS_NOBUILD_NOCOPY(UDPSimulCryptDump);
     public:
         // Constructor.
-        UDPSimulCryptDump(Options& opt) : SimulCryptDump(opt) {}
+        UDPSimulCryptDump(Options& opt) : SimulCryptDump(opt), _file(&opt) {}
 
         // Dump the file, return true on success, false on error.
         bool dump(std::ostream&);
 
     private:
-        ts::PcapFilter _file {};
+        ts::PcapFilter _file;
     };
 }
 
@@ -562,7 +562,7 @@ namespace {
 bool UDPSimulCryptDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file)) {
         return false;
     }
 
@@ -575,7 +575,7 @@ bool UDPSimulCryptDump::dump(std::ostream& out)
     ts::IPPacket ip;
     ts::VLANIdStack vlans;
     cn::microseconds timestamp = cn::microseconds::zero();
-    while (_file.readIP(ip, vlans, timestamp, _opt)) {
+    while (_file.readIP(ip, vlans, timestamp)) {
         // Dump the content of the UDP datagram as DVB SimulCrypt message.
         dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.source(), ip.destination(), timestamp);
     }
@@ -594,13 +594,13 @@ namespace {
         TS_NOBUILD_NOCOPY(TCPSimulCryptDump);
     public:
         // Constructor.
-        TCPSimulCryptDump(Options& opt) : SimulCryptDump(opt) {}
+        TCPSimulCryptDump(Options& opt) : SimulCryptDump(opt), _file(&opt) {}
 
         // Dump the file, return true on success, false on error.
         bool dump(std::ostream&);
 
     private:
-        ts::PcapStream _file {};
+        ts::PcapStream _file;
     };
 }
 
@@ -608,7 +608,7 @@ namespace {
 bool TCPSimulCryptDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file)) {
         return false;
     }
 
@@ -625,7 +625,7 @@ bool TCPSimulCryptDump::dump(std::ostream& out)
         // There must be 5 header bytes: version(1), type(2), length(2).
         // See ETSI TS 103 197, section 4.4.1.
         size_t size = 5;
-        if (!_file.readTCP(source, data, size, timestamp, _opt)) {
+        if (!_file.readTCP(source, data, size, timestamp)) {
             break;
         }
         if (size < 5) {
@@ -638,7 +638,7 @@ bool TCPSimulCryptDump::dump(std::ostream& out)
 
         // Read the rest of the message from the same source.
         size = ts::GetUInt16(data.data() + 3);
-        if (!_file.readTCP(source, data, size, timestamp, _opt)) {
+        if (!_file.readTCP(source, data, size, timestamp)) {
             break;
         }
 
@@ -670,7 +670,7 @@ namespace {
 
     private:
         Options& _opt;
-        ts::PcapStream _file {};
+        ts::PcapStream _file {&_opt};
 
         // Dump a message.
         void dumpMessage(std::ostream&, const ts::ByteBlock&, const ts::IPSocketAddress& src, const ts::IPSocketAddress& dst, cn::microseconds timestamp);
@@ -694,7 +694,7 @@ void TCPSessionDump::dumpMessage(std::ostream& out, const ts::ByteBlock& data, c
 bool TCPSessionDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file)) {
         return false;
     }
 
@@ -715,7 +715,7 @@ bool TCPSessionDump::dump(std::ostream& out)
         buf_source.clear();
         size_t size = 1;
         cn::microseconds timestamp = cn::microseconds::zero();
-        if (!_file.readTCP(buf_source, buf, size, timestamp, _opt)) {
+        if (!_file.readTCP(buf_source, buf, size, timestamp)) {
             break;
         }
         if (data_timestamp <= cn::microseconds::zero()) {
@@ -744,7 +744,7 @@ bool TCPSessionDump::dump(std::ostream& out)
 bool TCPSessionDump::save()
 {
     // Open the pcap file.
-    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt) || !_file.open(_opt.input_file)) {
         return false;
     }
 
@@ -754,10 +754,11 @@ bool TCPSessionDump::save()
     // Open/create the output file.
     std::ofstream outfile;
     std::ostream* out = &outfile;
+    ts::Stdio::BinaryMode outmode(&_opt, ts::Stdio::STDOUT);
     bool ok = true;
     if (_opt.output_file.empty() || _opt.output_file == u"-") {
         // Use standard output.
-        ok = SetBinaryModeStdout(_opt);
+        ok = outmode.setBinaryMode(true);
         out = &std::cout;
     }
     else {
@@ -776,7 +777,7 @@ bool TCPSessionDump::save()
     // Read all TCP sessions matching the source and destination.
     while (ok) {
         size_t size = buffer_size;
-        ok = _file.readTCP(source, data, size, timestamp, _opt);
+        ok = _file.readTCP(source, data, size, timestamp);
         if (size == 0) {
             break;
         }

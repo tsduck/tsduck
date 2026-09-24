@@ -15,6 +15,7 @@
 #include "tsBinaryTable.h"
 #include "tsTablesLoggerFilterInterface.h"
 #include "tsTime.h"
+#include "tsStdio.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsSectionFormat.h"
@@ -222,6 +223,7 @@ namespace ts {
         xml::JSONConverter       _x2j_conv {_report};        // XML-to-JSON converter.
         json::RunningDocument    _json_doc {_report};        // JSON document, built on-the-fly.
         std::ofstream            _bin_file {};               // Binary output file.
+        Stdio::BinaryMode        _bin_mode {&_report, Stdio::STDOUT};  // Stdout binary mode manager.
         UDPSocket                _sock {&_report};           // Output socket.
         std::map<PID,ByteBlock>  _short_sections {};         // Tracking duplicate short sections by PID with a section hash.
         std::map<PID,ByteBlock>  _last_sections {};          // Tracking duplicate sections by PID with a section hash (with --all-sections).

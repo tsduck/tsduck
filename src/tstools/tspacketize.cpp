@@ -15,9 +15,8 @@
 #include "tsSectionFileArgs.h"
 #include "tsTSPacket.h"
 #include "tsFileNameRateList.h"
-#include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
-#include "tsSysUtils.h"
+#include "tsStdio.h"
 TS_MAIN(MainCode);
 
 // To avoid long prefixes
@@ -148,17 +147,18 @@ Options::Options(int argc, char *argv[]) :
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::OutputRedirector output(opt.out_file, opt);
+    ts::Stdio::Redirector output(&opt, ts::Stdio::STDOUT, opt.out_file);
     ts::CyclingPacketizer pzer(opt.duck, opt.pid, opt.stuffing_policy, opt.bitrate);
     ts::SectionFile file(opt.duck);
     file.setCRCValidation(opt.crc_op);
+    ts::Stdio::BinaryMode in_mode(&opt, ts::Stdio::STDIN);
 
     // Load sections
     if (opt.in_files.size() == 0) {
         // Read sections from standard input.
         if (opt.in_type != ts::SectionFormat::XML && opt.in_type != ts::SectionFormat::JSON) {
             // Default type for standard input is binary.
-            SetBinaryModeStdin(opt);
+            in_mode.setBinaryMode(true);
             opt.in_type = ts::SectionFormat::BINARY;
         }
         if (!file.load(std::cin, opt.in_type) || !opt.sections_opt.processSectionFile(file, opt)) {

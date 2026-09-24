@@ -35,7 +35,7 @@ namespace {
         ts::TablesDisplay  display {duck};     // Table formatting options.
         ts::PSILogger      logger {display};   // Table logging options
         ts::PagerArgs      pager {this, true, true};
-        ts::UString        infile {};
+        ts::UString        in_file {};
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
@@ -63,7 +63,7 @@ Options::Options(int argc, char *argv[]) :
     logger.loadArgs(duck, *this);
     display.loadArgs(duck, *this);
 
-    getValue(infile, u"");
+    getValue(in_file, u"");
     format = ts::LoadTSPacketFormatInputOption(*this);
 
     exitOnError();
@@ -84,7 +84,7 @@ int MainCode(int argc, char *argv[])
 
     // Open the TS file.
     ts::TSFile file(&opt);
-    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
+    if (!file.openRead(opt.in_file, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 

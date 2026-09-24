@@ -50,8 +50,8 @@ namespace ts {
         size_t          _http_chunk_size = 65535; // Size to load from the TCP session each time we reload the buffer.
 
         // Working data:
-        PcapFilter         _pcap_udp {};          // Pcap file, in UDP mode.
-        PcapStream         _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
+        PcapFilter         _pcap_udp {this};      // Pcap file, in UDP mode.
+        PcapStream         _pcap_tcp {this};      // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
         cn::microseconds   _first_tstamp {};      // Time stamp of first datagram.
         IPSocketAddress    _actual_dest {};       // Actual destination UDP socket address.
         IPSocketAddress    _actual_source {};     // Actual source TCP socket address for HTTP mode.

@@ -16,7 +16,6 @@
     #include "tsWinUtils.h"
     #include "tsBeforeStandardHeaders.h"
     #include <intrin.h>
-    #include <io.h>
     #include <psapi.h>
     #include <mmsystem.h>
     #include "tsAfterStandardHeaders.h"
@@ -560,105 +559,6 @@ cn::nanoseconds::rep ts::_SetTimersPrecisionNanoSecond(cn::nanoseconds::rep requ
 
 #else
     #error "Unimplemented operating system"
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Put standard input / output stream in binary mode.
-//----------------------------------------------------------------------------
-
-bool ts::SetBinaryModeStdin(Report& report)
-{
-#if defined(TS_WINDOWS)
-    report.debug(u"setting standard input to binary mode");
-    if (::_setmode(_fileno(stdin), _O_BINARY) < 0) {
-        report.error(u"cannot set standard input to binary mode");
-        Args* args = dynamic_cast<Args*>(&report);
-        if (args != nullptr) {
-            args->exitOnError();
-        }
-        return false;
-    }
-#endif
-    return true;
-}
-
-bool ts::SetBinaryModeStdout(Report& report)
-{
-#if defined(TS_WINDOWS)
-    report.debug(u"setting standard output to binary mode");
-    if (::_setmode(_fileno(stdout), _O_BINARY) < 0) {
-        report.error(u"cannot set standard output to binary mode");
-        Args* args = dynamic_cast<Args*>(&report);
-        if (args != nullptr) {
-            args->exitOnError();
-        }
-        return false;
-    }
-#endif
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if the standard input/output/error is a terminal.
-//----------------------------------------------------------------------------
-
-#if defined(TS_WINDOWS)
-namespace {
-    // On Windows, only the DOS and PowerShell consoles are considered as terminal.
-    // We also want to recognize as terminals the Cygwin and Msys consoles (mintty).
-    bool StdHandleIsATerminal(::DWORD ns)
-    {
-        const ::HANDLE handle = ::GetStdHandle(ns);
-        switch (::GetFileType(handle)) {
-            case FILE_TYPE_CHAR: {
-                // A native console (DOS or PowerShell).
-                return true;
-            }
-            case FILE_TYPE_PIPE: {
-                // Check if associated file name matches Cygwin or Msys pty name.
-                // With mintty, the standard devices are named pipes. With Cygwin,
-                // the name starts with \cygwin. With Msys, the name starts with \msys.
-                // Then, if the device is the mintty console, the name contains -pty.
-                // For actual pipes, -pty is replaced by -pipe.
-                const ts::UString name = ts::WinDeviceName(handle).toLower();
-                return (name.find(u"\\cygwin") != ts::NPOS || name.find(u"\\msys") != ts::NPOS) && name.find(u"-pty") != ts::NPOS;
-            }
-            default: {
-                // Cannot be a terminal.
-                return false;
-            }
-        }
-    }
-}
-#endif
-
-bool ts::StdInIsTerminal()
-{
-#if defined(TS_WINDOWS)
-    return StdHandleIsATerminal(STD_INPUT_HANDLE);
-#else
-    return ::isatty(STDIN_FILENO);
-#endif
-}
-
-bool ts::StdOutIsTerminal()
-{
-#if defined(TS_WINDOWS)
-    return StdHandleIsATerminal(STD_OUTPUT_HANDLE);
-#else
-    return ::isatty(STDOUT_FILENO);
-#endif
-}
-
-bool ts::StdErrIsTerminal()
-{
-#if defined(TS_WINDOWS)
-    return StdHandleIsATerminal(STD_ERROR_HANDLE);
-#else
-    return ::isatty(STDERR_FILENO);
 #endif
 }
 

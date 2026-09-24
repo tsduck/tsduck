@@ -33,10 +33,10 @@ ts::PcapStream::DataBlock::DataBlock(const IPPacket& pkt, cn::microseconds tstam
 // Open the file, inherited method.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::open(const fs::path& filename, Report& report)
+bool ts::PcapStream::open(const fs::path& filename)
 {
     // Invoke superclass.
-    const bool ok = PcapFilter::open(filename, report);
+    const bool ok = PcapFilter::open(filename);
     if (ok) {
         // Force TCP filtering on one single stream (any stream, initially).
         PcapFilter::setProtocolFilterTCP();
@@ -185,7 +185,7 @@ void ts::PcapStream::Stream::store(const IPPacket& pkt, cn::microseconds tstamp)
 // Read IP packets and fill the two streams until one packet is read.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::readStreams(size_t& source, Report& report)
+bool ts::PcapStream::readStreams(size_t& source)
 {
     IPPacket pkt;
     VLANIdStack vlans;
@@ -196,7 +196,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
     for (;;) {
 
         // Get one IPv4 packet.
-        if (!readIP(pkt, vlans, timestamp, report)) {
+        if (!readIP(pkt, vlans, timestamp)) {
             return false;
         }
 
@@ -207,7 +207,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
 
         // Also ignored fragmented IP packets.
         if (pkt.fragmented()) {
-            report.debug(u"got fragmented IP packet in TCP stream, sync lost on that TCP stream");
+            report().debug(u"got fragmented IP packet in TCP stream, sync lost on that TCP stream");
             continue;
         }
 
@@ -222,7 +222,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
         }
         else {
             // Not a packet from that TCP session. Shouldn't happen since the filter is set in the superclass.
-            report.error(u"internal error in PcapStream::readStreams(), unexpected packet %s -> %s in stream %s <-> %s", src, dst, sourceFilter(), destinationFilter());
+            report().error(u"internal error in PcapStream::readStreams(), unexpected packet %s -> %s in stream %s <-> %s", src, dst, sourceFilter(), destinationFilter());
             return false;
         }
 
@@ -257,7 +257,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
 // Read data from the TCP session, any direction.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::readTCP(IPSocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp, Report& report)
+bool ts::PcapStream::readTCP(IPSocketAddress& source, ByteBlock& data, size_t& size, cn::microseconds& timestamp)
 {
     size_t remain = size;
     size = 0;
@@ -265,7 +265,7 @@ bool ts::PcapStream::readTCP(IPSocketAddress& source, ByteBlock& data, size_t& s
 
     // Check the direction of the requested stream.
     size_t peer_number = NPOS;
-    if (!indexOf(source, true, peer_number, report)) {
+    if (!indexOf(source, true, peer_number)) {
         return false;
     }
 
@@ -288,7 +288,7 @@ bool ts::PcapStream::readTCP(IPSocketAddress& source, ByteBlock& data, size_t& s
                 peer_number = IDST;
                 break;
             }
-            else if (!readStreams(peer_number, report)){
+            else if (!readStreams(peer_number)){
                 // No data available, tried to read in first available direction, but failed.
                 return false;
             }
@@ -306,10 +306,10 @@ bool ts::PcapStream::readTCP(IPSocketAddress& source, ByteBlock& data, size_t& s
         // If no buffered data are available, read more packets.
         while (!stream.dataAvailable()) {
             if (stream.packets.size() > TCP_MAX_FUTURE) {
-                report.error(u"missing TCP segment, too many future out-of-sequence segments");
+                report().error(u"missing TCP segment, too many future out-of-sequence segments");
                 return size > 0;
             }
-            if (!readStreams(peer_number, report)) {
+            if (!readStreams(peer_number)) {
                 return size > 0;
             }
         }
@@ -365,7 +365,7 @@ bool ts::PcapStream::nextSession(Report& report)
 
         // Read packets from either direction (start of next session).
         size_t num = NPOS;
-        if (!readStreams(num, report)) {
+        if (!readStreams(num)) {
             return false; // end of file or error
         }
     }
@@ -376,7 +376,7 @@ bool ts::PcapStream::nextSession(Report& report)
 // Get index for source address. Return false if incorrect.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::indexOf(const IPSocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const
+bool ts::PcapStream::indexOf(const IPSocketAddress& source, bool allow_unspecified, size_t& index) const
 {
     const bool unspecified = !source.hasAddress() && !source.hasPort();
     if (allow_unspecified && unspecified) {
@@ -392,7 +392,7 @@ bool ts::PcapStream::indexOf(const IPSocketAddress& source, bool allow_unspecifi
         return true;
     }
     else {
-        report.error(u"invalid source address %s for TCP stream %s <-> %s", source, sourceFilter(), destinationFilter());
+        report().error(u"invalid source address %s for TCP stream %s <-> %s", source, sourceFilter(), destinationFilter());
         index = NPOS;
         return false;
     }
@@ -403,7 +403,7 @@ bool ts::PcapStream::indexOf(const IPSocketAddress& source, bool allow_unspecifi
 // Position of the next data to read.
 //----------------------------------------------------------------------------
 
-bool ts::PcapStream::startOfStream(Report& report)
+bool ts::PcapStream::startOfStream()
 {
     // Each side must be either empty or at start.
     if (!_streams[ISRC].packets.empty() && !_streams[IDST].packets.empty()) {
@@ -418,29 +418,29 @@ bool ts::PcapStream::startOfStream(Report& report)
     else {
         // Both sides are empty, need to read until the first packet of the session is found.
         size_t index = NPOS;
-        return readStreams(index, report) && _streams[index].packets.front()->start;
+        return readStreams(index) && _streams[index].packets.front()->start;
     }
 }
 
-bool ts::PcapStream::startOfStream(const IPSocketAddress& source, Report& report)
+bool ts::PcapStream::startOfStream(const IPSocketAddress& source)
 {
     size_t index = NPOS;
-    return indexOf(source, false, index, report) &&
-           (!_streams[index].packets.empty() || readStreams(index, report)) &&
+    return indexOf(source, false, index) &&
+           (!_streams[index].packets.empty() || readStreams(index)) &&
            _streams[index].packets.front()->start;
 }
 
-bool ts::PcapStream::endOfStream(const IPSocketAddress& source, Report& report)
+bool ts::PcapStream::endOfStream(const IPSocketAddress& source)
 {
     // error = end of stream
     size_t index = NPOS;
-    return !indexOf(source, false, index, report) || endOfStreamByIndex(index, report);
+    return !indexOf(source, false, index) || endOfStreamByIndex(index);
 }
 
-bool ts::PcapStream::endOfStreamByIndex(size_t index, Report& report)
+bool ts::PcapStream::endOfStreamByIndex(size_t index)
 {
     // error = end of stream
-    return (_streams[index].packets.empty() && !readStreams(index, report)) || _streams[index].packets.front()->end;
+    return (_streams[index].packets.empty() && !readStreams(index)) || _streams[index].packets.front()->end;
 }
 
 

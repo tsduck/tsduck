@@ -35,7 +35,7 @@ namespace {
         bool               full = false;           // Full analysis
         bool               value_only = false;     // Output value only
         bool               ignore_errors = false;  // Ignore TS errors
-        ts::UString        infile {};              // Input file name
+        ts::UString        in_file {};             // Input file name
         ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
@@ -83,7 +83,7 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    getValue(infile, u"");
+    getValue(in_file, u"");
     full = present(u"full");
     all = full || present(u"all");
     value_only = present(u"value-only");
@@ -116,7 +116,7 @@ int MainCode(int argc, char *argv[])
 
     // Open the TS file.
     ts::TSFile file(&opt);
-    if (!file.openRead(opt.infile, 1, 0, opt.format)) {
+    if (!file.openRead(opt.in_file, 1, 0, opt.format)) {
         return EXIT_FAILURE;
     }
 
@@ -145,8 +145,8 @@ int MainCode(int argc, char *argv[])
         std::cout << std::endl
                   << "Transport Stream" << std::endl
                   << "----------------" << std::endl;
-        if (!opt.infile.empty()) {
-            std::cout << "File           : " << opt.infile << std::endl;
+        if (!opt.in_file.empty()) {
+            std::cout << "File           : " << opt.in_file << std::endl;
         }
         std::cout << "TS packets     : " << ts::UString::Decimal(status.packet_count) << std::endl
                   << opt.pcr_name << "            : " << ts::UString::Decimal(status.clock_count) << std::endl
