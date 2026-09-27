@@ -16,42 +16,40 @@
 #include "tsUDPSocket.h"
 #include "tsjsonObject.h"
 
-namespace ts {
-    namespace tsswitch {
+namespace ts::tsswitch {
+    //!
+    //! Input switch (tsswitch) event dispatcher.
+    //! @ingroup libtsduck plugin
+    //!
+    class EventDispatcher
+    {
+        TS_NOBUILD_NOCOPY(EventDispatcher);
+    public:
         //!
-        //! Input switch (tsswitch) event dispatcher.
-        //! @ingroup libtsduck plugin
+        //! Constructor.
+        //! @param [in] opt Command line options.
+        //! @param [in,out] log Log report.
         //!
-        class EventDispatcher
-        {
-            TS_NOBUILD_NOCOPY(EventDispatcher);
-        public:
-            //!
-            //! Constructor.
-            //! @param [in] opt Command line options.
-            //! @param [in,out] log Log report.
-            //!
-            EventDispatcher(const InputSwitcherArgs& opt, Report& log);
+        EventDispatcher(const InputSwitcherArgs& opt, Report& log);
 
-            //!
-            //! Signal a "new input" event.
-            //! @param [in] oldPluginIndex Index of the input plugin before the switch.
-            //! @param [in] newPluginIndex Index of the input plugin after the switch.
-            //! @return True on success, false on error.
-            //!
-            bool signalNewInput(size_t oldPluginIndex, size_t newPluginIndex);
+        //!
+        //! Signal a "new input" event.
+        //! @param [in] oldPluginIndex Index of the input plugin before the switch.
+        //! @param [in] newPluginIndex Index of the input plugin after the switch.
+        //! @return True on success, false on error.
+        //!
+        bool signalNewInput(size_t oldPluginIndex, size_t newPluginIndex);
 
-        private:
-            const InputSwitcherArgs& _opt;
-            Report&   _log;
-            bool      _sendCommand = false;
-            bool      _sendUDP = false;
-            UString   _userData {};
-            UDPSocket _socket {&_log};
+    private:
+        const InputSwitcherArgs& _opt;
+        Report&   _log;
+        bool      _sendCommand = false;
+        bool      _sendUDP = false;
+        UString   _userData {};
+        UDPSocket _socket {&_log};
 
-            // Send command and UDP message.
-            bool sendCommand(const UString& eventName, const UString& otherParameters = UString());
-            bool sendUDP(const UString& eventName, json::Object& object);
-        };
-    }
+        // Send command and UDP message.
+        bool sendCommand(const UString& eventName, const UString& otherParameters = UString());
+        bool sendUDP(const UString& eventName, json::Object& object);
+    };
 }

@@ -19,33 +19,33 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     Thread(),
     TSP(report->maxSeverity(), options.name + u": ", report),
     _name(options.name),
-    _shlib(nullptr)
+    _plugin(nullptr)
 {
-    const UChar* shellOpt = nullptr;
+    const UChar* shell_opt = nullptr;
 
     // Create the plugin instance object
     switch (type) {
         case PluginType::INPUT: {
             PluginRepository::InputPluginFactory allocator = PluginRepository::Instance().getInput(_name, *report);
             if (allocator != nullptr) {
-                _shlib = allocator(this);
-                shellOpt = u" -I";
+                _plugin = allocator(this);
+                shell_opt = u" -I";
             }
             break;
         }
         case PluginType::OUTPUT: {
             PluginRepository::OutputPluginFactory allocator = PluginRepository::Instance().getOutput(_name, *report);
             if (allocator != nullptr) {
-                _shlib = allocator(this);
-                shellOpt = u" -O";
+                _plugin = allocator(this);
+                shell_opt = u" -O";
             }
             break;
         }
         case PluginType::PROCESSOR: {
             PluginRepository::ProcessorPluginFactory allocator = PluginRepository::Instance().getProcessor(_name, *report);
             if (allocator != nullptr) {
-                _shlib = allocator(this);
-               shellOpt = u" -P";
+                _plugin = allocator(this);
+               shell_opt = u" -P";
             }
             break;
         }
@@ -53,27 +53,27 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
             assert(false);
     }
 
-    if (_shlib == nullptr) {
+    if (_plugin == nullptr) {
         // Error message already displayed.
         return;
     }
 
     // Configure plugin object.
-    _shlib->setShell(appName + shellOpt);
-    _shlib->setMaxSeverity(report->maxSeverity());
+    _plugin->setShell(appName + shell_opt);
+    _plugin->setMaxSeverity(report->maxSeverity());
 
     // Submit the plugin arguments for analysis.
     // Do not process argument redirection, already done at tsp command level.
-    _shlib->analyze(options.name, options.args, false);
+    _plugin->analyze(options.name, options.args, false);
 
     // The process should have terminated on argument error.
-    assert(_shlib->valid());
+    assert(_plugin->valid());
 
     // Get non-default thread stack size.
     size_t stackSize = 0;
     if (!GetEnvironment(u"TSPLUGINS_STACK_SIZE").toInteger(stackSize, UString::DEFAULT_THOUSANDS_SEPARATOR) || stackSize == 0) {
         // Use default value.
-        stackSize = STACK_SIZE_OVERHEAD + _shlib->stackUsage();
+        stackSize = STACK_SIZE_OVERHEAD + _plugin->stackUsage();
     }
 
     // Define thread name and stack size.
@@ -94,9 +94,9 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
 ts::PluginThread::~PluginThread()
 {
     // Deallocate plugin instance, if allocated.
-    if (_shlib != nullptr) {
-        delete _shlib;
-        _shlib = nullptr;
+    if (_plugin != nullptr) {
+        delete _plugin;
+        _plugin = nullptr;
     }
 }
 
@@ -112,7 +112,7 @@ ts::UString ts::PluginThread::pluginName() const
 
 ts::Plugin* ts::PluginThread::plugin() const
 {
-    return _shlib;
+    return _plugin;
 }
 
 //----------------------------------------------------------------------------

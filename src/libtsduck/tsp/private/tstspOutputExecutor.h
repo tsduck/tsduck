@@ -15,46 +15,44 @@
 #include "tstspPluginExecutor.h"
 #include "tsOutputPlugin.h"
 
-namespace ts {
-    namespace tsp {
+namespace ts::tsp {
+    //!
+    //! Execution context of a tsp output plugin.
+    //! This class is internal to the TSDuck library and cannot be called by applications.
+    //! @ingroup libtsduck plugin
+    //!
+    class OutputExecutor: public PluginExecutor
+    {
+        TS_NOBUILD_NOCOPY(OutputExecutor);
+    public:
         //!
-        //! Execution context of a tsp output plugin.
-        //! This class is internal to the TSDuck library and cannot be called by applications.
-        //! @ingroup libtsduck plugin
+        //! Constructor.
+        //! @param [in] options Command line options for tsp.
+        //! @param [in] handlers Registry of event handlers.
+        //! @param [in] pl_options Command line options for this plugin.
+        //! @param [in] attributes Creation attributes for the thread executing this plugin.
+        //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+        //! @param [in,out] report Where to report logs.
         //!
-        class OutputExecutor: public PluginExecutor
-        {
-            TS_NOBUILD_NOCOPY(OutputExecutor);
-        public:
-            //!
-            //! Constructor.
-            //! @param [in] options Command line options for tsp.
-            //! @param [in] handlers Registry of event handlers.
-            //! @param [in] pl_options Command line options for this plugin.
-            //! @param [in] attributes Creation attributes for the thread executing this plugin.
-            //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
-            //! @param [in,out] report Where to report logs.
-            //!
-            OutputExecutor(const TSProcessorArgs& options,
-                           const PluginEventHandlerRegistry& handlers,
-                           const PluginOptions& pl_options,
-                           const ThreadAttributes& attributes,
-                           std::recursive_mutex& global_mutex,
-                           Report* report);
+        OutputExecutor(const TSProcessorArgs& options,
+                       const PluginEventHandlerRegistry& handlers,
+                       const PluginOptions& pl_options,
+                       const ThreadAttributes& attributes,
+                       std::recursive_mutex& global_mutex,
+                       Report* report);
 
-            //!
-            //! Virtual destructor.
-            //!
-            virtual ~OutputExecutor() override;
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~OutputExecutor() override;
 
-            // Overridden methods.
-            virtual size_t pluginIndex() const override;
+        // Overridden methods.
+        virtual size_t pluginIndex() const override;
 
-        private:
-            OutputPlugin* _output = nullptr;
+    private:
+        OutputPlugin* _output = nullptr;
 
-            // Inherited from Thread
-            virtual void main() override;
-        };
-    }
+        // Inherited from Thread
+        virtual void main() override;
+    };
 }

@@ -135,7 +135,7 @@ It helps understanding the code. Given the complexity of this code, it is not
 recommended to modify it, unless completely and absolutely necessary.
 
 .Usage of Windows DirectShow interfaces in TSDuck
-image::tsduck-directshow.png[align="center",alt="Usage of Windows DirectShow",width=500]
+image::tsduck-directshow.png[align="center",alt="Usage of Windows DirectShow"]
 
 As a Grande Finale, let's note that DirectShow received no update, no improvement,
 no new features, for years. It looks like abandonware, without any new alternative.

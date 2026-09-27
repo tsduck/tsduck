@@ -68,6 +68,6 @@ namespace ts {
 
     private:
         const UString _name;    // Plugin name.
-        Plugin*       _shlib;   // Shared library API.
+        Plugin*       _plugin;  // Plugin instance.
     };
 }
