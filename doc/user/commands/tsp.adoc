@@ -15,21 +15,25 @@ Transport stream processor
 
 The transport stream processor is a general-purpose packet processing framework.
 
-It receives an MPEG Transport Stream from a user-specified input plugin,
-applies MPEG packet processing through several user-specified packet processor plugins,
+It receives an MPEG Transport Stream from a user-specified input plugin, applies
+TS packet processing through several user-specified packet processor plugins,
 and sends the processed stream to a user-specified output plugin.
 
-All input, packet processing, and output plugins are shared libraries
-(`.so` files on Linux, `.dylib` on macOS, `.dll` on Windows).
+As a general rule, all input, packet processing, and output plugins are shared
+libraries (`.so` files on Linux, `.dylib` on macOS, `.dll` on Windows). For
+performance reasons, most predefined plugins are part of the TSDuck shared
+library.
 
-The following figure illustrates the structure of a `tsp` process using three packet processing plugins.
+The following figure illustrates the structure of a `tsp` process using three
+packet processing plugins.
 
 .Transport stream processor diagram
-image::tsp.png[align="center",alt="tsp diagram",width=500]
+image::tsp.png[align="center",alt="tsp diagram"]
 
-This section describes the general syntax and usage of the `tsp` command.
-All plugins are documented in detail, in alphabetical order, in xref:chap-plugins[xrefstyle=short].
-The xref:chap-examples[xrefstyle=short] gives a few examples of `tsp` commands, both simple and complex examples.
+This section describes the general syntax and usage of the `tsp` command.  All
+plugins are documented in detail, in alphabetical order, in
+xref:chap-plugins[xrefstyle=short]. The xref:chap-examples[xrefstyle=short]
+gives a few examples of `tsp` commands, both simple and complex examples.
 
 [.usage]
 Usage

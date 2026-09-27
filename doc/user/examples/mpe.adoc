@@ -20,7 +20,7 @@ The input TS is read from a tuner, the MPE stream is inserted on the fly and the
 The network infrastructure is illustrated in the diagram below.
 
 .Multi-Protocol Encapsulation (MPE) sample test bed
-image::mpedemo.png[align="center",width=700,alt="MPE sample test bed"]
+image::mpedemo.png[align="center",alt="MPE sample test bed"]
 
 In network 1, a media server multicasts a transport stream on address 224.250.250.1, port 9000.
 

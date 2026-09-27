@@ -1,0 +1,299 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-install]
+== Installing TSDuck
+
+TSDuck can be installed on Windows, Linux, macOS and BSD systems.
+
+[#wininstall]
+=== Installing on Windows
+
+On Windows systems, TSDuck can be installed using a binary installer (traditional method)
+or using the `winget` package manager (modern method).
+
+[#winget]
+==== Using winget
+
+TSDuck is installable on Windows systems using
+https://learn.microsoft.com/en-us/windows/package-manager/winget/[the winget package manager].
+
+`winget` is now the preferred package manager for open source and third-party products on Windows systems.
+It is documented and supported by Microsoft.
+It should be pre-installed on all recent Windows 10 and Windows 11 systems.
+
+The TSDuck installation command is simply:
+
+[source, powershell]
+----
+PS C:\> winget install tsduck
+----
+
+[#windownload]
+==== Download an installer
+
+{home}tsduck-binaries[Executable binary installers for the latest TSDuck version]
+are available for 64-bit Windows on Intel systems.
+
+All tools, plugins and development environments are in the same installer.
+Running the installer provides several options:
+
+[.compact-list]
+* Tools & Plugins
+* Documentation
+* Python Bindings (optional)
+* Java Bindings (optional)
+* {cpp} Development (optional)
+
+{repo}releases[Older versions of TSDuck] remain available on GitHub.
+
+{home}prerelease[Nightly builds and pre-releases] can be found on the TSDuck Web site.
+
+To automate the installation, the executable binary installer can be run from the command line or a script.
+
+* The option `/S` means "silent". No window is displayed, no user interaction is possible.
+* The option `/all=true` means install all options.
+  By default, only the tools, plugins and documentation are installed.
+  In case of upgrade over an existing installation, the default is to upgrade the same options as in the previous installation.
+
+[#macinstall]
+=== Installing on macOS
+
+TSDuck is installable on macOS systems using https://brew.sh[Homebrew],
+the package manager for open-source projects on macOS.
+
+If you have never used Homebrew on your system, you can install it using the
+following command (which can also be found on the https://brew.sh[Homebrew home page]):
+
+[source,shell]
+----
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+----
+
+Once Homebrew is set up, you can install TSDuck using:
+
+[source,shell]
+----
+$ brew install tsduck
+----
+
+All tools, plugins and development environments are installed.
+
+After installation, to upgrade to latest version:
+
+[source,shell]
+----
+$ brew update
+$ brew upgrade tsduck
+----
+
+When Homebrew upgrades packages, the old versions are not removed.
+The new versions are just added.
+After a while, megabytes of outdated packages accumulate on disk.
+To remove outdated packages:
+
+[source,shell]
+----
+$ brew cleanup
+----
+
+To uninstall TSDuck:
+
+[source,shell]
+----
+$ brew uninstall tsduck
+----
+
+If you would like to install the latest test version from the source repository
+(HEAD version) use the following command.
+Be aware that it takes time since TSDuck is locally recompiled.
+
+[source,shell]
+----
+$ brew install --HEAD tsduck
+----
+
+[#linuxinstall]
+=== Installing on Linux
+
+{home}tsduck-binaries[Pre-build packages for the latest TSDuck version]
+are available for the following configurations:
+
+[.compact-list]
+* Fedora (64-bit Intel)
+* Ubuntu (64-bit Intel and Arm)
+* RedHat, CentOS, Alma Linux, Rocky Linux (64-bit Intel)
+* Debian (64-bit Intel)
+* Raspbian (32-Bit Arm, Raspberry Pi)
+
+The type of package, `.rpm` or `.deb`, depends on the configuration.
+The pre-built packages are provided for the latest version of each distro only.
+
+For each distro, two packages exist:
+the `tsduck` package installs the TSDuck commands, plugins, Java and Python bindings,
+the `tsduck-devel` or `tsduck-dev` package installs the development environment for {cpp} programmers.
+
+{repo}releases[Older versions of TSDuck] remain available on GitHub.
+{home}prerelease[Nightly builds and pre-releases] for Ubuntu can be found on the TSDuck Web site.
+
+To use older versions of the above distros, rebuilding the packages is easy:
+
+[source,shell]
+----
+$ make installer
+----
+
+To install TSDuck on other types of Linux systems for which no package is available:
+
+[source,shell]
+----
+$ make -j10 default docs-html
+$ sudo make install
+----
+
+More details on how to build TSDuck are available in xref:chap-build[xrefstyle=short].
+
+If you exclude some dependencies, the exact same set of `make` options must be used during build and installation.
+For instance, to remove the dependencies on SRT and RIST, use:
+
+[source,shell]
+----
+$ make -j10 default docs-html NOSRT=1 NORIST=1
+$ sudo make install NOSRT=1 NORIST=1
+----
+
+When building an installer package (`.rpm`, `.deb`) or when directly installing TSDuck,
+the HTML version of the user guide and developer guide are included.
+
+If the documentation was not built yet, the command `make install` rebuilds the HTML files first.
+To avoid running Asciidoc under the superuser account, the examples above use `make default docs-html` first.
+The target `default` builds the binaries and the target `docs-html` builds the HTML documentation.
+Then, `sudo make install` only copies files into the filesystem, nothing else.
+
+If you prefer not to install Asciidoctor (which pulls the Ruby environment as a dependency),
+you can install or build an installer package without documentation using the `make` variable `NODOC`.
+
+[source,shell]
+----
+$ make installer NODOC=1
+----
+
+[source,shell]
+----
+$ make -j10 NODOC=1
+$ sudo make install NODOC=1
+----
+
+[#freebsdinstall]
+=== Installing on FreeBSD systems
+
+Starting with version 3.43, TSDuck is part of FreeBSD Ports.
+It can be installed using the `pkg` command:
+
+[source,shell]
+----
+$ sudo pkg install tsduck
+----
+
+NOTE: TSDuck is supposed to be included the April 2026 "Quarterly" branch of FreeBSD Ports.
+Before that date, use the "Latest" branch to get the `tsduck` package.
+
+[#bsdinstall]
+=== Installing on other BSD systems
+
+There is currently no installer for OpenBSD, NetBSD, DragonFlyBSD.
+You need to build and install as follow:
+
+[source,shell]
+----
+$ gmake -j10 default docs-html
+$ sudo gmake install
+----
+
+Note that GNU Make (`gmake`) shall be used instead of the standard BSD `make`.
+
+[#nixinstall]
+=== Installing with Nix
+
+TSDuck can be installed using the https://nixos.org[Nix package manager] on Linux, macOS, and BSD systems.
+Nix provides reproducible, declarative package management with automatic dependency resolution.
+
+==== Installing TSDuck
+
+Install TSDuck into your user profile:
+
+[source,shell]
+----
+$ nix profile add github:tsduck/tsduck?dir=pkg/nix
+----
+
+Depending on your Nix configuration, you may have to add the option `--no-write-lock-file`.
+
+[source,shell]
+----
+$ nix profile add --no-write-lock-file github:tsduck/tsduck?dir=pkg/nix
+----
+
+==== Run TSDuck without Install
+Or run TSDuck commands without installation:
+
+[source,shell]
+----
+$ nix run github:tsduck/tsduck?dir=pkg/nix
+$ nix run github:tsduck/tsduck?dir=pkg/nix#tsp -- --help
+----
+
+Launch a Python REPL with TSDuck bindings:
+
+[source,shell]
+----
+$ nix run ./pkg/nix#python
+>>> import tsduck
+>>> print(tsduck.version())
+----
+
+==== Installing a specific version
+
+A git ref (tag or branch) can be placed between the repository name and the
+`?dir=pkg/nix` parameter to install an exact version:
+
+[source,shell]
+----
+$ nix profile add github:tsduck/tsduck/v3.40?dir=pkg/nix            # a tagged release
+$ nix profile add github:tsduck/tsduck/develop?dir=pkg/nix          # a branch
+$ nix profile add github:tsduck/tsduck/v3.40?dir=pkg/nix#tsduck-min # tag + variant
+----
+
+When no ref is given, Nix defaults to the repository's default branch (typically `master`).
+
+==== Installing specific variants
+
+Install the minimal build (no hardware device support):
+
+[source,shell]
+----
+$ nix profile add github:tsduck/tsduck?dir=pkg/nix#tsduck-min
+----
+
+Install Python bindings.  Each variant has a matching Python package so that
+the baked `libtsduck` path is consistent:
+
+[source,shell]
+----
+$ nix profile add github:tsduck/tsduck?dir=pkg/nix#python-tsduck       # against tsduck
+$ nix profile add github:tsduck/tsduck?dir=pkg/nix#python-tsduck-min   # against tsduck-min
+----
+
+Install Java bindings.  As with Python, each tsduck variant has a matching
+Java package:
+
+[source,shell]
+----
+$ nix profile add github:tsduck/tsduck?dir=pkg/nix#java-tsduck       # against tsduck
+$ nix profile add github:tsduck/tsduck?dir=pkg/nix#java-tsduck-min   # against tsduck-min
+----

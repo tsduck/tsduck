@@ -1,0 +1,23 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-references]
+[appendix]
+== References
+
+[#bibliography]
+[bibliography]
+=== Bibliography
+
+* [[[BSD-2C]]] BSD 2-Clause License, http://opensource.org/licenses/BSD-2-Clause
+* [[[Haivision-SRT]]] Haivision original SRT library, https://github.com/Haivision/srt/
+* [[[RIST]]] RIST library, https://code.videolan.org/rist/librist/
+* [[[Robotweax-SRT]]] Robotweax alternative SRT library, https://github.com/Robotweax/srt/
+* [[[TSDuck]]] TSDuck Web site, {home}
+* [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, {repo}issues
+* [[[TSDuck-Source]]] TSDuck source code repository, {repo}

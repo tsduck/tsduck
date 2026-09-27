@@ -12,9 +12,9 @@ include ../Makefile.inc
 
 .PHONY: docs doxygen
 default: docs doxygen
-docs: userguide devguide
-docs-html: userguide-html devguide-html
-docs-pdf: userguide-pdf devguide-pdf
+docs: userguide buildguide devguide
+docs-html: userguide-html buildguide-html devguide-html
+docs-pdf: userguide-pdf buildguide-pdf devguide-pdf
 doxygen:
 	$(PYTHON) doxy/build-doxygen.py
 
@@ -24,12 +24,13 @@ POST_XDGOPEN = $(if $(LINUX),2>/dev/null)
 
 # Input directories.
 
-IMAGESDIR  = $(ROOTDIR)/images
-DOCROOT    = $(ROOTDIR)/doc
-ADOCDIR    = $(DOCROOT)/adoc
-USERDOCDIR = $(DOCROOT)/user
-DEVDOCDIR  = $(DOCROOT)/developer
-USERSIXML  = $(USERDOCDIR)/20D-app-si-xml.adoc
+IMAGESDIR   = $(ROOTDIR)/images
+DOCROOT     = $(ROOTDIR)/doc
+ADOCDIR     = $(DOCROOT)/adoc
+USERDOCDIR  = $(DOCROOT)/user
+BUILDDOCDIR = $(DOCROOT)/builder
+DEVDOCDIR   = $(DOCROOT)/developer
+USERSIXML   = $(USERDOCDIR)/20D-app-si-xml.adoc
 
 # Output directories.
 
@@ -61,7 +62,7 @@ ADOCFLAGS_PDF  = $(ADOCFLAGS) -a pdf-themesdir="$(ADOCDIR)" -a pdf-theme="$(THEM
 # Not really all .png images are used, but the exact list may vary while the documents are edited.
 # So, better rebuild if an image was added or updated.
 
-COMMON_INPUTS      = $(ADOCDIR)/attributes.adoc $(ADOCDIR)/macros.rb $(wildcard $(IMAGESDIR)/*.png) $(LIBTSCOREDIR)/tsVersion.h
+COMMON_INPUTS      = $(wildcard $(ADOCDIR)/*.adoc $(ADOCDIR)/*.rb $(IMAGESDIR)/*.png) $(LIBTSCOREDIR)/tsVersion.h
 COMMON_INPUTS_HTML = $(COMMON_INPUTS) $(CSSFILE) $(BINDOCINFO)/docinfo.html $(BINDOCINFO)/docinfo-footer.html
 COMMON_INPUTS_PDF  = $(COMMON_INPUTS) $(THEMEFILE)
 
@@ -169,6 +170,41 @@ $(BINDOC)/tsduck.bigpdf: $(USERGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(USERDOCDIR)/tsduck.adoc -D $(dir $@) -o $(notdir $@)
 
 #-----------------------------------------------------------------------------
+# Builder guide
+#-----------------------------------------------------------------------------
+
+.PHONY: buildguide buildguide-html buildguide-pdf open-buildguide open-buildguide-html open-buildguide-pdf
+buildguide: buildguide-html buildguide-pdf
+buildguide-html: $(BINDOC)/tsduck-build.html
+	@true
+buildguide-pdf: $(BINDOC)/tsduck-build.pdf
+	@true
+
+# Generate and open documentation (assume the existence of an "open" command);
+
+open-buildguide: open-buildguide-html open-buildguide-pdf
+open-buildguide-html: $(BINDOC)/tsduck-build.html
+	$(call LOG,[OPEN] $<) \
+	$(XDGOPEN) $< $(POST_XDGOPEN)
+open-buildguide-pdf: $(BINDOC)/tsduck-build.pdf
+	$(call LOG,[OPEN] $<) \
+	$(XDGOPEN) $< $(POST_XDGOPEN)
+
+# Documentation generation.
+
+BUILDGUIDE_INPUTS = $(wildcard $(BUILDDOCDIR)/*.adoc)
+
+$(BINDOC)/tsduck-build.html: $(BUILDGUIDE_INPUTS) $(COMMON_INPUTS_HTML)
+	$(call LOG,[ASCIIDOC] $@) \
+	mkdir -p $(dir $@); \
+	$(ASCIIDOCTOR) $(ADOCFLAGS_HTML) $(BUILDDOCDIR)/tsduck-build.adoc -D $(dir $@) -o $(notdir $@)
+
+$(BINDOC)/tsduck-build.bigpdf: $(BUILDGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
+	$(call LOG,[ASCIIDOC] $@) \
+	mkdir -p $(dir $@); \
+	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(BUILDDOCDIR)/tsduck-build.adoc -D $(dir $@) -o $(notdir $@)
+
+#-----------------------------------------------------------------------------
 # Developer guide
 #-----------------------------------------------------------------------------
 
@@ -226,6 +262,6 @@ install-tools: $(if $(NODOC),,$(BINDOC)/tsduck.html)
 	install -m 644 $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt $(INSTALLDOC)
 	$(if $(NODOC),,install -m 644 $(BINDOC)/tsduck.html $(INSTALLDOC))
 
-install-devel: $(if $(NODOC),,$(BINDOC)/tsduck-dev.html)
+install-devel: $(if $(NODOC),,$(BINDOC)/tsduck-build.html $(BINDOC)/tsduck-dev.html)
 	install -d -m 755 $(INSTALLDOC)
-	$(if $(NODOC),,install -m 644 $(BINDOC)/tsduck-dev.html $(INSTALLDOC))
+	$(if $(NODOC),,install -m 644 $^ $(INSTALLDOC))

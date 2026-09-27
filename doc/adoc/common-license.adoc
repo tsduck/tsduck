@@ -1,0 +1,83 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-license]
+[appendix]
+== Licenses
+
+=== TSDuck license
+
+TSDuck is released under the terms of the license which is commonly referred to
+as "BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+See http://opensource.org/licenses/BSD-2-Clause.
+
+[.license]
+Copyright © 2005-{localyear}, Thierry Lelégard +
+All rights reserved. +
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+[.license]
+. Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+. Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+[.license]
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+=== Third-party libraries
+
+TSDuck includes a few third-party libraries, either in source form, binary form
+or both. For more details about the licenses of these third-party libraries,
+see the file named `OTHERS.txt` in the TSDuck source code repository.
+
+*DTAPI*: On Linux and Windows, the TSDuck binary distributions contain the
+DTAPI library in static form. This library is part of the
+http://www.dektec.com/downloads/SDK/[Dektec SDK]. This software is available
+in binary format only and is distributed under the BSD 2-Clause License.
+_"Copyright (c) 2017 by Dektec Digital Video B.V."_
+
+*LIBSRT*: On Windows, the TSDuck binary distribution contains the SRT library
+in static form. There are two versions of the SRT library, one from
+https://www.haivision.com[Haivision], one from https://robotweax.ai/[Robotweax].
+TSDuck can be built with any of them.
+
+*Haivision LIBSRT*: The https://github.com/Haivision/srt/[Haivision SRT
+library] is open-source and distributed under the Mozilla Public License v2.0.
+_"Copyright (c) 2018 Haivision Systems Inc."_
+
+*Robotweax LIBSRT*: The https://github.com/robotweax/srt/[Robotweax SRT
+library] is open-source and distributed under the MIT License.
+_"Copyright (c) 2026 Robotweax GmbH and contributors"_
+
+*LIBRIST*: On Windows, the TSDuck binary distribution contains the
+https://code.videolan.org/rist/librist/[RIST library] in static form. This is
+an open-source library which is distributed under the BSD 2-Clause License.
+_"Copyright © 2019-2020 SipRadius LLC. All right reserved."_
+
+*LibVatek*: On Windows and Linux, the TSDuck binary distribution contains the
+https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2[LibVatek library] in
+static form. This is an open-source library which is distributed under the BSD
+2-Clause License.
+_"Copyright © 2022, Richie Chang."_
+
+*Small Deflate (sdefl)*: On Windows, the TSDuck binary distribution contains
+the Small Deflate library in static form. This is an open-source library which
+is distributed under two licenses, MIT License and Public Domain License.
+_"Copyright (c) 2020-2023 Micha Mettke."_

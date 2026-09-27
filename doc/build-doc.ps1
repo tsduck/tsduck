@@ -21,6 +21,10 @@
 
   Generate the user guide only. By default, generate all documents.
 
+ .PARAMETER Builder
+
+  Generate the builder guide only. By default, generate all documents.
+
  .PARAMETER Developer
 
   Generate the developer guide only. By default, generate all documents.
@@ -52,6 +56,7 @@
 param(
     [Parameter(Mandatory=$false)][string]$Version,
     [switch]$User = $false,
+    [switch]$Builder = $false,
     [switch]$Developer = $false,
     [switch]$Html = $false,
     [switch]$Pdf = $false,
@@ -60,8 +65,9 @@ param(
 )
 
 # By default, generate all guides in all formats.
-if (-not $User -and -not $Developer) {
+if (-not $User -and -not $Builder -and -not $Developer) {
     $User = $true
+    $Builder = $true
     $Developer = $true
 }
 if (-not $Html -and -not $Pdf) {
@@ -70,16 +76,17 @@ if (-not $Html -and -not $Pdf) {
 }
 
 # Get the project directories.
-$RootDir      = (Split-Path -Parent $PSScriptRoot)
-$SrcDir       = "$RootDir\src"
-$ImagesDir    = "$RootDir\images"
-$DocRoot      = "$RootDir\doc"
-$AdocDir      = "$DocRoot\adoc"
-$UserGuideDir = "$DocRoot\user"
-$DevGuideDir  = "$DocRoot\developer"
-$BinRoot      = "$RootDir\bin"
-$BinDoc       = "$BinRoot\doc"
-$BinDocInfo   = "$BinRoot\docinfo"
+$RootDir       = (Split-Path -Parent $PSScriptRoot)
+$SrcDir        = "$RootDir\src"
+$ImagesDir     = "$RootDir\images"
+$DocRoot       = "$RootDir\doc"
+$AdocDir       = "$DocRoot\adoc"
+$UserGuideDir  = "$DocRoot\user"
+$BuildGuideDir = "$DocRoot\builder"
+$DevGuideDir   = "$DocRoot\developer"
+$BinRoot       = "$RootDir\bin"
+$BinDoc        = "$BinRoot\doc"
+$BinDocInfo    = "$BinRoot\docinfo"
 
 # Common themes.
 $CssFile   = "$AdocDir\tsduck.css"
@@ -221,6 +228,9 @@ function Build-Document($Dir, $BaseName)
 # Generate guides
 if ($User) {
     Build-Document $UserGuideDir "tsduck"
+}
+if ($Builder) {
+    Build-Document $BuildGuideDir "tsduck-build"
 }
 if ($Developer) {
     Build-Document $DevGuideDir "tsduck-dev"

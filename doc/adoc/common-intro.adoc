@@ -1,0 +1,45 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+License
+
+TSDuck is released under the terms of the license which is commonly referred to
+as "BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
+This is a liberal license which allows TSDuck to be used in a large number of
+environments. See the xref:chap-license[xrefstyle=short] for more details.
+
+[.usage]
+Documentation format
+
+The TSDuck guides are built using https://asciidoctor.org[asciidoctor], from a
+set of text files which are maintained alongside the source code, in the same
+`git` repository.
+
+This guide is formatted for HTML. The file xref:{docname}.html[] is monolithic
+and self-sufficient, without reference to external images. Therefore, this HTML
+file can be downloaded, saved, and copied, as long as the license and content
+are not modified.
+
+A PDF version xref:{docname}.pdf[] is also available. However, due to
+limitations in the PDF generator of asciidoctor, the rendering is sometimes not
+as good as the HTML document.
+
+[.usage]
+Documentation set
+
+The TSDuck documentation set is made of:
+
+[.compact-list]
+1. xref:tsduck.html[TSDuck User Guide]
+   (also from {home}docs/tsduck.html[tsduck.io] and in {home}docs/tsduck.pdf[PDF] format)
+2. xref:tsduck-build.html[TSDuck Builder Guide], building and installing TSDuck
+   (also from {home}docs/tsduck-build.html[tsduck.io] and in {home}docs/tsduck-build.pdf[PDF] format)
+3. xref:tsduck-dev.html[TSDuck Developer Guide]
+   (also from {home}docs/tsduck-dev.html[tsduck.io] and in {home}docs/tsduck-dev.pdf[PDF] format)
+4. {home}doxy/[TSDuck Programming Reference]

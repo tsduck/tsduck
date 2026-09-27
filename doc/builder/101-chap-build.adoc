@@ -7,30 +7,7 @@
 //----------------------------------------------------------------------------
 
 [#chap-build]
-== Building and Installing TSDuck
-
-This chapter describes how to build and install TSDuck on various platforms.
-It is particularly useful if TSDuck has no pre-built binary package on your platform.
-
-In the open source world, there are many different ways of building an application.
-Sometimes, building an open source application is straightforward.
-However, in other cases, it can be challenging, especially on non-Linux platforms.
-
-TSDuck deliberately sides with the user, using simple and straightforward ways of
-building and installing.
-
-On each platform, TSDuck always uses "native" mechanisms, tools, and procedures.
-The default compiler is always the "usual" one on the platform:
-GCC on Linux, Clang on macOS, Visual Studio on Windows.
-The packaging of installers, when available, is also "native":
-`.rpm` packages on Fedora and Red Hat clones,
-`.deb` packages on Ubuntu, Debian and the like,
-Homebrew distribution on macOS,
-NSIS-based executable installers on Windows.
-TSDuck also provides native support for https://nixos.org[Nix] on Linux and macOS.
-
-[#building]
-=== Building TSDuck
+== Building TSDuck
 
 TSDuck can be built on Windows, Linux, macOS and BSD systems.
 
@@ -41,13 +18,19 @@ AstroMeta-based modulators, however, are supported on all platforms.
 Some protocols such as SRT and RIST require external libraries which may
 not be available on all platforms or all versions of a specific distro.
 
-==== Tested systems
+=== Tested systems
 
 TSDuck has been tested on the following operating systems on at least one CPU architecture.
 
 [#tabos]
+// PDF backend does not correctly process "autowidth" tables.
 .Tested operating systems
+ifndef::backend-pdf[]
 [cols="<1,<1",stripes=none,options="autowidth"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<10,<90",stripes=none]
+endif::[]
 |===
 |OS |Variants
 
@@ -58,7 +41,8 @@ TSDuck has been tested on the following operating systems on at least one CPU ar
 |Intel (32 and 64 bits) and Arm64
 
 |Linux
-|Ubuntu, Debian, Raspbian, Mint, Fedora, Red Hat, CentOS, Rocky, Alma, openSUSE, Arch, Alpine, Gentoo, Slackware
+|Ubuntu, Debian, Raspbian, Mint, Fedora, Red Hat, CentOS, Rocky, Alma, openSUSE (Leap and Tumbleweed),
+ Arch, Alpine, Gentoo, Slackware
 
 |BSD
 |FreeBSD, OpenBSD, NetBSD, DragonFlyBSD
@@ -140,13 +124,13 @@ TSDuck has been tested with the following compilers on at least one operating sy
 The required minimum version of each compiler depends on a correct implementation of {cpp}20.
 
 [#winbuild]
-==== Building on Windows systems
+=== Building on Windows systems
 
 On Windows systems, building a TSDuck installer simply means executing the PowerShell script `pkg\nsis\build-installer.ps1`.
 More details and options are provided in the next sections.
 
 [#reqwindows]
-===== Pre-requisites
+==== Pre-requisites
 
 Operations in this section must be run once, before building TSDuck for the first time one a given Windows system.
 It should also be run to get up-to-date versions of the build tools and libraries which are used by TSDuck.
@@ -177,7 +161,7 @@ TSDuck now requires a {cpp}20 compliant compiler.
 We recommend to use Visual Studio 2022.
 
 [#buildwindows]
-===== Building the binaries without installer
+==== Building the binaries without installer
 
 Execute the PowerShell script `scripts\build.ps1`.
 The TSDuck binaries, executables and DLL's, are built in directories named `bin\<target>-<platform>`,
@@ -196,7 +180,7 @@ To cleanup the repository tree and return to a pristine source state,
 execute the PowerShell script `scripts\cleanup.ps1`.
 
 [#instwindows]
-===== Building the Windows installers
+==== Building the Windows installers
 
 Execute the PowerShell script `pkg\nsis\build-installer.ps1`.
 
@@ -212,7 +196,7 @@ The packages are not deleted by the cleanup procedures. They are not pushed
 into the git repository either.
 
 [#nonstdinstwin]
-===== Installing in non-standard locations
+==== Installing in non-standard locations
 
 On systems where you have no administration privilege and consequently no right to use the standard installers,
 you may want to manually install TSDuck is some arbitrary directory.
@@ -222,7 +206,7 @@ This is a zip archive file which can be expanded anywhere.
 It is automatically built by `pkg\nsis\build-installer.ps1`, in addition to the executable installer.
 
 [#runbuildwin]
-===== Running from the build location
+==== Running from the build location
 
 It is sometimes useful to run a TSDuck binary, `tsp` or any other, directly from the build directory, right after compilation.
 This can be required for testing or debugging.
@@ -247,7 +231,7 @@ bin\Debug-Win32\tsp.exe
 ----
 
 [#unixbuild]
-==== Building on {unix}
+=== Building on {unix}
 
 On {unix}, building TSDuck simply means typing `make` in the top level directory of the project.
 More details and options are provided in the next sections.
@@ -269,7 +253,7 @@ $ sudo make install
 If you like thinking before doing, we recommend to read the following sections.
 
 [#requnix]
-===== Pre-requisites
+==== Pre-requisites
 
 Operations in this section must be run once, before building TSDuck for the first time one a given system.
 
@@ -298,7 +282,7 @@ It has not been possible to find an automated way to setup the required environm
 Should this be possible, contributions from Slackware experts are welcome.
 
 [#cpprequnix]
-===== {cpp} compiler requirements
+==== {cpp} compiler requirements
 
 [.usage]
 {cpp} language version
@@ -441,7 +425,7 @@ it is also possible to define them as environment variables in some initializati
 instead of using such a complex `gmake` command.
 
 [#bsdreq]
-===== GNU Make requirements
+==== GNU Make requirements
 
 The makefiles in the TSDuck project use a GNU Make syntax.
 TSDuck requires GNU Make version 4 or higher.
@@ -496,7 +480,7 @@ As part of prerequisites for BSD systems, GNU Make is installed under the name `
 In all build commands in this document, when `make` is mentioned, use `gmake` on all BSD systems.
 
 [#hwlibunix]
-===== Hardware device libraries
+==== Hardware device libraries
 
 *Dektec DTAPI:* The command `make` at the top level will automatically
 download the LinuxSDK from the Dektec site. There is no manual setup for DTAPI on
@@ -513,7 +497,7 @@ is currently not supported but should work if necessary (accessing AstroMeta dev
 through `libusb` and not a specific kernel driver).
 
 [#buildunix]
-===== Building the TSDuck binaries alone
+==== Building the TSDuck binaries alone
 
 Execute the command `make` at top level.
 
@@ -536,7 +520,7 @@ To cleanup the repository tree and return to a pristine source state,
 execute `make clean` at the top level.
 
 [#buildopt]
-===== Building without specialized dependencies
+==== Building without specialized dependencies
 
 In specific configurations, you may want to disable some external libraries such as `libcurl` or `pcsc-lite`.
 Of course, the corresponding features in TSDuck will be disabled but the impact is limited.
@@ -545,7 +529,13 @@ For instance, disabling `libcurl` will disable the input plugins `http` and `hls
 The following `make` variables can be defined:
 
 [.compact-table]
+// PDF backend does not correctly process "autowidth" tables.
+ifndef::backend-pdf[]
 [cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+endif::[]
+ifdef::backend-pdf[]
+[cols="<15m,<85",frame=none,grid=none,stripes=none,options="noheader"]
+endif::[]
 |===
 |NOTEST |Do not build unitary tests.
 |NODEKTEC |No Dektec device support, remove dependency to `DTAPI`.
@@ -602,7 +592,7 @@ The last command builds a binary package for the version without RIST support.
 Note that the same set of variables shall be used to locate the right binaries and options.
 
 [#builddebug]
-===== Building with specific debug capabilities
+==== Building with specific debug capabilities
 
 The following additional `make` variables can be defined to enable specific debug capabilities:
 
@@ -624,7 +614,7 @@ Debug builds (`DEBUG=1`) are created in directories starting with `bin/debug-...
 The other above-listed options redefine `BINDIR_SUFFIX` with a meaningful suffix.
 
 [#buildverbose]
-===== Displaying full build commands
+==== Displaying full build commands
 
 Because of the number of include directories and warning options, the compilation commands are very long,
 typically more than 4000 characters, 30 to 50 lines on a terminal window.
@@ -652,7 +642,7 @@ $ make VERBOSE=1
 For convenience and compatibility with some tradition, `V` can be used instead of `VERBOSE`.
 
 [#buildinst]
-===== Building the TSDuck installation packages
+==== Building the TSDuck installation packages
 
 Execute the command `make installer` at top level to build all packages.
 
@@ -692,7 +682,7 @@ a package manager for open-source projects on macOS.
 See xref:macinstall[xrefstyle=short] for more details.
 
 [#distropack]
-===== For packagers of Linux distros
+==== For packagers of Linux distros
 
 Packagers of Linux distros may want to create TSDuck packages.
 The build methods are not different.
@@ -727,7 +717,7 @@ $ make NOGITHUB=1 install-devel SYSROOT=/temporary/fake/root
 ----
 
 [#nonstdinstunix]
-===== Installing in non-standard locations
+==== Installing in non-standard locations
 
 On systems where you have no administration privilege and consequently no right to use the standard installers,
 you may want to manually install TSDuck is some arbitrary directory.
@@ -748,7 +738,7 @@ The TSDuck commands are located in the `bin` subdirectory and can be executed fr
 It is probably a good idea to add this `bin` directory in your `PATH` environment variable.
 
 [#pkgconfiginstall]
-===== Using pkgconfig after installation
+==== Using pkgconfig after installation
 
 Applications may use the `pkgconfig` utility to reference the TSDuck library.
 A file named `tsduck.pc` is installed in the appropriate directory.
@@ -779,7 +769,7 @@ and pkgconfig would provide a synthetic `-std` option which fulfills all require
 However, this feature does not exist in pkgconfig, hence this trick.
 
 [#runbuildunix]
-===== Running from the build location
+==== Running from the build location
 
 It is sometimes useful to run a TSDuck binary, `tsp` or any other, directly from the build directory,
 right after compilation, without going through `make install`.
@@ -814,7 +804,7 @@ $ scripts/setenv.sh --display
 Use `scripts/setenv.sh --help` for other options.
 
 [#nixbuild]
-==== Building with Nix
+=== Building with Nix
 
 TSDuck provides native https://nixos.org[Nix] flakes for Linux and macOS.
 Nix must be installed on your system with Flakes support enabled.
@@ -876,13 +866,13 @@ $ nix develop ./pkg/nix
 ----
 
 [#altbuild]
-==== Build with alternative libraries
+=== Build with alternative libraries
 
 This section documents how to build TSDuck using some alternatives to the
 standard libraries which are used by default.
 
 [#robotweax]
-===== Build with Robotweax SRT library
+==== Build with Robotweax SRT library
 
 By default, on most operating systems, the SRT library is the Haivision libsrt
 (see <<Haivision-SRT>>). This library is available in standard package managers
@@ -977,7 +967,7 @@ libsrt version 1.5.7 (Robotweax SRT version 0.2.4 with Microsoft BCrypt backend)
 ----
 
 [#instfiles]
-==== Installer files summary
+=== Installer files summary
 
 The following list summarizes the packages which are built and dropped
 into the `pkg/installers` directory, through a few examples, assuming that the
@@ -1030,390 +1020,3 @@ The user can select which components shall be installed.
 The development environment is unselected by default.
 
 On macOS systems, the Homebrew package `tsduck` installs all components.
-
-//----------------------------------------------------------------------------
-[#builddoc]
-=== Building the documentation
-//----------------------------------------------------------------------------
-
-There are three sets of TSDuck documents:
-
-[.compact-list]
-1. TSDuck User Guide (HTML and PDF)
-2. TSDuck Developer Guide (HTML and PDF)
-3. TSDuck Programming Reference (HTML only)
-
-The first two documents are written in https://asciidoc.org[Asciidoc] format.
-Their HTML and PDF versions are built using https://docs.asciidoctor.org[Asciidoctor].
-The two HTML files are large standalone files, without reference to any other local file;
-they can be safely copied without breaking the navigation.
-
-These two guides are installed with TSDuck on {unix} and Windows (HTML version only).
-
-The TSDuck Programming Reference contains the documentation of all public classes
-which can be used by applications in {cpp}, Java, or Python.
-This reference is built using https://www.doxygen.nl[Doxygen].
-
-TIP: Asciidoctor and Doxygen are automatically installed by the scripts `install-prerequisites.sh`
-on {unix} and `install-prerequisites.ps1` on Windows.
-
-On large libraries, Doxygen is extremely verbose.
-The TSDuck Programming Reference is made of a large number of HTML files, more than 14,000 files and directories.
-It also takes some time to generate.
-Therefore, the Programming Reference is neither built by default nor installed with the rest of TSDuck.
-Every night, a fresh copy is generated and published online at {home}doxy[].
-
-==== Building on Windows
-
-The user guide and the developer guide are built using the PowerShell script `doc\build-doc.ps1`.
-The HTML and PDF files are built in subdirectory `bin\doc`.
-By default, they are automatically opened using the default HTML and PDF viewers of the system.
-
-Because the two guides are installed with the rest of TSDuck,
-this script is automatically executed as part of the script `pkg\nsis\build-installer.ps1`.
-
-The programming reference is built using the PowerShell script `doc\doxy\build-doxygen.ps1`.
-The set of files is built in subdirectory `bin\doxy\html`.
-By default, the start page is automatically opened using the default HTML viewer of the system.
-
-When used in an automation system, the two scripts `doc\build-doc.ps1` and `pkg\nsis\build-installer.ps1`
-can be called with options `-NoOpen -NoPause` to skip the opening of documents using the default viewers
-and exit without waiting for a user to close the command window.
-
-==== Building on {unix}
-
-The user guide and the developer guide are built using the target `docs`.
-The HTML and PDF files are built in subdirectory `bin/doc`.
-
-[source,shell]
-----
-$ make docs
-----
-
-Because the two guides are installed with the rest of TSDuck,
-they are automatically rebuilt as part of `make install`.
-
-The following targets are also available to build a subset of the guides:
-
-[.compact-table]
-[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
-|===
-|userguide-html |Build the user guide HTML version
-|userguide-pdf |Build the user guide PDF version
-|userguide |Build the user guide HTML and PDF versions
-|open-userguide-html |Build the user guide HTML version and opens it with the default HTML viewer
-|open-userguide-pdf |Build the user guide PDF version and opens it with the default PDF viewer
-|open-userguide |Build the user guide HTML and PDF versions and opens them with their default viewers
-|devguide-html |Build the developer guide HTML version
-|devguide-pdf |Build the developer guide PDF version
-|devguide |Build the developer guide HTML and PDF versions
-|open-devguide-html |Build the developer guide HTML version and opens it with the default HTML viewer
-|open-devguide-pdf |Build the developer guide PDF version and opens it with the default PDF viewer
-|open-devguide |Build the developer guide HTML and PDF versions and opens them with their default viewers
-|docs |Build the four document, user and developer, HTML and PDF
-|docs-html |Build the user and developer guide in HTML format
-|docs-pdf |Build the user and developer guide in PDF format
-|===
-
-The programming reference is built using the target `doxygen`.
-
-[source,shell]
-----
-$ make doxygen
-----
-
-The set of files is built in subdirectory `bin/doxy/html`.
-
-//----------------------------------------------------------------------------
-[#installing]
-=== Installing TSDuck
-//----------------------------------------------------------------------------
-
-TSDuck can be installed on Windows, Linux, macOS and BSD systems.
-
-[#wininstall]
-==== Installing on Windows
-
-On Windows systems, TSDuck can be installed using a binary installer (traditional method)
-or using the `winget` package manager (modern method).
-
-[#winget]
-===== Using winget
-
-TSDuck is installable on Windows systems using
-https://learn.microsoft.com/en-us/windows/package-manager/winget/[the winget package manager].
-
-`winget` is now the preferred package manager for open source and third-party products on Windows systems.
-It is documented and supported by Microsoft.
-It should be pre-installed on all recent Windows 10 and Windows 11 systems.
-
-The TSDuck installation command is simply:
-
-[source, powershell]
-----
-PS C:\> winget install tsduck
-----
-
-[#windownload]
-===== Download an installer
-
-{home}tsduck-binaries[Executable binary installers for the latest TSDuck version]
-are available for 64-bit Windows on Intel systems.
-
-All tools, plugins and development environments are in the same installer.
-Running the installer provides several options:
-
-[.compact-list]
-* Tools & Plugins
-* Documentation
-* Python Bindings (optional)
-* Java Bindings (optional)
-* {cpp} Development (optional)
-
-{repo}releases[Older versions of TSDuck] remain available on GitHub.
-
-{home}prerelease[Nightly builds and pre-releases] can be found on the TSDuck Web site.
-
-To automate the installation, the executable binary installer can be run from the command line or a script.
-
-* The option `/S` means "silent". No window is displayed, no user interaction is possible.
-* The option `/all=true` means install all options.
-  By default, only the tools, plugins and documentation are installed.
-  In case of upgrade over an existing installation, the default is to upgrade the same options as in the previous installation.
-
-[#macinstall]
-==== Installing on macOS
-
-TSDuck is installable on macOS systems using https://brew.sh[Homebrew],
-the package manager for open-source projects on macOS.
-
-If you have never used Homebrew on your system, you can install it using the
-following command (which can also be found on the https://brew.sh[Homebrew home page]):
-
-[source,shell]
-----
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-----
-
-Once Homebrew is set up, you can install TSDuck using:
-
-[source,shell]
-----
-$ brew install tsduck
-----
-
-All tools, plugins and development environments are installed.
-
-After installation, to upgrade to latest version:
-
-[source,shell]
-----
-$ brew update
-$ brew upgrade tsduck
-----
-
-When Homebrew upgrades packages, the old versions are not removed.
-The new versions are just added.
-After a while, megabytes of outdated packages accumulate on disk.
-To remove outdated packages:
-
-[source,shell]
-----
-$ brew cleanup
-----
-
-To uninstall TSDuck:
-
-[source,shell]
-----
-$ brew uninstall tsduck
-----
-
-If you would like to install the latest test version from the source repository
-(HEAD version) use the following command.
-Be aware that it takes time since TSDuck is locally recompiled.
-
-[source,shell]
-----
-$ brew install --HEAD tsduck
-----
-
-[#linuxinstall]
-==== Installing on Linux
-
-{home}tsduck-binaries[Pre-build packages for the latest TSDuck version]
-are available for the following configurations:
-
-[.compact-list]
-* Fedora (64-bit Intel)
-* Ubuntu (64-bit Intel and Arm)
-* RedHat, CentOS, Alma Linux, Rocky Linux (64-bit Intel)
-* Debian (64-bit Intel)
-* Raspbian (32-Bit Arm, Raspberry Pi)
-
-The type of package, `.rpm` or `.deb`, depends on the configuration.
-The pre-built packages are provided for the latest version of each distro only.
-
-For each distro, two packages exist:
-the `tsduck` package installs the TSDuck commands, plugins, Java and Python bindings,
-the `tsduck-devel` or `tsduck-dev` package installs the development environment for {cpp} programmers.
-
-{repo}releases[Older versions of TSDuck] remain available on GitHub.
-{home}prerelease[Nightly builds and pre-releases] for Ubuntu can be found on the TSDuck Web site.
-
-To use older versions of the above distros, rebuilding the packages is easy:
-
-[source,shell]
-----
-$ make installer
-----
-
-To install TSDuck on other types of Linux systems for which no package is available:
-
-[source,shell]
-----
-$ make -j10 default docs-html
-$ sudo make install
-----
-
-More details on how to build TSDuck are available in xref:building[xrefstyle=short].
-
-If you exclude some dependencies, the exact same set of `make` options must be used during build and installation.
-For instance, to remove the dependencies on SRT and RIST, use:
-
-[source,shell]
-----
-$ make -j10 default docs-html NOSRT=1 NORIST=1
-$ sudo make install NOSRT=1 NORIST=1
-----
-
-When building an installer package (`.rpm`, `.deb`) or when directly installing TSDuck,
-the HTML version of the user guide and developer guide are included.
-
-If the documentation was not built yet, the command `make install` rebuilds the HTML files first.
-To avoid running Asciidoc under the superuser account, the examples above use `make default docs-html` first.
-The target `default` builds the binaries and the target `docs-html` builds the HTML documentation.
-Then, `sudo make install` only copies files into the filesystem, nothing else.
-
-If you prefer not to install Asciidoctor (which pulls the Ruby environment as a dependency),
-you can install or build an installer package without documentation using the `make` variable `NODOC`.
-
-[source,shell]
-----
-$ make installer NODOC=1
-----
-
-[source,shell]
-----
-$ make -j10 NODOC=1
-$ sudo make install NODOC=1
-----
-
-[#freebsdinstall]
-==== Installing on FreeBSD systems
-
-Starting with version 3.43, TSDuck is part of FreeBSD Ports.
-It can be installed using the `pkg` command:
-
-[source,shell]
-----
-$ sudo pkg install tsduck
-----
-
-NOTE: TSDuck is supposed to be included the April 2026 "Quarterly" branch of FreeBSD Ports.
-Before that date, use the "Latest" branch to get the `tsduck` package.
-
-[#bsdinstall]
-==== Installing on other BSD systems
-
-There is currently no installer for OpenBSD, NetBSD, DragonFlyBSD.
-You need to build and install as follow:
-
-[source,shell]
-----
-$ gmake -j10 default docs-html
-$ sudo gmake install
-----
-
-Note that GNU Make (`gmake`) shall be used instead of the standard BSD `make`.
-
-[#nixinstall]
-==== Installing with Nix
-
-TSDuck can be installed using the https://nixos.org[Nix package manager] on Linux, macOS, and BSD systems.
-Nix provides reproducible, declarative package management with automatic dependency resolution.
-
-===== Installing TSDuck
-
-Install TSDuck into your user profile:
-
-[source,shell]
-----
-$ nix profile add github:tsduck/tsduck?dir=pkg/nix
-----
-
-Depending on your Nix configuration, you may have to add the option `--no-write-lock-file`.
-
-[source,shell]
-----
-$ nix profile add --no-write-lock-file github:tsduck/tsduck?dir=pkg/nix
-----
-
-===== Run TSDuck without Install
-Or run TSDuck commands without installation:
-
-[source,shell]
-----
-$ nix run github:tsduck/tsduck?dir=pkg/nix
-$ nix run github:tsduck/tsduck?dir=pkg/nix#tsp -- --help
-----
-
-Launch a Python REPL with TSDuck bindings:
-
-[source,shell]
-----
-$ nix run ./pkg/nix#python
->>> import tsduck
->>> print(tsduck.version())
-----
-
-===== Installing a specific version
-
-A git ref (tag or branch) can be placed between the repository name and the
-`?dir=pkg/nix` parameter to install an exact version:
-
-[source,shell]
-----
-$ nix profile add github:tsduck/tsduck/v3.40?dir=pkg/nix            # a tagged release
-$ nix profile add github:tsduck/tsduck/develop?dir=pkg/nix          # a branch
-$ nix profile add github:tsduck/tsduck/v3.40?dir=pkg/nix#tsduck-min # tag + variant
-----
-
-When no ref is given, Nix defaults to the repository's default branch (typically `master`).
-
-===== Installing specific variants
-
-Install the minimal build (no hardware device support):
-
-[source,shell]
-----
-$ nix profile add github:tsduck/tsduck?dir=pkg/nix#tsduck-min
-----
-
-Install Python bindings.  Each variant has a matching Python package so that
-the baked `libtsduck` path is consistent:
-
-[source,shell]
-----
-$ nix profile add github:tsduck/tsduck?dir=pkg/nix#python-tsduck       # against tsduck
-$ nix profile add github:tsduck/tsduck?dir=pkg/nix#python-tsduck-min   # against tsduck-min
-----
-
-Install Java bindings.  As with Python, each tsduck variant has a matching
-Java package:
-
-[source,shell]
-----
-$ nix profile add github:tsduck/tsduck?dir=pkg/nix#java-tsduck       # against tsduck
-$ nix profile add github:tsduck/tsduck?dir=pkg/nix#java-tsduck-min   # against tsduck-min
-----

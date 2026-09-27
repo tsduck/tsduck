@@ -1,0 +1,40 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-preface]
+[preface]
+== Preface
+
+TSDuck is a free and open-source toolkit to manipulate MPEG Transport Streams.
+
+This guide describes how to build and install TSDuck on various platforms.
+It is particularly useful if TSDuck has no pre-built binary package for your
+platform.
+
+In the open source world, there are many different ways of building an application.
+Sometimes, building an open source application is straightforward.
+However, in other cases, it can be challenging, especially on non-Linux platforms.
+
+TSDuck deliberately sides with the user, using simple and straightforward ways of
+building and installing.
+
+On each platform, TSDuck always uses "native" mechanisms, tools, and procedures.
+The default compiler is always the "usual" one on the platform: GCC on Linux,
+Clang on macOS, Visual Studio on Windows. The packaging of installers, when
+available, is also "native": `.rpm` packages on Fedora and Red Hat clones,
+`.deb` packages on Ubuntu, Debian and the like, Homebrew distribution on macOS,
+NSIS-based executable installers on Windows. TSDuck also provides native
+support for https://nixos.org[Nix] on Linux and macOS.
+
+Structure of this guide:
+
+* The xref:chap-build[xrefstyle=short] describes how to build TSDuck.
+* The xref:chap-doc[xrefstyle=short] describes how to build the documentation.
+* The xref:chap-install[xrefstyle=short] describes how to install TSDuck.
+
+include::{includedir}/common-intro.adoc[]

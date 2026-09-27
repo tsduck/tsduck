@@ -1,0 +1,105 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-doc]
+== Building the documentation
+
+There are several TSDuck documents:
+
+[.compact-list]
+1. TSDuck User Guide (HTML and PDF)
+2. TSDuck Builder Guide (HTML and PDF)
+3. TSDuck Developer Guide (HTML and PDF)
+4. TSDuck Programming Reference (HTML only)
+
+All documents,except the last one, are written in https://asciidoc.org[Asciidoc] format.
+Their HTML and PDF versions are built using https://docs.asciidoctor.org[Asciidoctor].
+The two HTML files are large standalone files, without reference to any other local file;
+they can be safely copied without breaking the navigation.
+
+These guides are installed with TSDuck on {unix} and Windows (HTML version only).
+
+The TSDuck Programming Reference contains the documentation of all public classes
+which can be used by applications in {cpp}, Java, or Python.
+This reference is built using https://www.doxygen.nl[Doxygen].
+
+TIP: Asciidoctor and Doxygen are automatically installed by the scripts `install-prerequisites.sh`
+on {unix} and `install-prerequisites.ps1` on Windows.
+
+On large libraries, Doxygen is extremely verbose.
+The TSDuck Programming Reference is made of a large number of HTML files, more than 14,000 files and directories.
+It also takes some time to generate.
+Therefore, the Programming Reference is neither built by default nor installed with the rest of TSDuck.
+Every night, a fresh copy is generated and published online at {home}doxy[].
+
+=== Building on Windows
+
+The user guide and the developer guide are built using the PowerShell script `doc\build-doc.ps1`.
+The HTML and PDF files are built in subdirectory `bin\doc`.
+By default, they are automatically opened using the default HTML and PDF viewers of the system.
+
+Because the two guides are installed with the rest of TSDuck,
+this script is automatically executed as part of the script `pkg\nsis\build-installer.ps1`.
+
+The programming reference is built using the PowerShell script `doc\doxy\build-doxygen.ps1`.
+The set of files is built in subdirectory `bin\doxy\html`.
+By default, the start page is automatically opened using the default HTML viewer of the system.
+
+When used in an automation system, the two scripts `doc\build-doc.ps1` and `pkg\nsis\build-installer.ps1`
+can be called with options `-NoOpen -NoPause` to skip the opening of documents using the default viewers
+and exit without waiting for a user to close the command window.
+
+=== Building on {unix}
+
+The user guide and the developer guide are built using the target `docs`.
+The HTML and PDF files are built in subdirectory `bin/doc`.
+
+[source,shell]
+----
+$ make docs
+----
+
+Because the two guides are installed with the rest of TSDuck,
+they are automatically rebuilt as part of `make install`.
+
+The following targets are also available to build a subset of the guides:
+
+[.compact-table]
+[cols="<1m,<1",frame=none,grid=none,stripes=none,options="autowidth,noheader"]
+|===
+|userguide-html |Build the user guide HTML version
+|userguide-pdf |Build the user guide PDF version
+|userguide |Build the user guide HTML and PDF versions
+|open-userguide-html |Build the user guide HTML version and opens it with the default HTML viewer
+|open-userguide-pdf |Build the user guide PDF version and opens it with the default PDF viewer
+|open-userguide |Build the user guide HTML and PDF versions and opens them with their default viewers
+|buildguide-html |Build the builder guide HTML version
+|buildguide-pdf |Build the builder guide PDF version
+|buildguide |Build the builder guide HTML and PDF versions
+|open-buildguide-html |Build the builder guide HTML version and opens it with the default HTML viewer
+|open-buildguide-pdf |Build the builder guide PDF version and opens it with the default PDF viewer
+|open-buildguide |Build the builder guide HTML and PDF versions and opens them with their default viewers
+|devguide-html |Build the developer guide HTML version
+|devguide-pdf |Build the developer guide PDF version
+|devguide |Build the developer guide HTML and PDF versions
+|open-devguide-html |Build the developer guide HTML version and opens it with the default HTML viewer
+|open-devguide-pdf |Build the developer guide PDF version and opens it with the default PDF viewer
+|open-devguide |Build the developer guide HTML and PDF versions and opens them with their default viewers
+|docs |Build all guides in HTML and PDF formats
+|docs-html |Build all guides in HTML format
+|docs-pdf |Build all guides  in PDF format
+|===
+
+The programming reference is built using the target `doxygen`.
+
+[source,shell]
+----
+$ make doxygen
+----
+
+The set of files is built in subdirectory `bin/doxy/html`.

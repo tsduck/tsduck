@@ -49,44 +49,4 @@ Just follow the link to have the complete description of the document in the bib
 Like any technical field, Digital Television uses a lot of acronyms.
 A list of them is provided in xref:acronyms[xrefstyle=short].
 
-[.usage]
-License
-
-TSDuck is released under the terms of the license which is commonly referred to as
-"BSD 2-Clause License" or "Simplified BSD License" or "FreeBSD License".
-This is a liberal license which allows TSDuck to be used in a large number of environments.
-See the xref:chap-license[xrefstyle=short] or <<BSD-2C>> for more details.
-
-[.usage]
-Documentation format
-
-The TSDuck user guide is now formatted for HTML.
-The file xref:tsduck.html[] is monolithic and self-sufficient, without reference to external images.
-Therefore, this HTML file can be downloaded, saved, and copied, as long as the license and content are not modified.
-
-The TSDuck user guide is now built using https://asciidoctor.org[asciidoctor],
-from a set of text files which are maintained alongside the source code,
-in the same `git` repository.
-Up to TSDuck version 3.37, the user guide was a Microsoft Word document.
-The document was distributed and available online as a PDF file only.
-
-PDF files are primarily designed as page-oriented documents for printing.
-The TSDuck user guide is now too large to be printed and a PDF file is no longer
-necessary because the HTML version proposes the same navigation features
-as the previous PDF file (expandable table of contents in a left-side panel).
-
-A PDF version xref:tsduck.pdf[] is still available.
-However, due to limitations in the PDF generator of asciidoctor,
-the rendering is sometimes not as good as the HTML document.
-
-[.usage]
-Documentation set
-
-The TSDuck documentation set is made of:
-
-[.compact-list]
-1. xref:tsduck.html[TSDuck User Guide]
-   (also from {home}docs/tsduck.html[tsduck.io] and in {home}docs/tsduck.pdf[PDF] format)
-2. xref:tsduck-dev.html[TSDuck Developer Guide]
-   (also from {home}docs/tsduck-dev.html[tsduck.io] and in {home}docs/tsduck-dev.pdf[PDF] format)
-3. {home}doxy/[TSDuck Programming Reference]
+include::{includedir}/common-intro.adoc[]
