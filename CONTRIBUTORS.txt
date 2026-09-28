@@ -42,6 +42,7 @@ Piotr Serafin
 Anders Solberg Pedersen
 Nicolas Stuardo Diaz
 Matthew Sweet
+Anthony VanLent
 Enrico Vittorini
 Fei Wong
 Marwan Yassin
