@@ -37,7 +37,7 @@ On FreeBSD, TSDuck is maintained as a FreeBSD port, in the multimedia category. 
 package name is therefore `multimedia/tsduck`.
 
 TSDuck is installed on FreeBSD systems using the simple command `pkg install tsduck`,
-as described in the [developer's guide](https://tsduck.io/docs/tsduck-dev.html#freebsdinstall).
+as described in the [builder guide](https://tsduck.io/docs/tsduck-build.html#freebsdinstall).
 
 ## Updating the FreeBSD port for TSDuck
 

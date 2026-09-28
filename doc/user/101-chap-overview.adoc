@@ -63,7 +63,7 @@ This library can be used by third-party applications, outside the TSDuck tools a
 First, install the _TSDuck development environment_.
 This environment contains the {cpp} header files and static libraries
 (the dynamic libraries are already installed with TSDuck).
-See the chapter xref:tsduck-dev.html#installing["installing TSDuck"] section in <<TSDuck-Dev>>
+See the chapter xref:tsduck-build.html#chap-install["installing TSDuck"] section in <<TSDuck-Build>>
 for more information on the installation of TSDuck and its development environment.
 
 Using the TSDuck library, you can develop independent Digital TV applications or TSDuck plugins.
@@ -124,7 +124,7 @@ It is probably a good idea to add this `bin` directory in the `Path` environment
 
 *Note*: Starting with version 3.34, pre-built 32-bit installers for Windows are no longer provided.
 However, it is still possible to build them yourself if needed.
-See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
+See the chapter xref:tsduck-build.html#chap-build["building TSDuck"] section in <<TSDuck-Build>>.
 
 ==== Linux
 
@@ -138,7 +138,7 @@ There is a separate package for the TSDuck development environment.
 
 On Linux distributions with other packaging systems, there is no pre-built binary package for TSDuck.
 It must be compiled and installed using the `make` command.
-See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
+See the chapter xref:tsduck-build.html#chap-build["building TSDuck"] section in <<TSDuck-Build>>.
 
 ==== macOS
 
@@ -174,7 +174,7 @@ The development environment is always installed with TSDuck.
 
 There is no binary package for TSDuck on other BSD systems.
 It must be compiled and installed using the `gmake` command.
-See the chapter xref:tsduck-dev.html#chap-build["building and installing TSDuck"] section in <<TSDuck-Dev>>.
+See the chapter xref:tsduck-build.html#chap-build["building TSDuck"] section in <<TSDuck-Build>>.
 
 After installation, all tools are in `/usr/local/bin` for OpenBSD and DragonFly BSD.
 They are in `/usr/pkg/bin` for NetBSD.

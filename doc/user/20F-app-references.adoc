@@ -426,6 +426,8 @@ https://openssf.org/public-policy/eu-cyber-resilience-act/
 * [[[Suntech]]] Suntechtv U3 USB modulator (AstroMeta-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
 * [[[TSDuck]]] TSDuck Web site, {home}
+* [[[TSDuck-Build]]] TSDuck Builder Guide, {home}docs/tsduck-build.html
+* [[[TSDuck-Contrib]]] TSDuck Contributor Guide, {home}docs/tsduck-contrib.html
 * [[[TSDuck-Dev]]] TSDuck Developer Guide, {home}docs/tsduck-dev.html
 * [[[TSDuck-Issues]]] TSDuck issues tracker and discussion forum, {repo}issues
 * [[[TSDuck-Prog]]] TSDuck Programming Reference, {home}doxy/

@@ -200,8 +200,8 @@ def build_body_text(release):
     for ins in installers:
         if not ins.dev:
             body.add_all_urls(ins.name, ins.re_pattern())
-    body.add_ref('macOS', 'Use Homebrew', 'https://tsduck.io/docs/tsduck-dev.html#macinstall')
-    body.add_ref('FreeBSD', 'Use FreeBSD Ports', 'https://tsduck.io/docs/tsduck-dev.html#freebsdinstall')
+    body.add_ref('macOS', 'Use Homebrew', 'https://tsduck.io/docs/tsduck-build.html#macinstall')
+    body.add_ref('FreeBSD', 'Use FreeBSD Ports', 'https://tsduck.io/docs/tsduck-build.html#freebsdinstall')
     body.add_line('')
     body.add_line('Binaries for development environment:')
     body.add_line('* Windows: Included in installer (select option "Development")')

@@ -269,6 +269,7 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
 
         $TempDoc = (New-Directory "${TempRoot}\doc")
         Copy-Item "${RootDir}\bin\doc\tsduck.html" -Destination $TempDoc
+        Copy-Item "${RootDir}\bin\doc\tsduck-build.html" -Destination $TempDoc
         Copy-Item "${RootDir}\bin\doc\tsduck-dev.html" -Destination $TempDoc
         Copy-Item "${RootDir}\CHANGELOG.txt" -Destination $TempDoc
 

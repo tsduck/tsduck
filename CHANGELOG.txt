@@ -12,6 +12,10 @@ VERSION 3.46-4806 (September 2026)
     using external shared libraries remains.  Specifically, the plugin "dektec"
     remains  in  an  external  shared  library  because it is linked against an
     additional shared library which contains non-free code from Dektec.
+  * The "TSDuck Developer Guide" has been split in three different guides:  the
+    "Builder Guide"  (how to build and install TSDuck),  the  "Developer Guide"
+    (how to develop applications using the TSDuck  library),  the  "Contributor
+    Guide" (how to contribute to the development of TSDuck).
 
 -------------------------------------------------------------------------------
 

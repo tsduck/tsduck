@@ -77,9 +77,9 @@ See the [Builder Guide](https://tsduck.io/docs/tsduck-build.html) for more detai
 
 ### Download
 
-- On macOS, [use the Homebrew packager](https://tsduck.io/docs/tsduck-dev.html#macinstall): `brew install tsduck`
+- On macOS, [use the Homebrew packager](https://tsduck.io/docs/tsduck-build.html#macinstall): `brew install tsduck`
 - On Windows, [use winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/): `winget install tsduck`
-- On FreeBSD, [use FreeBSD Ports](https://tsduck.io/docs/tsduck-dev.html#freebsdinstall): `pkg install tsduck`
+- On FreeBSD, [use FreeBSD Ports](https://tsduck.io/docs/tsduck-build.html#freebsdinstall): `pkg install tsduck`
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases) are available
 for Windows and the very latest versions of some Linux distros (Fedora, RedHat and clones, Ubuntu, Debian),

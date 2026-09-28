@@ -141,5 +141,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/pkgconfig/tscore.pc
 %{_datadir}/pkgconfig/tsduck.pc
 %if 0%{!?nodoc:1}
+%{_docdir}/tsduck/tsduck-build.html
 %{_docdir}/tsduck/tsduck-dev.html
 %endif
