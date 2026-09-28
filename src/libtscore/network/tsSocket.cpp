@@ -295,7 +295,7 @@ bool ts::Socket::setReceiveTimeout(cn::milliseconds timeout)
 #else
     struct timeval param;
     param.tv_sec = timeval_sec_t(timeout.count() / 1000);
-    param.tv_usec = timeval_usec_t(timeout.count() % 1000);
+    param.tv_usec = timeval_usec_t((timeout.count() % 1000) * 1000);
 #endif
 
     if (::setsockopt(_sock, SOL_SOCKET, SO_RCVTIMEO, SysSockOptPointer(&param), sizeof(param)) != 0) {
