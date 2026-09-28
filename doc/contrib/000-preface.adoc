@@ -1,0 +1,35 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-preface]
+[preface]
+== Preface
+
+TSDuck is a free and open-source toolkit to manipulate MPEG Transport Streams.
+
+This document is the TSDuck Contributor Guide. It provides guidelines on how to
+contribute to the development of TSDuck. It is also a reference for TSDuck
+maintainers: it describes the automated test and release workflows and provides
+coding guidelines.
+
+Structure of this guide:
+
+* The xref:chap-contribution[xrefstyle=short] is a guide for advanced users who wish to
+  contribute to TSDuck development, submit new features, improvements, or bug fixes.
+* The xref:testing[xrefstyle=short] describes the test-driven development approach
+  which is used in TSDuck.
+* The xref:automation[xrefstyle=short] describes the various automation processes which
+  speed up and simplify TSDuck development.
+* The xref:release_process[xrefstyle=short] explains the process to publish new releases.
+* The xref:chap-maintenance[xrefstyle=short] covers various technical topics in the TSDuck
+  source code.
+* The xref:coding[xrefstyle=short] lists the coding guidelines which are used in the
+  development of TSDuck. All maintainers and contributors are required to follow these
+  guidelines.
+
+include::{includedir}/common-intro.adoc[]

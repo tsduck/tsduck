@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 [#automation]
-=== Automation
+== Automation
 
 TSDuck is a free open-source project which is maintained on spare time by very few developers
 (only one at the time of this writing).
@@ -19,7 +19,7 @@ This is briefly explained in {home}docs/tsduck-project.pdf[this presentation].
 For future maintainers or contributors, this section lists a few automation procedures which are used by the project.
 
 [#auto_workflows]
-==== GitHub workflows
+=== GitHub workflows
 
 Automation is provided through _GitHub Actions_, the CI/CD infrastructure which is hosted at GitHub.
 This CI/CD infrastructure is provided for free by GitHub for open-source projects.
@@ -46,7 +46,7 @@ If the workflow defines input parameters, a pane is opened with the possible opt
 This feature is specifically useful with the "Release" workflow (see xref:auto_release[xrefstyle=short]).
 
 [#auto_ci]
-==== Continuous integration
+=== Continuous integration
 
 Each time a commit or a pull request is pushed to GitHub, the workflow `continuous-integration.yml`
 is automatically run to verify that the project can be built on most supported platforms and contains no regression.
@@ -68,7 +68,7 @@ It fails on the slightlest test failure in any configuration.
 It fails if any documenation is missing in the code, such as an undocumented parameter in a function.
 
 [#auto_nightly]
-==== Nightly builds
+=== Nightly builds
 
 Every night, if there were any modification in the TSDuck repo during the last day,
 "nightly builds" are automatically produced and published on the {home}prerelease/[TSDuck web site].
@@ -95,7 +95,7 @@ A PHP script is automatically run on the web site to retrieve, download and publ
 latest {home}prerelease/[nighly binaries] and documentation.
 
 [#auto_issues]
-==== Cleanup of long-standing issues
+=== Cleanup of long-standing issues
 
 The {repo}issues[issues area on GitHub] is used to report problems,
 ask questions, and support any discussion about TSDuck.

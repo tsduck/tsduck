@@ -55,19 +55,25 @@ TSDuck is developed in C++, using modern C++20 coding practices.
 For programmers, TSDuck provides a large collection of C++ classes in one single library.
 These classes manipulate, in a completely portable way, MPEG transport streams, MPEG/DVB/ATSC/ISDB
 signalization and many other features.
-See the [Developer Guide](https://tsduck.io/docs/tsduck-dev.html)
-and the [Programming Reference](https://tsduck.io/doxy/).
 
 Python and Java bindings exist to allow running transport stream processing pipelines from
 Python or Java applications.
+
+### Documentation
+
+- [TSDuck User Guide](https://tsduck.io/docs/tsduck.html): how to use TSDuck commands and plugins.
+- [TSDuck Builder Guide](https://tsduck.io/docs/tsduck-build.html): how to build and install TSDuck.
+- [TSDuck Developer Guide](https://tsduck.io/docs/tsduck-dev.html): how to use TSDuck from C++, Python, Java applications.
+- [TSDuck Contributor Guide](https://tsduck.io/docs/tsduck-contrib.html): how to contribute to TSDuck development.
+- [TSDuck Programming Reference](https://tsduck.io/doxy/): Doxygen-generated reference of all TSDuck classes.
 
 ### Building
 
 TSDuck can be built on Windows, Linux, macOS and BSD systems.
 The primary target architectures are Intel x86_64 and Arm64 but
 TSDuck is regularly built and tested on x86, Arm32, RISC-V, PowerPC or IBM s390x.
-See the [building section](https://tsduck.io/docs/tsduck-dev.html#building)
-in the developer guide for more details.
+
+See the [Builder Guide](https://tsduck.io/docs/tsduck-build.html) for more details.
 
 ### Download
 
@@ -94,7 +100,7 @@ using [PayPal](https://tsduck.io/donate/)
 ### License
 
 TSDuck is distributed under the terms of the Simplified 2-Clause BSD License.
-See the file `LICENSE.txt` for details.
+See the file `LICENSE.txt` or the [license page](https://tsduck.io/license) for details.
 
 *Copyright (c) 2005-2026, Thierry Lelegard*<br/>
 *All rights reserved*

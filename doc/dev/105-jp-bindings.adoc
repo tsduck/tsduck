@@ -7,10 +7,10 @@
 //----------------------------------------------------------------------------
 
 [#jpbindings]
-=== Java and Python bindings
+== Java and Python bindings
 
 [#jpoverview]
-==== Overview
+=== Overview
 
 Starting with version 3.25, TSDuck includes Java and Python bindings to some high-level features.
 
@@ -90,10 +90,10 @@ m|tstabcomp
 |===
 
 [#jpsupportclasses]
-==== Support classes
+=== Support classes
 
 [#jpduckctx]
-===== TSDuck execution context
+==== TSDuck execution context
 
 The `DuckContext` class is used to define and accumulate regional or operator preferences.
 In the TSDuck {cpp} programming guide, it is referred to as _TSDuck execution context_.
@@ -105,7 +105,7 @@ and {source}sample/sample-python/sample-japanese-tables.py[Python],
 demonstrates how it can be necessary to override the defaults in specific cases.
 
 [#jpreporting]
-===== Reporting classes
+==== Reporting classes
 
 The reporting classes (classref:Report[] {cpp} class hierarchy) are used to report logs, errors and debug.
 They are consistently used all over TSDuck and are required to use the high level features.
@@ -165,7 +165,7 @@ m|ts::NullReport
 |===
 
 [#jpmonitor]
-===== Resource monitoring
+==== Resource monitoring
 
 The `SystemMonitor` class is available in all languages, {cpp}, Java and Python.
 It can be used at the top-level of an application to implement the `--monitor` option as found in `tsp` and `tsswitch`.
@@ -177,7 +177,7 @@ Examples are available in
 {source}sample/sample-python/sample-monitoring.py[Python].
 
 [#jpevents]
-===== Plugin events
+==== Plugin events
 
 For developers, TSDuck plugins can _signal events_ which can be handled by the application.
 Each event is signalled with a user-defined 32-bit _event code_.
@@ -213,7 +213,7 @@ See this {source}sample/sample-memory-plugins/[sample code]
 in the TSDuck source code tree.
 
 [#jpplugincomm]
-==== Application/plugin communication in Java or Python
+=== Application/plugin communication in Java or Python
 
 At high level, Java and Python applications can only run `TSProcessor` or `InputSwitcher` sessions,
 just like a shell-script would do with commands `tsp` and `tsswitch`.
@@ -303,7 +303,7 @@ The following sample applications can be used as a starting point:
 |===
 
 [#javausing]
-==== Using TSDuck Java bindings
+=== Using TSDuck Java bindings
 
 All TSDuck Java classes are defined in a package named `io.tsduck`.
 
@@ -312,7 +312,7 @@ A few examples are provided in the directory
 in the TSDuck source code package.
 
 [#javalinux]
-===== Linux
+==== Linux
 
 The TSDuck Java bindings are installed with TSDuck in `/usr/share/tsduck/java`.
 All classes are in a JAR file named `tsduck.jar`.
@@ -324,7 +324,7 @@ $ export CLASSPATH="/usr/share/tsduck/java/tsduck.jar:$CLASSPATH"
 ----
 
 [#javamac]
-===== macOS
+==== macOS
 
 This is similar to Linux, except that instead of `/usr/share`,
 use `/usr/local/share` (Intel Macs) or `/opt/homebrew/share` (Apple Silicon Macs).
@@ -336,7 +336,7 @@ $ export CLASSPATH="/opt/homebrew/share/tsduck/java/tsduck.jar:$CLASSPATH"
 ----
 
 [#javawin]
-===== Windows
+==== Windows
 
 On Windows, Java bindings are optional components of the TSDuck installer.
 When they are selected for installation, they are installed in the TSDuck area and
@@ -346,7 +346,7 @@ to include the JAR file of the TSDuck Java bindings.
 Thus, any Java program can use TSDuck directly.
 
 [#pyusing]
-==== Using TSDuck Python bindings
+=== Using TSDuck Python bindings
 
 All TSDuck bindings are defined in a module named `tsduck`.
 All Python programs using TSDuck shall consequently start with:
@@ -361,7 +361,7 @@ A few examples are provided in the directory
 in the TSDuck source code package.
 
 [#pylinux]
-===== Linux
+==== Linux
 
 The Python bindings are installed with TSDuck in `/usr/share/tsduck/python`.
 Simply add this directory in the environment variable `PYTHONPATH` to use TSDuck from any Python application:
@@ -372,7 +372,7 @@ $ export PYTHONPATH="/usr/share/tsduck/python:$PYTHONPATH"
 ----
 
 [#pymac]
-===== macOS
+==== macOS
 
 This is similar to Linux, except that instead of `/usr/share`,
 use `/usr/local/share` (Intel Macs) or `/opt/homebrew/share` (Apple Silicon Macs).
@@ -384,7 +384,7 @@ $ export PYTHONPATH="/opt/homebrew/share/tsduck/python:$PYTHONPATH"
 ----
 
 [#pywin]
-===== Windows
+==== Windows
 
 On Windows, Python bindings are optional components of the TSDuck installer.
 When they are selected for installation, they are installed in the TSDuck area and
@@ -394,14 +394,14 @@ to include the root directory of the TSDuck Python bindings.
 Thus, any Python program can use TSDuck directly.
 
 [#pyprereq]
-===== Python prerequisites
+==== Python prerequisites
 
 The code was initially tested with Python 3.7 and higher.
 Python 2.x is not supported.
 Intermediate versions may work but without guarantee.
 
 [#pyimplem]
-===== Implementation notes
+==== Implementation notes
 
 There are usually two ways to call C/{cpp} from Python:
 

@@ -15,7 +15,8 @@ There are several TSDuck documents:
 1. TSDuck User Guide (HTML and PDF)
 2. TSDuck Builder Guide (HTML and PDF)
 3. TSDuck Developer Guide (HTML and PDF)
-4. TSDuck Programming Reference (HTML only)
+4. TSDuck Contributor Guide (HTML and PDF)
+5. TSDuck Programming Reference (HTML only)
 
 All documents,except the last one, are written in https://asciidoc.org[Asciidoc] format.
 Their HTML and PDF versions are built using https://docs.asciidoctor.org[Asciidoctor].
@@ -23,36 +24,42 @@ The two HTML files are large standalone files, without reference to any other lo
 they can be safely copied without breaking the navigation.
 
 These guides are installed with TSDuck on {unix} and Windows (HTML version only).
+More precisely, the user guide is installed with the TSDuck commands and plugins,
+and the builder and developer guides are installed with the TSDuck development
+environment. The contributor guide and the programming reference are available
+from the {home}[TSDuck Web site] only.
 
-The TSDuck Programming Reference contains the documentation of all public classes
-which can be used by applications in {cpp}, Java, or Python.
-This reference is built using https://www.doxygen.nl[Doxygen].
+The TSDuck Programming Reference contains the documentation of all public
+classes which can be used by applications in {cpp}, Java, or Python. This
+reference is built using https://www.doxygen.nl[Doxygen].
 
-TIP: Asciidoctor and Doxygen are automatically installed by the scripts `install-prerequisites.sh`
-on {unix} and `install-prerequisites.ps1` on Windows.
+TIP: Asciidoctor and Doxygen are automatically installed by the scripts
+`install-prerequisites.sh` on {unix} and `install-prerequisites.ps1` on Windows.
 
-On large libraries, Doxygen is extremely verbose.
-The TSDuck Programming Reference is made of a large number of HTML files, more than 14,000 files and directories.
-It also takes some time to generate.
-Therefore, the Programming Reference is neither built by default nor installed with the rest of TSDuck.
+On large libraries, Doxygen is extremely verbose. The TSDuck Programming
+Reference is made of a large number of HTML files, more than 14,000 files and
+directories. It also takes some time to generate. Therefore, the Programming
+Reference is neither built by default nor installed with the rest of TSDuck.
 Every night, a fresh copy is generated and published online at {home}doxy[].
 
 === Building on Windows
 
-The user guide and the developer guide are built using the PowerShell script `doc\build-doc.ps1`.
-The HTML and PDF files are built in subdirectory `bin\doc`.
-By default, they are automatically opened using the default HTML and PDF viewers of the system.
+The guides are built using the PowerShell script `doc\build-doc.ps1`. The HTML
+and PDF files are built in subdirectory `bin\doc`. By default, they are
+automatically opened using the default HTML and PDF viewers of the system.
 
-Because the two guides are installed with the rest of TSDuck,
-this script is automatically executed as part of the script `pkg\nsis\build-installer.ps1`.
+Because the guides are installed with the rest of TSDuck, this script is
+automatically executed as part of the script `pkg\nsis\build-installer.ps1`.
 
-The programming reference is built using the PowerShell script `doc\doxy\build-doxygen.ps1`.
-The set of files is built in subdirectory `bin\doxy\html`.
-By default, the start page is automatically opened using the default HTML viewer of the system.
+The programming reference is built using the PowerShell script
+`doc\doxy\build-doxygen.ps1`. The set of files is built in subdirectory
+`bin\doxy\html`. By default, the start page is automatically opened using the
+default HTML viewer of the system.
 
-When used in an automation system, the two scripts `doc\build-doc.ps1` and `pkg\nsis\build-installer.ps1`
-can be called with options `-NoOpen -NoPause` to skip the opening of documents using the default viewers
-and exit without waiting for a user to close the command window.
+When used in an automation system, the two scripts `doc\build-doc.ps1` and
+`pkg\nsis\build-installer.ps1` can be called with options `-NoOpen -NoPause` to
+skip the opening of documents using the default viewers and exit without waiting
+for a user to close the command window.
 
 === Building on {unix}
 
@@ -90,6 +97,12 @@ The following targets are also available to build a subset of the guides:
 |open-devguide-html |Build the developer guide HTML version and opens it with the default HTML viewer
 |open-devguide-pdf |Build the developer guide PDF version and opens it with the default PDF viewer
 |open-devguide |Build the developer guide HTML and PDF versions and opens them with their default viewers
+|contribguide-html |Build the contributor guide HTML version
+|contribguide-pdf |Build the contributor guide PDF version
+|contribguide |Build the contributor guide HTML and PDF versions
+|open-contribguide-html |Build the contributor guide HTML version and opens it with the default HTML viewer
+|open-contribguide-pdf |Build the contributor guide PDF version and opens it with the default PDF viewer
+|open-contribguide |Build the contributor guide HTML and PDF versions and opens them with their default viewers
 |docs |Build all guides in HTML and PDF formats
 |docs-html |Build all guides in HTML format
 |docs-pdf |Build all guides  in PDF format

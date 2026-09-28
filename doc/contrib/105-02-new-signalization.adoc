@@ -9,9 +9,10 @@
 [#addpsi]
 === Adding PSI/SI tables or descriptors
 
-Adding support for new PSI/SI tables or descriptors is a welcome contribution to TSDuck.
-Users from various continents, using different standards, or participating in standardization processes,
-are in the best position to implement new tables or descriptors.
+Adding support for new PSI/SI tables or descriptors is a welcome contribution to
+TSDuck.  Users from various continents, using different standards, or
+participating in standardization processes, are in the best position to
+implement new tables or descriptors.
 
 We recommend to release these contributions in open source, as part of the TSDuck project.
 
@@ -339,20 +340,20 @@ Be careful to select a code base with the same characteristics in order to copy 
 
 ===== Programming reference
 
-All public structures and fields in the {cpp} header file must be documented using Doxygen tags.
-See examples in existing structures.
-This is the way your structure will become documented in the TSDuck Programming Reference (doxygen format).
+All public structures and fields in the {cpp} header file must be documented
+using Doxygen tags.  See examples in existing structures.  This is the way your
+structure will become documented in the TSDuck Programming Reference (doxygen
+format).
 
-No public element shall be left undocumented.
-To verify this, generate the documentation and check any error.
-Undocumented elements are reported.
+No public element shall be left undocumented.  To verify this, generate the
+documentation and check any error.  Undocumented elements are reported.
 
 [.compact-list]
 * On {unix}, run `make doxygen`.
 * On Windows systems, run the PowerShell script `doc\doxy\build-doxygen.ps1`.
 
-In the initial descriptor of your {cpp} class, make sure it is properly identified with the right group and standard.
-For instance:
+In the initial descriptor of your {cpp} class, make sure it is properly
+identified with the right group and standard.  For instance:
 
 [source,c++]
 ----
@@ -374,26 +375,29 @@ or:
 //!
 ----
 
-The directive `@ingroup` is used by Doxygen to assign the class in the right group.
-The group name `libtsduck` indicates that the class belongs to the TSDuck library, and not the TSCore library.
-The group names `table` and `descriptor` are self-explanatory.
+The directive `@ingroup` is used by Doxygen to assign the class in the right
+group.  The group name `libtsduck` indicates that the class belongs to the
+TSDuck library, and not the TSCore library.  The group names `table` and
+`descriptor` are self-explanatory.
 
 The directive `@see` is important in three ways.
 
 [.compact-list]
 1. It is included in the Doxygen documentation.
-2. It helps the future maintainers of the code to find the right documentation and directly the section number where to look.
-3. It is also used in the automatic generation of the xref:chap-sigref[xrefstyle=short] of this document.
+2. It helps the future maintainers of the code to find the right documentation
+   and directly the section number where to look.
+3. It is also used in the automatic generation of the PSI/SI signalization reference
+   section of the xref:tsduck-dev.html[TSDuck Developer Guide].
 
 ==== Names file
 
-If necessary, you may provide a `.names` file.
-This is useful when a field of your structure can get distinct values with distinct meanings.
-When displaying a structure, it is more convenient for the user to get a meaningful name
-rather than a value.
+If necessary, you may provide a `.names` file.  This is useful when a field of
+your structure can get distinct values with distinct meanings.  When displaying
+a structure, it is more convenient for the user to get a meaningful name rather
+than a value.
 
-A `.names` file is organized in several sections.
-By convention, use section names which start with the XML name of your structure, followed by a dot.
+A `.names` file is organized in several sections.  By convention, use section
+names which start with the XML name of your structure, followed by a dot.
 
 Example of the file `tsISO639LanguageDescriptor.names`, for the _ISO_639_language_descriptor_:
 

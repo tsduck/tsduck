@@ -29,6 +29,10 @@
 
   Generate the developer guide only. By default, generate all documents.
 
+ .PARAMETER Contributor
+
+  Generate the contributor guide only. By default, generate all documents.
+
  .PARAMETER Html
 
   Generate the HTML files only. By default, generate all output formats.
@@ -58,6 +62,7 @@ param(
     [switch]$User = $false,
     [switch]$Builder = $false,
     [switch]$Developer = $false,
+    [switch]$Contributor = $false,
     [switch]$Html = $false,
     [switch]$Pdf = $false,
     [switch]$NoOpen = $false,
@@ -65,10 +70,11 @@ param(
 )
 
 # By default, generate all guides in all formats.
-if (-not $User -and -not $Builder -and -not $Developer) {
+if (-not $User -and -not $Builder -and -not $Developer -and -not $Contributor) {
     $User = $true
     $Builder = $true
     $Developer = $true
+    $Contributor = $true
 }
 if (-not $Html -and -not $Pdf) {
     $Html = $true
@@ -76,17 +82,18 @@ if (-not $Html -and -not $Pdf) {
 }
 
 # Get the project directories.
-$RootDir       = (Split-Path -Parent $PSScriptRoot)
-$SrcDir        = "$RootDir\src"
-$ImagesDir     = "$RootDir\images"
-$DocRoot       = "$RootDir\doc"
-$AdocDir       = "$DocRoot\adoc"
-$UserGuideDir  = "$DocRoot\user"
-$BuildGuideDir = "$DocRoot\builder"
-$DevGuideDir   = "$DocRoot\developer"
-$BinRoot       = "$RootDir\bin"
-$BinDoc        = "$BinRoot\doc"
-$BinDocInfo    = "$BinRoot\docinfo"
+$RootDir         = (Split-Path -Parent $PSScriptRoot)
+$SrcDir          = "$RootDir\src"
+$ImagesDir       = "$RootDir\images"
+$DocRoot         = "$RootDir\doc"
+$AdocDir         = "$DocRoot\adoc"
+$UserGuideDir    = "$DocRoot\user"
+$BuildGuideDir   = "$DocRoot\build"
+$DevGuideDir     = "$DocRoot\dev"
+$ContribGuideDir = "$DocRoot\contrib"
+$BinRoot         = "$RootDir\bin"
+$BinDoc          = "$BinRoot\doc"
+$BinDocInfo      = "$BinRoot\docinfo"
 
 # Common themes.
 $CssFile   = "$AdocDir\tsduck.css"
@@ -234,6 +241,9 @@ if ($Builder) {
 }
 if ($Developer) {
     Build-Document $DevGuideDir "tsduck-dev"
+}
+if ($Contributor) {
+    Build-Document $ContribGuideDir "tsduck-contrib"
 }
 
 Exit-Script

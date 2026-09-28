@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 [#release_process]
-=== Publishing new releases
+== Publishing new releases
 
 Since TSDuck is maintained with little resource and time,
 there is no predefined roadmap and no product management cycle.
@@ -29,7 +29,7 @@ Publishing a release is roughly divided in two steps:
 ** Update the source code with the next release number.
 
 [#auto_release]
-==== Automated release creation
+=== Automated release creation
 
 The workflow `release.yml` is the preferred way to create a release.
 This is a versatile workflow which can build and publish binaries and documentation for TSDuck in several ways.
@@ -72,7 +72,7 @@ It has several inputs parameters which describe what to do:
 ** `official`: Create an official and final release.
 
 [#manual_release]
-==== Manual release creation
+=== Manual release creation
 
 Although the workflow `release.yml` is now the preferred way of creating a new release,
 it is still possible to manually create a release, with the support of several scripts.
@@ -81,7 +81,7 @@ Manually creating a TSDuck release is relatively easy.
 Although the build time for all binaries can be long, everything is automated and
 run in the background without requiring the maintainer's attention.
 
-===== Building the various binaries
+==== Building the various binaries
 
 Binaries must be built for Windows (64 bits only) and a few major Linux distros
 (Fedora, RedHat, Ubuntu, Debian, and 32-bit Raspian).
@@ -120,7 +120,7 @@ After "some time", all binaries and build log files are available in the `pkg/in
 Be sure to check that all binaries are present.
 Check the log files if some of them are missing.
 
-===== Creating the GitHub release
+==== Creating the GitHub release
 
 Once the binary installers are collected, simply run this command to
 create and publish the release on GitHub:
@@ -136,9 +136,9 @@ The release is created with a explanatory description.
 All binaries are published as assets of that release.
 
 [#post_release]
-==== Post-release tasks
+=== Post-release tasks
 
-===== Creating the HomeBrew release
+==== Creating the HomeBrew release
 
 The GitHub release contains binaries for Linux and Windows.
 On macOS, TSDuck is distributed through https://brew.sh/[HomeBrew].
@@ -172,7 +172,7 @@ It can be safe to start with a dry run, as a test.
 When the HomeBrew CI/CD pipeline has finished to process the pull request,
 the new version of TSDuck is available for all flavors of macOS.
 
-===== Creating the WinGet release
+==== Creating the WinGet release
 
 WinGet is somewhat similar to HomeBrew, for the Windows world.
 Because WinGet manages binary packages only, the NSIS installer for TSDuck shall be
@@ -183,7 +183,7 @@ The PowerShell script `pkg/winget/release.ps1` is used to create and publish a n
 TSDuck release on winget. It must be run from a Windows system, after the creation
 of the GitHub release. The Windows binaries on GitHub are declared in WinGet.
 
-===== Creating the FreeBSD port
+==== Creating the FreeBSD port
 
 On FreeBSD systems, TSDuck is managed as a "port". This is how TSDuck can be installed
 using the command `pkg install tsduck`.
@@ -192,7 +192,7 @@ Each time a new release is created, the maintainer shall request an update of th
 TSDuck port. See the detailed description in the
 https://github.com/tsduck/tsduck/tree/master/pkg/freebsd[pkg/freebsd] directory.
 
-===== Updating the version number
+==== Updating the version number
 
 Once a release is published, the minor version number of TSDuck `TS_VERSION_MINOR`
 must be updated in the source file `src/libtscore/tsVersion.h`.

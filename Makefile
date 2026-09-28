@@ -105,9 +105,7 @@ nodep:
 # Generate the documentation.
 
 DOC_TARGETS = doxygen docs docs-html docs-pdf \
-    userguide userguide-html userguide-pdf open-userguide open-userguide-html open-userguide-pdf \
-    buildguide buildguide-html buildguide-pdf open-buildguide open-buildguide-html open-buildguide-pdf \
-    devguide devguide-html devguide-pdf open-devguide open-devguide-html open-devguide-pdf
+    $(foreach g,user build dev contrib,$(g)guide $(g)guide-html $(g)guide-pdf open-$(g)guide open-$(g)guide-html open-$(g)guide-pdf)
 
 .PHONY: $(DOC_TARGETS)
 $(DOC_TARGETS):

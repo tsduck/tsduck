@@ -7,14 +7,14 @@
 //----------------------------------------------------------------------------
 
 [#reactorevents]
-=== The Reactor pattern and event dispatching
+== The Reactor pattern and event dispatching
 
 Some parts of TSDuck are based on a reactor pattern. The TSCore library provides
 an implementation of event dispatching based on a "Reactor" class.
 Because this topic is complex and not always well-understood, it deserves some
 specific explanations first.
 
-==== Multithreading vs. event dispatching
+=== Multithreading vs. event dispatching
 
 Generally speaking, computing relies on three major types of resources: CPU,
 memory, and I/O. Most applications primarily need one type of resource which
@@ -38,7 +38,7 @@ event dispatching.  These are two distinct paradigms using different programming
 techniques. Usually, the choice of paradigm directly influences the architecture
 of the application.
 
-===== Multithreading architecture
+==== Multithreading architecture
 
 In a multithreading architecture, each sequential activity is linearly programmed
 in an independent thread of execution. A server typically contains one or two
@@ -64,7 +64,7 @@ impact on memory is even worse: each thread needs an independent execution
 stack, while spending most of the time doing nothing but waiting for the current
 I/O operation.
 
-===== Event-dispatching architecture
+==== Event-dispatching architecture
 
 In an event-dispatching application, there is only one thread of execution. That
 thread starts all I/O operations but never waits for them to complete. Instead,
@@ -134,7 +134,7 @@ used only in applications which use libsrt as their reactor. When several
 libraries only accept their own specific model as event dispatcher, they cannot
 be used in the same application.
 
-===== Multithreading vs. reactor comparison
+==== Multithreading vs. reactor comparison
 
 The typical use cases of these two architectures are:
 
@@ -175,7 +175,7 @@ a|[.compact-list]
 
 |===
 
-==== Blocking I/O vs. immediate I/O vs. asynchronous I/O
+=== Blocking I/O vs. immediate I/O vs. asynchronous I/O
 
 Traditional I/Os suspend the execution of the calling thread until the I/O
 operation completes. We call this "blocking I/O". In an event-dispatching
@@ -192,7 +192,7 @@ Because these two models of "non-blocking I/O" impose different data management
 strategies on the application, it is particularly challenging to define a
 portable Reactor API.
 
-===== Immediate I/O (UNIX)
+==== Immediate I/O (UNIX)
 
 An "immediate I/O" is ... immediate. Either it immediately completes or
 immediately fails but it never blocks. When an immediate I/O fails because it
@@ -266,7 +266,7 @@ There are some limitations to the UNIX immediate I/O model:
   reactor, making the code more complex and error-prone, without any performance
   benefit.
 
-===== Asynchronous I/O (Windows)
+==== Asynchronous I/O (Windows)
 
 An "asynchronous I/O" always executes in the background. An I/O is first started
 using a classical read or write operation. In rare cases, it completes
@@ -321,7 +321,7 @@ The Windows asynchronous I/O model has its limitations too:
   standard input or output will always be usable for asynchronous I/O on
   Windows.
 
-==== TSDuck hybrid architecture
+=== TSDuck hybrid architecture
 
 So, which architecture is best-suited for TSDuck, multithreading or event
 dispatching? As usual, it depends...
@@ -396,7 +396,7 @@ NOTE: For convenience, and unless specified otherwise, we will use the term
 thread and are synchronized in a reactor. This indifferently includes the two
 principles of UNIX immediate I/O and Windows asynchronous I/O.
 
-==== Reactor and reactive classes
+=== Reactor and reactive classes
 
 In the TSCore library, the core of the event dispatching features is class
 classref:Reactor[]. An instance of this class is an event dispatcher. In the
@@ -496,7 +496,7 @@ I/O classes, the `Reactor` class, and the reactive classes.
 .Reactor class diagram
 image::reactor-class-diagram.png[align="center",alt="reactor class diagram"]
 
-===== Standard I/O classes
+==== Standard I/O classes
 
 On the left side of the diagram, the hierarchy of subclasses of
 classref:Device[] contains all standard I/O classes.
@@ -533,7 +533,7 @@ classref:WebRequest[] can be used in blocking mode only and an entirely
 different class classref:ReactiveWebRequest[] is available for non-blocking
 I/O.
 
-===== Reactive I/O classes
+==== Reactive I/O classes
 
 On the right side of the Reactor class diagram, the hierarchy of subclasses of
 classref:ReactiveBase[] contains all "reactive classes". Each instance of a
@@ -588,7 +588,7 @@ Similarly, classref:ReactiveWebRequest[] handles its own non-blocking I/Os
 using specific modes of libcurl and WinInet. Unlike other types of reactive I/O
 classes, it does not use a separate instance of classref:WebRequest[].
 
-===== Sample reactor-based application
+==== Sample reactor-based application
 
 The TSCore library contains class classref:ReactiveServer[] which implements a
 general-purpose TCP server in a `Reactor` environment. It is suitable to

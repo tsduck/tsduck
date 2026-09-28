@@ -36,10 +36,12 @@ Documentation set
 The TSDuck documentation set is made of:
 
 [.compact-list]
-1. xref:tsduck.html[TSDuck User Guide]
+1. xref:tsduck.html[TSDuck User Guide], using TSDuck commands and plugins
    (also from {home}docs/tsduck.html[tsduck.io] and in {home}docs/tsduck.pdf[PDF] format)
 2. xref:tsduck-build.html[TSDuck Builder Guide], building and installing TSDuck
    (also from {home}docs/tsduck-build.html[tsduck.io] and in {home}docs/tsduck-build.pdf[PDF] format)
-3. xref:tsduck-dev.html[TSDuck Developer Guide]
+3. xref:tsduck-dev.html[TSDuck Developer Guide], using TSDuck from C++, Python, Java applications
    (also from {home}docs/tsduck-dev.html[tsduck.io] and in {home}docs/tsduck-dev.pdf[PDF] format)
-4. {home}doxy/[TSDuck Programming Reference]
+4. xref:tsduck-contrib.html[TSDuck Contributor Guide], contributing to TSDuck development
+   (also from {home}docs/tsduck-contrib.html[tsduck.io] and in {home}docs/tsduck-contrib.pdf[PDF] format)
+5. {home}doxy/[TSDuck Programming Reference], Doxygen-generated reference of all TSDuck classes.

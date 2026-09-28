@@ -10,11 +10,14 @@
 
 include ../Makefile.inc
 
-.PHONY: docs doxygen
-default: docs doxygen
-docs: userguide buildguide devguide
-docs-html: userguide-html buildguide-html devguide-html
-docs-pdf: userguide-pdf buildguide-pdf devguide-pdf
+GUIDES = user build dev contrib
+
+.PHONY: docs docs-html docs-pdf doxygen
+
+default:   docs doxygen
+docs:      $(foreach g,$(GUIDES),$(g)guide)
+docs-html: $(foreach g,$(GUIDES),$(g)guide-html)
+docs-pdf:  $(foreach g,$(GUIDES),$(g)guide-pdf)
 doxygen:
 	$(PYTHON) doxy/build-doxygen.py
 
@@ -24,13 +27,14 @@ POST_XDGOPEN = $(if $(LINUX),2>/dev/null)
 
 # Input directories.
 
-IMAGESDIR   = $(ROOTDIR)/images
-DOCROOT     = $(ROOTDIR)/doc
-ADOCDIR     = $(DOCROOT)/adoc
-USERDOCDIR  = $(DOCROOT)/user
-BUILDDOCDIR = $(DOCROOT)/builder
-DEVDOCDIR   = $(DOCROOT)/developer
-USERSIXML   = $(USERDOCDIR)/20D-app-si-xml.adoc
+IMAGESDIR     = $(ROOTDIR)/images
+DOCROOT       = $(ROOTDIR)/doc
+ADOCDIR       = $(DOCROOT)/adoc
+USERDOCDIR    = $(DOCROOT)/user
+BUILDDOCDIR   = $(DOCROOT)/build
+DEVDOCDIR     = $(DOCROOT)/dev
+CONTRIBDOCDIR = $(DOCROOT)/contrib
+USERSIXML     = $(USERDOCDIR)/20D-app-si-xml.adoc
 
 # Output directories.
 
@@ -247,6 +251,41 @@ $(BINDOC)/tsduck-dev.bigpdf: $(DEVGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
 	$(call LOG,[ASCIIDOC] $@) \
 	mkdir -p $(dir $@); \
 	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(DEVDOCDIR)/tsduck-dev.adoc -D $(dir $@) -o $(notdir $@)
+
+#-----------------------------------------------------------------------------
+# Contributor guide
+#-----------------------------------------------------------------------------
+
+.PHONY: contribguide contribguide-html contribguide-pdf open-contribguide open-contribguide-html open-contribguide-pdf
+contribguide: contribguide-html contribguide-pdf
+contribguide-html: $(BINDOC)/tsduck-contrib.html
+	@true
+contribguide-pdf: $(BINDOC)/tsduck-contrib.pdf
+	@true
+
+# Generate and open documentation (assume the existence of an "open" command);
+
+open-contribguide: open-contribguide-html open-contribguide-pdf
+open-contribguide-html: $(BINDOC)/tsduck-contrib.html
+	$(call LOG,[OPEN] $<) \
+	$(XDGOPEN) $< $(POST_XDGOPEN)
+open-contribguide-pdf: $(BINDOC)/tsduck-contrib.pdf
+	$(call LOG,[OPEN] $<) \
+	$(XDGOPEN) $< $(POST_XDGOPEN)
+
+# Documentation generation.
+
+CONTRIBGUIDE_INPUTS = $(wildcard $(CONTRIBDOCDIR)/*.adoc)
+
+$(BINDOC)/tsduck-contrib.html: $(CONTRIBGUIDE_INPUTS) $(COMMON_INPUTS_HTML)
+	$(call LOG,[ASCIIDOC] $@) \
+	mkdir -p $(dir $@); \
+	$(ASCIIDOCTOR) $(ADOCFLAGS_HTML) $(CONTRIBDOCDIR)/tsduck-contrib.adoc -D $(dir $@) -o $(notdir $@)
+
+$(BINDOC)/tsduck-contrib.bigpdf: $(CONTRIBGUIDE_INPUTS) $(COMMON_INPUTS_PDF)
+	$(call LOG,[ASCIIDOC] $@) \
+	mkdir -p $(dir $@); \
+	$(ASCIIDOCTOR_PDF) $(ADOCFLAGS_PDF) $(CONTRIBDOCDIR)/tsduck-contrib.adoc -D $(dir $@) -o $(notdir $@)
 
 #-----------------------------------------------------------------------------
 # Installation steps

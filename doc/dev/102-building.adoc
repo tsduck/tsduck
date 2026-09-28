@@ -7,10 +7,10 @@
 //----------------------------------------------------------------------------
 
 [#usinglibrary]
-=== Building an application with the TSDuck libraries
+== Building an application with the TSDuck libraries
 
 [#libreq]
-==== Pre-requisites
+=== Pre-requisites
 
 To be able to build applications or `tsp` plugins with the TSDuck libraries,
 you must install the TSDuck development environment first.
@@ -21,7 +21,7 @@ you must install the TSDuck development environment first.
 * On macOS systems, the development environment is always installed with TSDuck using Homebrew.
 * If you build TSDuck from sources, use `make install` (which is equivalent to `make install-tools install-devel`).
 
-==== Building applications on {unix}
+=== Building applications on {unix}
 
 The command `tsconfig` generates the appropriate build options for the current operating system.
 See the TSDuck user guide for more details on `tsconfig`.
@@ -69,7 +69,7 @@ Alternatively, the command `tsconfig --nostdcpp --cflags` can be used to omit th
 from the compilation options without defining the environment variable `TS_NOSTDCPP`.
 
 [#libwindows]
-==== Building applications on Windows
+=== Building applications on Windows
 
 The "Development" option of the TSDuck installer provides the build environment for Visual Studio 2022,
 in debug and release mode, for 64-bit Intel platforms.

@@ -1,0 +1,29 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+
+[#chap-maintenance]
+== Maintaining TSDuck Code
+
+This chapter is meant to help TSDuck maintainers.
+
+It covers various technical topics such as the modular structure of the
+project, adding new signalization tables and descriptors, the internal design
+of the `tsp` utility, the support of hardware devices, etc.
+
+This chapter does not pretend to cover all technical topics in TSDuck and
+remains a work in progress. As usual, remember that "the answer is in the code".
+
+The following figure illustrates the TSDuck software architecture.
+
+.TSDuck software architecture
+image::tsduck-soft-arch.png[align="center",alt="TSDuck software architecture"]
+
+include::105-01-modularity.adoc[]
+include::105-02-new-signalization.adoc[]
+include::105-03-tsp-design.adoc[]
+include::105-04-hardware.adoc[]

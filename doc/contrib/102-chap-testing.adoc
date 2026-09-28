@@ -7,10 +7,10 @@
 //----------------------------------------------------------------------------
 
 [#testing]
-=== Testing TSDuck
+== Testing TSDuck
 
 [#testoverview]
-==== Testing overview
+=== Testing overview
 
 TSDuck is highly flexible, allowing an unlimited number of configurations.
 Testing it is consequently challenging.
@@ -27,7 +27,7 @@ Thus, although it is impossible to guarantee that a given release of TSDuck is b
 we may be relatively confident that no major regression has been introduced.
 
 [#testorg]
-==== Organization of the tests
+=== Organization of the tests
 
 The code of TSDuck is divided in two parts, a large {cpp} library (`tsduck.dll`, `libtsduck.so`, or `.dylib`)
 and a collection of small command line tools and plugins.
@@ -45,7 +45,7 @@ Similarly, the tests for TSDuck are divided in two parts.
 The two test suites are fully automated.
 
 [#testlib]
-==== The TSDuck library test suite
+=== The TSDuck library test suite
 
 In the main TSDuck repository, the directory `src/utest` contains the source file for one single program named `utest`.
 This program is divided in many source files (or test suites).
@@ -155,7 +155,7 @@ or as a debug environment for a given feature under development
 (in all good "test-driven development" approaches, the code is written at the same time as its unitary test).
 
 [#testtools]
-==== The TSDuck tools and plugins test suite
+=== The TSDuck tools and plugins test suite
 
 The Git repository {repotest}[tsduck-test]
 contains high-level tests for the TSDuck tools and plugins.
@@ -177,7 +177,7 @@ a given version of the test suite formally applies to one version of TSDuck only
 Git tags are aligned in both repositories (or should be...) to indicate the target version.
 
 [#teststruct]
-===== Structure of the test suite
+==== Structure of the test suite
 
 In short, execute the script `run-all-tests.sh` to run the complete test suite.
 
@@ -211,7 +211,7 @@ The repository contains the following subdirectories:
 |===
 
 [#testadd]
-===== Adding new tests
+==== Adding new tests
 
 To add a new test:
 
@@ -245,7 +245,7 @@ TIP: The reference output files are stored in the Git repository.
 Therefore, the best way to have a quick overiew of what changed in the output reference files is simply `git diff`.
 
 [#testdev]
-===== Testing a development version
+==== Testing a development version
 
 By default, the test suite uses the TSDuck command from the system path.
 Typically, it will use the installed version.
@@ -294,7 +294,7 @@ $
 ------
 
 [#testsionly]
-===== Running PSI/SI tests only
+==== Running PSI/SI tests only
 
 Some tests scripts in the suite are dedicated to some PSI/SI tables or descriptors.
 The scripts for such tests are usually simple and only invoke the standard script `standard-si-test.sh`
@@ -318,7 +318,7 @@ $ make si-test-suite
 ------
 
 [#testlargefiles]
-===== Large files
+==== Large files
 
 The `tsduck-test` repository contains large files, typically transport stream files.
 

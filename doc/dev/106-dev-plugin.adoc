@@ -7,10 +7,10 @@
 //----------------------------------------------------------------------------
 
 [#devplugin]
-=== Developing a TSDuck plugin
+== Developing a TSDuck plugin
 
 [#pdevworkflow]
-==== Plugin development workflow
+=== Plugin development workflow
 
 When some new kind of transport stream processing is needed, several solutions are possible:
 
@@ -21,7 +21,7 @@ When some new kind of transport stream processing is needed, several solutions a
 New plugins can be developed either as part of the TSDuck project or as independent third-party projects.
 
 [#pdev3rdpary]
-===== Developing independent third-party plugins
+==== Developing independent third-party plugins
 
 If you create your own third-party plugins (ie. if you are not a TSDuck maintainer),
 it is recommended to develop your plugins outside the TSDuck project.
@@ -37,7 +37,7 @@ An example of a third party plugin project is provided in the directory
 {source}sample/sample-plugin[sample/sample-plugin].
 
 [#pdevinternal]
-===== Developing plugins for the TSDuck project
+==== Developing plugins for the TSDuck project
 
 To develop a new plugin named `foo`, follow these steps:
 
@@ -56,7 +56,7 @@ On Windows, it can be easier to launch the PowerShell script `scripts/build-proj
 which simply calls the Python script.
 
 [#pdevguidelines]
-==== Development guidelines
+=== Development guidelines
 
 Don't write a plugin from scratch.
 Use an existing plugin as code base (beware however of the pitfalls of careless copy / paste).
@@ -69,7 +69,7 @@ The strength of TSDuck is the flexibility,
 that is to say the ability to combine elementary processing independently and in any order.
 
 [#pdevclasses]
-===== Class hierarchy
+==== Class hierarchy
 
 In the source file of the plugin, create a {cpp} class, derived from either
 classref:InputPlugin[], classref:OutputPlugin[] or classref:ProcessorPlugin[].
@@ -92,7 +92,7 @@ Most of the time, these concrete classes must interact with a smartcard reader
 containing a smartcard for the specific CAS.
 
 [#pdevtsp]
-===== Invoking tsp from a plugin, the ts::TSP callbacks
+==== Invoking tsp from a plugin, the ts::TSP callbacks
 
 In its constructor, each plugin receives an associated classref:TSP[] object to communicate
 with the `tsp` main executable.
@@ -112,7 +112,7 @@ all messages to its `tsp` field. Therefore, the code of the plugin can transpare
 its own methods `info()`, `error()`, etc. This is equivalent to calling its `tsp`.
 
 [#pdevjtem]
-===== Joint termination support
+==== Joint termination support
 
 A plugin can decide to terminate `tsp` on its own (returning end of input, output error
 or `ts::ProcessorPlugin::TSP_END`).

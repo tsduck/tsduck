@@ -32,6 +32,7 @@
 |NTTP |Non-Type Template Parameter (C++)
 |OOD |Object-Oriented Design
 |OOP |Object-Oriented Programming
+|RAII |Resource Acquisition Is Initialization (C++)
 |RTFM |The Most Important Acronym For Developers (yes, it is)
 |RTTI |Run-Time Type Information (C++)
 |SDK |Software Development Kit

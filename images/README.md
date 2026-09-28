@@ -68,7 +68,7 @@ are too large. The tool `optipng` is used as postprocessing to compress them.
 
 Warning: draw.io is a JavaScript application based on Electron. It requires a
 display server to connect to, even though it is used in command line mode
-here. The `make` command fails if invoked in a remote ssh or headless
+here. The `make` command may fail if invoked in a remote ssh or a headless
 session. For this reason, rebuilding the PNG files from the draw.io files is not
 part of the build process. The PNG files shall be regenerated using `make` each
 time the draw.io files are modified using the draw.io GUI. Then, the PNG files
@@ -110,4 +110,14 @@ cat <<EOF >$HOME/.local/share/mime/packages/drawio.xml
 EOF
 
 update-mime-database $HOME/.local/share/mime
+~~~
+
+### Installation on Windows
+
+Although the makefile in this directory is designed for UNIX systems, it is
+possible to install and use draw.io and optipng on Windows.
+
+Installation command:
+~~~
+winget install JGraph.Draw OptiPNG.OptiPNG
 ~~~

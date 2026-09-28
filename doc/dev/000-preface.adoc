@@ -12,16 +12,24 @@
 
 TSDuck is a free and open-source toolkit to manipulate MPEG Transport Streams.
 
+This document is the TSDuck Developer Guide. It is used by developers of
+third-party C++, Python, or Java applications which use the TSDuck library.
+
 As a product, TSDuck provides many different command-line tools and plugins.
 Internally, the architecture of TSDuck is made of a large shareable library
 (`tsduck.dll` on Windows, `libtsduck.so` on Linux and BSD systems,
-`libtsduck.dylib` on macOS).  Most of the valuable processing is performed by
-the various {cpp} classes from the TSDuck library.  All command-line tools and
+`libtsduck.dylib` on macOS). Most of the valuable processing is performed by
+the various {cpp} classes from the TSDuck library. All command-line tools and
 plugins are usually small wrappers around this library.
 
 The TSDuck library offers generic {cpp} classes as well as specialized classes
-for MPEG transport streams.  This library can be used as a general-purpose {cpp}
-library for third-party applications, outside the TSDuck tools and plugins.
+for Digital TV. They can be used by any application to manipulate MPEG
+transport streams, the signalization, and various data which are carried in
+MPEG-TS. This library can be used as a general-purpose {cpp} library for
+third-party applications, outside the TSDuck tools and plugins.
+
+A subset of high-level features is also accessible from Java and Python
+applications.
 
 The following figure illustrates the TSDuck software architecture and how it
 interacts with third-party applications.
@@ -29,20 +37,15 @@ interacts with third-party applications.
 .TSDuck software architecture
 image::tsduck-soft-arch.png[align="center",alt="TSDuck software architecture"]
 
-This document is the TSDuck Developer Guide.  It can be equally used by TSDuck
-maintainers and developers of third-party applications.
-
 Structure of this guide:
 
-* The xref:chap-application[xrefstyle=short] is an introduction for developers who
-  use the TSDuck library in their application, outside TSDuck itself.
-* The xref:chap-contribution[xrefstyle=short] is a guide for advanced users who wish to
-  contribute to TSDuck development, submit new features, improvements, or bug fixes.
-* The xref:chap-maintenance[xrefstyle=short] is a reference section for TSDuck maintainers.
-  It describes how the code is organized, the test and delivery processes, the automation
-  of the project.
-* The xref:coding[xrefstyle=short] lists the coding guidelines which are used in the development of TSDuck.
-  All maintainers and contributors are required to follow these guidelines.
+* The xref:twolibs[xrefstyle=short] describes the various TSDuck libraries.
+* The xref:usinglibrary[xrefstyle=short] explains how to build an application using TSDuck.
+* The xref:libsoverview[xrefstyle=short] is an overview of the main features of the TSDuck library.
+* The xref:reactorevents[xrefstyle=short] is a detailed description of the reactor pattern and event dispatching.
+* The xref:jpbindings[xrefstyle=short] is an overview of the Java and Python bindings for TSDuck.
+* The xref:devplugin[xrefstyle=short] describes the development of TSDuck plugins.
+* The xref:extensions[xrefstyle=short] describes the development of TSDuck extensions.
 
 In addition to this developer guide, a comprehensive {home}doxy/[reference
 programming documentation] is available online. It documents all TSDuck public

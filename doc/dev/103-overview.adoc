@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 [#libsoverview]
-=== Overview of the TSDuck libraries
+== Overview of the TSDuck libraries
 
 The TSDuck libraries contain general-purpose {cpp} classes and utilities to handle
 MPEG transport streams.
@@ -30,22 +30,22 @@ All {cpp} declarations are located inside the namespace `ts`, either directly wi
 All preprocessor's macros are named with prefix `TS_`.
 
 [#cppfeatures]
-==== {cpp} features
+=== {cpp} features
 
 [#portability]
-===== Portability issues
+==== Portability issues
 
 The file `tsPlatform.h` contains some very low level definitions such as macros defining the environment
 (processor, compiler, operating system, endianness), byte and bit manipulation, etc.
 
 [#cppstrings]
-===== {cpp} strings
+==== {cpp} strings
 
 C and {cpp} strings are made of 8-bit characters which are notoriously unable to represent international character sets.
 The usage of `std::string` with the TSDuck libraries is discouraged in favor of _Unicode strings_.
 
 [#unicodestring]
-===== Unicode strings
+==== Unicode strings
 
 The class classref:UString[] implements Java-like Unicode strings.
 Each character uses 16 bits of storage.
@@ -86,7 +86,7 @@ In practice, a few known DVB character sets are used and, when the string cannot
 UTF-8 is used (UTF-8 is always a valid DVB character set).
 
 [#bindata]
-===== Binary data
+==== Binary data
 
 The class classref:ByteBlock[] represents a raw block of bytes.
 It is a subclass of `std::vector<uint8_t>` and consequently benefits from all standard vector operations.
@@ -107,7 +107,7 @@ Its subclass classref:PSIBuffer[] provides primitives to serialize and deseriali
 such as list of descriptors, DVB, ARIB and ATSC strings or "Modified Julian Dates".
 
 [#singletons]
-===== Singletons and static data
+==== Singletons and static data
 
 The _singleton_ design pattern is simple in theory, but not so simple to implement correctly in practice.
 The TSCore library encapsulates the implementation difficulties using the two macros `TS_SINGLETON()`
@@ -123,10 +123,9 @@ This has been abundantly documented by Scott Meyers (see <<MEYERS-EFF>>).
 
 In modern {cpp}, most of these difficulties have been solved in the language using _local static data_.
 In practice, the same tricks are used but they are now hidden inside the compiler and the run-time library.
-See xref:shareddata[xrefstyle=short] for programming guidelines.
 
 [#errreport]
-===== Error reporting
+==== Error reporting
 
 All TSDuck classes use a consistent error reporting mechanism through the classref:Report[] abstract class.
 
@@ -156,7 +155,7 @@ Some interesting subclasses of classref:Report[] are:
   Each `tsp` plugin executes in a separate thread and asynchronously logs messages without slowing down the plugin's thread.
 
 [#except]
-===== Exceptions
+==== Exceptions
 
 As a general rule, TSDuck prefers the usage of error reporting interface and error status over exceptions.
 However, for a limited number of unrecoverable conditions which should never occur in practice, exceptions are used.
@@ -168,7 +167,7 @@ Each specific exception should be a subclass of classref:Exception[].
 Instead of rewriting the subclass code, applications should use the macro `TS_DECLARE_EXCEPTION()`.
 
 [#enums]
-===== Pseudo-enumeration data
+==== Pseudo-enumeration data
 
 An instance of the class classref:Enumeration[] associates a list of integer or `enum` values with strings.
 It can be used to display meaningful strings instead of integer values.
@@ -179,7 +178,7 @@ When it is a name, it can even be abbreviated as long as it is not ambiguous in 
 This is transparent for the application which receives the corresponding integer value.
 
 [#cmdargs]
-===== Command-line arguments
+==== Command-line arguments
 
 The class classref:Args[] implements a generic handling of command line arguments.
 
@@ -196,21 +195,21 @@ thousands separators ('`,`') which are present for clarity are ignored.
 Enumeration values are handled through classref:Enumeration[].
 
 [#xml]
-===== XML data
+==== XML data
 
 The TSCore library embeds an XML parser and several classes to handle a DOM structure.
 
 See the class classref:xml/Node[], the abstract base class of the DOM hierarchy.
 
 [#json]
-===== JSON data
+==== JSON data
 
 The TSCore library embeds a JSON parser and several classes to handle JSON values.
 
 See the class classref:json/Value[], the abstract base class of the JSON hierarchy.
 
 [#crypto]
-==== Cryptography
+=== Cryptography
 
 The TSDuck libraries contain a few cryptographic classes.
 These libraries are *not* cryptographic libraries and will never be.
@@ -264,10 +263,10 @@ It can be used in cases where many random numbers are required, without strong s
 It is typically used in fuzzing tools.
 
 [#osfeatures]
-==== Operating system features
+=== Operating system features
 
 [#sysutils]
-===== Miscelleaneous system utilities
+==== Miscelleaneous system utilities
 
 The header files `tsSysUtils.h`, `tsFileUtils.h`, `tsEnvironment.h`,
 declare utility functions on top of the operating system.
@@ -284,7 +283,7 @@ However, a number of additional features manipulate:
 * System error codes.
 
 [#time]
-===== Time
+==== Time
 
 The class classref:Time[] is a portable implementation of time (both local and UTC time).
 
@@ -297,7 +296,7 @@ Many operations are provided, such as:
 * Formatting time values as strings.
 
 [#multithread]
-===== Multithreading
+==== Multithreading
 
 TSDuck is heavily multi-threaded. The abstract class classref:Thread[] manages a
 thread.  To define an actual thread, derive this class and implement the virtual
@@ -327,7 +326,7 @@ In addition to multithreading, TSDuck also uses event dispatching.
 See xref:reactorevents[xrefstyle=short] for more details.
 
 [#virtmem]
-===== Virtual memory
+==== Virtual memory
 
 The class classref:ResidentBuffer[] implements a buffer which is locked in
 physical memory, preventing paging or swapping on this buffer.  This is useful
@@ -347,7 +346,7 @@ Note however that most operating systems require that the application has
 privileges to lock physical memory.
 
 [#processes]
-===== Processes
+==== Processes
 
 To track potential memory leaks and the impact of the application on the system,
 the class classref:SystemMonitor[] creates a background thread which reports the
@@ -361,7 +360,7 @@ both.  The pipes are open in binary mode (when it makes sense for the operating
 system) and can be used to pass an entire transport stream when necessary.
 
 [#networking]
-===== Networking
+==== Networking
 
 The classes classref:IPAddress[] and classref:IPSocketAddress[] define an IP
 address and a corresponding socket address (an IP address and a port number).
@@ -397,7 +396,7 @@ or "asynchronous" I/O on Windows).  See xref:reactorevents[xrefstyle=short] for
 more details.
 
 [#sharelibs]
-===== Shared libraries
+==== Shared libraries
 
 The TSCore library contains classes to load shared libraries (`.dll` on Windows,
 `.so` on Linux and BSD, `.dylib` on macOS) and lookup symbols inside them in a
@@ -413,7 +412,7 @@ shared library named `dektec` will end up loading the file `tsplugin_dektec.dll`
 in the same directory as the application executable file.
 
 [#pcscinterface]
-===== Smart-card interface
+==== Smart-card interface
 
 Applications which interact with smart-cards shall use the PC/SC interface.
 PC/SC is a standard interface which was originally developped for Windows but
@@ -427,7 +426,7 @@ smart-cards.
 All these utilities are grouped in the namespace classref:pcsc[].
 
 [#wincom]
-===== Windows specificities
+==== Windows specificities
 
 The class classref:COM[] provides a portable and reliable way to make sure that
 the Common Object Model (COM) is properly initialized and terminated on Windows
@@ -450,10 +449,10 @@ classes needed some COM support functions which are available to applications
 (just in case...)
 
 [#mpegfeatures]
-==== MPEG features
+=== MPEG features
 
 [#tsclasses]
-===== Transport streams
+==== Transport streams
 
 The class classref:TSPacket[] defines a transport stream packet.
 It is in fact a flat structure which occupies exactly 188 bytes in memory.
@@ -491,7 +490,7 @@ If PCR are not found, the class can also use Decoding Time Stamps (DTS) to evalu
 This is less precise than PCR but can be used as a backup.
 
 [#audiovideopes]
-===== Audio, video and PES packets
+==== Audio, video and PES packets
 
 The TSDuck library provides classes to manipulate PES packets and a few audio and video attributes.
 These features are limited to the analysis of a transport stream.
@@ -511,13 +510,13 @@ MPEG-2 audio and AC-3 audio.
 The class classref:AVCParser[] performs the parsing of an AVC, HEVC, or VVC bitstream.
 
 [#siclasses]
-==== Signalization
+=== Signalization
 
 The MPEG signalization is built from sections, tables and descriptors.
 All these concepts are implemented in the TSDuck library.
 
 [#sigformats]
-===== Binary, specialized and XML formats
+==== Binary, specialized and XML formats
 
 Signalization objects, sections, tables and descriptors, can be manipulated in several formats:
 binary objects, specialized classes and XML.
@@ -629,7 +628,7 @@ The class can be used to load a set of tables in XML format or to store table ob
 The class classref:SectionFile[] is the core of the `tstabcomp` utility, the tables compiler (or decompiler).
 
 [#demux]
-===== Demux and packetization
+==== Demux and packetization
 
 Signalization objects can be extracted from transport streams using the class classref:SectionDemux[]
 and inserted back into transport streams using the class classref:Packetizer[].
@@ -647,7 +646,7 @@ On the contrary, short tables are all reported since they do not implement versi
 It is also possible to use a classref:SectionDemux[] to be notified of all individual sections.
 
 [#duckcontext]
-===== Application preferences contexts
+==== Application preferences contexts
 
 The class classref:DuckContext[] carries various preferences about the standards or localizations.
 Typically, each application has a given context.
@@ -669,7 +668,7 @@ Later, when an MPEG table (a PMT for instance) contains an ambiguous descriptor 
 then the ATSC alternative will be used.
 
 [#dvbprotocols]
-==== DVB SimulCrypt protocols
+=== DVB SimulCrypt protocols
 
 The communications inside a DVB SimulCrypt head-end is defined by
 the standard ETSI TS 103 197, "Head-end implementation of DVB SimulCrypt".
@@ -692,7 +691,7 @@ Currently, the TSDuck library implements the following protocols:
 * EMMG/PDG{d-arrow}MUX in namespace `ts::emmgmux`.
 
 [#cassupport]
-==== Conditional access systems
+=== Conditional access systems
 
 The class classref:CASMapper[] analyzes the signalization of a transport stream,
 locates ECM and EMM stream and associates each of them with a _CA_System_Id_.
@@ -700,7 +699,7 @@ locates ECM and EMM stream and associates each of them with a _CA_System_Id_.
 An instance of classref:CASMapper[] can then be queried for ECM, EMM streams or CAS vendors.
 
 [#otherdemux]
-==== Other forms of demux
+=== Other forms of demux
 
 We have already mentioned the classes classref:SectionDemux[] and classref:PESDemux[].
 Other specialized forms of demux can be implemented.
@@ -713,7 +712,7 @@ Since all forms of demux share a number of properties, they all inherit from
 a root abstract class named classref:AbstractDemux[].
 
 [#dvbtuners]
-==== Digital TV tuners
+=== Digital TV tuners
 
 The class classref:Tuner[] interfaces DVB/ATSC/ISDB tuner devices in a portable way.
 This is quite a challenge since Linux and Windows use very different tuner frameworks.
@@ -731,7 +730,7 @@ Note that tuner devices are supported on Linux and Windows only.
 On macOS, the above classes are defined but return "unimplemented" errors when used.
 
 [#dektecops]
-==== Interface to Dektec devices
+=== Interface to Dektec devices
 
 TSDuck can manipulate ASI and (de)modulator devices from Dektec.
 The TSDuck library includes the DTAPI library, a proprietary {cpp} interface which is provided by Dektec.

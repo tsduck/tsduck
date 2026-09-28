@@ -1,0 +1,20 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+//----------------------------------------------------------------------------
+= TSDuck Contributor Guide
+:description: TSDuck Contributor Guide
+include::{includedir}/attributes.adoc[]
+
+include::000-preface.adoc[]
+include::101-chap-contribution.adoc[]
+include::102-chap-testing.adoc[]
+include::103-chap-automation.adoc[]
+include::104-chap-release.adoc[]
+include::105-chap-maintenance.adoc[]
+include::106-chap-coding.adoc[]
+include::{includedir}/common-license.adoc[]
+include::20C-app-references.adoc[]
