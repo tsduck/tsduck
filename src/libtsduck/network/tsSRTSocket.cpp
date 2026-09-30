@@ -467,6 +467,7 @@ bool ts::SRTSocket::Guts::setSockOptPre()
     int32_t peer_latency = int32_t(a.peer_latency.count());
     int32_t rcv_latency = int32_t(a.rcv_latency.count());
     int32_t peer_idle_timeout = int32_t(a.peer_idle_timeout.count());
+    int32_t snd_drop_delay = int32_t(a.snd_drop_delay.count());
 
     if (!COND_SETOPT(a.mode != SRTSocketMode::CALLER, SRTO_SENDER, yes) ||
         !COND_SETOPT(transtype != SRTT_INVALID, SRTO_TRANSTYPE, transtype) ||
@@ -484,7 +485,7 @@ bool ts::SRTSocket::Guts::setSockOptPre()
         !COND_SETOPT(latency >= 0, SRTO_LATENCY, latency) ||
         !COND_SETOPT(a.linger_opt.l_onoff, SRTO_LINGER, a.linger_opt) ||
         !COND_SETOPT(a.lossmaxttl >= 0, SRTO_LOSSMAXTTL, a.lossmaxttl) ||
-        !COND_SETOPT(a.max_bw >= 0, SRTO_MAXBW, a.max_bw) ||
+        !COND_SETOPT(a.max_bw >= -1, SRTO_MAXBW, a.max_bw) ||
         !COND_SETOPT(a.min_version > 0, SRTO_MINVERSION, a.min_version) ||
         !COND_SETOPT(a.mss >= 0, SRTO_MSS, a.mss) ||
         !COND_SETOPT(a.nakreport.has_value(), SRTO_NAKREPORT, *a.nakreport) ||
@@ -506,7 +507,7 @@ bool ts::SRTSocket::Guts::setSockOptPre()
         !COND_SETOPT(a.drift_tracer.has_value(), SRTO_DRIFTTRACER, *a.drift_tracer) ||
 #endif
         !COND_SETOPT(a.tlpktdrop.has_value(), SRTO_TLPKTDROP, *a.tlpktdrop) ||
-        !COND_SETOPT(a.snddropdelay.has_value(), SRTO_SNDDROPDELAY, *a.snddropdelay))
+        !COND_SETOPT(snd_drop_delay >= -1, SRTO_SNDDROPDELAY, snd_drop_delay))
     {
         return false;
     }
