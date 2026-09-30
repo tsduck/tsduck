@@ -22,6 +22,7 @@ class URLTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(IsURL);
     TSUNIT_DECLARE_TEST(Parse);
+    TSUNIT_DECLARE_TEST(Query);
     TSUNIT_DECLARE_TEST(Base);
     TSUNIT_DECLARE_TEST(ToString);
     TSUNIT_DECLARE_TEST(ToRelative);
@@ -69,6 +70,31 @@ TSUNIT_DEFINE_TEST(Parse)
     TSUNIT_EQUAL(u"/bar/boo", url2.getPath());
     TSUNIT_EQUAL(u"", url2.getQuery());
     TSUNIT_EQUAL(u"", url2.getFragment());
+}
+
+TSUNIT_DEFINE_TEST(Query)
+{
+    ts::URL url1(u"http://host.name:1234/foo/bar?ze=kve&ab=cd#frag");
+    TSUNIT_ASSERT(url1.isValid());
+    TSUNIT_EQUAL(u"http", url1.getScheme());
+    TSUNIT_EQUAL(u"host.name", url1.getHost());
+    TSUNIT_EQUAL(1234, url1.getPort());
+    TSUNIT_EQUAL(u"/foo/bar", url1.getPath());
+    TSUNIT_EQUAL(u"ze=kve&ab=cd", url1.getQuery());
+    TSUNIT_EQUAL(u"frag", url1.getFragment());
+
+    static const std::vector<std::pair<ts::UString, ts::UString>> qref = {
+        {u"ab", u"cd"},
+        {u"ze", u"kve"},
+    };
+
+    TSUNIT_EQUAL(qref.size(), url1.getQueryParameters().size());
+    size_t qref_index = 0;
+    for (const auto& q : url1.getQueryParameters()) {
+        TSUNIT_EQUAL(qref[qref_index].first, q.first);
+        TSUNIT_EQUAL(qref[qref_index].second, q.second);
+        qref_index++;
+    }
 }
 
 TSUNIT_DEFINE_TEST(Base)

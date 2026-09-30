@@ -58,10 +58,11 @@ This option enforces that both connection parties have the same passphrase set
 (including empty, that is, with no encryption), or the connection is rejected.
 
 [.opt]
-*--ffs* _value_
+*--fc* _packets_
 
 [.optdoc]
-Flight Flag Size (maximum number of bytes that can be sent without being acknowledged).
+Flow Control limits the maximum number of packets "in flight"
+(that can be sent without being acknowledged).
 
 [.opt]
 *--final-statistics*
@@ -121,7 +122,7 @@ The optional string parameter specifies a prefix to prepend on the log line befo
 to facilitate the filtering of the appropriate line in the logs.
 
 [.opt]
-*--kmpreannounce* _value_
+*--kmpreannounce* _packets_
 
 [.optdoc]
 The interval (defined in packets) between when a new Stream Encrypting Key (SEK) is sent and when switchover occurs.
@@ -133,16 +134,18 @@ The minimum value should never be less than the flight window
 (i.e. the number of packets that have already left the sender but have not yet arrived at the receiver).
 
 [.opt]
-*--kmrefreshrate* _value_
+*--kmrefreshrate* _packets_
 
 [.optdoc]
-The number of packets to be transmitted after which the Stream Encryption Key (SEK), used to encrypt packets, will be switched to the new one.
+The number of packets to be transmitted after which the Stream Encryption Key (SEK),
+used to encrypt packets, will be switched to the new one.
 
 [.optdoc]
-Note that the old and new keys live in parallel for a certain period of time (see `SRTO_KMPREANNOUNCE`) before and after the switchover.
+Note that the old and new keys live in parallel for a certain period of time
+(see `SRTO_KMPREANNOUNCE`) before and after the switchover.
 
 [.opt]
-*--latency* _value_
+*--latency* _milliseconds_
 
 [.optdoc]
 This flag sets both `SRTO_RCVLATENCY` and `SRTO_PEERLATENCY` to the same value.
@@ -154,7 +157,7 @@ however this is effectively equivalent to setting `SRTO_PEERLATENCY`, when the s
 and the bidirectional stream sending in version 1.2.0 is not supported.
 
 [.opt]
-*--linger* _value_
+*--linger* _seconds_
 
 [.optdoc]
 Linger time on close.
@@ -222,11 +225,11 @@ Specify `--bufferapi` to use the Buffer API.
 *--min-version* _value_
 
 [.optdoc]
-The minimum SRT version that is required from the peer.
+The minimum SRT version that is required from the peer, in the format 0x010203 for v1.2.3 for instance.
 A connection to a peer that does not satisfy the minimum version requirement will be rejected.
 
 [.opt]
-*--mss* _value_
+*--mss* _bytes_
 
 [.optdoc]
 Maximum Segment Size.
@@ -243,11 +246,11 @@ Not to be mistaken with the size of the UDP payload or SRT payload.
 This size is the size of the IP packet, including the UDP and SRT headers.
 
 [.opt]
-*--nakreport* _value_
+**--nakreport**__[=true|false]__
 
 [.optdoc]
-When this option is specified, the receiver will send `UMSG_LOSSREPORT` messages periodically
-until the lost packet is retransmitted or intentionally dropped.
+When set to true or specified without a value, every report for a detected loss will be repeated.
+The default is true for Live mode, and false for File mode.
 
 [.opt]
 *--no-reuse-port*
@@ -259,7 +262,7 @@ With `--listener`, disable the reuse port socket option.
 Do not use unless completely necessary.
 
 [.opt]
-*--ohead-bw* _value_
+*--ohead-bw* _percent_
 
 [.optdoc]
 Recovery bandwidth overhead above input rate (see `SRTO_INPUTBW`).
@@ -294,10 +297,10 @@ Use 0 if this value isn't used (which is default in file mode).
 This value shall not be exceeded for a single data sending instruction in Live mode.
 
 [.opt]
-*--pbkeylen* _value_
+*--pbkeylen* _bytes_
 
 [.optdoc]
-Sender encryption key length, can be 0, 16 (AES-128), 24 (AES-192), 32 (AES-256).
+Sender encryption key length, can be 0 (default), 16 (AES-128), 24 (AES-192), 32 (AES-256).
 
 [.opt]
 *--peer-idle-timeout* _value_
@@ -307,32 +310,32 @@ The maximum time in milliseconds to wait until any packet is received from peer 
 If this time is passed, connection is considered broken on timeout.
 
 [.opt]
-*--peer-latency* _value_
+*--peer-latency* _milliseconds_
 
 [.optdoc]
 The latency value (as described in `SRTO_RCVLATENCY`) that is set by the sender side as a minimum value for the receiver.
 
 [.opt]
-*--polling-time* _value_
+*--polling-time* _milliseconds_
 
 [.optdoc]
 Epoll timeout value in milliseconds for non-blocking mode.
 
 [.opt]
-*--rcv-latency* _value_
+*--rcv-latency* _milliseconds_
 
 [.optdoc]
 The time that should elapse since the moment when the packet was sent and the moment
 when it's delivered to the receiver application in the receiving function.
 
 [.opt]
-*--rcvbuf* _value_
+*--rcvbuf* _bytes_
 
 [.optdoc]
 Receive Buffer Size.
 
 [.opt]
-*--sndbuf* _value_
+*--sndbuf* _bytes_
 
 [.optdoc]
 Send Buffer Size.
@@ -382,7 +385,7 @@ and GET on the socket retrieved from `srt_accept()`).
 This string can be used completely free-form, however it's highly recommended to follow the SRT Access Control guidelines.
 
 [.opt]
-*--tlpktdrop*
+**--tlpktdrop**__[=true|false]__
 
 [.optdoc]
 Too-late Packet Drop.
@@ -391,23 +394,29 @@ and delivers the subsequent packets to the application when their time-to-play h
 It also sends a fake ACK to the sender.
 When enabled on sender and enabled on the receiving peer, sender drops the older packets
 that have no chance to be delivered in time.
+
+[.optdoc]
 It is automatically enabled in sender if receiver supports it.
+The default is true in Live mode, false in File mode.
 
 [.opt]
 *--transtype* _value_
 
 [.optdoc]
-Sets the transmission type for the socket, in particular, setting this option sets multiple other
-parameters to their default values as required for a particular transmission type.
+Sets the SRT transmission type for the socket.
+The _value_ must be one of `file`, `live`.
+
+[.optdoc]
+The default is `live` (continue transmission while requesting missed packets).
 
 [.opt]
-*--udp-rcvbuf* _value_
+*--udp-rcvbuf* _bytes_
 
 [.optdoc]
 UDP socket receive buffer size in bytes.
 
 [.opt]
-*--udp-sndbuf* _value_
+*--udp-sndbuf* _bytes_
 
 [.optdoc]
 UDP socket send buffer size in bytes.

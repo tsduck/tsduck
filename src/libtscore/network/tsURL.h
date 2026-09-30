@@ -148,10 +148,29 @@ namespace ts {
         URL_PROPERTY(UString, Host, _host, host name)
         URL_PROPERTY(uint16_t, Port, _port, optional port number)
         URL_PROPERTY(UString, Path, _path, local path)
-        URL_PROPERTY(UString, Query, _query, optional query after '?')
         URL_PROPERTY(UString, Fragment, _fragment, optional fragment after '#')
 
 #undef URL_PROPERTY
+
+        //!
+        //! Set the optional query after '?'.
+        //! @param [in] value The optional query after '?'.
+        //!
+        void setQuery(const UString& value);
+
+        //!
+        //! Get the optional query after '?'.
+        //! @return The optional query after '?'.
+        //!
+        UString getQuery() const { return _query; }
+
+        //!
+        //!
+        //! Set the parameters in the optional query after '?'.
+        //! @return A constant reference to a string-to-string multimap. The keys are the
+        //! parameter names in the query, with their associated value.
+        //!
+        const UStringToUStringMultiMap& getQueryParameters() const { return _query_parameters; }
 
         //!
         //! This static method checks if a string contains a URL.
@@ -170,6 +189,7 @@ namespace ts {
         UString  _path {};
         UString  _query {};
         UString  _fragment {};
+        UStringToUStringMultiMap _query_parameters {};
 
         // Parse a URL, leave unspecified fields unmodified.
         void parse(const UString& path);

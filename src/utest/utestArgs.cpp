@@ -64,6 +64,7 @@ class ArgsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(BitMask);
     TSUNIT_DECLARE_TEST(GatherParameters);
     TSUNIT_DECLARE_TEST(Redirection);
+    TSUNIT_DECLARE_TEST(Bool);
     TSUNIT_DECLARE_TEST(Tristate);
     TSUNIT_DECLARE_TEST(Ranges);
     TSUNIT_DECLARE_TEST(IntRange);
@@ -753,6 +754,85 @@ TSUNIT_DEFINE_TEST(Redirection)
     TSUNIT_EQUAL(u"@foo", args.value(u"opt2"));
     TSUNIT_EQUAL(3, args.intValue<int>(u"opt4", 0, 0));
     TSUNIT_EQUAL(5, args.intValue<int>(u"opt4", 0, 1));
+}
+
+// Test case: boolean parameters.
+TSUNIT_DEFINE_TEST(Bool)
+{
+    ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
+    args.option(u"opt1", 0, ts::Args::BOOLEAN);
+    args.option(u"opt2", 0, ts::Args::BOOLEAN);
+    args.option(u"opt3", 0, ts::Args::BOOLEAN);
+    args.option(u"opt4", 0, ts::Args::BOOLEAN, 0, 0, 0, 0, true);
+    args.option(u"opt5", 0, ts::Args::BOOLEAN, 0, 0, 0, 0, true);
+    args.option(u"opt6", 0, ts::Args::BOOLEAN, 0, 0, 0, 0, true);
+    args.option(u"opt7", 0, ts::Args::BOOLEAN, 0, 0, 0, 0, true);
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"false", u"--opt2", u"yes", u"--opt4", u"--opt5=off", u"--opt6=true"}));
+
+    TSUNIT_ASSERT(args.present(u"opt1"));
+    TSUNIT_ASSERT(args.present(u"opt2"));
+    TSUNIT_ASSERT(!args.present(u"opt3"));
+    TSUNIT_ASSERT(args.present(u"opt4"));
+    TSUNIT_ASSERT(args.present(u"opt5"));
+    TSUNIT_ASSERT(args.present(u"opt6"));
+    TSUNIT_ASSERT(!args.present(u"opt7"));
+
+    std::optional<bool> opt;
+    args.getOptionalBoolValue(opt, u"opt1");
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(false, *opt);
+
+    opt.reset();
+    args.getOptionalBoolValue(opt, u"opt2");
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(true, *opt);
+
+    opt.reset();
+    args.getOptionalBoolValue(opt, u"opt3");
+    TSUNIT_ASSERT(!opt.has_value());
+
+    opt = true;
+    args.getOptionalBoolValue(opt, u"opt3", true);
+    TSUNIT_ASSERT(!opt.has_value());
+
+    opt = true;
+    args.getOptionalBoolValue(opt, u"opt3", false);
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(true, *opt);
+
+    opt = false;
+    args.getOptionalBoolValue(opt, u"opt3", false);
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(false, *opt);
+
+    opt.reset();
+    args.getOptionalBoolValue(opt, u"opt4");
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(true, *opt);
+
+    opt.reset();
+    args.getOptionalBoolValue(opt, u"opt5");
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(false, *opt);
+
+    opt.reset();
+    args.getOptionalBoolValue(opt, u"opt6");
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(true, *opt);
+
+    opt.reset();
+    args.getOptionalBoolValue(opt, u"opt7");
+    TSUNIT_ASSERT(!opt.has_value());
+
+    opt = true;
+    args.getOptionalBoolValue(opt, u"opt7", true);
+    TSUNIT_ASSERT(!opt.has_value());
+
+    opt = true;
+    args.getOptionalBoolValue(opt, u"opt7", false);
+    TSUNIT_ASSERT(opt.has_value());
+    TSUNIT_EQUAL(true, *opt);
 }
 
 // Test case: tristate parameters.

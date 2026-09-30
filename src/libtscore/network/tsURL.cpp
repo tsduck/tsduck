@@ -135,7 +135,7 @@ void ts::URL::parse(const UString& path)
         const size_t hash = path.find(u'#', current);
         _path = path.substr(current, std::min(qmark, hash) - current);
         if (qmark < path.size()) {
-            _query = path.substr(qmark + 1, hash < qmark ? NPOS : hash - qmark - 1);
+            setQuery(path.substr(qmark + 1, hash < qmark ? NPOS : hash - qmark - 1));
         }
         if (hash < path.size() && (qmark > path.size() || hash > qmark)) {
             _fragment = path.substr(hash + 1);
@@ -155,6 +155,31 @@ void ts::URL::parse(const UString& path)
         }
     }
 #endif
+}
+
+
+//----------------------------------------------------------------------------
+// Set the optional query after '?'.
+//----------------------------------------------------------------------------
+
+void ts::URL::setQuery(const UString& value)
+{
+    _query = value;
+    _query_parameters.clear();
+
+    // Analyze parameters in the query.
+    UStringList fields;
+    _query.split(fields, u'&', true, true);
+    for (const auto& f : fields) {
+        const size_t equal = f.find(u'=');
+        if (equal == NPOS) {
+            // No equal, there is a parameter without value.
+            _query_parameters.insert(std::make_pair(f, UString()));
+        }
+        else {
+            _query_parameters.insert(std::make_pair(f.substr(0, equal), f.substr(equal + 1)));
+        }
+    }
 }
 
 
@@ -243,6 +268,7 @@ void ts::URL::clear()
     _port = 0;
     _path.clear();
     _query.clear();
+    _query_parameters.clear();
     _fragment.clear();
 }
 

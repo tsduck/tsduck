@@ -83,6 +83,7 @@ ts::Args::IOption::IOption(Args*           parent,
     // Normalize all integer types to INTEGER
     switch (type) {
         case NONE:
+        case BOOLEAN:
         case TRISTATE:
         case IPADDR:
         case IPSOCKADDR:
@@ -247,6 +248,8 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
         TS_PARTIAL_SWITCH_BEGIN()
         switch (type) {
             case NONE:           break;
+            case BOOLEAN:        desc = u"true|false"; break;
+            case TRISTATE:       desc = u"true|false|unknown"; break;
             case FILENAME:       desc = u"file-name"; break;
             case DIRECTORY:      desc = u"directory-name"; break;
             case HEXADATA:       desc = u"hexa-data"; break;
@@ -331,6 +334,9 @@ ts::UString ts::Args::IOption::optionType() const
             break;
         case INTRANGE:
             desc += u":intrange";
+            break;
+        case BOOLEAN:
+            desc += u":enum:true,false";
             break;
         case TRISTATE:
             desc += u":enum:true,false,unknown";
@@ -875,6 +881,36 @@ void ts::Args::getPathValue(fs::path& value, const UChar* name, const fs::path& 
 
 
 //----------------------------------------------------------------------------
+// Get the value of boolean option.
+//----------------------------------------------------------------------------
+
+void ts::Args::getOptionalBoolValue(std::optional<bool>& value, const UChar* name, bool clear_if_absent) const
+{
+    bool val = false;
+    const IOption& opt(getIOption(name));
+    if (opt.values.empty()) {
+        // Option not present.
+        if (clear_if_absent) {
+            value.reset();
+        }
+    }
+    else if (!opt.values[0].string.has_value()) {
+        // Option present without value, meaning true.
+        value = true;
+    }
+    else if (opt.values[0].string->toBool(val)) {
+        // Valid bool value found.
+        value = val;
+    }
+    else {
+        // Value present but not a valid bool value. Should not occur if the option was declared using BOOLEAN type.
+        // So, this must be some string option and we cannot decide the bool value.
+        fatalArgError(opt.name, u"is an invalid boolean");
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get the value of tristate option
 //----------------------------------------------------------------------------
 
@@ -1260,6 +1296,13 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
         // No value set, must be an optional value.
         if ((opt.flags & IOPT_OPTVALUE) == 0) {
             error(u"missing value for %s", opt.display());
+            return false;
+        }
+    }
+    else if (opt.type == BOOLEAN) {
+        bool b;
+        if (!val->toBool(b)) {
+            error(u"invalid value %s for %s, use one of true, false", val.value(), opt.display());
             return false;
         }
     }

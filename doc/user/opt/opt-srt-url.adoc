@@ -1,0 +1,280 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2026, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
+//
+// Documentation for options in class ts::SRTSocket.
+//
+// tags: <none>
+//
+//----------------------------------------------------------------------------
+
+[.usage]
+Format of SRT URL
+
+Most SRT parameters and options can be grouped into an SRT Uniform Resource
+Locator (URL), starting with `srt://`. The format of these SRT URLs is not yet
+fully formalized. Different tools use slightly different formats.  The syntax
+which is used by TSDuck is aligned with the format which is used in the
+Haivision SRT library (see <<SRT-URL>>). Part of the description below is copied
+from this specification. If an official standardized format is defined, TSDuck
+will align to it.
+
+The SRT mode can be specified explicitly using the `mode` parameter. When it's
+not specified, then it is derived based on the host part in the URI and the
+presence of the `adapter` parameter:
+
+* Listener mode: if you leave the host part empty (adapter may be specified),
+  e.g. `srt://:1234`.
+
+* Caller mode: if you specify host part, but not adapter parameter,
+  e.g. `srt://remote.host.com:1234`.
+
+* Rendezvous mode: if you specify host and adapter parameter,
+  e.g. `srt://remote.host.com:1234?adapter=my.addr`.
+
+If the `mode` parameter is specified, the interpretation of the host and port
+parts is the following:
+
+* In listener mode, the host part is the local IP address to bind, e.g.
+  `srt://10.10.10.100:5001?mode=listener`. The port part is the local port to
+  bind (mandatory). The `adapter` parameter is an alternative for host part,
+  e.g. `srt://:5001?adapter=10.10.10.100`.
+
+* In caller mode, the host part is the remote IP address to connect to
+  (mandatory). The port part is remote port to connect to (mandatory). The
+  `port` parameter is the local port to bind. The `adapter` parameter is the
+  local IP address to bind. The `bind` parameter is a shortcut to set adapter or
+  port by specifying `bind=ADAPTER:PORT`. E.g.
+  `srt://remote.host.com:5001?adapter=local1&port=4001&mode=caller`.
+
+* Rendezvous mode is the same as caller except that the local port, if not
+  specified by the port parameter, defaults to the value of the remote port
+  (specified in the port part in the URI).
+
+The following table lists all possible parameters in the SRT URL specification.
+Some of them are not yet implemented by TSDuck. A bool value can be `yes`/`no`,
+`on`/`off`, `true`/`false`, `1`/`0`.
+
+.SRT URL query parameters
+[cols="<1m,<1,<1m,<1",stripes=none,options="autowidth"]
+|===
+|Query parameter |Value |SRT Option |Description
+
+|adapter
+|address
+|-
+|Local adapter address (useful in caller mode only).
+
+|bind
+|address:port
+|-
+|Local adapter address and port (useful in caller mode only).
+
+|congestion
+|`live`, `file`
+|SRTO_CONGESTION
+|Type of congestion control.
+
+|conntimeo
+|ms
+|SRTO_CONNTIMEO
+|Connection timeout.
+
+|cryptomode
+|0..2
+|SRTO_CRYPTOMODE
+|Cryptographic mode.
+
+|drifttracer
+|bool
+|SRTO_DRIFTTRACER
+|Enable drift tracer.
+
+|enforcedencryption
+|bool
+|SRTO_ENFORCEDENCRYPTION
+|Reject connection if parties set different passphrase.
+
+|fc
+|bytes
+|SRTO_FC
+|Flow control window size.
+
+|groupconnect
+|0, 1
+|SRTO_GROUPCONNECT
+|Accept group connections.
+
+|groupminstabletimeo
+|ms
+|SRTO_GROUPMINSTABLETIMEO
+|Group minimum stability timeout.
+
+|inputbw
+|bytes
+|SRTO_INPUTBW
+|Input bandwidth.
+
+|iptos
+|0..255
+|SRTO_IPTOS
+|IP socket type of service.
+
+|ipttl
+|1..255
+|SRTO_IPTTL
+|IP socket "time to live" option.
+
+|ipv6only
+|-1..1
+|SRTO_IPV6ONLY
+|Allow only IPv6.
+
+|kmpreannounce
+|0..
+|SRTO_KMPREANNOUNCE
+|Duration of Stream Encryption key switchover (in packets).
+
+|kmrefreshrate
+|0..
+|SRTO_KMREFRESHRATE
+|Stream encryption key refresh rate (in packets).
+
+|latency
+|0..
+|SRTO_LATENCY
+|Defines the maximum accepted transmission latency.
+
+|linger
+|0..
+|SRTO_LINGER
+|Link linger value.
+
+|lossmaxttl
+|0..
+|SRTO_LOSSMAXTTL
+|Packet reorder tolerance.
+
+|maxbw
+|0..
+|SRTO_MAXBW
+|Bandwidth limit in bytes.
+
+|mininputbw
+|0..
+|SRTO_MININPUTBW
+|Minimum allowed estimate of `SRTO_INPUTBW`.
+
+|messageapi
+|bool
+|SRTO_MESSAGEAPI
+|Enable SRT message mode.
+
+|minversion
+|maj.min.rev
+|SRTO_MINVERSION
+|Minimum SRT library version of a peer.
+
+|mode
+|`caller`, `listener`, `rendezvous`
+|-
+|SRT mode, if ambiguous in the host/port of the URL.
+
+|mss
+|76..
+|SRTO_MSS
+|MTU size.
+
+|nakreport
+|bool
+|SRTO_NAKREPORT
+|Enables/disables periodic NAK reports.
+
+|oheadbw
+|5..100
+|SRTO_OHEADBW
+|Limits bandwidth overhead, percents.
+
+|packetfilter
+|string
+|SRTO_PACKETFILTER
+|Set up the packet filter.
+
+|passphrase
+|string
+|SRTO_PASSPHRASE
+|Password for the encrypted transmission. (10 to 79 chars)
+
+|payloadsize
+|0..
+|SRTO_PAYLOADSIZE
+|Maximum payload size.
+
+|pbkeylen
+|16, 24, 32
+|SRTO_PBKEYLEN
+|Crypto key length in bytes.
+
+|peeridletimeo
+|ms
+|SRTO_PEERIDLETIMEO
+|Peer idle timeout.
+
+|peerlatency
+|ms
+|SRTO_PEERLATENCY
+|Minimum receiver latency to be requested by sender.
+
+|port
+|0..65535
+|-
+|Local port (useful in caller mode only).
+
+|rcvbuf
+|bytes
+|SRTO_RCVBUF
+|Receiver buffer size.
+
+|rcvlatency
+|ms
+|SRTO_RCVLATENCY
+|Receiver-side latency.
+
+|retransmitalgo
+|0, 1
+|SRTO_RETRANSMITALGO
+|Packet retransmission algorithm to use.
+
+|sndbuf
+|bytes
+|SRTO_SNDBUF
+|Sender buffer size.
+
+|snddropdelay
+|ms
+|SRTO_SNDDROPDELAY
+|Sender's delay before dropping packets.
+
+|streamid
+|string
+|SRTO_STREAMID
+|Stream ID (caller mode only).
+
+|tlpktdrop
+|bool
+|SRTO_TLPKTDROP
+|Drop too late packets.
+
+|transtype
+|`live`, `file`
+|SRTO_TRANSTYPE
+|Transmission type.
+
+|tsbpdmode
+|bool
+|SRTO_TSBPDMODE
+|Timestamp-based packet delivery mode.
+
+|===

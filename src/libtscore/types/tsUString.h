@@ -1882,6 +1882,12 @@ namespace ts {
         bool toBool(bool& value) const;
 
         //!
+        //! Get the list of valid strings for bool values.
+        //! @return The list of valid strings for bool values.
+        //!
+        static UString BoolNamesList();
+
+        //!
         //! Convert a string into a Tristate value.
         //!
         //! This string must contain the representation of an integer value in decimal or hexadecimal

@@ -412,6 +412,7 @@ https://openssf.org/public-policy/eu-cyber-resilience-act/
   https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation
 * [[[RIST-URL]]] RIST, URL syntax,
   https://code.videolan.org/rist/librist/-/wikis/risturl-Syntax-as-of-v.-0.2.0
+* [[[Robotweax-SRT]]] Robotweax alternative SRT library, https://github.com/Robotweax/srt/
 * [[[SCTE-18]]] ANSI/SCTE 18 2007,
   "Emergency Alert Messaging for Cable".
 * [[[SCTE-35]]] ANSI/SCTE 35 2017,
@@ -423,6 +424,8 @@ https://openssf.org/public-policy/eu-cyber-resilience-act/
 * [[[SMPTE-2038]]] SMPTE ST 2038:2021, December 2020:
   "SMPTE Standard; Carriage of Ancillary Data Packets in an MPEG-2 Transport Stream"
 * [[[SRT]]] SRT, libsrt site, https://github.com/Haivision/srt/
+* [[[SRT-URL]]] Informal definition of SRT URL syntax,
+  https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
 * [[[Suntech]]] Suntechtv U3 USB modulator (AstroMeta-based),
   https://www.suntechtv.com/web/Home/ProductDetail?key=e593s&productId=23673
 * [[[TSDuck]]] TSDuck Web site, {home}

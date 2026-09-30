@@ -21,24 +21,17 @@ TS_REGISTER_INPUT_PLUGIN(u"srt", ts::SRTInputPlugin);
 
 ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
-                                u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [[address:]port]",
+                                u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [URL]",
                                 u"srt", u"SRT source time stamp",
                                 TSDatagramInputOptions::REAL_TIME | TSDatagramInputOptions::ALLOW_RS204)
 {
-    _sock.defineArgs(*this);
+    _sock.args().defineArgs(*this);
 
     option(u"multiple", 'm');
     help(u"multiple", u"When the sender peer disconnects, wait for another one and continue.");
 
     option<cn::milliseconds>(u"restart-delay");
     help(u"restart-delay", u"With --multiple, wait the specified delay before restarting.");
-
-    // These options are legacy, now use --listener and/or --caller.
-    option(u"", 0, IPSOCKADDR, 0, 1);
-    help(u"", u"Remote address:port. This is a legacy parameter, now use --caller.");
-
-    option(u"rendezvous", 0, IPSOCKADDR_OA);
-    help(u"rendezvous", u"[address:]port", u"Local address and port. This is a legacy option, now use --listener.");
 }
 
 
@@ -48,18 +41,11 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 
 bool ts::SRTInputPlugin::getOptions()
 {
-    // Legacy options.
-    IPSocketAddress remote;
-    IPSocketAddress rendezvous;
-    getSocketValue(remote, u"");
-    getSocketValue(rendezvous, u"rendezvous");
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
 
     // Get command line arguments for superclass and socket.
-    return AbstractDatagramInputPlugin::getOptions() &&
-           _sock.setAddresses(rendezvous, remote, IPAddress()) &&
-           _sock.loadArgs(duck, *this);
+    return AbstractDatagramInputPlugin::getOptions() && _sock.args().loadArgs(duck, *this);
 }
 
 

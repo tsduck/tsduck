@@ -33,8 +33,20 @@ Usage
 
 [source,shell]
 ----
-$ tsp -O srt [options]
+$ tsp -O srt [options] [URL]
 ----
+
+[.usage]
+Parameters
+
+[.opt]
+_URL_
+
+[.optdoc]
+Optional `srt://` URL which specifies all or most parameters.
+The parameters in the URL overwrite specific options in case of conflict.
+
+include::{docdir}/opt/opt-srt-url.adoc[tags=!*]
 
 [.usage]
 General options

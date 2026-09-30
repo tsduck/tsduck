@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4806 (September 2026)
+VERSION 3.46-4817 (September 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -16,6 +16,12 @@ VERSION 3.46-4806 (September 2026)
     "Builder Guide"  (how to build and install TSDuck),  the  "Developer Guide"
     (how to develop applications using the TSDuck  library),  the  "Contributor
     Guide" (how to contribute to the development of TSDuck).
+  * Changed or removed options in existing commands and plugins:
+    - Option --ffs has been renamed as --fc in  plugins "srt"  for  consistency
+      with the libsrt options.
+    - Obsolete options --polling-time and --rendezvous have been  removed  from
+      plugins "srt".
+  * New options in existing commands and plugins:
 
 -------------------------------------------------------------------------------
 

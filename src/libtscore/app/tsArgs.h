@@ -311,6 +311,7 @@ namespace ts {
             INTRANGE,       //!< Range of integer values "first-last", must set min & max values.
             ANUMBER,        //!< A subclass of AbstractNumber.
             CHRONO,         //!< Any instantiation of std::chrono::duration.
+            BOOLEAN,        //!< Boolean value ("true", "false", "yes", "no").
             TRISTATE,       //!< Tristate value, ts::Maybe if absent.
             IPADDR,         //!< IP address or host name translating to an address.
             IPSOCKADDR,     //!< IP socket address (or host name) and port, both are mandatory.
@@ -1058,6 +1059,21 @@ namespace ts {
         {
             getChronoValue(value, name, cn::duration<Rep, Period>::zero(), index);
         }
+
+        //!
+        //! Get the value of boolean option in the last analyzed command line.
+        //!
+        //! @param [in,out] value A std::optional bool receiving the value of the option or parameter.
+        //! For options with optional values, if the the option is present without value, the returned value is true.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the std::optional object
+        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
+        //! is left unmodified.
+        //!
+        void getOptionalBoolValue(std::optional<bool>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
         //!
         //! Get the value of tristate option in the last analyzed command line.

@@ -1717,26 +1717,37 @@ bool ts::UString::getLine(std::istream& strm)
 // Convert a string into a bool value.
 //----------------------------------------------------------------------------
 
+namespace {
+    const ts::Names& BoolEnum()
+    {
+        // Thread-safe init-safe static data pattern:
+        static const ts::Names data({
+            {u"false", 0},
+            {u"true",  1},
+            {u"yes",   1},
+            {u"no",    0},
+            {u"on",    1},
+            {u"off",   0},
+        });
+        return data;
+    }
+}
+
+ts::UString ts::UString::BoolNamesList()
+{
+    return BoolEnum().nameList();
+}
+
 bool ts::UString::toBool(bool& value) const
 {
-    // Thread-safe init-safe static data pattern:
-    static const Names bool_enum({
-        {u"false", 0},
-        {u"true",  1},
-        {u"yes",   1},
-        {u"no",    0},
-        {u"on",    1},
-        {u"off",   0},
-    });
-
-    const Names::int_t iValue = bool_enum.value(*this, false);
-    if (iValue == Names::UNKNOWN) {
+    const Names::int_t ival = BoolEnum().value(*this, false);
+    if (ival == Names::UNKNOWN) {
         // Invalid string and invalid integer.
         value = false;
         return false;
     }
     else {
-        value = iValue != 0;
+        value = ival != 0;
         return true;
     }
 }
