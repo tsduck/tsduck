@@ -70,6 +70,15 @@ jobs:
         Write-Output "ARCH=${env:PROCESSOR_ARCHITECTURE}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         scripts\install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
 
+    - name: Dependencies check
+      run: |
+        Write-Output "==== Path:"
+        $env:Path -split ';'
+        Write-Output "==== Python:"
+        python --version
+        Write-Output "==== MSVC variables:"
+        scripts/list-msvc-variables.ps1 -NoPause
+
     - name: Build
       run: |
         pkg\nsis\build-installer.ps1 -Win64:$${{ inputs.build_x64 }} -Arm64:$${{ inputs.build_arm64 }} -NoLowPriority -NoPause

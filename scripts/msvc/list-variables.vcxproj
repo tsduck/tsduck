@@ -35,6 +35,8 @@
     <Message Text="== LIBSRT = '$(LIBSRT)'" Importance="high"/>
     <Message Text="== ROBOTWEAX_SRT_BCRYPT = '$(ROBOTWEAX_SRT_BCRYPT)'" Importance="high"/>
     <Message Text="== ROBOTWEAX_SRT_OPENSSL = '$(ROBOTWEAX_SRT_OPENSSL)'" Importance="high"/>
+    <Message Text="== RobotweaxSrtRoot = '$(RobotweaxSrtRoot)'" Importance="high"/>
+    <Message Text="== RobotweaxSrtLibDir = '$(RobotweaxSrtLibDir)'" Importance="high"/>
     <Message Text="== LibSrtProps = '$(LibSrtProps)'" Importance="high"/>
     <Message Text="== BCryptSrtProps = '$(BCryptSrtProps)'" Importance="high"/>
     <Message Text="== OpenSslSrtProps = '$(OpenSslSrtProps)'" Importance="high"/>

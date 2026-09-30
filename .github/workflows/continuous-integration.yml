@@ -173,8 +173,12 @@ jobs:
         scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoDocumentation -NoInstaller -NoPause
     - name: Dependencies check
       run: |
-        Write-Output "Path=${env:Path}"
+        Write-Output "==== Path:"
+        $env:Path -split ';'
+        Write-Output "==== Python:"
         python --version
+        Write-Output "==== MSVC variables:"
+        scripts/list-msvc-variables.ps1 -NoPause
     - name: Build TSDuck
       run: |
         scripts/build.ps1 -${{ matrix.target }} -${{ matrix.configuration }} -Parallel 5 -NoLowPriority -NoPause
