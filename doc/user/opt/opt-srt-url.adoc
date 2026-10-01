@@ -98,7 +98,7 @@ Some of them are not yet implemented by TSDuck. A bool value can be `yes`/`no`,
 |Reject connection if parties set different passphrase.
 
 |fc
-|bytes
+|packets
 |SRTO_FC
 |Flow control window size.
 
