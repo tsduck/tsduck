@@ -77,7 +77,7 @@ namespace ts {
         int                    backlog = 1;                    //!< Max waiting incoming client in listener mode.
         ::linger               linger_opt {0, 0};              //!< Linger time on close (SRTO_LINGER).
         bool                   reuse_port = true;              //!< Reuse UDP port in listener mode (SRTO_REUSEADDR).
-        int32_t                ipv6_only = -1;                 //!< -1=system default, 0=IPv4 and v6, 1=IPv6 only (SRTO_IPV6ONLY, v1.4.0).
+        int32_t                ipv6_only = -2;                 //!< -1=system default, 0=IPv4 and v6, 1=IPv6 only (SRTO_IPV6ONLY, v1.4.0).
         int32_t                iptos = -1;                     //!< IPv4 Type of Service (SRTO_IPTOS, v1.0.5).
         int32_t                ipttl = -1;                     //!< IPv4 Time To Live (SRTO_IPTTL, v1.0.5).
         int32_t                mss = -1;                       //!< Maximum Segment Size (SRTO_MSS).
@@ -88,7 +88,7 @@ namespace ts {
         // Their default values depend on the transmisson mode.
         // Don't set the dependent parameters unless you know what you are doing.
         bool                   live_mode = true;               //!< Live transmission type, not file (SRTO_TRANSTYPE, v1.3.0).
-        UString                congestion {};                  //!< Congestion controller, "live", "file" (SRTO_CONGESTION, v1.3.0). 
+        UString                congestion {};                  //!< Congestion controller, "live", "file" (SRTO_CONGESTION, v1.3.0).
         std::optional<bool>    message_api {};                 //!< Use message API, not buffer API (SRTO_MESSAGEAPI, v1.3.0).
         std::optional<bool>    nakreport {};                   //!< Periodically send NAK reports for missed packets (SRTO_NAKREPORT, v1.1.0).
         cn::milliseconds       rcv_latency {-1};               //!< Latency value in the receiving direction of the socket (SRTO_RCVLATENCY, v1.3.0).
@@ -174,8 +174,9 @@ namespace ts {
         //! Set the minimum version field from a "x.y.z" string.
         //! @param [in,out] report Where to report errors.
         //! @param [in] version Version string in "x.y.z" format.
+        //! Ignored if empty (@a min_version is left unmodified).
         //! @return True on success, false on error in version syntax.
-        //! 
+        //!
         bool setMinVersion(Report& report, const UString& version);
 
         //!

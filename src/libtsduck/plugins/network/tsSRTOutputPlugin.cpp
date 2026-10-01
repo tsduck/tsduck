@@ -64,7 +64,12 @@ bool ts::SRTOutputPlugin::start()
     bool success = _datagram.open();
     IPSocketAddress local, remote;
     if (success) {
-        success = _sock.open(_datagram.maxPayloadSize());
+        // Override SRT payload size if not set on the command line.
+        if (_sock.args().payload_size < 0) {
+            _sock.args().payload_size = int32_t(_datagram.maxPayloadSize());
+        }
+        // Open the SRT layer.
+        success = _sock.open();
         if (!success) {
             _datagram.close(0, true);
         }

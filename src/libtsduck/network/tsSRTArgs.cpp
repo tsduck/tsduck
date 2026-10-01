@@ -30,7 +30,8 @@ void ts::SRTArgs::defineArgs(Args& args)
     args.option(u"", 0, Args::STRING, 0, 1);
     args.help(u"", u"URL",
               u"Optional srt:// URL which specifies all or most parameters. "
-              u"The parameters in the URL overwrite specific options in case of conflict.");
+              u"The parameters in the URL overwrite specific options in case of conflict. "
+              u"It is possible to use an URL only, options only, or a mixture of both.");
 
     args.option(u"backlog", 0, Args::POSITIVE);
     args.help(u"backlog",
@@ -38,7 +39,9 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"The default is one.");
 
     args.option(u"bufferapi");
-    args.help(u"bufferapi", u"When set, this socket uses the Buffer API. The default is Message API.");
+    args.help(u"bufferapi",
+              u"When set, this socket uses the Buffer API. "
+              u"This is the default in file mode. It is not available in live mode");
 
     args.option(u"caller", 'c', Args::IPSOCKADDR);
     args.help(u"caller",
@@ -158,11 +161,13 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"and SRTO_OHEADBW options.");
 
     args.option(u"messageapi");
-    args.help(u"messageapi", u"Use the Message API. This is now the default, use --bufferapi to disable it.");
+    args.help(u"messageapi",
+              u"Use the Message API. This is the default and only possible API in live mode. "
+              u"Use --bufferapi to use the Buffer API in file mode.");
 
-    args.option(u"min-version", 0, Args::INTEGER, 0, 1, 0, std::numeric_limits<int32_t>::max());
+    args.option(u"min-version", 0, Args::STRING);
     args.help(u"min-version",
-              u"The minimum SRT version that is required from the peer, in the format 0x010203 for v1.2.3 for instance. "
+              u"The minimum SRT version that is required from the peer, in the format \"1.5.3\" for instance. "
               u"A connection to a peer that does not satisfy the minimum version requirement will be rejected.");
 
     args.option(u"mss", 0, Args::INTEGER, 0, 1, 76, std::numeric_limits<int32_t>::max());
@@ -314,11 +319,18 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
         success = false;
     }
 
-    // --messageapi is now the default.
-    message_api = !args.present(u"bufferapi");
-    if (args.present(u"bufferapi") && args.present(u"messageapi")) {
+    // message_api is an std::optional boolean, don't set if not explicit.
+    const bool opt_messageapi = args.present(u"messageapi");
+    const bool opt_bufferapi = args.present(u"bufferapi");
+    if (opt_messageapi && opt_bufferapi) {
         args.error(u"--bufferapi and --messageapi are mutually exclusive");
         success = false;
+    }
+    else if (opt_messageapi) {
+        message_api = true;
+    }
+    else if (opt_bufferapi) {
+        message_api = false;
     }
 
     reuse_port = !args.present(u"no-reuse-port");
@@ -339,7 +351,6 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(kmpreannounce, u"kmpreannounce", -1);
     args.getIntValue(lossmaxttl, u"lossmaxttl", -1);
     args.getIntValue(max_bw, u"max-bw", -1);
-    args.getIntValue(min_version, u"min-version", -1);
     args.getIntValue(mss, u"mss", -1);
     args.getIntValue(ohead_bw, u"ohead-bw", -1);
     args.getValue(stream_id, u"streamid");
@@ -355,6 +366,8 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(sndbuf, u"sndbuf", -1);
     args.getIntValue(udp_rcvbuf, u"udp-rcvbuf", -1);
     args.getIntValue(udp_sndbuf, u"udp-sndbuf", -1);
+
+    success = setMinVersion(args, args.value(u"min-version")) && success;
 
     args.getChronoValue(stats_interval, u"statistics-interval");
     final_stats = stats_interval > cn::milliseconds::zero() || args.present(u"final-statistics");
@@ -430,14 +443,20 @@ bool ts::SRTArgs::setAddressesInternal(Report& report, const IPSocketAddress& li
 
 bool ts::SRTArgs::setMinVersion(Report& report, const UString& version)
 {
-    std::vector<int32_t> fields;
-    if (version.toIntegers(fields, u"", u".", 0, u"", 0, 255) && fields.size() == 3) {
-        min_version = int32_t(fields[0] << 16) | int32_t(fields[1] << 8) | fields[2];
+    if (version.empty()) {
+        // Ignored if empty, min_version is left unmodified.
         return true;
     }
     else {
-        report.error(u"invalid SRT minimum version \"%s\"", version);
-        return false;
+        std::vector<int32_t> fields;
+        if (version.toIntegers(fields, u"", u".", 0, u"", 0, 255) && fields.size() == 3) {
+            min_version = int32_t(fields[0] << 16) | int32_t(fields[1] << 8) | fields[2];
+            return true;
+        }
+        else {
+            report.error(u"invalid SRT minimum version \"%s\"", version);
+            return false;
+        }
     }
 }
 
@@ -455,6 +474,27 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         report.error(u"invalid SRT URL: %s", url.toString());
         return false;
     }
+
+    // Get and resolve the host part of the URL.
+    const UString host_name(url.getHost());
+    IPAddress host_addr;
+    if (!host_name.empty() && !host_addr.resolve(host_name, report)) {
+        report.error(u"invalid host %s in srt:// URL", host_name);
+        return false;
+    }
+
+    // Reset the socket mode and addresses. They must come from the URL.
+    // Other parameters are kept and may be overwritten by the URL.
+    mode = SRTSocketMode::DEFAULT;
+    local_address.clear();
+    remote_address.clear();
+
+    // Reset synthetic values to check if they are specified in the URL.
+    _min_version.clear();
+    _adapter.clear();
+    _binder.clear();
+    _local_port = -1;
+    _linger_time = -1;
 
     // Definition of parameters in URL query string.
     struct Param {
@@ -536,13 +576,6 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"tsbpdmode",           {.obl = &SRTArgs::tsbpdmode}},
     };
 
-    // Reset synthetic values to check if tye are specified.
-    _min_version.clear();
-    _adapter.clear();
-    _binder.clear();
-    _local_port = -1;
-    _linger_time = -1;
-    
     // Analyze all parameters.
     for (const auto& qp : url.getQueryParameters()) {
         const UString& name(qp.first);
@@ -629,17 +662,83 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         linger_opt.l_linger = static_cast<decltype(linger_opt.l_linger)>(_linger_time);
     }
 
-    // Try to guess the mode, local and remove address.
-    //@@@@
+    // The URL parameter bind=adapter:port is a shortcut for individual parameters adapter and port.
+    if (_binder.hasAddress() && _adapter.hasAddress() && IPAddress(_binder) != _adapter) {
+        report.error(u"conflicting information in bind and adapter parameters in srt:// URL");
+        success = false;
+    }
+    else if (_adapter.hasAddress()) {
+        _binder.setAddress(_adapter);
+    }
+    if (_binder.hasPort() && _local_port > 0 && _binder.port() != _local_port) {
+        report.error(u"conflicting information in bind and port parameters in srt:// URL");
+        success = false;
+    }
+    else if (_local_port > 0) {
+        _binder.setPort(IPAddress::Port(_local_port));
+    }
 
+    // If the mode is not set in "mode" parameter of the URL, try to guess it.
+    if (mode == SRTSocketMode::DEFAULT) {
+        if (!host_addr.hasAddress()) {
+            // No URL host set, this is listener mode.
+            mode = SRTSocketMode::LISTENER;
+        }
+        else if (!_binder.hasAddress()) {
+            // URL host set, no adapter parameter, this is caller mode.
+            mode = SRTSocketMode::CALLER;
+        }
+        else {
+            // URL host and adapter parameter set, this is rendezvous mode.
+            mode = SRTSocketMode::RENDEZVOUS;
+        }
+    }
 
+    // Resolve local and remote addresses, based on mode.
+    switch (mode) {
+        case SRTSocketMode::LISTENER: {
+            // Local address comes from URL, default to bind/adapter/port. No remote address.
+            local_address.setAddress(host_addr);
+            local_address.setPort(url.getPort());
+            local_address.setDefault(_binder);
+            break;
+        }
+        case SRTSocketMode::CALLER: {
+            // Remote address comes from URL.
+            remote_address.setAddress(host_addr);
+            remote_address.setPort(url.getPort());
+            // Optional local address from bind/adapter/port.
+            local_address = _binder;
+            break;
+        }
+        case SRTSocketMode::RENDEZVOUS: {
+            // Remote address comes from URL.
+            remote_address.setAddress(host_addr);
+            remote_address.setPort(url.getPort());
+            // Local address from bind/adapter/port, port defaults to remote address.
+            local_address = _binder;
+            if (!local_address.hasPort()) {
+                local_address.setPort(remote_address.port());
+            }
+            break;
+        }
+        case SRTSocketMode::DEFAULT:
+        default: {
+            break;
+        }
+    }
 
+    // Caller and rendezvous need a remote address/port.
+    if ((mode == SRTSocketMode::CALLER || mode == SRTSocketMode::RENDEZVOUS) && (!remote_address.hasAddress() || !remote_address.hasPort())) {
+        report.error(u"incomplete remote address in srt:// URL");
+        success = false;
+    }
 
-    report.error(u"SRT URLs are not yet supported"); //@@@
-    success = false;
-
-
-
+    // Listener and rendezvous need a local port.
+    if ((mode == SRTSocketMode::LISTENER || mode == SRTSocketMode::RENDEZVOUS) && !local_address.hasPort()) {
+        report.error(u"missing local port in srt:// URL");
+        success = false;
+    }
 
     return success;
 }

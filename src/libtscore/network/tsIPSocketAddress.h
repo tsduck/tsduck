@@ -269,6 +269,12 @@ namespace ts {
         bool match(const IPSocketAddress& other) const;
 
         //!
+        //! Set missing address and/or port from a default socket address.
+        //! @param [in] other Another instance to get default address and/or port.
+        //!
+        void setDefault(const IPSocketAddress& other);
+
+        //!
         //! Decode a string containing a socket address in family-specific format.
         //! @param [in] name A string containing either a host name or a numerical representation of the address and a port.
         //! @param [in] report Where to report errors.
