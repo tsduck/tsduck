@@ -95,6 +95,22 @@ TSUNIT_DEFINE_TEST(Query)
         TSUNIT_EQUAL(qref[qref_index].second, q.second);
         qref_index++;
     }
+
+    url1.setURL(u"http://:1234?ze=kve&ab=cd#frag2");
+    TSUNIT_ASSERT(url1.isValid());
+    TSUNIT_EQUAL(u"http", url1.getScheme());
+    TSUNIT_EQUAL(u"", url1.getHost());
+    TSUNIT_EQUAL(1234, url1.getPort());
+    TSUNIT_EQUAL(u"", url1.getPath());
+    TSUNIT_EQUAL(u"ze=kve&ab=cd", url1.getQuery());
+    TSUNIT_EQUAL(u"frag2", url1.getFragment());
+    TSUNIT_EQUAL(qref.size(), url1.getQueryParameters().size());
+    qref_index = 0;
+    for (const auto& q : url1.getQueryParameters()) {
+        TSUNIT_EQUAL(qref[qref_index].first, q.first);
+        TSUNIT_EQUAL(qref[qref_index].second, q.second);
+        qref_index++;
+    }
 }
 
 TSUNIT_DEFINE_TEST(Base)

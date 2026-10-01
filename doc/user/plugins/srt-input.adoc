@@ -54,6 +54,7 @@ _URL_
 [.optdoc]
 Optional `srt://` URL which specifies all or most parameters.
 The parameters in the URL overwrite specific options in case of conflict.
+It is possible to use an URL only, options only, or a mixture of both.
 
 include::{docdir}/opt/opt-srt-url.adoc[tags=!*]
 

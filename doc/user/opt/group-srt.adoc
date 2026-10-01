@@ -27,7 +27,8 @@ The default is one.
 
 [.optdoc]
 When set, this socket uses the Buffer API.
-The default is Message API.
+This is the default in file mode.
+It is not available in live mode
 
 [.opt]
 *-c* _address:port_ +
@@ -218,14 +219,14 @@ and shape the bandwidth limit using `SRTO_INPUTBW` and `SRTO_OHEADBW` options.
 
 [.optdoc]
 Use the Message API.
-This is now the default.
-Specify `--bufferapi` to use the Buffer API.
+This is the default and only possible API in live mode.
+Specify `--bufferapi` to use the Buffer API in file mode.
 
 [.opt]
-*--min-version* _value_
+*--min-version* _'string'_
 
 [.optdoc]
-The minimum SRT version that is required from the peer, in the format 0x010203 for v1.2.3 for instance.
+The minimum SRT version that is required from the peer, in the format "1.5.3" for instance.
 A connection to a peer that does not satisfy the minimum version requirement will be rejected.
 
 [.opt]
@@ -347,7 +348,7 @@ Warning: configured in bytes, converted in packets, when set, based on MSS value
 For desired result, configure MSS first.
 
 [.opt]
-*--snddropdelay* _value_
+*--snddropdelay* _milliseconds_
 
 [.optdoc]
 Sets an extra delay, in milliseconds, before `--tlpktdrop` is triggered on the data sender.

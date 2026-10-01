@@ -71,7 +71,7 @@ void ts::URL::parse(const UString& path)
     const size_t colon = SchemeLength(path);
     size_t current = 0;
 
-    // Parse scheme://host/ if there is one.
+    // Parse scheme://host/ if there is one. The host part can also end with a '?' (query) or '#' (fragment).
     if (colon > 0) {
 
         _scheme = path.substr(0, colon);
@@ -101,7 +101,7 @@ void ts::URL::parse(const UString& path)
         // Parse [user[:password]@]host[:port].
         if (has_host) {
             size_t start = current;             // start of host part
-            current = path.find(u'/', start);   // start of path part
+            current = path.find_first_of(u"/?#", start);   // start of next part, path, query or fragment
             size_t at = path.find(u'@', start);
             if (at < current) {
                 // There is a username part.
@@ -118,7 +118,7 @@ void ts::URL::parse(const UString& path)
             }
             const size_t sep = path.find(u':', start);
             if (sep < current) {
-                // There is port.
+                // There is a port.
                 _host = path.substr(start, sep - start);
                 path.substr(sep + 1, current - sep - 1).toInteger(_port);
             }
@@ -129,7 +129,7 @@ void ts::URL::parse(const UString& path)
         }
     }
 
-    // Parse path[?query][#fragment]
+    // Parse [path][?query][#fragment]
     if (current < path.size()) {
         const size_t qmark = path.find(u'?', current);
         const size_t hash = path.find(u'#', current);

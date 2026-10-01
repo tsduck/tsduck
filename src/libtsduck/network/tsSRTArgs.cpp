@@ -30,7 +30,8 @@ void ts::SRTArgs::defineArgs(Args& args)
     args.option(u"", 0, Args::STRING, 0, 1);
     args.help(u"", u"URL",
               u"Optional srt:// URL which specifies all or most parameters. "
-              u"The parameters in the URL overwrite specific options in case of conflict.");
+              u"The parameters in the URL overwrite specific options in case of conflict. "
+              u"It is possible to use an URL only, options only, or a mixture of both.");
 
     args.option(u"backlog", 0, Args::POSITIVE);
     args.help(u"backlog",
@@ -38,7 +39,9 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"The default is one.");
 
     args.option(u"bufferapi");
-    args.help(u"bufferapi", u"When set, this socket uses the Buffer API. The default is Message API.");
+    args.help(u"bufferapi",
+              u"When set, this socket uses the Buffer API. "
+              u"This is the default in file mode. It is not available in live mode");
 
     args.option(u"caller", 'c', Args::IPSOCKADDR);
     args.help(u"caller",
@@ -158,11 +161,13 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"and SRTO_OHEADBW options.");
 
     args.option(u"messageapi");
-    args.help(u"messageapi", u"Use the Message API. This is now the default, use --bufferapi to disable it.");
+    args.help(u"messageapi",
+              u"Use the Message API. This is the default and only possible API in live mode. "
+              u"Use --bufferapi to use the Buffer API in file mode.");
 
-    args.option(u"min-version", 0, Args::INTEGER, 0, 1, 0, std::numeric_limits<int32_t>::max());
+    args.option(u"min-version", 0, Args::STRING);
     args.help(u"min-version",
-              u"The minimum SRT version that is required from the peer, in the format 0x010203 for v1.2.3 for instance. "
+              u"The minimum SRT version that is required from the peer, in the format \"1.5.3\" for instance. "
               u"A connection to a peer that does not satisfy the minimum version requirement will be rejected.");
 
     args.option(u"mss", 0, Args::INTEGER, 0, 1, 76, std::numeric_limits<int32_t>::max());
@@ -234,7 +239,7 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"Send Buffer Size. Warning: configured in bytes, converted in packets, "
               u"when set, based on MSS value. For desired result, configure MSS first.");
 
-    args.option(u"snddropdelay", 0, Args::INTEGER, 0, 1, -1, std::numeric_limits<int32_t>::max());
+    args.option<cn::milliseconds>(u"snddropdelay");
     args.help(u"snddropdelay",
               u"Sets an extra delay, in milliseconds, before --tlpktdrop is triggered on the data sender. "
               u"This delay is added to the default drop delay time interval value. "
@@ -314,11 +319,18 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
         success = false;
     }
 
-    // --messageapi is now the default.
-    message_api = !args.present(u"bufferapi");
-    if (args.present(u"bufferapi") && args.present(u"messageapi")) {
+    // message_api is an std::optional boolean, don't set if not explicit.
+    const bool opt_messageapi = args.present(u"messageapi");
+    const bool opt_bufferapi = args.present(u"bufferapi");
+    if (opt_messageapi && opt_bufferapi) {
         args.error(u"--bufferapi and --messageapi are mutually exclusive");
         success = false;
+    }
+    else if (opt_messageapi) {
+        message_api = true;
+    }
+    else if (opt_bufferapi) {
+        message_api = false;
     }
 
     reuse_port = !args.present(u"no-reuse-port");
@@ -329,7 +341,7 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     enforce_encryption = args.present(u"enforce-encryption");
     args.getOptionalBoolValue(nakreport, u"nakreport");
     args.getOptionalBoolValue(tlpktdrop, u"tlpktdrop");
-    args.getOptionalIntValue(snddropdelay, u"snddropdelay");
+    args.getChronoValue(snd_drop_delay, u"snddropdelay", cn::milliseconds(-2));
     args.getChronoValue(connection_timeout, u"conn-timeout", cn::milliseconds(-1));
     args.getIntValue(fc_packets, u"fc", -1);
     args.getIntValue(input_bw, u"input-bw", -1);
@@ -339,7 +351,6 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(kmpreannounce, u"kmpreannounce", -1);
     args.getIntValue(lossmaxttl, u"lossmaxttl", -1);
     args.getIntValue(max_bw, u"max-bw", -1);
-    args.getIntValue(min_version, u"min-version", -1);
     args.getIntValue(mss, u"mss", -1);
     args.getIntValue(ohead_bw, u"ohead-bw", -1);
     args.getValue(stream_id, u"streamid");
@@ -355,6 +366,8 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(sndbuf, u"sndbuf", -1);
     args.getIntValue(udp_rcvbuf, u"udp-rcvbuf", -1);
     args.getIntValue(udp_sndbuf, u"udp-sndbuf", -1);
+
+    success = setMinVersion(args, args.value(u"min-version")) && success;
 
     args.getChronoValue(stats_interval, u"statistics-interval");
     final_stats = stats_interval > cn::milliseconds::zero() || args.present(u"final-statistics");
@@ -425,6 +438,30 @@ bool ts::SRTArgs::setAddressesInternal(Report& report, const IPSocketAddress& li
 
 
 //----------------------------------------------------------------------------
+// Set the minimum version field from a "x.y.z" string.
+//----------------------------------------------------------------------------
+
+bool ts::SRTArgs::setMinVersion(Report& report, const UString& version)
+{
+    if (version.empty()) {
+        // Ignored if empty, min_version is left unmodified.
+        return true;
+    }
+    else {
+        std::vector<int32_t> fields;
+        if (version.toIntegers(fields, u"", u".", 0, u"", 0, 255) && fields.size() == 3) {
+            min_version = int32_t(fields[0] << 16) | int32_t(fields[1] << 8) | fields[2];
+            return true;
+        }
+        else {
+            report.error(u"invalid SRT minimum version \"%s\"", version);
+            return false;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Set options from an srt: URL.
 //----------------------------------------------------------------------------
 
@@ -433,117 +470,277 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
     bool success = true;
 
     // Check the validity and scheme of the URL.
-    if (!url.isValid() || !IsURL(url)) {
+    if (!url.isValid() || !IsSRTURL(url)) {
         report.error(u"invalid SRT URL: %s", url.toString());
         return false;
     }
 
+    // Get and resolve the host part of the URL.
+    const UString host_name(url.getHost());
+    IPAddress host_addr;
+    if (!host_name.empty() && !host_addr.resolve(host_name, report)) {
+        report.error(u"invalid host %s in srt:// URL", host_name);
+        return false;
+    }
+
+    // Reset the socket mode and addresses. They must come from the URL.
+    // Other parameters are kept and may be overwritten by the URL.
+    mode = SRTSocketMode::DEFAULT;
+    local_address.clear();
+    remote_address.clear();
+
+    // Reset synthetic values to check if they are specified in the URL.
+    _min_version.clear();
+    _adapter.clear();
+    _binder.clear();
+    _local_port = -1;
+    _linger_time = -1;
+
     // Definition of parameters in URL query string.
     struct Param {
         // Field to update in SRTArgs.
-        bool             SRTArgs::* boolean = nullptr;
-        int32_t          SRTArgs::* i32 = nullptr;
-        int64_t          SRTArgs::* i64 = nullptr;
-        cn::milliseconds SRTArgs::* ms = nullptr;
-        UString          SRTArgs::* str = nullptr;
-        IPAddress        SRTArgs::* ip = nullptr;
-        IPSocketAddress  SRTArgs::* sock = nullptr;
-        int              SRTArgs::* enumed = nullptr;
+        bool                   SRTArgs::* bl  = nullptr;
+        std::optional<bool>    SRTArgs::* obl = nullptr;
+        int32_t                SRTArgs::* i32 = nullptr;
+        int64_t                SRTArgs::* i64 = nullptr;
+        cn::milliseconds       SRTArgs::* ms  = nullptr;
+        UString                SRTArgs::* str = nullptr;
+        IPAddress              SRTArgs::* ip  = nullptr;
+        IPSocketAddress        SRTArgs::* sok = nullptr;
 
-        // Value boundaries or list
+        // Value boundaries or list.
         int64_t      min = 0;
         int64_t      max = std::numeric_limits<int64_t>::max();
         const Names* names = nullptr;
     };
 
+    // Enumeration names and values.
     static const Names mode_names = {
         {u"caller",     SRTSocketMode::CALLER},
         {u"listener",   SRTSocketMode::LISTENER},
         {u"rendezvous", SRTSocketMode::RENDEZVOUS},
     };
-    static const Names transmission_names = {
-        {u"live", SRTTransmissionMode::LIVE},
-        {u"file", SRTTransmissionMode::FILE},
+    static const Names transmission_names = { // bool live_mode
+        {u"live", true},
+        {u"file", false},
     };
+    static const Names bool_names = {
+        {u"true",  1},
+        {u"false", 0},
+        {u"yes",   1},
+        {u"no",    0},
+        {u"on",    1},
+        {u"off",   0},
+        {u"1",     1},
+        {u"0",     0},
+    };
+
+    // Store enumeration values as if they were int32_t.
+    using I32P = int32_t SRTArgs::*;
+    static_assert(sizeof(SRTArgs::mode) == sizeof(int32_t));
 
     // Define all possible parameters in the query string.
     static const std::map<UString, Param> params = {
-        {u"adapter", {.ip = &SRTArgs::_adapter}},
-        {u"bind", {.sock = &SRTArgs::_binder}},
-        {u"congestion", {.enumed = &SRTArgs::_congestion, .names = &transmission_names}},
-        {u"conntimeo", {.ms = &SRTArgs::connection_timeout}},
-        {u"cryptomode", {.i32 = &SRTArgs::_cryptomode, .max = 2}},
-        /*@@@
-        {u"drifttracer", {.boolean = &SRTArgs::}},
-        {u"enforcedencryption", {.boolean = &SRTArgs::}},
-        {u"fc", {. = &SRTArgs::fc_packets}},    //@@@ bytes or packets ?
-        {u"groupconnect", {. = &SRTArgs::_groupconnect, 0, 1}},
-        {u"groupminstabletimeo", Param(MILLISECOND}},
-        {u"inputbw", {. = &SRTArgs::input_bw}},
-        {u"iptos", {. = &SRTArgs::iptos, 0, 255}},
-        {u"ipttl", {. = &SRTArgs::ipttl, 1, 255}},
-        {u"ipv6only", {. = &SRTArgs::_ipv6only, -1, 1}},
-        {u"kmpreannounce", {. = &SRTArgs::kmpreannounce}},
-        {u"kmrefreshrate", {. = &SRTArgs::kmrefreshrate}},
-        {u"latency", Param(MILLISECOND}},
-        {u"linger", {. = &SRTArgs::_linger_time}},
-        {u"lossmaxttl", {. = &SRTArgs::lossmaxttl}},
-        {u"maxbw", {. = &SRTArgs::max_bw}},
-        {u"mininputbw", {. = &SRTArgs::_min_bw}},
-        {u"messageapi", {.boolean = &SRTArgs::}},
-        {u"minversion", {str = &SRTArgs::}},
-        {u"mode", {. = &mode_names}},
-        {u"mss", {. = &SRTArgs::mss, 76}},
-        {u"nakreport", {.boolean = &SRTArgs::}},
-        {u"oheadbw", {. = &SRTArgs::ohead_bw, 5, 100}},
-        {u"packetfilter", {str = &SRTArgs::}},
-        {u"passphrase", {str = &SRTArgs::}},
-        {u"payloadsize", {. = &SRTArgs::payload_size}},
-        {u"pbkeylen", {. = &SRTArgs::pbkeylen, 16, 32}},
-        {u"peeridletimeo", Param(MILLISECOND}},
-        {u"peerlatency", Param(MILLISECOND}},
-        {u"port", {. = &SRTArgs::_local_port, 0, 65535}},
-        {u"rcvbuf", {. = &SRTArgs::rcvbuf}},
-        {u"rcvlatency", Param(MILLISECOND}},
-        {u"retransmitalgo", {. = &SRTArgs::_retransmitalgo, 0, 1}},
-        {u"sndbuf", {. = &SRTArgs::sndbuf}},
-        {u"snddropdelay", Param(MILLISECOND}},
-        {u"streamid", {str = &SRTArgs::}},
-        {u"tlpktdrop", {.boolean = &SRTArgs::}},
-        {u"transtype", {. = &transmission_names}},
-        {u"tsbpdmode", {.boolean = &SRTArgs::}},
-        @@@@*/
+        {u"adapter",             {.ip  = &SRTArgs::_adapter}},
+        {u"bind",                {.sok = &SRTArgs::_binder}},
+        {u"congestion",          {.str = &SRTArgs::congestion}},
+        {u"conntimeo",           {.ms  = &SRTArgs::connection_timeout}},
+        {u"cryptomode",          {.i32 = &SRTArgs::crypto_mode, .max = 2}},
+        {u"drifttracer",         {.obl = &SRTArgs::drift_tracer, .names = &bool_names}},
+        {u"enforcedencryption",  {.obl = &SRTArgs::enforce_encryption, .names = &bool_names}},
+        {u"fc",                  {.i32 = &SRTArgs::fc_packets, .min = 32}},
+        {u"groupconnect",        {.i32 = &SRTArgs::group_connect, .min = 0, .max = 1}},
+        {u"groupminstabletimeo", {.ms  = &SRTArgs::groupminstabletimeo, .min = 60}},
+        {u"inputbw",             {.i64 = &SRTArgs::input_bw}},
+        {u"iptos",               {.i32 = &SRTArgs::iptos, .min = 0, .max = 255}},
+        {u"ipttl",               {.i32 = &SRTArgs::ipttl, .min = 1, .max = 255}},
+        {u"ipv6only",            {.i32 = &SRTArgs::ipv6_only, .min = -1, .max = 1}},
+        {u"kmpreannounce",       {.i32 = &SRTArgs::kmpreannounce}},
+        {u"kmrefreshrate",       {.i32 = &SRTArgs::kmrefreshrate}},
+        {u"latency",             {.ms  = &SRTArgs::latency}},
+        {u"linger",              {.i32 = &SRTArgs::_linger_time}},
+        {u"lossmaxttl",          {.i32 = &SRTArgs::lossmaxttl}},
+        {u"maxbw",               {.i64 = &SRTArgs::max_bw, .min = -1}},
+        {u"mininputbw",          {.i64 = &SRTArgs::min_input_bw}},
+        {u"messageapi",          {.obl = &SRTArgs::message_api, .names = &bool_names}},
+        {u"minversion",          {.str = &SRTArgs::_min_version}},
+        {u"mode",                {.i32 = I32P(&SRTArgs::mode), .names = &mode_names}},
+        {u"mss",                 {.i32 = &SRTArgs::mss, .min = 76}},
+        {u"nakreport",           {.obl = &SRTArgs::nakreport, .names = &bool_names}},
+        {u"oheadbw",             {.i32 = &SRTArgs::ohead_bw, .min = 5, .max = 100}},
+        {u"packetfilter",        {.str = &SRTArgs::packet_filter}},
+        {u"passphrase",          {.str = &SRTArgs::passphrase}},
+        {u"payloadsize",         {.i32 = &SRTArgs::payload_size}},
+        {u"pbkeylen",            {.i32 = &SRTArgs::pbkeylen, .min = 16, .max = 32}},
+        {u"peeridletimeo",       {.ms  = &SRTArgs::peer_idle_timeout}},
+        {u"peerlatency",         {.ms  = &SRTArgs::peer_latency}},
+        {u"port",                {.i32 = &SRTArgs::_local_port, .max = 65535}},
+        {u"rcvbuf",              {.i32 = &SRTArgs::rcvbuf}},
+        {u"rcvlatency",          {.ms  = &SRTArgs::rcv_latency}},
+        {u"retransmitalgo",      {.i32 = &SRTArgs::retransmit_algo, .min = 0, .max = 1}},
+        {u"sndbuf",              {.i32 = &SRTArgs::sndbuf}},
+        {u"snddropdelay",        {.ms  = &SRTArgs::snd_drop_delay, .min = -1}},
+        {u"streamid",            {.str = &SRTArgs::stream_id}},
+        {u"tlpktdrop",           {.obl = &SRTArgs::tlpktdrop, .names = &bool_names}},
+        {u"transtype",           {.bl  = &SRTArgs::live_mode, .names = &transmission_names}},
+        {u"tsbpdmode",           {.obl = &SRTArgs::tsbpdmode, .names = &bool_names}},
     };
 
-    // Reset synthetic values to check if tye are specified.
-    _adapter.clear();
-    _binder.clear();
-    _congestion = -1;
-    _local_port = -1;
-    _ipv6only = -1;
-    _linger_time = -1;
-    _cryptomode = -1;
-    _groupconnect = -1;
-    _retransmitalgo = -1;
-    _min_bw = -1;
-
     // Analyze all parameters.
-    //@@@@
+    for (const auto& qp : url.getQueryParameters()) {
+        const UString& name(qp.first);
+        const UString& value(qp.second);
+        const auto it = params.find(name);
+        if (it == params.end()) {
+            report.error(u"unknown parameter \"%s\" in srt:// URL", name);
+            success = false;
+        }
+        else {
+            const Param& p(it->second);
+            if (p.str != nullptr) {
+                // Parameter is a string.
+                this->*(p.str) = value;
+            }
+            else if (p.ip != nullptr) {
+                // Parameter is an IP address.
+                if (!(this->*(p.ip)).resolve(value, report)) {
+                    report.error(u"invalid IP address parameter \"%s=%s\" in srt:// URL", name, value);
+                    success = false;
+                }
+            }
+            else if (p.sok != nullptr) {
+                // Parameter is socket address.
+                if (!(this->*(p.sok)).resolve(value, report)) {
+                    report.error(u"invalid socket address parameter \"%s=%s\" in srt:// URL", name, value);
+                    success = false;
+                }
+            }
+            else {
+                // Parameter is an integer of various size or representation.
+                int64_t i = 0;
+                bool i_valid = true;
+                if (p.names != nullptr) {
+                    // Parameter is an enumeration value.
+                    if (!p.names->getValue(i, value, true, false)) {
+                        report.error(u"invalid value \"%s=%s\" in srt:// URL, must be one of %s", name, value, p.names->nameList());
+                        success = i_valid = false;
+                    }
+                }
+                else if (!value.toInteger(i)) {
+                    report.error(u"invalid integer value \"%s=%s\" in srt:// URL", name, value);
+                    success = i_valid = false;
+                }
+                if (i_valid) {
+                    if (i < p.min || i > p.max) {
+                        report.error(u"integer value \"%s=%s\" out of range in srt:// URL", name, value);
+                        success = false;
+                    }
+                    else if (p.i32 != nullptr) {
+                        this->*(p.i32) = int32_t(i);
+                    }
+                    else if (p.i64 != nullptr) {
+                        this->*(p.i64) = i;
+                    }
+                    else if (p.ms != nullptr) {
+                        this->*(p.ms) = cn::milliseconds(cn::milliseconds::rep(i));
+                    }
+                    else if (p.bl != nullptr) {
+                        this->*(p.bl) = i != 0;
+                    }
+                    else if (p.obl != nullptr) {
+                        this->*(p.obl) = i != 0;
+                    }
+                }
+            }
+        }
+    }
 
     // Process synthetic values.
-    //@@@@
+    if (!_min_version.empty()) {
+        success = setMinVersion(report, _min_version) && success;
+    }
+    if (_linger_time >= 0) {
+        linger_opt.l_onoff = 1;
+        linger_opt.l_linger = static_cast<decltype(linger_opt.l_linger)>(_linger_time);
+    }
 
-    // Try to guess the mode, local and remove address.
-    //@@@@
+    // The URL parameter bind=adapter:port is a shortcut for individual parameters adapter and port.
+    if (_binder.hasAddress() && _adapter.hasAddress() && IPAddress(_binder) != _adapter) {
+        report.error(u"conflicting information in bind and adapter parameters in srt:// URL");
+        success = false;
+    }
+    else if (_adapter.hasAddress()) {
+        _binder.setAddress(_adapter);
+    }
+    if (_binder.hasPort() && _local_port > 0 && _binder.port() != _local_port) {
+        report.error(u"conflicting information in bind and port parameters in srt:// URL");
+        success = false;
+    }
+    else if (_local_port > 0) {
+        _binder.setPort(IPAddress::Port(_local_port));
+    }
 
+    // If the mode is not set in "mode" parameter of the URL, try to guess it.
+    if (mode == SRTSocketMode::DEFAULT) {
+        if (!host_addr.hasAddress()) {
+            // No URL host set, this is listener mode.
+            mode = SRTSocketMode::LISTENER;
+        }
+        else if (!_binder.hasAddress()) {
+            // URL host set, no adapter parameter, this is caller mode.
+            mode = SRTSocketMode::CALLER;
+        }
+        else {
+            // URL host and adapter parameter set, this is rendezvous mode.
+            mode = SRTSocketMode::RENDEZVOUS;
+        }
+    }
 
+    // Resolve local and remote addresses, based on mode.
+    switch (mode) {
+        case SRTSocketMode::LISTENER: {
+            // Local address comes from URL, default to bind/adapter/port. No remote address.
+            local_address.setAddress(host_addr);
+            local_address.setPort(url.getPort());
+            local_address.setDefault(_binder);
+            break;
+        }
+        case SRTSocketMode::CALLER: {
+            // Remote address comes from URL.
+            remote_address.setAddress(host_addr);
+            remote_address.setPort(url.getPort());
+            // Optional local address from bind/adapter/port.
+            local_address = _binder;
+            break;
+        }
+        case SRTSocketMode::RENDEZVOUS: {
+            // Remote address comes from URL.
+            remote_address.setAddress(host_addr);
+            remote_address.setPort(url.getPort());
+            // Local address from bind/adapter/port, port defaults to remote address.
+            local_address = _binder;
+            if (!local_address.hasPort()) {
+                local_address.setPort(remote_address.port());
+            }
+            break;
+        }
+        case SRTSocketMode::DEFAULT:
+        default: {
+            break;
+        }
+    }
 
+    // Caller and rendezvous need a remote address/port.
+    if ((mode == SRTSocketMode::CALLER || mode == SRTSocketMode::RENDEZVOUS) && (!remote_address.hasAddress() || !remote_address.hasPort())) {
+        report.error(u"incomplete remote address in srt:// URL");
+        success = false;
+    }
 
-    report.error(u"SRT URLs are not yet supported"); //@@@
-    success = false;
-
-
-
+    // Listener and rendezvous need a local port.
+    if ((mode == SRTSocketMode::LISTENER || mode == SRTSocketMode::RENDEZVOUS) && !local_address.hasPort()) {
+        report.error(u"missing local port in srt:// URL");
+        success = false;
+    }
 
     return success;
 }

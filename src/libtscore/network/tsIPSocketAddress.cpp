@@ -173,6 +173,20 @@ bool ts::IPSocketAddress::match(const IPSocketAddress& other) const
     return IPAddress::match(other) && (_port == AnyPort || other._port == AnyPort || _port == other._port);
 }
 
+//----------------------------------------------------------------------------
+// Set missing address and/or port from a default socket address.
+//----------------------------------------------------------------------------
+
+void ts::IPSocketAddress::setDefault(const IPSocketAddress& other)
+{
+    if (!hasAddress()) {
+        setAddress(other);
+    }
+    if (!hasPort()) {
+        _port = other._port;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Convert to a string object

@@ -40,7 +40,7 @@ TS_REGISTER_FEATURE(u"srt", u"SRT library", SUPPORT, ts::SRTSocket::GetLibraryVe
 ts::SRTSocket::SRTSocket(Report* report) : ReporterBase(report), _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
 bool ts::SRTSocket::isOpen() const { return false; }
-bool ts::SRTSocket::open(SRTSocketMode, const IPSocketAddress&, const IPSocketAddress&, size_t) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode, const IPSocketAddress&, const IPSocketAddress&) NOSRT_ERROR
 bool ts::SRTSocket::close(bool silent) NOSRT_ERROR
 bool ts::SRTSocket::getPeers(IPSocketAddress& local, IPSocketAddress& remote) NOSRT_ERROR
 bool ts::SRTSocket::send(const void*, size_t) NOSRT_ERROR
@@ -243,7 +243,7 @@ int ts::SRTSocket::getSocket() const
 // Open the socket
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::open(SRTSocketMode mode, const IPSocketAddress& local, const IPSocketAddress& remote, size_t max_payload)
+bool ts::SRTSocket::open(SRTSocketMode mode, const IPSocketAddress& local, const IPSocketAddress& remote)
 {
     // Filter already open condition.
     if (_guts->sock != SRT_INVALID_SOCK) {
@@ -281,10 +281,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode, const IPSocketAddress& local, const
     }
 
     // Set initial socket options.
-    int32_t payloadsize = int32_t(max_payload);
-    bool success =
-        _guts->setSockOptPre() &&
-        (max_payload == NPOS || _guts->setSockOpt(SRTO_PAYLOADSIZE, "SRTO_PAYLOADSIZE", &payloadsize, sizeof(payloadsize)));
+    bool success = _guts->setSockOptPre();
 
     // Connect / setup the SRT socket.
     switch (_args.mode) {
@@ -421,7 +418,7 @@ bool ts::SRTSocket::peerDisconnected() const
 
 
 //----------------------------------------------------------------------------
-// Set/get socket option.
+// Set/get one socket option.
 //----------------------------------------------------------------------------
 
 bool ts::SRTSocket::Guts::setSockOpt(int opt_name, const char* opt_name_str, const void* optval, size_t optlen)
@@ -446,17 +443,24 @@ bool ts::SRTSocket::getSockOpt(int opt_name, const char* opt_names_str, void* op
     return true;
 }
 
+
+//----------------------------------------------------------------------------
+// Configure all socket options.
+//----------------------------------------------------------------------------
+
 // Temporary macros to simplify calls to setSockOpt() when a condition is true.
 // The result evals to true in case of success (either not condition or successful setSockOpt).
 #define COND_SETOPT(cond, name, value) (!(cond) || setSockOpt(name, #name, &(value), sizeof(value)))
 #define COND_SETOPT_STR(cond, name, value) (!(cond) || setSockOpt(name, #name, (value).c_str(), (value).size()))
 
+// Set pre-options, before listen/bind/connect.
 bool ts::SRTSocket::Guts::setSockOptPre()
 {
     const auto& a = _parent->_args;
     const bool yes = true;
 
     // Does SRT API use UTF-8 strings?.
+    std::string u8_congestion(a.congestion.toUTF8());
     std::string u8_packet_filter(a.packet_filter.toUTF8());
     std::string u8_passphrase(a.passphrase.toUTF8());
     std::string u8_stream_id(a.stream_id.toUTF8());
@@ -467,46 +471,47 @@ bool ts::SRTSocket::Guts::setSockOptPre()
     int32_t peer_latency = int32_t(a.peer_latency.count());
     int32_t rcv_latency = int32_t(a.rcv_latency.count());
     int32_t peer_idle_timeout = int32_t(a.peer_idle_timeout.count());
+    int32_t groupminstabletimeo = int32_t(a.groupminstabletimeo.count());
+
+    // We require at least SRT 1.5.0 now. We only condition more recent options.
 
     if (!COND_SETOPT(a.mode != SRTSocketMode::CALLER, SRTO_SENDER, yes) ||
+        !COND_SETOPT(true, SRTO_REUSEADDR, a.reuse_port) ||
         !COND_SETOPT(transtype != SRTT_INVALID, SRTO_TRANSTYPE, transtype) ||
-        !COND_SETOPT(true, SRTO_MESSAGEAPI, a.message_api) ||
+        !COND_SETOPT_STR(!u8_congestion.empty(), SRTO_CONGESTION, u8_congestion) ||
+        !COND_SETOPT(a.message_api.has_value(), SRTO_MESSAGEAPI, *a.message_api) ||
+        !COND_SETOPT(a.nakreport.has_value(), SRTO_NAKREPORT, *a.nakreport) ||
+        !COND_SETOPT(a.tlpktdrop.has_value(), SRTO_TLPKTDROP, *a.tlpktdrop) ||
+        !COND_SETOPT(a.tsbpdmode.has_value(), SRTO_TSBPDMODE, *a.tsbpdmode) ||
         !COND_SETOPT(conn_timeout >= 0, SRTO_CONNTIMEO, conn_timeout) ||
         !COND_SETOPT(a.mode == SRTSocketMode::RENDEZVOUS, SRTO_RENDEZVOUS, yes) ||
-        !COND_SETOPT(a.fc_packets > 0, SRTO_FC, a.fc_packets) ||
+        !COND_SETOPT(a.payload_size >= 0, SRTO_PAYLOADSIZE, a.payload_size) ||
+        !COND_SETOPT(a.fc_packets >= 0, SRTO_FC, a.fc_packets) ||
         !COND_SETOPT(a.iptos >= 0, SRTO_IPTOS, a.iptos) ||
         !COND_SETOPT(a.ipttl > 0, SRTO_IPTTL, a.ipttl) ||
-#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
         !COND_SETOPT(a.enforce_encryption, SRTO_ENFORCEDENCRYPTION, yes) ||
-#endif
         !COND_SETOPT(a.kmrefreshrate >= 0, SRTO_KMREFRESHRATE, a.kmrefreshrate) ||
         !COND_SETOPT(a.kmpreannounce > 0, SRTO_KMPREANNOUNCE, a.kmpreannounce) ||
-        !COND_SETOPT(latency >= 0, SRTO_LATENCY, latency) ||
         !COND_SETOPT(a.linger_opt.l_onoff, SRTO_LINGER, a.linger_opt) ||
-        !COND_SETOPT(a.lossmaxttl >= 0, SRTO_LOSSMAXTTL, a.lossmaxttl) ||
-        !COND_SETOPT(a.max_bw >= 0, SRTO_MAXBW, a.max_bw) ||
         !COND_SETOPT(a.min_version > 0, SRTO_MINVERSION, a.min_version) ||
         !COND_SETOPT(a.mss >= 0, SRTO_MSS, a.mss) ||
-        !COND_SETOPT(a.nakreport.has_value(), SRTO_NAKREPORT, *a.nakreport) ||
-#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        !COND_SETOPT_STR(!u8_packet_filter.empty(), SRTO_PACKETFILTER, u8_packet_filter) ||
-#endif
-        !COND_SETOPT_STR(!u8_passphrase.empty(), SRTO_PASSPHRASE, u8_passphrase) ||
         !COND_SETOPT_STR(!u8_stream_id.empty(), SRTO_STREAMID, u8_stream_id) ||
-        !COND_SETOPT(a.payload_size > 0, SRTO_PAYLOADSIZE, a.payload_size) ||
+        !COND_SETOPT_STR(!u8_packet_filter.empty(), SRTO_PACKETFILTER, u8_packet_filter) ||
+        !COND_SETOPT_STR(!u8_passphrase.empty(), SRTO_PASSPHRASE, u8_passphrase) ||
         !COND_SETOPT(a.pbkeylen >= 0, SRTO_PBKEYLEN, a.pbkeylen) ||
-#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 0)
-        !COND_SETOPT(peer_idle_timeout >= 0, SRTO_PEERIDLETIMEO, peer_idle_timeout) ||
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 5, 2)
+        !COND_SETOPT(a.crypto_mode >= 0, SRTO_CRYPTOMODE, a.crypto_mode) ||
 #endif
-        !COND_SETOPT(peer_latency >= 0, SRTO_PEERLATENCY, peer_latency) ||
-        !COND_SETOPT(a.rcvbuf > 0, SRTO_RCVBUF, a.rcvbuf) ||
+        !COND_SETOPT(a.group_connect >= 0, SRTO_GROUPCONNECT, a.group_connect) ||
+        !COND_SETOPT(groupminstabletimeo >= 0, SRTO_GROUPMINSTABLETIMEO, a.groupminstabletimeo) ||
+        !COND_SETOPT(a.retransmit_algo >= 0, SRTO_RETRANSMITALGO, a.retransmit_algo) ||
+        !COND_SETOPT(latency >= 0, SRTO_LATENCY, latency) ||
         !COND_SETOPT(rcv_latency >= 0, SRTO_RCVLATENCY, rcv_latency) ||
-        !COND_SETOPT(a.sndbuf > 0, SRTO_SNDBUF, a.sndbuf) ||
-#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 2)
-        !COND_SETOPT(a.drift_tracer.has_value(), SRTO_DRIFTTRACER, *a.drift_tracer) ||
-#endif
-        !COND_SETOPT(a.tlpktdrop.has_value(), SRTO_TLPKTDROP, *a.tlpktdrop) ||
-        !COND_SETOPT(a.snddropdelay.has_value(), SRTO_SNDDROPDELAY, *a.snddropdelay))
+        !COND_SETOPT(peer_latency >= 0, SRTO_PEERLATENCY, peer_latency) ||
+        !COND_SETOPT(peer_idle_timeout >= 0, SRTO_PEERIDLETIMEO, peer_idle_timeout) ||
+        !COND_SETOPT(a.ipv6_only >= -1, SRTO_IPV6ONLY, a.ipv6_only) ||
+        !COND_SETOPT(a.rcvbuf > 0, SRTO_RCVBUF, a.rcvbuf) ||
+        !COND_SETOPT(a.sndbuf > 0, SRTO_SNDBUF, a.sndbuf))
     {
         return false;
     }
@@ -518,13 +523,24 @@ bool ts::SRTSocket::Guts::setSockOptPre()
     return true;
 }
 
+// Set post-options, after listen/bind/connect.
 bool ts::SRTSocket::Guts::setSockOptPost()
 {
     const auto& a = _parent->_args;
 
-    if (a.max_bw == 0 && (
+    // SRT API needs milliseconds in int32_t variables.
+    int32_t snd_drop_delay = int32_t(a.snd_drop_delay.count());
+
+    if (!COND_SETOPT(a.drift_tracer.has_value(), SRTO_DRIFTTRACER, *a.drift_tracer) ||
+        !COND_SETOPT(a.lossmaxttl >= 0, SRTO_LOSSMAXTTL, a.lossmaxttl) ||
+        !COND_SETOPT(a.max_bw >= -1, SRTO_MAXBW, a.max_bw) ||
         !COND_SETOPT(a.input_bw >= 0, SRTO_INPUTBW, a.input_bw) ||
-        !COND_SETOPT(a.ohead_bw >= 5, SRTO_OHEADBW, a.ohead_bw)))
+        !COND_SETOPT(a.min_input_bw >= 0, SRTO_MININPUTBW, a.min_input_bw) ||
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 5, 3) && !defined(ROBOTWEAX_SRT_VERSION_VALUE)
+        !COND_SETOPT(a.max_rexmit_bw >= -1, SRTO_MAXREXMITBW, a.max_rexmit_bw) ||
+#endif
+        !COND_SETOPT(a.ohead_bw >= 5, SRTO_OHEADBW, a.ohead_bw) ||
+        !COND_SETOPT(snd_drop_delay >= -1, SRTO_SNDDROPDELAY, snd_drop_delay))
     {
         return false;
     }
@@ -552,10 +568,6 @@ bool ts::SRTSocket::Guts::srtListen(const IPSocketAddress& addr)
 
     if (listener != SRT_INVALID_SOCK) {
         _parent->report().error(u"internal error, SRT listener socket already set");
-        return false;
-    }
-
-    if (!setSockOpt(SRTO_REUSEADDR, "SRTO_REUSEADDR", &args.reuse_port, sizeof(args.reuse_port))) {
         return false;
     }
 
