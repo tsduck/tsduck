@@ -239,7 +239,7 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"Send Buffer Size. Warning: configured in bytes, converted in packets, "
               u"when set, based on MSS value. For desired result, configure MSS first.");
 
-    args.option(u"snddropdelay", 0, Args::INTEGER, 0, 1, -1, std::numeric_limits<int32_t>::max());
+    args.option<cn::milliseconds>(u"snddropdelay");
     args.help(u"snddropdelay",
               u"Sets an extra delay, in milliseconds, before --tlpktdrop is triggered on the data sender. "
               u"This delay is added to the default drop delay time interval value. "
@@ -524,6 +524,16 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"live", true},
         {u"file", false},
     };
+    static const Names bool_names = {
+        {u"true",  1},
+        {u"false", 0},
+        {u"yes",   1},
+        {u"no",    0},
+        {u"on",    1},
+        {u"off",   0},
+        {u"1",     1},
+        {u"0",     0},
+    };
 
     // Store enumeration values as if they were int32_t.
     using I32P = int32_t SRTArgs::*;
@@ -536,8 +546,8 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"congestion",          {.str = &SRTArgs::congestion}},
         {u"conntimeo",           {.ms  = &SRTArgs::connection_timeout}},
         {u"cryptomode",          {.i32 = &SRTArgs::crypto_mode, .max = 2}},
-        {u"drifttracer",         {.obl = &SRTArgs::drift_tracer}},
-        {u"enforcedencryption",  {.obl = &SRTArgs::enforce_encryption}},
+        {u"drifttracer",         {.obl = &SRTArgs::drift_tracer, .names = &bool_names}},
+        {u"enforcedencryption",  {.obl = &SRTArgs::enforce_encryption, .names = &bool_names}},
         {u"fc",                  {.i32 = &SRTArgs::fc_packets, .min = 32}},
         {u"groupconnect",        {.i32 = &SRTArgs::group_connect, .min = 0, .max = 1}},
         {u"groupminstabletimeo", {.ms  = &SRTArgs::groupminstabletimeo, .min = 60}},
@@ -552,11 +562,11 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"lossmaxttl",          {.i32 = &SRTArgs::lossmaxttl}},
         {u"maxbw",               {.i64 = &SRTArgs::max_bw, .min = -1}},
         {u"mininputbw",          {.i64 = &SRTArgs::min_input_bw}},
-        {u"messageapi",          {.obl = &SRTArgs::message_api}},
+        {u"messageapi",          {.obl = &SRTArgs::message_api, .names = &bool_names}},
         {u"minversion",          {.str = &SRTArgs::_min_version}},
         {u"mode",                {.i32 = I32P(&SRTArgs::mode), .names = &mode_names}},
         {u"mss",                 {.i32 = &SRTArgs::mss, .min = 76}},
-        {u"nakreport",           {.obl = &SRTArgs::nakreport}},
+        {u"nakreport",           {.obl = &SRTArgs::nakreport, .names = &bool_names}},
         {u"oheadbw",             {.i32 = &SRTArgs::ohead_bw, .min = 5, .max = 100}},
         {u"packetfilter",        {.str = &SRTArgs::packet_filter}},
         {u"passphrase",          {.str = &SRTArgs::passphrase}},
@@ -571,9 +581,9 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"sndbuf",              {.i32 = &SRTArgs::sndbuf}},
         {u"snddropdelay",        {.ms  = &SRTArgs::snd_drop_delay, .min = -1}},
         {u"streamid",            {.str = &SRTArgs::stream_id}},
-        {u"tlpktdrop",           {.obl = &SRTArgs::tlpktdrop}},
+        {u"tlpktdrop",           {.obl = &SRTArgs::tlpktdrop, .names = &bool_names}},
         {u"transtype",           {.bl  = &SRTArgs::live_mode, .names = &transmission_names}},
-        {u"tsbpdmode",           {.obl = &SRTArgs::tsbpdmode}},
+        {u"tsbpdmode",           {.obl = &SRTArgs::tsbpdmode, .names = &bool_names}},
     };
 
     // Analyze all parameters.
@@ -590,20 +600,6 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
             if (p.str != nullptr) {
                 // Parameter is a string.
                 this->*(p.str) = value;
-            }
-            else if (p.bl != nullptr || p.obl != nullptr) {
-                // Parameter is a boolean (fixed or optional).
-                bool b = false;
-                if (!value.toBool(b)) {
-                    report.error(u"invalid boolean parameter \"%s=%s\" in srt:// URL", name, value);
-                    success = false;
-                }
-                else if (p.bl != nullptr) {
-                    this->*(p.bl) = b;
-                }
-                else {
-                    this->*(p.obl) = b;
-                }
             }
             else if (p.ip != nullptr) {
                 // Parameter is an IP address.
@@ -647,6 +643,12 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
                     }
                     else if (p.ms != nullptr) {
                         this->*(p.ms) = cn::milliseconds(cn::milliseconds::rep(i));
+                    }
+                    else if (p.bl != nullptr) {
+                        this->*(p.bl) = i != 0;
+                    }
+                    else if (p.obl != nullptr) {
+                        this->*(p.obl) = i != 0;
                     }
                 }
             }

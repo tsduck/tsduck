@@ -40,7 +40,7 @@ TS_REGISTER_FEATURE(u"srt", u"SRT library", SUPPORT, ts::SRTSocket::GetLibraryVe
 ts::SRTSocket::SRTSocket(Report* report) : ReporterBase(report), _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
 bool ts::SRTSocket::isOpen() const { return false; }
-bool ts::SRTSocket::open(SRTSocketMode, const IPSocketAddress&, const IPSocketAddress&, size_t) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode, const IPSocketAddress&, const IPSocketAddress&) NOSRT_ERROR
 bool ts::SRTSocket::close(bool silent) NOSRT_ERROR
 bool ts::SRTSocket::getPeers(IPSocketAddress& local, IPSocketAddress& remote) NOSRT_ERROR
 bool ts::SRTSocket::send(const void*, size_t) NOSRT_ERROR
@@ -536,7 +536,7 @@ bool ts::SRTSocket::Guts::setSockOptPost()
         !COND_SETOPT(a.max_bw >= -1, SRTO_MAXBW, a.max_bw) ||
         !COND_SETOPT(a.input_bw >= 0, SRTO_INPUTBW, a.input_bw) ||
         !COND_SETOPT(a.min_input_bw >= 0, SRTO_MININPUTBW, a.min_input_bw) ||
-#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 5, 3)
+#if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 5, 3) && !defined(ROBOTWEAX_SRT_VERSION_VALUE)
         !COND_SETOPT(a.max_rexmit_bw >= -1, SRTO_MAXREXMITBW, a.max_rexmit_bw) ||
 #endif
         !COND_SETOPT(a.ohead_bw >= 5, SRTO_OHEADBW, a.ohead_bw) ||
