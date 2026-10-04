@@ -25,6 +25,12 @@ VERSION 3.46-4819 (October 2026)
     - Obsolete options --polling-time and --rendezvous have been  removed  from
       plugins "srt".
 
+[BUG] Bug fixes:
+
+  * Fixed issue #1749:  A regression  was  introduced  in  v3.45  in TR 101 290
+    analysis: consecutive PCR in range -100 .. -1 were no longer detected as an
+    error.
+
 -------------------------------------------------------------------------------
 
 VERSION 3.45-4798 (September 2026)

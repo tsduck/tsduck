@@ -54,7 +54,7 @@ namespace ts {
             CRC_error_2,             //!< CRC error in all other cases than CRC_error.
             PCR_error,               //!< No 2.3
             PCR_repetition_error,    //!< No 2.3.a
-            PCR_discontinuity_indicator_error, //!< No 2.3b
+            PCR_discontinuity_indicator_error, //!< No 2.3.b
             PCR_accuracy_error,      //!< No 2.4 (TODO)
             PTS_error,               //!< No 2.5
             CAT_error,               //!< No 2.6
