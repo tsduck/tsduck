@@ -1217,6 +1217,20 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 namespace ts {
+
+    // Helper for is_optional.
+    //! @cond nodoxygen
+    template <typename T> inline constexpr bool is_optional_v = false;
+    template <typename T> inline constexpr bool is_optional_v<std::optional<T>> = true;
+    //! @endcond
+
+    //!
+    //! Concept which checks if a type T is an instantiation of std::optional.
+    //! @ingroup cpp
+    //!
+    template <typename T>
+    concept is_optional = is_optional_v<std::remove_cvref_t<T>>;
+
     //!
     //! Set a default value in a std::optional object, if there is none.
     //! @ingroup cpp

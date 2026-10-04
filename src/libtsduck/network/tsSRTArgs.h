@@ -62,6 +62,7 @@ namespace ts {
     public:
         // SRTArgs public options.
         // Boolean and integer types are carefully selected from the libsrt API, modify with care.
+        // SRT options with std::optional type are configured in the socket only when their value is set.
 
         // Statistics options. These are TSDuck options, not SRT options.
         SRTStatMode            stats_mode = SRTStatMode::ALL;  //!< Amount of statistics to report.
@@ -71,66 +72,67 @@ namespace ts {
         UString                json_prefix {};                 //!< Noticeable prefix on JSON statistics lines.
 
         // Network options.
-        SRTSocketMode          mode = SRTSocketMode::DEFAULT;  //!< SRT socket mode (SRTO_RENDEZVOUS, SRTO_SENDER, v1.0.4).
+        SRTSocketMode          mode = SRTSocketMode::DEFAULT;  //!< SRT socket mode (SRTO_RENDEZVOUS).
         IPSocketAddress        local_address {};               //!< Local socket address (any mode).
         IPSocketAddress        remote_address {};              //!< Remote socket address (caller or rendezvous mode).
         int                    backlog = 1;                    //!< Max waiting incoming client in listener mode.
         ::linger               linger_opt {0, 0};              //!< Linger time on close (SRTO_LINGER).
         bool                   reuse_port = true;              //!< Reuse UDP port in listener mode (SRTO_REUSEADDR).
-        int32_t                ipv6_only = -2;                 //!< -1=system default, 0=IPv4 and v6, 1=IPv6 only (SRTO_IPV6ONLY, v1.4.0).
-        int32_t                iptos = -1;                     //!< IPv4 Type of Service (SRTO_IPTOS, v1.0.5).
-        int32_t                ipttl = -1;                     //!< IPv4 Time To Live (SRTO_IPTTL, v1.0.5).
-        int32_t                mss = -1;                       //!< Maximum Segment Size (SRTO_MSS).
-        int32_t                udp_rcvbuf = -1;                //!< UDP socket receive buffer size (SRTO_UDP_RCVBUF).
-        int32_t                udp_sndbuf = -1;                //!< UDP socket send buffer size (SRTO_UDP_SNDBUF).
+        std::optional<bool>    sender {};                      //!< Indicate that the socket acts as sender, hint only (SRTO_SENDER, v1.0.4)
+        std::optional<int32_t> ipv6_only {};                   //!< -1=system default, 0=IPv4 and v6, 1=IPv6 only (SRTO_IPV6ONLY, v1.4.0).
+        std::optional<int32_t> iptos {};                       //!< IPv4 Type of Service (SRTO_IPTOS, v1.0.5).
+        std::optional<int32_t> ipttl {};                       //!< IPv4 Time To Live (SRTO_IPTTL, v1.0.5).
+        std::optional<int32_t> mss {};                         //!< Maximum Segment Size (SRTO_MSS).
+        std::optional<int32_t> udp_rcvbuf {};                  //!< UDP socket receive buffer size (SRTO_UDP_RCVBUF).
+        std::optional<int32_t> udp_sndbuf {};                  //!< UDP socket send buffer size (SRTO_UDP_SNDBUF).
 
         // Transmission mode (live vs. file) and dependent parameters.
         // Their default values depend on the transmisson mode.
         // Don't set the dependent parameters unless you know what you are doing.
-        bool                   live_mode = true;               //!< Live transmission type, not file (SRTO_TRANSTYPE, v1.3.0).
-        UString                congestion {};                  //!< Congestion controller, "live", "file" (SRTO_CONGESTION, v1.3.0).
+        std::optional<bool>    live_mode {};                   //!< Live transmission type, not file (SRTO_TRANSTYPE, v1.3.0).
+        std::optional<UString> congestion {};                  //!< Congestion controller, "live", "file" (SRTO_CONGESTION, v1.3.0).
         std::optional<bool>    message_api {};                 //!< Use message API, not buffer API (SRTO_MESSAGEAPI, v1.3.0).
         std::optional<bool>    nakreport {};                   //!< Periodically send NAK reports for missed packets (SRTO_NAKREPORT, v1.1.0).
-        cn::milliseconds       rcv_latency {-1};               //!< Latency value in the receiving direction of the socket (SRTO_RCVLATENCY, v1.3.0).
         std::optional<bool>    tlpktdrop {};                   //!< Too-late Packet Drop (SRTO_TLPKTDROP, v1.0.6).
         std::optional<bool>    tsbpdmode {};                   //!< Use Timestamp-based Packet Delivery mode (SRTO_TSBPDMODE).
 
         // Group connection options.
-        int32_t                group_connect = -1;             //!< Listener accept group connection, 0 or 1 (SRTO_GROUPCONNECT, v1.5.0).
-        cn::milliseconds       groupminstabletimeo {-1};       //!< Group minimum stability timeout (SRTO_GROUPMINSTABLETIMEO, v1.5.0).
+        std::optional<int32_t> group_connect {};               //!< Listener accept group connection, 0 or 1 (SRTO_GROUPCONNECT, v1.5.0).
+        std::optional<cn::milliseconds> groupminstabletimeo {};//!< Group minimum stability timeout (SRTO_GROUPMINSTABLETIMEO, v1.5.0).
 
         // Bandwidth options.
-        int64_t                input_bw = -1;                  //!< Maximum input bandwidth (SRTO_INPUTBW, v1.0.5).
-        int64_t                min_input_bw = -1;              //!< Minimum allowed input bandwidth (SRTO_MININPUTBW, v1.4.3).
-        int64_t                max_bw = -2;                    //!< Maximum send bandwidth, -1 means infinite (SRTO_MAXBW, v1.0.5).
-        int64_t                max_rexmit_bw = -2;             //!< Maximum bandwidth for retransmission, -1 means infinite (SRTO_MAXREXMITBW, v1.5.3).
-        int32_t                ohead_bw = -1;                  //!< Recovery bandwidth overhead above input rate, in percent (SRTO_OHEADBW, v1.0.5).
+        std::optional<int64_t> input_bw {};                    //!< Maximum input bandwidth (SRTO_INPUTBW, v1.0.5).
+        std::optional<int64_t> min_input_bw {};                //!< Minimum allowed input bandwidth (SRTO_MININPUTBW, v1.4.3).
+        std::optional<int64_t> max_bw {};                      //!< Maximum send bandwidth, -1 means infinite (SRTO_MAXBW, v1.0.5).
+        std::optional<int64_t> max_rexmit_bw {};               //!< Maximum bandwidth for retransmission, -1 means infinite (SRTO_MAXREXMITBW, v1.5.3).
+        std::optional<int32_t> ohead_bw {};                    //!< Recovery bandwidth overhead above input rate, in percent (SRTO_OHEADBW, v1.0.5).
 
         // Encryption options.
         // SEK = Stream Encrypting Key.
-        UString                passphrase {};                  //!< Passphrase for encryption (SRTO_PASSPHRASE).
-        int32_t                crypto_mode = -1;               //!< Encryption mode, 0=negotiate, 1=AES-CTR, 2=AES-GCM (SRTO_CRYPTOMODE, v1.5.2)
-        int32_t                pbkeylen = -1;                  //!< Sender encryption key length, in bytes, 0=default, 16, 24, 32 (SRTO_PBKEYLEN).
+        std::optional<UString> passphrase {};                  //!< Passphrase for encryption (SRTO_PASSPHRASE).
+        std::optional<int32_t> crypto_mode {};                 //!< Encryption mode, 0=negotiate, 1=AES-CTR, 2=AES-GCM (SRTO_CRYPTOMODE, v1.5.2)
+        std::optional<int32_t> pbkeylen {};                    //!< Sender encryption key length, in bytes, 0=default, 16, 24, 32 (SRTO_PBKEYLEN).
         std::optional<bool>    enforce_encryption {};          //!< Enforce same encryption (SRTO_ENFORCEDENCRYPTION, v1.3.2).
-        int32_t                kmrefreshrate = -1;             //!< Interval in packets between SEK (SRTO_KMREFRESHRATE, 1.3.2).
-        int32_t                kmpreannounce = -1;             //!< Interval in packets between new SEK and SEK switch (SRTO_KMPREANNOUNCE, v1.3.2).
+        std::optional<int32_t> kmrefreshrate {};               //!< Interval in packets between SEK (SRTO_KMREFRESHRATE, 1.3.2).
+        std::optional<int32_t> kmpreannounce {};               //!< Interval in packets between new SEK and SEK switch (SRTO_KMPREANNOUNCE, v1.3.2).
 
         // Other SRT options.
         std::optional<bool>    drift_tracer {};                //!< Enables or disables time drift tracer (SRTO_DRIFTTRACER, v1.4.2).
-        UString                packet_filter {};               //!< Packet filter string (SRTO_PACKETFILTER, v1.4.0).
-        UString                stream_id {};                   //!< Stream identification string (SRTO_STREAMID, v1.3.0).
-        int32_t                fc_packets = -1;                //!< Flow Control, limit max packets "in flight" (SRTO_FC).
-        int32_t                lossmaxttl = -1;                //!< Value (in packets) up to which the Reorder Tolerance may grow (SRTO_LOSSMAXTTL, v1.2.0).
-        int32_t                payload_size = -1;              //!< Maximum size of a single send in Live mode (SRTO_PAYLOADSIZE, v1.3.0).
-        int32_t                rcvbuf = -1;                    //!< Receive Buffer Size, in bytes (SRTO_RCVBUF).
-        int32_t                sndbuf = -1;                    //!< Send Buffer Size (SRTO_SNDBUF).
-        int32_t                min_version = -1;               //!< Minimum SRT version that is required from the peer (SRTO_MINVERSION, v1.3.0).
-        int32_t                retransmit_algo = -1;           //!< Choose between retransmission algorithms (SRTO_RETRANSMITALGO, v1.4.2).
-        cn::milliseconds       snd_drop_delay {-2};            //!< Extra delay before TLPKTDROP, -1 = do not drop packets (SRTO_SNDDROPDELAY, v1.3.2).
-        cn::milliseconds       connection_timeout {-1};        //!< Connection timeout (SRTO_CONNTIMEO, v1.1.2).
-        cn::milliseconds       latency {-1};                   //!< Configured latency, set both SRTO_RCVLATENCY and SRTO_PEERLATENCY (SRTO_LATENCY, v1.0.2).
-        cn::milliseconds       peer_idle_timeout {-1};         //!< Max time to wait until another packet is received (SRTO_PEERIDLETIMEO, v1.3.3).
-        cn::milliseconds       peer_latency {-1};              //!< Latency provided by sender as min value for the receiver (SRTO_PEERLATENCY, v1.3.0).
+        std::optional<UString> packet_filter {};               //!< Packet filter string (SRTO_PACKETFILTER, v1.4.0).
+        std::optional<UString> stream_id {};                   //!< Stream identification string (SRTO_STREAMID, v1.3.0).
+        std::optional<int32_t> fc_packets {};                  //!< Flow Control, limit max packets "in flight" (SRTO_FC).
+        std::optional<int32_t> lossmaxttl {};                  //!< Value (in packets) up to which the Reorder Tolerance may grow (SRTO_LOSSMAXTTL, v1.2.0).
+        std::optional<int32_t> payload_size {};                //!< Maximum size of a single send in Live mode (SRTO_PAYLOADSIZE, v1.3.0).
+        std::optional<int32_t> rcvbuf {};                      //!< Receive Buffer Size, in bytes (SRTO_RCVBUF).
+        std::optional<int32_t> sndbuf {};                      //!< Send Buffer Size (SRTO_SNDBUF).
+        std::optional<int32_t> min_version {};                 //!< Minimum SRT version that is required from the peer (SRTO_MINVERSION, v1.3.0).
+        std::optional<int32_t> retransmit_algo {};             //!< Choose between retransmission algorithms (SRTO_RETRANSMITALGO, v1.4.2).
+        std::optional<cn::milliseconds> rcv_latency {};        //!< Latency value in the receiving direction of the socket (SRTO_RCVLATENCY, v1.3.0).
+        std::optional<cn::milliseconds> snd_drop_delay {};     //!< Extra delay before TLPKTDROP, -1 = do not drop packets (SRTO_SNDDROPDELAY, v1.3.2).
+        std::optional<cn::milliseconds> connection_timeout {}; //!< Connection timeout (SRTO_CONNTIMEO, v1.1.2).
+        std::optional<cn::milliseconds> latency {};            //!< Configured latency, set both SRTO_RCVLATENCY and SRTO_PEERLATENCY (SRTO_LATENCY, v1.0.2).
+        std::optional<cn::milliseconds> peer_idle_timeout {};  //!< Max time to wait until another packet is received (SRTO_PEERIDLETIMEO, v1.3.3).
+        std::optional<cn::milliseconds> peer_latency {};       //!< Latency provided by sender as min value for the receiver (SRTO_PEERLATENCY, v1.3.0).
 
         // Unimplemented SRT options, read-only or considered useless or too exotic:
         // - SRTO_BINDTODEVICE, v1.3.0
@@ -241,10 +243,10 @@ namespace ts {
         bool setAddressesInternal(Report& report, const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local, bool reset);
 
         // Temporary values, used when analysing an URL.
-        UString         _min_version {};
-        IPAddress       _adapter {};
-        IPSocketAddress _binder {};
-        int32_t         _local_port = -1;
-        int32_t         _linger_time = -1;
+        IPAddress              _adapter {};
+        IPSocketAddress        _binder {};
+        std::optional<UString> _min_version {};
+        std::optional<int32_t> _local_port {};
+        std::optional<int32_t> _linger_time {};
     };
 }

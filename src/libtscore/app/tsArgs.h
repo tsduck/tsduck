@@ -1061,7 +1061,25 @@ namespace ts {
         }
 
         //!
-        //! Get the value of boolean option in the last analyzed command line.
+        //! Get the value of an std::chrono::duration option in the last analyzed command line, only if present.
+        //!
+        //! If the option has been declared with a std::chrono::duration type in the syntax of the command,
+        //! the validity of the supplied option value has been checked by the analyze() method.
+        //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
+        //!
+        //! @param [out] value A std::optional receiving the duration value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] clear_if_absent When the option is not present, the std::optional object is cleared
+        //! (set to uninitialized) when @a clear_if_absent it true. Otherwise, it is left unmodified.
+        //!
+        template <class Rep, class Period>
+        void getOptionalChronoValue(std::optional<cn::duration<Rep, Period>>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
+
+        //!
+        //! Get the value of boolean option in the last analyzed command line, only if present.
         //!
         //! @param [in,out] value A std::optional bool receiving the value of the option or parameter.
         //! For options with optional values, if the the option is present without value, the returned value is true.
@@ -1069,9 +1087,8 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] clear_if_absent When the option is not present, the std::optional object
-        //! is cleared (set to uninitialized) when @a clear_if_absent it true. Otherwise, it
-        //! is left unmodified.
+        //! @param [in] clear_if_absent When the option is not present, the std::optional object is cleared
+        //! (set to uninitialized) when @a clear_if_absent it true. Otherwise, it is left unmodified.
         //!
         void getOptionalBoolValue(std::optional<bool>& value, const UChar* name = nullptr, bool clear_if_absent = false) const;
 
@@ -1461,9 +1478,9 @@ namespace ts {
         IOption* search(UChar c);
         IOption* search(const UString& name);
 
-        // Get the value of an integer option (internal version), return trueu if found.
+        // Get the value of an integer option (internal version), return true if found.
         template <typename INT> requires ts::int_enum<INT>
-        bool getIntInternal(INT& value, const UChar* name, size_t index) const;
+        bool getIntInternal(const IOption& opt, INT& value, size_t index) const;
 
         // Locate an option description. Used by application to get values.
         // Throw exception if not found.
@@ -1532,9 +1549,8 @@ void ts::Args::getPathValues(CONTAINER& values, const UChar* name) const
 //----------------------------------------------------------------------------
 
 template <typename INT> requires ts::int_enum<INT>
-bool ts::Args::getIntInternal(INT& value, const UChar* name, size_t index) const
+bool ts::Args::getIntInternal(const IOption& opt, INT& value, size_t index) const
 {
-    const IOption& opt(getIOption(name));
     if ((opt.type != INTEGER && opt.type != CHRONO) || index >= opt.value_count) {
         // Invalid type or index.
         return false;
@@ -1574,7 +1590,8 @@ bool ts::Args::getIntInternal(INT& value, const UChar* name, size_t index) const
 template <typename INT, typename INT2> requires ts::int_enum<INT> && ts::int_enum<INT2>
 void ts::Args::getIntValue(INT& value, const UChar* name, const INT2 def_value, size_t index) const
 {
-    if (!getIntInternal(value, name, index)) {
+    const IOption& opt(getIOption(name));
+    if (!getIntInternal(opt, value, index)) {
         value = static_cast<INT>(def_value);
     }
 }
@@ -1583,7 +1600,8 @@ template <typename INT> requires ts::int_enum<INT>
 INT ts::Args::intValue(const UChar* name, const INT def_value, size_t index) const
 {
     INT value = def_value;
-    getIntInternal(value, name, index);
+    const IOption& opt(getIOption(name));
+    getIntInternal(opt, value, index);
     return value;
 }
 
@@ -1770,7 +1788,7 @@ void ts::Args::getChronoValue(cn::duration<Rep1, Period1>& value,
     }
 
     std::intmax_t ivalue = 0;
-    if (!getIntInternal(ivalue, name, index)) {
+    if (!getIntInternal(opt, ivalue, index)) {
         // Not found. Compile-time conversion on default value if necessary.
         value = def_value;
         return;
@@ -1782,6 +1800,23 @@ void ts::Args::getChronoValue(cn::duration<Rep1, Period1>& value,
     }
 
     value = cn::duration<Rep1, Period1>(static_cast<Rep1>(ivalue));
+}
+
+template <class Rep, class Period>
+void ts::Args::getOptionalChronoValue(std::optional<cn::duration<Rep, Period>>& value, const UChar* name, bool clear_if_absent) const
+{
+    std::intmax_t ivalue = 0;
+    const IOption& opt(getIOption(name));
+    if (opt.type == CHRONO && getIntInternal(opt, ivalue, 0)) {
+        if (Period::num != opt.num || Period::den != opt.den) {
+            // Run-time conversion. Potentially subject to integer overflow.
+            ivalue = (ivalue * opt.num * Period::den) / (opt.den * Period::num);
+        }
+        value = cn::duration<Rep, Period>(static_cast<Rep>(ivalue));
+    }
+    else if (clear_if_absent) {
+        value.reset();
+    }
 }
 
 

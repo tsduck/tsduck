@@ -39,19 +39,20 @@ TSUNIT_DEFINE_TEST(MinVersion)
     ts::SRTArgs args;
 
     TSUNIT_ASSERT(args.setMinVersion(CERR, u"1.5.2"));
-    TSUNIT_EQUAL(0x010502, args.min_version);
+    TSUNIT_ASSERT(args.min_version.has_value());
+    TSUNIT_EQUAL(0x010502, *args.min_version);
 
     args.reset();
     report.clear();
-    TSUNIT_EQUAL(-1, args.min_version);
+    TSUNIT_ASSERT(!args.min_version.has_value());
     TSUNIT_ASSERT(!args.setMinVersion(report, u"1.256.2"));
-    TSUNIT_EQUAL(-1, args.min_version);
+    TSUNIT_ASSERT(!args.min_version.has_value());
     TSUNIT_EQUAL(u"Error: invalid SRT minimum version \"1.256.2\"", report.messages());
 
     args.reset();
     report.clear();
     TSUNIT_ASSERT(!args.setMinVersion(report, u"1.foo"));
-    TSUNIT_EQUAL(-1, args.min_version);
+    TSUNIT_ASSERT(!args.min_version.has_value());
     TSUNIT_EQUAL(u"Error: invalid SRT minimum version \"1.foo\"", report.messages());
 }
 
@@ -117,7 +118,7 @@ TSUNIT_DEFINE_TEST(URL)
     TSUNIT_EQUAL(u"20.21.22.23:5678", args.local_address.toString());
     TSUNIT_EQUAL(u"10.11.12.13:1234", args.remote_address.toString());
     TSUNIT_EQUAL(0, args.linger_opt.l_onoff);
-    TSUNIT_ASSERT(args.live_mode);
+    TSUNIT_ASSERT(!args.live_mode.has_value());
     TSUNIT_ASSERT(!args.message_api.has_value());
 
     args.reset();
@@ -125,13 +126,18 @@ TSUNIT_DEFINE_TEST(URL)
     TSUNIT_EQUAL(ts::SRTSocketMode::CALLER, args.mode);
     TSUNIT_EQUAL(u"0.0.0.0", args.local_address.toString());
     TSUNIT_EQUAL(u"10.11.12.13:1234", args.remote_address.toString());
-    TSUNIT_EQUAL(3000, args.connection_timeout.count());
-    TSUNIT_EQUAL(40000, args.fc_packets);
+    TSUNIT_ASSERT(args.connection_timeout.has_value());
+    TSUNIT_EQUAL(3000, args.connection_timeout->count());
+    TSUNIT_ASSERT(args.fc_packets.has_value());
+    TSUNIT_EQUAL(40000, *args.fc_packets);
     TSUNIT_EQUAL(1, args.linger_opt.l_onoff);
     TSUNIT_EQUAL(4, args.linger_opt.l_linger);
-    TSUNIT_EQUAL(0x010503, args.min_version);
-    TSUNIT_EQUAL(u"foo:bar", args.packet_filter);
-    TSUNIT_ASSERT(!args.live_mode);
+    TSUNIT_ASSERT(args.min_version.has_value());
+    TSUNIT_EQUAL(0x010503, *args.min_version);
+    TSUNIT_ASSERT(args.packet_filter.has_value());
+    TSUNIT_EQUAL(u"foo:bar", *args.packet_filter);
+    TSUNIT_ASSERT(args.live_mode.has_value());
+    TSUNIT_ASSERT(!*args.live_mode);
     TSUNIT_ASSERT(args.message_api.has_value());
     TSUNIT_ASSERT(*args.message_api);
 }

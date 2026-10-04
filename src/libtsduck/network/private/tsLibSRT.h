@@ -70,6 +70,12 @@
     // Now include the libsrt headers.
     #include <srt/srt.h>
 
+    // SRT_VERSION_VALUE is always defined. ROBOTWEAX_SRT_VERSION_VALUE is only defined with Robotweax SRT.
+    // Enforce its definition with a negative value if Robotweax SRT is not installed.
+    #if !defined(ROBOTWEAX_SRT_VERSION_VALUE)
+        #define ROBOTWEAX_SRT_VERSION_VALUE (-1)
+    #endif
+
     // The header access_control.h was introduced in version 1.4.2.
     // On Windows, access_control.h was missing in the binary installer before 1.5.3.
     #if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)

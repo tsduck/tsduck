@@ -274,7 +274,7 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"packets that have no chance to be delivered in time. It is automatically enabled "
               u"in sender if receiver supports it. The default is true in Live mode, false in File mode.");
 
-    static const Names transtype_names({
+    static const Names transtype_names({  // bool live_mode
         {u"file", false},
         {u"live", true},
     });
@@ -338,37 +338,38 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     linger_opt.l_onoff = args.present(u"linger");
     args.getIntValue(linger_opt.l_linger, u"linger");
 
-    enforce_encryption = args.present(u"enforce-encryption");
+    args.getOptionalBoolValue(enforce_encryption, u"enforce-encryption");
     args.getOptionalBoolValue(nakreport, u"nakreport");
     args.getOptionalBoolValue(tlpktdrop, u"tlpktdrop");
-    args.getChronoValue(snd_drop_delay, u"snddropdelay", cn::milliseconds(-2));
-    args.getChronoValue(connection_timeout, u"conn-timeout", cn::milliseconds(-1));
-    args.getIntValue(fc_packets, u"fc", -1);
-    args.getIntValue(input_bw, u"input-bw", -1);
-    args.getIntValue(iptos, u"iptos", -1);
-    args.getIntValue(ipttl, u"ipttl", -1);
-    args.getIntValue(kmrefreshrate, u"kmrefreshrate", -1);
-    args.getIntValue(kmpreannounce, u"kmpreannounce", -1);
-    args.getIntValue(lossmaxttl, u"lossmaxttl", -1);
-    args.getIntValue(max_bw, u"max-bw", -1);
-    args.getIntValue(mss, u"mss", -1);
-    args.getIntValue(ohead_bw, u"ohead-bw", -1);
-    args.getValue(stream_id, u"streamid");
-    args.getValue(packet_filter, u"packet-filter");
-    args.getValue(passphrase, u"passphrase");
-    args.getIntValue(payload_size, u"payload-size", -1);
-    args.getIntValue(pbkeylen, u"pbkeylen", -1);
-    args.getChronoValue(latency, u"latency", cn::milliseconds(-1));
-    args.getChronoValue(peer_idle_timeout, u"peer-idle-timeout", cn::milliseconds(-1));
-    args.getChronoValue(peer_latency, u"peer-latency", cn::milliseconds(-1));
-    args.getChronoValue(rcv_latency, u"rcv-latency", cn::milliseconds(-1));
-    args.getIntValue(rcvbuf, u"rcvbuf", -1);
-    args.getIntValue(sndbuf, u"sndbuf", -1);
-    args.getIntValue(udp_rcvbuf, u"udp-rcvbuf", -1);
-    args.getIntValue(udp_sndbuf, u"udp-sndbuf", -1);
+    args.getOptionalChronoValue(snd_drop_delay, u"snddropdelay");
+    args.getOptionalChronoValue(connection_timeout, u"conn-timeout");
+    args.getOptionalIntValue(fc_packets, u"fc");
+    args.getOptionalIntValue(input_bw, u"input-bw");
+    args.getOptionalIntValue(iptos, u"iptos");
+    args.getOptionalIntValue(ipttl, u"ipttl");
+    args.getOptionalIntValue(kmrefreshrate, u"kmrefreshrate");
+    args.getOptionalIntValue(kmpreannounce, u"kmpreannounce");
+    args.getOptionalIntValue(lossmaxttl, u"lossmaxttl");
+    args.getOptionalIntValue(max_bw, u"max-bw");
+    args.getOptionalIntValue(mss, u"mss");
+    args.getOptionalIntValue(ohead_bw, u"ohead-bw");
+    args.getOptionalValue(stream_id, u"streamid");
+    args.getOptionalValue(packet_filter, u"packet-filter");
+    args.getOptionalValue(passphrase, u"passphrase");
+    args.getOptionalIntValue(payload_size, u"payload-size");
+    args.getOptionalIntValue(pbkeylen, u"pbkeylen");
+    args.getOptionalChronoValue(latency, u"latency");
+    args.getOptionalChronoValue(peer_idle_timeout, u"peer-idle-timeout");
+    args.getOptionalChronoValue(peer_latency, u"peer-latency");
+    args.getOptionalChronoValue(rcv_latency, u"rcv-latency");
+    args.getOptionalIntValue(rcvbuf, u"rcvbuf");
+    args.getOptionalIntValue(sndbuf, u"sndbuf");
+    args.getOptionalIntValue(udp_rcvbuf, u"udp-rcvbuf");
+    args.getOptionalIntValue(udp_sndbuf, u"udp-sndbuf");
 
     success = setMinVersion(args, args.value(u"min-version")) && success;
 
+    // Statistics options. These are TSDuck options, not SRT options.
     args.getChronoValue(stats_interval, u"statistics-interval");
     final_stats = stats_interval > cn::milliseconds::zero() || args.present(u"final-statistics");
     json_line = args.present(u"json-line");
@@ -490,23 +491,27 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
     remote_address.clear();
 
     // Reset synthetic values to check if they are specified in the URL.
-    _min_version.clear();
     _adapter.clear();
     _binder.clear();
-    _local_port = -1;
-    _linger_time = -1;
+    _min_version.reset();
+    _local_port.reset();
+    _linger_time.reset();
+
+    // Store enumeration values as if they were int32_t.
+    using I32ENU = int32_t SRTArgs::*;
+    static_assert(sizeof(SRTArgs::mode) == sizeof(int32_t));
 
     // Definition of parameters in URL query string.
     struct Param {
         // Field to update in SRTArgs.
-        bool                   SRTArgs::* bl  = nullptr;
-        std::optional<bool>    SRTArgs::* obl = nullptr;
-        int32_t                SRTArgs::* i32 = nullptr;
-        int64_t                SRTArgs::* i64 = nullptr;
-        cn::milliseconds       SRTArgs::* ms  = nullptr;
-        UString                SRTArgs::* str = nullptr;
-        IPAddress              SRTArgs::* ip  = nullptr;
-        IPSocketAddress        SRTArgs::* sok = nullptr;
+        std::optional<bool>             SRTArgs::* bl  = nullptr;
+        std::optional<int32_t>          SRTArgs::* i32 = nullptr;
+        std::optional<int64_t>          SRTArgs::* i64 = nullptr;
+        std::optional<cn::milliseconds> SRTArgs::* ms  = nullptr;
+        std::optional<UString>          SRTArgs::* str = nullptr;
+        int32_t                         SRTArgs::* enu = nullptr; // enum with int32_t representation
+        IPAddress                       SRTArgs::* ip  = nullptr;
+        IPSocketAddress                 SRTArgs::* sok = nullptr;
 
         // Value boundaries or list.
         int64_t      min = 0;
@@ -535,10 +540,6 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"0",     0},
     };
 
-    // Store enumeration values as if they were int32_t.
-    using I32P = int32_t SRTArgs::*;
-    static_assert(sizeof(SRTArgs::mode) == sizeof(int32_t));
-
     // Define all possible parameters in the query string.
     static const std::map<UString, Param> params = {
         {u"adapter",             {.ip  = &SRTArgs::_adapter}},
@@ -546,8 +547,8 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"congestion",          {.str = &SRTArgs::congestion}},
         {u"conntimeo",           {.ms  = &SRTArgs::connection_timeout}},
         {u"cryptomode",          {.i32 = &SRTArgs::crypto_mode, .max = 2}},
-        {u"drifttracer",         {.obl = &SRTArgs::drift_tracer, .names = &bool_names}},
-        {u"enforcedencryption",  {.obl = &SRTArgs::enforce_encryption, .names = &bool_names}},
+        {u"drifttracer",         {.bl  = &SRTArgs::drift_tracer, .names = &bool_names}},
+        {u"enforcedencryption",  {.bl  = &SRTArgs::enforce_encryption, .names = &bool_names}},
         {u"fc",                  {.i32 = &SRTArgs::fc_packets, .min = 32}},
         {u"groupconnect",        {.i32 = &SRTArgs::group_connect, .min = 0, .max = 1}},
         {u"groupminstabletimeo", {.ms  = &SRTArgs::groupminstabletimeo, .min = 60}},
@@ -562,11 +563,11 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"lossmaxttl",          {.i32 = &SRTArgs::lossmaxttl}},
         {u"maxbw",               {.i64 = &SRTArgs::max_bw, .min = -1}},
         {u"mininputbw",          {.i64 = &SRTArgs::min_input_bw}},
-        {u"messageapi",          {.obl = &SRTArgs::message_api, .names = &bool_names}},
+        {u"messageapi",          {.bl  = &SRTArgs::message_api, .names = &bool_names}},
         {u"minversion",          {.str = &SRTArgs::_min_version}},
-        {u"mode",                {.i32 = I32P(&SRTArgs::mode), .names = &mode_names}},
+        {u"mode",                {.enu = I32ENU(&SRTArgs::mode), .names = &mode_names}},
         {u"mss",                 {.i32 = &SRTArgs::mss, .min = 76}},
-        {u"nakreport",           {.obl = &SRTArgs::nakreport, .names = &bool_names}},
+        {u"nakreport",           {.bl  = &SRTArgs::nakreport, .names = &bool_names}},
         {u"oheadbw",             {.i32 = &SRTArgs::ohead_bw, .min = 5, .max = 100}},
         {u"packetfilter",        {.str = &SRTArgs::packet_filter}},
         {u"passphrase",          {.str = &SRTArgs::passphrase}},
@@ -581,9 +582,9 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"sndbuf",              {.i32 = &SRTArgs::sndbuf}},
         {u"snddropdelay",        {.ms  = &SRTArgs::snd_drop_delay, .min = -1}},
         {u"streamid",            {.str = &SRTArgs::stream_id}},
-        {u"tlpktdrop",           {.obl = &SRTArgs::tlpktdrop, .names = &bool_names}},
+        {u"tlpktdrop",           {.bl  = &SRTArgs::tlpktdrop, .names = &bool_names}},
         {u"transtype",           {.bl  = &SRTArgs::live_mode, .names = &transmission_names}},
-        {u"tsbpdmode",           {.obl = &SRTArgs::tsbpdmode, .names = &bool_names}},
+        {u"tsbpdmode",           {.bl  = &SRTArgs::tsbpdmode, .names = &bool_names}},
     };
 
     // Analyze all parameters.
@@ -635,6 +636,9 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
                         report.error(u"integer value \"%s=%s\" out of range in srt:// URL", name, value);
                         success = false;
                     }
+                    else if (p.enu != nullptr) {
+                        this->*(p.enu) = int32_t(i);
+                    }
                     else if (p.i32 != nullptr) {
                         this->*(p.i32) = int32_t(i);
                     }
@@ -647,21 +651,18 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
                     else if (p.bl != nullptr) {
                         this->*(p.bl) = i != 0;
                     }
-                    else if (p.obl != nullptr) {
-                        this->*(p.obl) = i != 0;
-                    }
                 }
             }
         }
     }
 
     // Process synthetic values.
-    if (!_min_version.empty()) {
-        success = setMinVersion(report, _min_version) && success;
+    if (_min_version.has_value()) {
+        success = setMinVersion(report, *_min_version) && success;
     }
-    if (_linger_time >= 0) {
+    if (_linger_time.has_value()) {
         linger_opt.l_onoff = 1;
-        linger_opt.l_linger = static_cast<decltype(linger_opt.l_linger)>(_linger_time);
+        linger_opt.l_linger = static_cast<decltype(linger_opt.l_linger)>(*_linger_time);
     }
 
     // The URL parameter bind=adapter:port is a shortcut for individual parameters adapter and port.
@@ -676,8 +677,8 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         report.error(u"conflicting information in bind and port parameters in srt:// URL");
         success = false;
     }
-    else if (_local_port > 0) {
-        _binder.setPort(IPAddress::Port(_local_port));
+    else if (_local_port.has_value()) {
+        _binder.setPort(IPAddress::Port(*_local_port));
     }
 
     // If the mode is not set in "mode" parameter of the URL, try to guess it.
