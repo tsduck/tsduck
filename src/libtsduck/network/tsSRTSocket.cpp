@@ -494,8 +494,8 @@ bool ts::SRTSocket::getSockOpt(int opt_name, const char* opt_names_str, void* op
         else {                                                                    \
             ok = setSockOpt(E::name, #name, &v, sizeof(v)) && ok;                 \
         }                                                                         \
-    }(value)                                                                      \
-    TS_POP_WARNING()
+        TS_POP_WARNING()                                                          \
+    }(value)
 
 
 //----------------------------------------------------------------------------
