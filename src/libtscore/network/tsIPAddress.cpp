@@ -648,7 +648,13 @@ bool ts::IPAddress::decode6(const UString& name)
 {
     // Split into fields. It there is a "::", there will be an empty field.
     UStringVector fields;
-    name.split(fields, u':', true, false);
+    if (!name.empty() && name.front() == u'[' && name.back() == u']') {
+        // Skip optional enclosing '[]' which can be used to isolate an IPv6 address.
+        name.substr(1, name.size() - 2).split(fields, u':', true, false);
+    }
+    else {
+        name.split(fields, u':', true, false);
+    }
     const size_t fcount = fields.size();
 
     // There must be at least 3 fields, max 8.

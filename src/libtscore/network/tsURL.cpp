@@ -100,30 +100,47 @@ void ts::URL::parse(const UString& path)
 
         // Parse [user[:password]@]host[:port].
         if (has_host) {
-            size_t start = current;             // start of host part
-            current = path.find_first_of(u"/?#", start);   // start of next part, path, query or fragment
-            size_t at = path.find(u'@', start);
+            size_t host_start = current;
+            current = path.find_first_of(u"/?#", host_start); // start of next part, path, query or fragment
+            size_t at = path.find(u'@', host_start);
             if (at < current) {
                 // There is a username part.
-                const size_t sep = path.find(u':', start);
+                const size_t sep = path.find(u':', host_start);
                 if (sep < at) {
-                    _username = path.substr(start, sep - start);
+                    _username = path.substr(host_start, sep - host_start);
                     _password = path.substr(sep + 1, at - sep - 1);
                 }
                 else {
-                    _username = path.substr(start, at - start);
+                    _username = path.substr(host_start, at - host_start);
                     _password.clear();
                 }
-                start = at + 1;
+                host_start = at + 1;
             }
-            const size_t sep = path.find(u':', start);
-            if (sep < current) {
-                // There is a port.
-                _host = path.substr(start, sep - start);
-                path.substr(sep + 1, current - sep - 1).toInteger(_port);
+            size_t host_end = host_start;
+            if (host_start < path.size() && path[host_start] == u'[') {
+                // This is the start of an IPv6 address. Because IPv6 addresses contain several ':', they must be surrounded by brackets.
+                host_end = path.find(u']', host_start);
+                if (host_end >= current) {
+                    // Invalid URL, IPv6 address not terminated.
+                    return;
+                }
+                host_end++; // include ']' into host part
             }
             else {
-                _host = path.substr(start, current - start);
+                const size_t sep = path.find(u':', host_start);
+                if (sep < current) {
+                    host_end = sep;
+                }
+                else {
+                    host_end = current;
+                }
+            }
+            _host = path.substr(host_start, host_end - host_start);
+            if (host_end < path.size() && path[host_end] == u':') {
+                // There is a port.
+                path.substr(host_end + 1, current - host_end - 1).toInteger(_port);
+            }
+            else {
                 _port = 0;
             }
         }

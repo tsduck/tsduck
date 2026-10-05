@@ -127,7 +127,7 @@ bool ts::IPSocketAddress::resolve(const UString& name, Report& report, IP prefer
         // This is typical IPv6 socket address. There must be a port or nothing.
         ok = br2 == name.size() - 1 || (colon == br2 + 1 && (colon == name.length() - 1 || name.substr(colon + 1).toInteger(_port)));
         if (ok) {
-            return IPAddress::resolve(name.substr(br1 + 1, br2 - br1 - 1), report, preferred);
+            return IPAddress::resolve(name.substr(br1, br2 - br1 + 1), report, preferred);
         }
     }
     else {
