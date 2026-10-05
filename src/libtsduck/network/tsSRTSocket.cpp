@@ -176,13 +176,16 @@ public:
     Guts(SRTSocket* parent) : _parent(parent) {}
 
     bool send(const void* data, size_t size, const IPSocketAddress& dest);
-    bool setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const void* optval, size_t optlen);
     bool setSockOptPre();
     bool setSockOptPost();
     bool srtListen(const IPSocketAddress& addr);
     bool srtConnect(const IPSocketAddress& addr);
     bool srtBind(const IPSocketAddress& addr);
     bool reportStats();
+
+    // Set one socket option, general case and with required transformations for various common types.
+    bool setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const void* optval, size_t optlen);
+    template <bool SUPPORTED, typename T> bool setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const T& optval);
 
     IPSocketAddress      remote_address {};             // Peer socket address.
     volatile ::SRTSOCKET sock = SRT_INVALID_SOCK;       // SRT socket for data transmission
@@ -416,20 +419,8 @@ bool ts::SRTSocket::peerDisconnected() const
 
 
 //----------------------------------------------------------------------------
-// Set/get one socket option.
+// Get one socket option. Public method using 'int' for option name.
 //----------------------------------------------------------------------------
-
-bool ts::SRTSocket::Guts::setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const void* optval, size_t optlen)
-{
-    if (_parent->report().debug()) {
-        _parent->report().debug(u"calling srt_setsockflag(%s, %s, %d)", opt_name_str, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen);
-    }
-    if (::srt_setsockflag(sock, opt_name, optval, int(optlen)) < 0) {
-        _parent->report().error(u"error during srt_setsockflag(%s): %s", opt_name_str, ::srt_getlasterror_str());
-        return false;
-    }
-    return true;
-}
 
 bool ts::SRTSocket::getSockOpt(int opt_name, const char* opt_names_str, void* optval, int& optlen) const
 {
@@ -443,58 +434,75 @@ bool ts::SRTSocket::getSockOpt(int opt_name, const char* opt_names_str, void* op
 
 
 //----------------------------------------------------------------------------
-// Macro to streamline calls to setSockOpt() from a Guts instance.
+// Set one socket option. Internal Guts method.
 //----------------------------------------------------------------------------
 
-// Check minimum version of libsrt (maj.min.rev) and Robotweax SRT (rmaj.rmin.rrev), when used.
-// Bool variable 'ok' is used to track failure in a sequence of operations.
+// Set one socket option, general form.
+bool ts::SRTSocket::Guts::setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const void* optval, size_t optlen)
+{
+    if (_parent->report().debug()) {
+        _parent->report().debug(u"calling srt_setsockflag(%s, %s, %d)", opt_name_str, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen);
+    }
+    if (::srt_setsockflag(sock, opt_name, optval, int(optlen)) < 0) {
+        _parent->report().error(u"error during srt_setsockflag(%s): %s", opt_name_str, ::srt_getlasterror_str());
+        return false;
+    }
+    return true;
+}
 
-// There is some magic here, so do not modify unless you know what you are doing.
+// Encapsulate setSockOpt() with required transformations for various common types.
+template <bool SUPPORTED, typename T>
+bool ts::SRTSocket::Guts::setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const T& optval)
+{
+    using VType = std::remove_cvref_t<decltype(optval)>;
+
+    if constexpr (ts::is_optional<VType>) {
+        // Optional: ignore unsupported if the value is not set.
+        return !optval.has_value() || setSockOpt<SUPPORTED>(opt_name, opt_name_str, *optval);
+    }
+    else if constexpr (!SUPPORTED) {
+        // Unsupported option. Display a warning but don't fail.
+        _parent->report().warning(u"parameter %s is not supported in this version of SRT", opt_name_str);
+        return true;
+    }
+    else if constexpr (std::is_same_v<VType, UString>) {
+        // UString parameter, use a UTF-8 version.
+        std::string u8(optval.toUTF8());
+        return setSockOpt(opt_name, opt_name_str, u8.c_str(), u8.size());
+    }
+    else if constexpr (ts::is_duration<VType>) {
+        // Duration parameter, use the value in a int32_t.
+        int32_t i32 = int32_t(optval.count());
+        return setSockOpt(opt_name, opt_name_str, &i32, sizeof(i32));
+    }
+    else {
+        // Any other type is used as it is.
+        return setSockOpt(opt_name, opt_name_str, &optval, sizeof(optval));
+    }
+}
+
+// Macro to streamline calls to setSockOpt() from a Guts instance.
+// Check minimum version of libsrt (maj.min.rev) and Robotweax SRT (rmaj.rmin.rrev), when used.
+// The magic trick here is to safely ignore, at compilation time, undefined SRTO_* symbols when
+// the required SRT version is not there: we make that symbol *dependent* of a template parameter
+// (in the form 'E::name') in an ignore 'if constexpr' branch.
 // Just remember that everything is resolved at compile time and only the necessary code
 // is generated. So, refrain from "optimizing" what the compiler already optimizes for you.
 
-#define SETOPT(maj, min, rev, rmaj, rmin, rrev, ok, name, value)                  \
-    TS_PUSH_WARNING()                                                             \
-    TS_MSC_NOWARNING(5233) /* explicit lamba capture 'this' is not used */        \
-    TS_MSC_NOWARNING(5258) /* explicit capture of 'xx' is not required */         \
-    [&ok, this]<typename E = ::SRT_SOCKOPT>([[maybe_unused]] auto&& v) {          \
-        using V = std::remove_cvref_t<decltype(v)>;                               \
-        constexpr bool supported = SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(maj, min, rev) && \
-                                   (ROBOTWEAX_SRT_VERSION_VALUE < 0 || ROBOTWEAX_SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(rmaj, rmin, rrev)); \
-        if constexpr (ts::is_optional<decltype(v)>) {                             \
-            using VOPT = std::remove_cvref_t<decltype(v)>::value_type;            \
-            if (v.has_value()) {                                                  \
-                if constexpr (!supported) {                                       \
-                    _parent->report().warning(u"parameter " #name " is not supported in this version of SRT"); \
-                }                                                                 \
-                else if constexpr (std::is_same_v<VOPT, ts::UString>) {           \
-                    std::string u8(v->toUTF8());                                  \
-                    ok = setSockOpt(E::name, #name, u8.c_str(), u8.size()) && ok; \
-                }                                                                 \
-                else if constexpr (std::is_same_v<VOPT, cn::milliseconds>) {      \
-                    int32_t i32 = int32_t(v->count());                            \
-                    ok = setSockOpt(E::name, #name, &i32, sizeof(i32)) && ok;     \
-                }                                                                 \
-                else {                                                            \
-                    ok = setSockOpt(E::name, #name, &*v, sizeof(*v)) && ok;       \
-                }                                                                 \
-            }                                                                     \
-        }                                                                         \
-        else if constexpr (!supported) {                                          \
-            _parent->report().warning(u"parameter " #name " is not supported in this version of SRT"); \
-        }                                                                         \
-        else if constexpr (std::is_same_v<V, ts::UString>) {                      \
-            std::string u8(v.toUTF8());                                           \
-            ok = setSockOpt(E::name, #name, u8.c_str(), u8.size()) && ok;         \
-        }                                                                         \
-        else if constexpr (std::is_same_v<V, cn::milliseconds>) {                 \
-            int32_t i32 = int32_t(v.count());                                     \
-            ok = setSockOpt(E::name, #name, &i32, sizeof(i32)) && ok;             \
-        }                                                                         \
-        else {                                                                    \
-            ok = setSockOpt(E::name, #name, &v, sizeof(v)) && ok;                 \
-        }                                                                         \
-        TS_POP_WARNING()                                                          \
+#define SETOPT(maj, min, rev, rmaj, rmin, rrev, ok, name, value)           \
+    TS_PUSH_WARNING()                                                      \
+    TS_MSC_NOWARNING(5233) /* explicit lamba capture 'this' is not used */ \
+    TS_MSC_NOWARNING(5258) /* explicit capture of 'xx' is not required */  \
+    [&ok, this]<typename E = ::SRT_SOCKOPT>([[maybe_unused]] auto&& v) {   \
+        if constexpr (TS_SRT_CHECK(maj, min, rev, rmaj, rmin, rrev)) {     \
+            ok = setSockOpt<true>(E::name, #name, (v)) && ok;              \
+        }                                                                  \
+        else {                                                             \
+            /* Compiled when unsupported, E::name is not defined. */       \
+            /* Use a dummy option name (option will not be set). */        \
+            ok = setSockOpt<false>(E::SRTO_E_SIZE, #name, (v)) && ok;      \
+        }                                                                  \
+        TS_POP_WARNING()                                                   \
     }(value)
 
 

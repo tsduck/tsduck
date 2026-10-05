@@ -151,7 +151,7 @@ namespace ts {
 
         //!
         //! Get SRT option.
-        //! @param [in] opt_name Option name as enumeration. The possible values for @a optName are given
+        //! @param [in] opt_name Option name as enumeration. The possible values for @a opt_name are given
         //! by the enumeration type SRT_SOCKOPT in libsrt. The profile of this method uses "int" to remain
         //! portable in the absence of libsrt, but the actual values come from SRT_SOCKOPT in libsrt.
         //! @param [in] opt_name_str Option name as ASCII string.

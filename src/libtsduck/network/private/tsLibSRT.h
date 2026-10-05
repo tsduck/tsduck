@@ -27,6 +27,7 @@
 #include "tsPlatform.h"
 
 #if !defined(TS_NO_SRT)
+
     TS_PUSH_WARNING()
     TS_LLVM_NOWARNING(documentation)
     TS_LLVM_NOWARNING(old-style-cast)
@@ -76,6 +77,11 @@
         #define ROBOTWEAX_SRT_VERSION_VALUE (-1)
     #endif
 
+    // Check minimum version of libsrt (maj.min.rev) and Robotweax SRT (rmaj.rmin.rrev), when used.
+    #define TS_SRT_CHECK(maj, min, rev, rmaj, rmin, rrev) \
+        (SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(maj, min, rev) && \
+         (ROBOTWEAX_SRT_VERSION_VALUE < 0 || ROBOTWEAX_SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(rmaj, rmin, rrev)))
+
     // The header access_control.h was introduced in version 1.4.2.
     // On Windows, access_control.h was missing in the binary installer before 1.5.3.
     #if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
@@ -100,4 +106,5 @@
     #endif
 
     TS_POP_WARNING()
-#endif
+
+#endif // TS_NO_SRT

@@ -1284,6 +1284,19 @@ namespace ts {
     // Make sure that standard chrono literals such as 10ms or 3s can be used inside namespace ts.
     using namespace std::chrono_literals;
 
+    // Helper for is_duration.
+    //! @cond nodoxygen
+    template <typename T> inline constexpr bool is_duration_v = false;
+    template <typename Rep, typename Period> inline constexpr bool is_duration_v<cn::duration<Rep, Period>> = true;
+    //! @endcond
+
+    //!
+    //! Concept which checks if a type T is an instantiation of std::chrono::duration.
+    //! @ingroup cpp
+    //!
+    template <typename T>
+    concept is_duration = is_duration_v<std::remove_cvref_t<T>>;
+
     //!
     //! A derivative of std::chrono::duration for deciseconds (1/10 of a second).
     //! @ingroup cpp

@@ -29,6 +29,7 @@ class PlatformTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Version);
     TSUNIT_DECLARE_TEST(Chrono);
     TSUNIT_DECLARE_TEST(SharedPtr);
+    TSUNIT_DECLARE_TEST(Concepts);
 };
 
 TSUNIT_REGISTER(PlatformTest);
@@ -283,4 +284,21 @@ TSUNIT_DEFINE_TEST(SharedPtr)
             debug() << std::endl;
         }
     }
+}
+
+// Test case: concepts we defined
+TSUNIT_DEFINE_TEST(Concepts)
+{
+    TSUNIT_ASSERT(ts::is_optional<std::optional<int>>);
+    TSUNIT_ASSERT(ts::is_optional<const std::optional<int>>);
+    TSUNIT_ASSERT(ts::is_optional<std::optional<int>&>);
+    TSUNIT_ASSERT(ts::is_optional<const std::optional<int>&>);
+    TSUNIT_ASSERT(!ts::is_optional<int>);
+    TSUNIT_ASSERT(!ts::is_optional<std::string>);
+
+    TSUNIT_ASSERT(ts::is_duration<cn::milliseconds>);
+    TSUNIT_ASSERT(ts::is_duration<cn::nanoseconds&>);
+    TSUNIT_ASSERT(ts::is_duration<const cn::seconds&>);
+    TSUNIT_ASSERT(ts::is_duration<ts::deciseconds>);
+    TSUNIT_ASSERT(!ts::is_duration<int>);
 }
