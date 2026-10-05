@@ -882,7 +882,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
     IPSocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ThreadSafety::None> error(_plugin->maxSeverity());
+    ReportBuffer<> error(_plugin->maxSeverity());
     {
         ReporterGuard repguard(_client, &error);
 

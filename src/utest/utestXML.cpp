@@ -170,7 +170,7 @@ TSUNIT_DEFINE_TEST(Invalid)
         u"<foo>\n"
         u"</bar>";
 
-    ts::ReportBuffer<ts::ThreadSafety::None> rep;
+    ts::ReportBuffer<> rep;
     ts::xml::Document doc(rep);
     TSUNIT_ASSERT(!doc.parse(xmlContent));
     TSUNIT_EQUAL(u"Error: line 3: parsing error, expected </foo> to match <foo> at line 2", rep.messages());
@@ -807,7 +807,7 @@ TSUNIT_DEFINE_TEST(Iterators)
         u"  <a count='4' global='6'/>\n"
         u"</doc>";
 
-    ts::ReportBuffer<ts::ThreadSafety::None> rep;
+    ts::ReportBuffer<> rep;
     ts::xml::Document doc(rep);
     TSUNIT_ASSERT(doc.parse(document));
     TSUNIT_EQUAL(2, doc.childrenCount());

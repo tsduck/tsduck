@@ -168,7 +168,7 @@ void ts::CutoffPlugin::main()
     IPSocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ts::ThreadSafety::None> error(tsp->maxSeverity());
+    ReportBuffer<> error(tsp->maxSeverity());
     {
         ReporterGuard repguard(_sock, &error);
 

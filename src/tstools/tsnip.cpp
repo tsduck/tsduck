@@ -89,7 +89,7 @@ int MainCode(int argc, char *argv[])
 
     // Setup an output pager if necessary.
     std::ostream& out(opt.pager.output());
-    ts::ReportFile<ts::ThreadSafety::None> report(out, opt.maxSeverity());
+    ts::ReportFile<> report(out, opt.maxSeverity());
     report.setReportPrefix(u"* ");
     opt.duck.setReport(&report);
 

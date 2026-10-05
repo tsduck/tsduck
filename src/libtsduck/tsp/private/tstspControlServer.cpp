@@ -137,7 +137,7 @@ void ts::tsp::ControlServer::main()
     _log.debug(u"control command thread started");
 
     // Get accept errors in a buffer since some errors are normal.
-    ReportBuffer<ThreadSafety::None> error_buffer(_log.maxSeverity());
+    ReportBuffer<> error_buffer(_log.maxSeverity());
 
     // Client address and connection.
     IPSocketAddress client_addr;
@@ -179,7 +179,7 @@ void ts::tsp::ControlServer::main()
                     }
                     else {
                         // Analyze and execute the command.
-                        ReportBuffer<ThreadSafety::None> command_log;
+                        ReportBuffer<> command_log;
                         if (_reference.processCommand(command_line, &command_log) != CommandStatus::SUCCESS) {
                             command_log.error(u"invalid tsp control command: %s", command_line);
                         }

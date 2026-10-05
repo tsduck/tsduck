@@ -140,7 +140,7 @@ TSUNIT_DEFINE_TEST(Accessors)
 // Test case: help text with default options
 TSUNIT_DEFINE_TEST(HelpDefault)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.delegateReport(&log);
 
@@ -212,7 +212,7 @@ TSUNIT_DEFINE_TEST(HelpDefault)
 // Test case: copy options
 TSUNIT_DEFINE_TEST(CopyOptions)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Args args1(u"{description1}", u"{syntax1}", ts::Args::NO_EXIT_ON_ERROR);
     ts::Args args2(u"{description2}", u"{syntax2}", ts::Args::NO_EXIT_ON_ERROR);
 
@@ -272,7 +272,7 @@ namespace {
 // Test case: help text of a custom commmand.
 TSUNIT_DEFINE_TEST(HelpCustom)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
@@ -353,7 +353,7 @@ TSUNIT_DEFINE_TEST(HelpCustom)
 // Test case: analyze valid command, get option values, use analyze() with variable length argument list
 TSUNIT_DEFINE_TEST(ValidCommandVariableArgs)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt3", u"6", u"a", u"--opt1", u"b", u"--opt9", u"val2", u"--opt3", u"0", u"--opt3", u"6"}));
@@ -425,7 +425,7 @@ TSUNIT_DEFINE_TEST(ValidCommandVariableArgs)
 // Test case: analyze valid command, get option values, use analyze() with argc, argv parameters.
 TSUNIT_DEFINE_TEST(ValidCommandArgcArgv)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     char* argv[] = {
@@ -499,7 +499,7 @@ TSUNIT_DEFINE_TEST(ValidCommandArgcArgv)
 // Test case: analyze valid command, get option values, use analyze() with container of arguments
 TSUNIT_DEFINE_TEST(ValidCommandContainer)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     ts::UStringVector arguments;
@@ -571,7 +571,7 @@ TSUNIT_DEFINE_TEST(ValidCommandContainer)
 // Test case: presence of thousands separator
 TSUNIT_DEFINE_TEST(ThousandsSeparator)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"a", u"-5", u"2000", u"--opt5=3,000", u"-50x4,000", u"-5", u"80 000", u"-5", u"2,000 000"}));
@@ -587,7 +587,7 @@ TSUNIT_DEFINE_TEST(ThousandsSeparator)
 // Test case: syntax of optional values
 TSUNIT_DEFINE_TEST(OptionalValue)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"a", u"--opt8", u"2"}));
@@ -604,7 +604,7 @@ TSUNIT_DEFINE_TEST(OptionalValue)
 // Test case:
 TSUNIT_DEFINE_TEST(MissingParameter)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--opt1"})));
@@ -615,7 +615,7 @@ TSUNIT_DEFINE_TEST(MissingParameter)
 // Test case:
 TSUNIT_DEFINE_TEST(TooManyParameters)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"a", u"b", u"c"}));
@@ -626,7 +626,7 @@ TSUNIT_DEFINE_TEST(TooManyParameters)
 // Test case:
 TSUNIT_DEFINE_TEST(AmbiguousOption)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"a", u"b"}));
@@ -637,7 +637,7 @@ TSUNIT_DEFINE_TEST(AmbiguousOption)
 // Test case:
 TSUNIT_DEFINE_TEST(InvalidIntegerOption)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"x", u"a", u"b"}));
@@ -648,7 +648,7 @@ TSUNIT_DEFINE_TEST(InvalidIntegerOption)
 // Test case:
 TSUNIT_DEFINE_TEST(IntegerTooLow)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"-10", u"a", u"b"}));
@@ -659,7 +659,7 @@ TSUNIT_DEFINE_TEST(IntegerTooLow)
 // Test case:
 TSUNIT_DEFINE_TEST(IntegerTooHigh)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt3 10 a b"));
@@ -670,7 +670,7 @@ TSUNIT_DEFINE_TEST(IntegerTooHigh)
 // Test case:
 TSUNIT_DEFINE_TEST(InvalidEnum)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt9 x a b"));
@@ -681,7 +681,7 @@ TSUNIT_DEFINE_TEST(InvalidEnum)
 // Test case:
 TSUNIT_DEFINE_TEST(ValidEnum)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt9", u"0x20", u"a", u"b"}));
@@ -691,7 +691,7 @@ TSUNIT_DEFINE_TEST(ValidEnum)
 // Test case: bitmask of integer values.
 TSUNIT_DEFINE_TEST(BitMask)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     TestArgs args(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", USV({u"a"})));
@@ -707,7 +707,7 @@ TSUNIT_DEFINE_TEST(BitMask)
 // Test case: "gather parameters" option
 TSUNIT_DEFINE_TEST(GatherParameters)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR | ts::Args::GATHER_PARAMETERS);
     args.delegateReport(&log);
 
@@ -877,7 +877,7 @@ TSUNIT_DEFINE_TEST(Ranges)
     args.option(u"opt2", 0, ts::Args::UINT8, 0, 3, 0, 100);
     args.option(u"opt3", 0, ts::Args::INTEGER, 0, ts::Args::UNLIMITED_COUNT, 0, ts::Args::UNLIMITED_VALUE, true);
 
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     args.delegateReport(&log);
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"--opt1", u"0", u"--opt1", u"1,0-0x00C", u"--opt1", u"4,7"}));
@@ -919,7 +919,7 @@ TSUNIT_DEFINE_TEST(IntRange)
     ts::Args args(u"description", u"syntax", ts::Args::NO_EXIT_ON_ERROR);
     args.option(u"opt1", 0, ts::Args::INTRANGE, 0, 1, 1, 100);
 
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     args.delegateReport(&log);
 
     std::optional<std::pair<int,int>> val(std::in_place_t(), 0, 0);
@@ -1083,7 +1083,7 @@ TSUNIT_DEFINE_TEST(InvalidFraction)
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     args.delegateReport(&log);
 
     using Frac = ts::Fraction<int32_t>;
@@ -1099,7 +1099,7 @@ TSUNIT_DEFINE_TEST(InvalidDouble)
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
 
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     args.delegateReport(&log);
     args.option<Double>(u"opt", 0, 0, 1, 12, 15);
 
@@ -1122,7 +1122,7 @@ TSUNIT_DEFINE_TEST(LegacyOption)
     args.help(u"new3", u"New option 3.");
     args.legacyOption(u"old3", u"new3");
 
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     args.delegateReport(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));
@@ -1187,7 +1187,7 @@ TSUNIT_DEFINE_TEST(NoHelp)
     args.option(u"opt2", '2');
     args.nohelp(u"opt2");
 
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     args.delegateReport(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--help"})));

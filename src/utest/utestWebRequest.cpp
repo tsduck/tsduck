@@ -216,7 +216,7 @@ TSUNIT_DEFINE_TEST(NoRedirection)
 
 TSUNIT_DEFINE_TEST(NonExistentHost)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> rep;
+    ts::ReportBuffer<> rep;
     ts::WebRequest request(&rep);
 
     ts::ByteBlockPtr data;
@@ -227,7 +227,7 @@ TSUNIT_DEFINE_TEST(NonExistentHost)
 
 TSUNIT_DEFINE_TEST(InvalidURL)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> rep;
+    ts::ReportBuffer<> rep;
     ts::WebRequest request(&rep);
 
     ts::ByteBlockPtr data;

@@ -97,7 +97,7 @@ void ts::tsswitch::CommandListener::main()
     IPSocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
-    ReportBuffer<ThreadSafety::None> error_buffer(_log.maxSeverity());
+    ReportBuffer<> error_buffer(_log.maxSeverity());
 
     // Process commands, either from the TLS/TCP server or UDP socket.
     if (_opt.remote_control.use_tls) {

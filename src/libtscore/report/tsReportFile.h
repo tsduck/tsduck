@@ -22,9 +22,9 @@ namespace ts {
     //!
     //! Reentrancy is supported though the template parameter @a SAFETY.
     //!
-    //! @tparam SAFETY The required type of thread-safety.
+    //! @tparam SAFETY The required type of thread-safety. None by default.
     //!
-    template <ThreadSafety SAFETY>
+    template <ThreadSafety SAFETY = ThreadSafety::None>
     class ReportFile: public Report
     {
         TS_NOBUILD_NOCOPY(ReportFile);

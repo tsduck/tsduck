@@ -37,7 +37,7 @@ TSUNIT_REGISTER(ExpressionsTest);
 // Test cases
 TSUNIT_DEFINE_TEST(Definition)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Expressions e(log);
 
     TSUNIT_ASSERT(!e.error());
@@ -66,7 +66,7 @@ TSUNIT_DEFINE_TEST(Definition)
 
 TSUNIT_DEFINE_TEST(Expression)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Expressions e(log);
 
     TSUNIT_ASSERT(e.define(u"SYM1"));
@@ -120,7 +120,7 @@ TSUNIT_DEFINE_TEST(Expression)
 
 TSUNIT_DEFINE_TEST(Error)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Expressions e(log);
 
     TSUNIT_ASSERT(!e.error());
@@ -147,7 +147,7 @@ TSUNIT_DEFINE_TEST(Error)
 
 TSUNIT_DEFINE_TEST(Debug)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> log;
+    ts::ReportBuffer<> log;
     ts::Expressions e(log);
 
     log.setMaxSeverity(ts::Severity::Debug);

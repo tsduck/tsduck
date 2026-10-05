@@ -35,7 +35,7 @@ TSUNIT_REGISTER(SRTTest);
 
 TSUNIT_DEFINE_TEST(MinVersion)
 {
-    ts::ReportBuffer<ts::ThreadSafety::None> report;
+    ts::ReportBuffer<> report;
     ts::SRTArgs args;
 
     TSUNIT_ASSERT(args.setMinVersion(CERR, u"1.5.2"));
