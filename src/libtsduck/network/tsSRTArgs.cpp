@@ -542,6 +542,9 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
 
     // Define all possible parameters in the query string.
     static const std::map<UString, Param> params = {
+
+        // Standard SRT URI parameters, as defined in
+        // https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
         {u"adapter",             {.ip  = &SRTArgs::_adapter}},
         {u"bind",                {.sok = &SRTArgs::_binder}},
         {u"congestion",          {.str = &SRTArgs::congestion}},
@@ -585,6 +588,13 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
         {u"tlpktdrop",           {.bl  = &SRTArgs::tlpktdrop, .names = &bool_names}},
         {u"transtype",           {.bl  = &SRTArgs::live_mode, .names = &transmission_names}},
         {u"tsbpdmode",           {.bl  = &SRTArgs::tsbpdmode, .names = &bool_names}},
+
+        // Additional parameters, not documented, for test only, may be removed or modified some day.
+        // Waiting for a standardized syntax for srt:// URI.
+        {u"ipv6only",            {.i32 = &SRTArgs::ipv6_only, .min = -1, .max = 1}},
+        {u"maxrexmitbw",         {.i64 = &SRTArgs::max_rexmit_bw, .min = -1}},
+        {u"udprcvbuf",           {.i32 = &SRTArgs::udp_rcvbuf}},
+        {u"udpsndbuf",           {.i32 = &SRTArgs::udp_sndbuf}},
     };
 
     // Analyze all parameters.

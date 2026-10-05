@@ -48,6 +48,9 @@ bool ts::SRTOutputPlugin::isRealTime()
 
 bool ts::SRTOutputPlugin::getOptions()
 {
+    _sock.args().reset();
+    _sock.args().sender = true; // output plugin -> sender
+
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
 

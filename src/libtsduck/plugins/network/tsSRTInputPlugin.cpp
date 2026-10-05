@@ -41,6 +41,9 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 
 bool ts::SRTInputPlugin::getOptions()
 {
+    _sock.args().reset();
+    _sock.args().sender = false;  // input plugin -> receiver
+
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
 
