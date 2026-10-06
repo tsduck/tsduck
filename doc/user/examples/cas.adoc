@@ -137,6 +137,62 @@ Of course, since EMM's are ciphered, their contents are obscure to the user and 
     ...
 ----
 
+[#dvbsim]
+==== DVB SimulCrypt systems
+
+TSDuck provides all features to test or emulate DVB SimulCrypt systems. They can
+be used to test integration between CAS vendors and MUX vendors. They can also
+be used to debug any conditional access issue in production.
+
+The diagram below illustrates the general architecture of a DVB SimulCrypt system.
+
+.DVB SimulCrypt systems general architecture
+image::dvbsim.png[align="center",alt="DVB SimulCrypt architecture"]
+
+The ECMG{d-arrow}SCS and EMMG/PDG{d-arrow}MUX protocols are standard and
+specified in <<ETSI-103-197>>. They are the interface between the MUX world and
+the CAS vendors.
+
+All components of a DVB SimulCrypt system can be emulated using TSDuck. As such,
+the interest is educational only. Additionally, the pseudo-CAS which is emulated
+by the command `tsecmg` is functional only. It has no security: the pseudo-ECMs
+contain control words in the clear.
+
+This completely emulated system is illustrated below. Again, this is for
+educational purpose only.
+
+.Complete DVB SimulCrypt using TSDuck
+image::dvbsim-all.png[align="center",alt="Complete DVB SimulCrypt using TSDuck"]
+
+Whether you are a MUX vendor, a CAS vendor, or a Pay-TV operator, you basically
+have two use cases. The first one is emulating CAS head-end systems to test a
+real DVB SimulCrypt MUX. The second use case is the opposite: emulate a DVB
+SimulCrypt MUX to test real CAS head-end systems.
+
+The first use case is illustrated below.
+
+.Emulating a conditional access system
+image::dvbsim-cas.png[align="center",alt="Emulating a conditional access system"]
+
+The commands `tsecmg` and `tsemmg` emulate an ECMG and EMMG. The emulated ECMG
+produces pseudo-ECMs containing control words in the clear. The plugin
+`descrambler` understands that ECM format and can descramble the stream. The
+output plugin `play` visualizes the descrambled content. When the stream is
+correctly rendered, the MUX has correctly done the job.
+
+The command `tsemmg` can emulate various scenarios, including incorrect behaviors
+such as bandwidth overflow which can be used to test the resilience of the MUX.
+
+The second use case is illustrated below.
+
+.Emulating a DVB SimulCrypt MUX
+image::dvbsim-mux.png[align="center",alt="Emulating a DVB SimulCrypt MUX"]
+
+An instance of the command `tsp` emulates the behavior of a DVB SimulCrypt MUX,
+including scrambling and ECM or EMM injection. Using a real ECMG, a real EMMG,
+from a real CAS vendor, using a real set-top box or receiver which implements
+that CAS, you can test and monitor the integration of that CA system.
+
 ==== Conditional Access System scrambling and ECM functional tests
 
 The following command receives a DVB-T live stream on UHF channel 21
@@ -172,7 +228,7 @@ It emulates all functions of a MUX system for testing a CAS.
 The command uses the French DVB-T network, but it can be easily adapted to any environment.
 
 .Conditional Access System sample test bed
-image::castest.png[align="center",width=600,alt="CAS sample test bed"]
+image::castest.png[align="center",alt="CAS sample test bed"]
 
 The command transforms the R2 MUX into a new R9 MUX with new services (actually renamed services from R2)
 and outputs the resulting TS to a modulator on a different UHF channel.

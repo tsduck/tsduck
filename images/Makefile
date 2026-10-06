@@ -19,7 +19,7 @@ DRAWIO   ?= drawio
 OPTIPNG  ?= optipng
 PNGFLAGS ?= -t
 PDFFLAGS ?=
-OPTFLAGS ?= -silent
+OPTFLAGS ?= -o5 -silent
 
 .PHONY: png pdf
 
