@@ -33,7 +33,6 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        bool             _display_url = false; // Display srt:// URL as information.
         bool             _multiple = false;    // Accept multiple (sequential) connections.
         cn::milliseconds _restart_delay {};    // If _multiple, wait before reconnecting.
         TSDatagramOutput _datagram {*this, TSDatagramOutputOptions::ALLOW_RS204, this}; // Buffering TS packets.

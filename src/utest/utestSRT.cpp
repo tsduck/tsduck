@@ -175,6 +175,6 @@ TSUNIT_DEFINE_TEST(toURL)
     args.sndbuf = 300;
     args.udp_sndbuf = 400;
     TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file", args.toURL());
-    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file", args.toURL(true));
-    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file&udpsndbuf=400", args.toURL(false));
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file", args.toURL(ts::SRTURLMode::STANDARD));
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file&udpsndbuf=400", args.toURL(ts::SRTURLMode::ALL));
 }

@@ -27,9 +27,6 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 {
     _sock.args().defineArgs(*this);
 
-    option(u"display-url");
-    help(u"display-url", u"Display resulting srt:// URL as information.");
-
     option(u"multiple", 'm');
     help(u"multiple", u"When the sender peer disconnects, wait for another one and continue.");
 
@@ -47,7 +44,6 @@ bool ts::SRTInputPlugin::getOptions()
     _sock.args().reset();
     _sock.args().sender = false;  // input plugin -> receiver
 
-    _display_url = present(u"display-url");
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
 
@@ -62,9 +58,7 @@ bool ts::SRTInputPlugin::getOptions()
 
 bool ts::SRTInputPlugin::start()
 {
-    if (_display_url) {
-        info(u"starting %s", _sock.args().toURL());
-    }
+    _sock.args().displayURL(*this, u"starting ");
 
     // Initialize superclass and UDP socket.
     const bool success = AbstractDatagramInputPlugin::start() && _sock.open();

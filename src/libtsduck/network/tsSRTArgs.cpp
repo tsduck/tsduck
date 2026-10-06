@@ -57,6 +57,15 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"The connect timeout is 10 times the value set for the rendezvous mode "
               u"(which can be used as a workaround for this connection problem with earlier versions).");
 
+    args.option(u"display-url", 0, Names({
+        {u"standard", SRTURLMode::STANDARD},
+        {u"all",      SRTURLMode::ALL},
+    }), 0, 1, true);
+    args.help(u"display-url",
+              u"Display resulting srt:// URL as information. "
+              u"If specified without value, display standard srt:// URL parameters only. "
+              u"If specified as 'all', display all URL parameters, including non-standard ones.");
+
     args.option(u"enforce-encryption");
     args.help(u"enforce-encryption",
               u"This option enforces that both connection parties have the same passphrase set "
@@ -274,11 +283,10 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"packets that have no chance to be delivered in time. It is automatically enabled "
               u"in sender if receiver supports it. The default is true in Live mode, false in File mode.");
 
-    static const Names transtype_names({  // bool live_mode
+    args.option(u"transtype", 0, Names({ // bool live_mode
         {u"file", false},
         {u"live", true},
-    });
-    args.option(u"transtype", 0, transtype_names);
+    }));
     args.help(u"transtype",
               u"Sets the SRT transmission type for the socket. "
               u"The default is live (continue transmission while requesting missed packets).");
@@ -331,6 +339,13 @@ bool ts::SRTArgs::loadArgs(DuckContext& duck, Args& args)
     }
     else if (opt_bufferapi) {
         message_api = false;
+    }
+
+    if (args.present(u"display-url")) {
+        args.getIntValue(display_url, u"display-url", SRTURLMode::STANDARD);
+    }
+    else {
+        display_url = SRTURLMode::NONE;
     }
 
     reuse_port = !args.present(u"no-reuse-port");
@@ -761,20 +776,34 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
 
 
 //----------------------------------------------------------------------------
+// Display the rebuilt URL, depending on @a display_url field.
+//----------------------------------------------------------------------------
+
+void ts::SRTArgs::displayURL(Report& report, const UString& prefix, int severity) const
+{
+    if (display_url != SRTURLMode::NONE) {
+        report.log(severity, u"%s%s", prefix, toURL(display_url));
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Rebuild a srt:// URL from the set of SRT parameters.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SRTArgs::toURL(bool standard_only) const
+ts::UString ts::SRTArgs::toURL(SRTURLMode url_mode) const
 {
     URL url;
-    toURL(url, standard_only);
+    toURL(url, url_mode);
     return url.toString();
 }
 
-void ts::SRTArgs::toURL(URL& url, bool standard_only) const
+void ts::SRTArgs::toURL(URL& url, SRTURLMode url_mode) const
 {
     url.clear();
-    url.setScheme(u"srt");
+    if (url_mode == SRTURLMode::NONE) {
+        return;
+    }
 
     // Reset synthetic values to check if they are specified in the URL.
     _binder.clear();
@@ -794,6 +823,7 @@ void ts::SRTArgs::toURL(URL& url, bool standard_only) const
     }
 
     // Set URL host and port.
+    url.setScheme(u"srt");
     switch (mode) {
         case SRTSocketMode::LISTENER:
             url.setPort(local_address.port());
@@ -823,7 +853,7 @@ void ts::SRTArgs::toURL(URL& url, bool standard_only) const
     for (const auto& it : QueryParameters()) {
         const UString& name(it.first);
         const Param& p(it.second);
-        if (p.standard || !standard_only) {
+        if (p.standard || url_mode == SRTURLMode::ALL) {
             if (p.ip != nullptr && (this->*(p.ip)).hasAddress()) {
                 // IP address.
                 query.format(u"%s%s=%s", sep, name, (this->*(p.ip)));

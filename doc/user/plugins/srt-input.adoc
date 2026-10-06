@@ -71,12 +71,6 @@ The default is to never display the bitrate.
 This option is ignored if `--evaluation-interval` is not specified.
 
 [.opt]
-*--display-url*
-
-[.optdoc]
-Display the resulting `srt://` URL as information.
-
-[.opt]
 *-e* _value_ +
 *--evaluation-interval* _value_
 

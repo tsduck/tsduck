@@ -45,6 +45,19 @@ namespace ts {
         INTERVAL = 0x0008,  //!< Statistics in the last interval (restarted each time it is used).
         ALL      = 0x000F,  //!< Report all statistics.
     };
+
+    //!
+    //! How to handle Secure Reliable Transport (SRT) URLs.
+    //! TSDuck supports "standard" parameters in SRT URLs (as informally defined by Haivision in
+    //! tool srt-live-transmit) and a few non-standard parameters (SRT parameters not included in
+    //! the standard URL parameters).
+    //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
+    //!
+    enum class SRTURLMode : int32_t {
+        NONE     = 0,  //!< Do not use or display SRT URL.
+        STANDARD = 1,  //!< Use "standard" parameters only.
+        ALL      = 2,  //!< Use all parameters, standard and non-standard.
+    };
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::SRTStatMode);
 
@@ -64,7 +77,8 @@ namespace ts {
         // Boolean and integer types are carefully selected from the libsrt API, modify with care.
         // SRT options with std::optional type are configured in the socket only when their value is set.
 
-        // Statistics options. These are TSDuck options, not SRT options.
+        // Reporting and statistics options. These are TSDuck options, not SRT options.
+        SRTURLMode             display_url = SRTURLMode::NONE; //!< Display equivalent SRT URL, for information only.
         SRTStatMode            stats_mode = SRTStatMode::ALL;  //!< Amount of statistics to report.
         cn::milliseconds       stats_interval {-1};            //!< If positive, interval between statistics reports.
         bool                   final_stats = false;            //!< Report SRT usage statistics when the SRT socket is closed.
@@ -211,21 +225,19 @@ namespace ts {
         //! Rebuild a srt:// URL from the set of SRT parameters.
         //! See the TSDuck user guide for a complete description of SRT URLs.
         //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
-        //! @param [in] standard_only When true (the default), only set standard parameter from the Haivision description.
-        //! When false, add non-standard and undocumented additional parameters from TSDuck implementation.
+        //! @param [in] mode Define which parameters should be displayed. If set as NONE, return an empty URL.
         //! @return The resulting URL.
         //!
-        UString toURL(bool standard_only = true) const;
+        UString toURL(SRTURLMode mode = SRTURLMode::STANDARD) const;
 
         //!
         //! Rebuild a srt:// URL from the set of SRT parameters.
         //! See the TSDuck user guide for a complete description of SRT URLs.
         //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
         //! @param [out] url The resulting URL.
-        //! @param [in] standard_only When true (the default), only set standard parameter from the Haivision description.
-        //! When false, add non-standard and undocumented additional parameters from TSDuck implementation.
+        //! @param [in] mode Define which parameters should be displayed. If set as NONE, return an empty URL.
         //!
-        void toURL(URL& url, bool standard_only = true) const;
+        void toURL(URL& url, SRTURLMode mode = SRTURLMode::STANDARD) const;
 
         //!
         //! Check if a string is a possible srt: URL.
@@ -242,6 +254,14 @@ namespace ts {
         //! @return True if @a url is a possible srt: URL.
         //!
         static bool IsSRTURL(const URL& url) { return url.getScheme() == u"srt"; }
+
+        //!
+        //! Display the rebuilt URL, depending on @a display_url field.
+        //! @param [in,out] report Where to display the URL.
+        //! @param [in] prefix Text prefix to display before the URL.
+        //! @param [in] severity Log level of the message.
+        //!
+        void displayURL(Report& report, const UString& prefix = UString(), int severity = Severity::Info) const;
 
         //!
         //! Preset local and remote socket addresses in string form.

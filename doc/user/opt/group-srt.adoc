@@ -45,11 +45,24 @@ If `--listener` is also specified, the SRT socket works in rendezvous mode.
 *--conn-timeout* _milliseconds_
 
 [.optdoc]
-Connect timeout in milliseconds.
-SRT cannot connect for RTT > 1500 msec (2 handshake exchanges) with the default connect timeout of 3 seconds.
-This option applies to the caller and rendezvous connection modes.
-The connect timeout is 10 times the value set for the rendezvous mode
-(which can be used as a workaround for this connection problem with earlier versions).
+Connect timeout in milliseconds.  SRT cannot connect for RTT > 1500 msec
+(2 handshake exchanges) with the default connect timeout of 3 seconds. This option
+applies to the caller and rendezvous connection modes. The connect timeout is 10
+times the value set for the rendezvous mode (which can be used as a workaround
+for this connection problem with earlier versions).
+
+[.opt]
+**--display-url**__[=keyword]__
+
+[.optdoc]
+Display the resulting `srt://` URL as information. This can be useful if
+individual command line options were specified and the user needs to know the
+equivalent syntax using a `srt://` URL.
+
+[.optdoc]
+The keyword must be `all` or `standard`. If specified without value or with
+value `standard`, display standard `srt://` URL parameters only. If specified as
+`all`, display all URL parameters, including non-standard ones.
 
 [.opt]
 *--enforce-encryption*
