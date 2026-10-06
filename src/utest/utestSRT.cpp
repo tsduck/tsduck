@@ -23,7 +23,8 @@
 class SRTTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(MinVersion);
-    TSUNIT_DECLARE_TEST(URL);
+    TSUNIT_DECLARE_TEST(setURL);
+    TSUNIT_DECLARE_TEST(toURL);
 };
 
 TSUNIT_REGISTER(SRTTest);
@@ -56,7 +57,7 @@ TSUNIT_DEFINE_TEST(MinVersion)
     TSUNIT_EQUAL(u"Error: invalid SRT minimum version \"1.foo\"", report.messages());
 }
 
-TSUNIT_DEFINE_TEST(URL)
+TSUNIT_DEFINE_TEST(setURL)
 {
     ts::SRTArgs args;
     TSUNIT_ASSERT(args.setURL(CERR, u"srt://:1234"));
@@ -140,4 +141,40 @@ TSUNIT_DEFINE_TEST(URL)
     TSUNIT_ASSERT(!*args.live_mode);
     TSUNIT_ASSERT(args.message_api.has_value());
     TSUNIT_ASSERT(*args.message_api);
+}
+
+TSUNIT_DEFINE_TEST(toURL)
+{
+    ts::SRTArgs args;
+    args.mode = ts::SRTSocketMode::CALLER;
+    args.remote_address = ts::IPSocketAddress(1, 2, 3, 4, 5678);
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?mode=caller", args.toURL());
+
+    args.reset();
+    args.mode = ts::SRTSocketMode::RENDEZVOUS;
+    args.local_address.setPort(2580);
+    args.remote_address = ts::IPSocketAddress(1, 2, 3, 4, 5678);
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?mode=rendezvous&port=2580", args.toURL());
+
+    args.reset();
+    args.mode = ts::SRTSocketMode::RENDEZVOUS;
+    args.local_address = ts::IPSocketAddress(10, 20, 30, 40, 5678);
+    args.remote_address = ts::IPSocketAddress(1, 2, 3, 4, 5678);
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?adapter=10.20.30.40&mode=rendezvous", args.toURL());
+
+    args.reset();
+    args.mode = ts::SRTSocketMode::LISTENER;
+    args.local_address.setPort(4567);
+    TSUNIT_EQUAL(u"srt://:4567?mode=listener", args.toURL());
+
+    args.reset();
+    args.mode = ts::SRTSocketMode::CALLER;
+    args.remote_address = ts::IPSocketAddress(1, 2, 3, 4, 5678);
+    args.live_mode = false;
+    args.fc_packets = 200;
+    args.sndbuf = 300;
+    args.udp_sndbuf = 400;
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file", args.toURL());
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file", args.toURL(true));
+    TSUNIT_EQUAL(u"srt://1.2.3.4:5678?fc=200&mode=caller&sndbuf=300&transtype=file&udpsndbuf=400", args.toURL(false));
 }

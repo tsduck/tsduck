@@ -318,11 +318,13 @@ ts::UString ts::URL::toString(bool useWinInet) const
         if (_port != 0) {
             url.append(UString::Format(u":%d", _port));
         }
-        if (!_path.starts_with(u"/")) {
-            // Enforce a slash between host and path.
-            url.append(u"/");
+        if (!_path.empty()) {
+            if (!_path.starts_with(u"/")) {
+                // Enforce a slash between host and path.
+                url.append(u"/");
+            }
+            url.append(_path);
         }
-        url.append(_path);
         if (!_query.empty()) {
             url.append(u"?");
             url.append(_query);

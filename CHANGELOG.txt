@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4819 (October 2026)
+VERSION 3.46-4827 (October 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -24,6 +24,8 @@ VERSION 3.46-4819 (October 2026)
       with the libsrt options.
     - Obsolete options --polling-time and --rendezvous have been  removed  from
       plugins "srt".
+  * New options in existing commands and plugins:
+    - Option --display-url in plugins "srt".
 
 [BUG] Bug fixes:
 

@@ -182,8 +182,15 @@ namespace ts {
         bool setMinVersion(Report& report, const UString& version);
 
         //!
+        //! Rebuild the minimum version field as a "x.y.z" string.
+        //! @return The minimum version string, or the empty string if not set.
+        //!
+        UString minVersionString() const;
+
+        //!
         //! Set options from an srt: URL.
-        //! See TSDuck user guide for a complete description of SRT URLs.
+        //! See the TSDuck user guide for a complete description of SRT URLs.
+        //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
         //! @param [in,out] report Where to report errors.
         //! @param [in] url URL with srt: scheme.
         //! @return True on success, false on error in URL syntax.
@@ -192,12 +199,33 @@ namespace ts {
 
         //!
         //! Set options from an srt: URL.
-        //! See TSDuck user guide for a complete description of SRT URLs.
+        //! See the TSDuck user guide for a complete description of SRT URLs.
+        //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
         //! @param [in] url URL with srt: scheme.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error in URL syntax.
         //!
         bool setURL(Report& report, const URL& url);
+
+        //!
+        //! Rebuild a srt:// URL from the set of SRT parameters.
+        //! See the TSDuck user guide for a complete description of SRT URLs.
+        //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
+        //! @param [in] standard_only When true (the default), only set standard parameter from the Haivision description.
+        //! When false, add non-standard and undocumented additional parameters from TSDuck implementation.
+        //! @return The resulting URL.
+        //!
+        UString toURL(bool standard_only = true) const;
+
+        //!
+        //! Rebuild a srt:// URL from the set of SRT parameters.
+        //! See the TSDuck user guide for a complete description of SRT URLs.
+        //! @see https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
+        //! @param [out] url The resulting URL.
+        //! @param [in] standard_only When true (the default), only set standard parameter from the Haivision description.
+        //! When false, add non-standard and undocumented additional parameters from TSDuck implementation.
+        //!
+        void toURL(URL& url, bool standard_only = true) const;
 
         //!
         //! Check if a string is a possible srt: URL.
@@ -239,14 +267,43 @@ namespace ts {
         void reset();
 
     private:
-        // Internal verson of setAddresses(). If reset, clear mode and all addresses first.
+        // Internal version of setAddresses(). If reset, clear mode and all addresses first.
         bool setAddressesInternal(Report& report, const IPSocketAddress& listener, const IPSocketAddress& caller, const IPAddress& local, bool reset);
 
-        // Temporary values, used when analysing an URL.
-        IPAddress              _adapter {};
-        IPSocketAddress        _binder {};
-        std::optional<UString> _min_version {};
-        std::optional<int32_t> _local_port {};
-        std::optional<int32_t> _linger_time {};
+        // Temporary values, used when analysing or building an URL.
+        mutable IPAddress              _adapter {};
+        mutable IPSocketAddress        _binder {};
+        mutable std::optional<UString> _min_version {};
+        mutable std::optional<int32_t> _local_port {};
+        mutable std::optional<int32_t> _linger_time {};
+
+        // Store enumeration values as if they were int32_t.
+        using I32ENU = int32_t SRTArgs::*;
+        static_assert(sizeof(SRTArgs::mode) == sizeof(int32_t));
+
+        // Definition of parameters in URL query string.
+        struct Param {
+            // Field to update in SRTArgs.
+            std::optional<bool>             SRTArgs::* bl  = nullptr;
+            std::optional<int32_t>          SRTArgs::* i32 = nullptr;
+            std::optional<int64_t>          SRTArgs::* i64 = nullptr;
+            std::optional<cn::milliseconds> SRTArgs::* ms  = nullptr;
+            std::optional<UString>          SRTArgs::* str = nullptr;
+            int32_t                         SRTArgs::* enu = nullptr; // enum with int32_t representation
+            IPAddress                       SRTArgs::* ip  = nullptr;
+            IPSocketAddress                 SRTArgs::* sok = nullptr;
+
+            // Value boundaries or list.
+            int64_t      min = 0;
+            int64_t      max = std::numeric_limits<int64_t>::max();
+            const Names* names = nullptr;
+            bool         standard = true;
+        };
+
+        // Map of query parameter name to description.
+        using QueryParameterMap = std::map<UString, Param>;
+
+        // Define all possible parameters in the URL query string.
+        static const QueryParameterMap& QueryParameters();
     };
 }

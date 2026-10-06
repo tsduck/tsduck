@@ -178,7 +178,9 @@ Some of them are not yet implemented by TSDuck. A bool value can be `yes`/`no`,
 |Minimum SRT library version of a peer.
 
 |mode
-|`caller`, `listener`, `rendezvous`
+|`caller`, +
+ `listener`, +
+ `rendezvous`
 |-
 |SRT mode, if ambiguous in the host/port of the URL.
 
@@ -276,5 +278,37 @@ Some of them are not yet implemented by TSDuck. A bool value can be `yes`/`no`,
 |bool
 |SRTO_TSBPDMODE
 |Timestamp-based packet delivery mode.
+
+|===
+
+The following table lists the additional non-standard parameters (i.e. not
+defined in <<SRT-URL>>) which are also supported in the TSDuck
+implementation. Be aware that using these parameters may not be accepted in
+other implementations of SRT.
+
+.SRT URL query parameters
+[cols="<1m,<1,<1m,<1",stripes=none,options="autowidth"]
+|===
+|Query parameter |Value |SRT Option |Description
+
+|ipv6only
+|-1..1
+|SRTO_IPV6ONLY
+|System socket option IPV6_V6ONLY.
+
+|maxrexmitbw
+|-1..
+|SRTO_MAXREXMITBW
+|Maximum BW limit for retransmissions.
+
+|udprcvbuf
+|bytes
+|SRTO_UDP_RCVBUF
+|UDP socket receive buffer size.
+
+|udpsndbuf
+|bytes
+|SRTO_UDP_SNDBUF
+|UDP socket send buffer size.
 
 |===

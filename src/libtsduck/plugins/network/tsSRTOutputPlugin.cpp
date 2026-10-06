@@ -24,6 +24,9 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     _datagram.defineArgs(*this);
     _sock.args().defineArgs(*this);
 
+    option(u"display-url");
+    help(u"display-url", u"Display resulting srt:// URL as information.");
+
     option(u"multiple", 'm');
     help(u"multiple", u"When the receiver peer disconnects, wait for another one and continue.");
 
@@ -51,6 +54,7 @@ bool ts::SRTOutputPlugin::getOptions()
     _sock.args().reset();
     _sock.args().sender = true; // output plugin -> sender
 
+    _display_url = present(u"display-url");
     _multiple = present(u"multiple");
     getChronoValue(_restart_delay, u"restart-delay");
 
@@ -64,6 +68,10 @@ bool ts::SRTOutputPlugin::getOptions()
 
 bool ts::SRTOutputPlugin::start()
 {
+    if (_display_url) {
+        info(u"starting %s", _sock.args().toURL());
+    }
+
     bool success = _datagram.open();
     IPSocketAddress local, remote;
     if (success) {

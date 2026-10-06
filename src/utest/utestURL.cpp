@@ -127,7 +127,10 @@ TSUNIT_DEFINE_TEST(Base)
 
 TSUNIT_DEFINE_TEST(ToString)
 {
-    TSUNIT_EQUAL(u"http://foo.bar/", ts::URL(u"http://foo.bar").toString());
+    TSUNIT_EQUAL(u"http://foo.bar", ts::URL(u"http://foo.bar").toString());
+    TSUNIT_EQUAL(u"http://foo.bar", ts::URL(u"http://foo.bar?#").toString());
+    TSUNIT_EQUAL(u"http://foo.bar/", ts::URL(u"http://foo.bar/").toString());
+    TSUNIT_EQUAL(u"http://foo.bar/", ts::URL(u"http://foo.bar/?#").toString());
     TSUNIT_EQUAL(u"http://foo.bar/a/d/e", ts::URL(u"http://foo.bar/a/b/c/../../d/e").toString());
 
 #if defined(TS_WINDOWS)

@@ -463,62 +463,25 @@ bool ts::SRTArgs::setMinVersion(Report& report, const UString& version)
 
 
 //----------------------------------------------------------------------------
-// Set options from an srt: URL.
+// Rebuild the minimum version field as a "x.y.z" string.
 //----------------------------------------------------------------------------
 
-bool ts::SRTArgs::setURL(Report& report, const URL& url)
+ts::UString ts::SRTArgs::minVersionString() const
 {
-    bool success = true;
-
-    // Check the validity and scheme of the URL.
-    if (!url.isValid() || !IsSRTURL(url)) {
-        report.error(u"invalid SRT URL: %s", url.toString());
-        return false;
+    UString s;
+    if (min_version.has_value()) {
+        s.format(u"%d.%d.%d", (*min_version >> 16) & 0xFF, (*min_version >> 8) & 0xFF, *min_version & 0xFF);
     }
+    return s;
+}
 
-    // Get and resolve the host part of the URL.
-    const UString host_name(url.getHost());
-    IPAddress host_addr;
-    if (!host_name.empty() && !host_addr.resolve(host_name, report)) {
-        report.error(u"invalid host %s in srt:// URL", host_name);
-        return false;
-    }
 
-    // Reset the socket mode and addresses. They must come from the URL.
-    // Other parameters are kept and may be overwritten by the URL.
-    mode = SRTSocketMode::DEFAULT;
-    local_address.clear();
-    remote_address.clear();
+//----------------------------------------------------------------------------
+// Define all possible parameters in the URL query string.
+//----------------------------------------------------------------------------
 
-    // Reset synthetic values to check if they are specified in the URL.
-    _adapter.clear();
-    _binder.clear();
-    _min_version.reset();
-    _local_port.reset();
-    _linger_time.reset();
-
-    // Store enumeration values as if they were int32_t.
-    using I32ENU = int32_t SRTArgs::*;
-    static_assert(sizeof(SRTArgs::mode) == sizeof(int32_t));
-
-    // Definition of parameters in URL query string.
-    struct Param {
-        // Field to update in SRTArgs.
-        std::optional<bool>             SRTArgs::* bl  = nullptr;
-        std::optional<int32_t>          SRTArgs::* i32 = nullptr;
-        std::optional<int64_t>          SRTArgs::* i64 = nullptr;
-        std::optional<cn::milliseconds> SRTArgs::* ms  = nullptr;
-        std::optional<UString>          SRTArgs::* str = nullptr;
-        int32_t                         SRTArgs::* enu = nullptr; // enum with int32_t representation
-        IPAddress                       SRTArgs::* ip  = nullptr;
-        IPSocketAddress                 SRTArgs::* sok = nullptr;
-
-        // Value boundaries or list.
-        int64_t      min = 0;
-        int64_t      max = std::numeric_limits<int64_t>::max();
-        const Names* names = nullptr;
-    };
-
+const ts::SRTArgs::QueryParameterMap& ts::SRTArgs::QueryParameters()
+{
     // Enumeration names and values.
     static const Names mode_names = {
         {u"caller",     SRTSocketMode::CALLER},
@@ -541,7 +504,7 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
     };
 
     // Define all possible parameters in the query string.
-    static const std::map<UString, Param> params = {
+    static const QueryParameterMap params = {
 
         // Standard SRT URI parameters, as defined in
         // https://github.com/Haivision/srt/blob/master/docs/apps/srt-live-transmit.md#medium-srt
@@ -591,13 +554,53 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
 
         // Additional parameters, not documented, for test only, may be removed or modified some day.
         // Waiting for a standardized syntax for srt:// URI.
-        {u"ipv6only",            {.i32 = &SRTArgs::ipv6_only, .min = -1, .max = 1}},
-        {u"maxrexmitbw",         {.i64 = &SRTArgs::max_rexmit_bw, .min = -1}},
-        {u"udprcvbuf",           {.i32 = &SRTArgs::udp_rcvbuf}},
-        {u"udpsndbuf",           {.i32 = &SRTArgs::udp_sndbuf}},
+        {u"ipv6only",            {.i32 = &SRTArgs::ipv6_only, .min = -1, .max = 1, .standard = false}},
+        {u"maxrexmitbw",         {.i64 = &SRTArgs::max_rexmit_bw, .min = -1, .standard = false}},
+        {u"udprcvbuf",           {.i32 = &SRTArgs::udp_rcvbuf, .standard = false}},
+        {u"udpsndbuf",           {.i32 = &SRTArgs::udp_sndbuf, .standard = false}},
     };
 
+    return params;
+}
+
+
+//----------------------------------------------------------------------------
+// Set options from an srt: URL.
+//----------------------------------------------------------------------------
+
+bool ts::SRTArgs::setURL(Report& report, const URL& url)
+{
+    bool success = true;
+
+    // Check the validity and scheme of the URL.
+    if (!url.isValid() || !IsSRTURL(url)) {
+        report.error(u"invalid SRT URL: %s", url.toString());
+        return false;
+    }
+
+    // Get and resolve the host part of the URL.
+    const UString host_name(url.getHost());
+    IPAddress host_addr;
+    if (!host_name.empty() && !host_addr.resolve(host_name, report)) {
+        report.error(u"invalid host %s in srt:// URL", host_name);
+        return false;
+    }
+
+    // Reset the socket mode and addresses. They must come from the URL.
+    // Other parameters are kept and may be overwritten by the URL.
+    mode = SRTSocketMode::DEFAULT;
+    local_address.clear();
+    remote_address.clear();
+
+    // Reset synthetic values to check if they are specified in the URL.
+    _adapter.clear();
+    _binder.clear();
+    _min_version.reset();
+    _local_port.reset();
+    _linger_time.reset();
+
     // Analyze all parameters.
+    const auto& params(QueryParameters());
     for (const auto& qp : url.getQueryParameters()) {
         const UString& name(qp.first);
         const UString& value(qp.second);
@@ -754,4 +757,117 @@ bool ts::SRTArgs::setURL(Report& report, const URL& url)
     }
 
     return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Rebuild a srt:// URL from the set of SRT parameters.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SRTArgs::toURL(bool standard_only) const
+{
+    URL url;
+    toURL(url, standard_only);
+    return url.toString();
+}
+
+void ts::SRTArgs::toURL(URL& url, bool standard_only) const
+{
+    url.clear();
+    url.setScheme(u"srt");
+
+    // Reset synthetic values to check if they are specified in the URL.
+    _binder.clear();
+    _local_port.reset();
+    _adapter.setAddress(local_address);
+    if (min_version.has_value()) {
+        _min_version = minVersionString();
+    }
+    else {
+        _min_version.reset();
+    }
+    if (linger_opt.l_onoff) {
+        _linger_time = int32_t(linger_opt.l_linger);
+    }
+    else {
+        _linger_time.reset();
+    }
+
+    // Set URL host and port.
+    switch (mode) {
+        case SRTSocketMode::LISTENER:
+            url.setPort(local_address.port());
+            break;
+        case SRTSocketMode::CALLER:
+            url.setHost(IPAddress(remote_address).toString());
+            url.setPort(remote_address.port());
+            if (local_address.hasPort()) {
+                _local_port = local_address.port();
+            }
+            break;
+        case SRTSocketMode::RENDEZVOUS:
+            url.setHost(IPAddress(remote_address).toString());
+            url.setPort(remote_address.port());
+            if (local_address.hasPort() && local_address.port() != remote_address.port()) {
+                _local_port = local_address.port();
+            }
+            break;
+        case SRTSocketMode::DEFAULT:
+        default:
+            break;
+    }
+
+    // Build the query string.
+    UString query;
+    const UChar* sep = u"";
+    for (const auto& it : QueryParameters()) {
+        const UString& name(it.first);
+        const Param& p(it.second);
+        if (p.standard || !standard_only) {
+            if (p.ip != nullptr && (this->*(p.ip)).hasAddress()) {
+                // IP address.
+                query.format(u"%s%s=%s", sep, name, (this->*(p.ip)));
+                sep = u"&";
+            }
+            else if (p.sok != nullptr && ((this->*(p.sok)).hasAddress() || (this->*(p.sok)).hasPort())) {
+                // Socket address.
+                query.format(u"%s%s=%s", sep, name, (this->*(p.sok)));
+                sep = u"&";
+            }
+            else if (p.str != nullptr && (this->*(p.str)).has_value()) {
+                // String.
+                query.format(u"%s%s=%s", sep, name, *(this->*(p.str)));
+                sep = u"&";
+            }
+            else {
+                // Integer, bool, enum, with potential names.
+                std::optional<int64_t> value;
+                if (p.enu != nullptr) {
+                    value = this->*(p.enu);
+                }
+                else if (p.ms != nullptr && (this->*(p.ms)).has_value()) {
+                    value = (this->*(p.ms))->count();
+                }
+                else if (p.bl != nullptr && (this->*(p.bl)).has_value()) {
+                    value = *(this->*(p.bl));
+                }
+                else if (p.i32 != nullptr && (this->*(p.i32)).has_value()) {
+                    value = *(this->*(p.i32));
+                }
+                else if (p.i64 != nullptr && (this->*(p.i64)).has_value()) {
+                    value = *(this->*(p.i64));
+                }
+                if (value.has_value()) {
+                    if (p.names != nullptr) {
+                        query.format(u"%s%s=%s", sep, name, p.names->name(*value));
+                    }
+                    else {
+                        query.format(u"%s%s=%d", sep, name, *value);
+                    }
+                    sep = u"&";
+                }
+            }
+        }
+    }
+    url.setQuery(query);
 }

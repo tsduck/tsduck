@@ -558,6 +558,10 @@ TSUNIT_DEFINE_TEST(IPv4SocketAddress)
 
     TSUNIT_ASSERT(a2.hasAddress());
     TSUNIT_ASSERT(a2.hasPort());
+    TSUNIT_EQUAL(u"5.1.2.3:8080", a2.toString());
+    TSUNIT_EQUAL(u"5.1.2.3:8080", a2.toFullString());
+    TSUNIT_EQUAL(u"5.1.2.3", ts::IPAddress(a2).toString());
+
     a2.clear();
     TSUNIT_ASSERT(!a2.hasAddress());
     TSUNIT_ASSERT(!a2.hasPort());

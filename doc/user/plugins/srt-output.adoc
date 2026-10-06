@@ -53,6 +53,12 @@ include::{docdir}/opt/opt-srt-url.adoc[tags=!*]
 General options
 
 [.opt]
+*--display-url*
+
+[.optdoc]
+Display the resulting `srt://` URL as information.
+
+[.opt]
 *-m* +
 *--multiple*
 
