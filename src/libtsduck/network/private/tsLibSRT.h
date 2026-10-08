@@ -60,6 +60,8 @@
         #undef __APPLE_USE_RFC_3542
     #endif
 
+    // This header contains the SRT version only. It is included in srt/srt.h later but including srt/srt.h
+    // may need prior definitions, depending on SRT version, which is in srt/version.h...
     #include <srt/version.h>
 
     // On earlier versions, the header srt.h uses a [[deprecated]] attribute on a typedef, which is incorrect.
@@ -96,11 +98,13 @@
         #endif
     #endif
 
+    // Cleanup our "#define __APPLE__ 0".
     #if defined(ZERO__APPLE__)
         #undef __APPLE__
         #undef ZERO__APPLE__
     #endif
 
+    // Restore temporarily disabled __APPLE_USE_RFC_3542 on macOS.
     #if defined(TS_MAC) && !defined(__APPLE_USE_RFC_3542)
         #define __APPLE_USE_RFC_3542 1
     #endif

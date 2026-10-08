@@ -90,10 +90,18 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
+      run: scripts/install-prerequisites.sh
+    - name: Dependencies check
       run: |
-        scripts/install-prerequisites.sh
+        echo "==== Path:"
+        tr <<<$PATH ':' '\n'
+        echo "==== C++ compiler:"
         ${{ matrix.compiler }} --version
+        make cxxmacros
+        echo "==== Java environment:"
         scripts/java-config.sh
+        echo "==== Build variables:"
+        make listvars
     - name: Build TSDuck
       run: ${{ matrix.make }} -j5
     - name: Check built version

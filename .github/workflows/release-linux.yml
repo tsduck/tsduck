@@ -106,6 +106,18 @@ jobs:
         fi
         echo "ENABLE_SCRIPT=$ENABLE_SCRIPT" >>$GITHUB_ENV
 
+   - name: Dependencies check
+      run: |
+        echo "==== Path:"
+        tr <<<$PATH ':' '\n'
+        echo "==== C++ compiler:"
+        ${{ matrix.compiler }} --version
+        make cxxmacros
+        echo "==== Java environment:"
+        scripts/java-config.sh
+        echo "==== Build variables:"
+        make listvars
+
     - name: Build
       run: |
         [[ -n $ENABLE_SCRIPT ]] && source "$ENABLE_SCRIPT" || true

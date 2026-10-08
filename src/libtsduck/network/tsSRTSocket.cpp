@@ -451,6 +451,9 @@ bool ts::SRTSocket::Guts::setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_nam
 }
 
 // Encapsulate setSockOpt() with required transformations for various common types.
+// Each transformation is performed under one single "if constexpr" branch. Therefore,
+// everything is resolved at compile time and code is generated for that branch only.
+// So, refrain from "optimizing" what the compiler already optimizes for you.
 template <bool SUPPORTED, typename T>
 bool ts::SRTSocket::Guts::setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const T& optval)
 {
@@ -485,24 +488,17 @@ bool ts::SRTSocket::Guts::setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_nam
 // Check minimum version of libsrt (maj.min.rev) and Robotweax SRT (rmaj.rmin.rrev), when used.
 // The magic trick here is to safely ignore, at compilation time, undefined SRTO_* symbols when
 // the required SRT version is not there: we make that symbol *dependent* of a template parameter
-// (in the form 'E::name') in an ignore 'if constexpr' branch.
-// Just remember that everything is resolved at compile time and only the necessary code
-// is generated. So, refrain from "optimizing" what the compiler already optimizes for you.
-
-#define SETOPT(maj, min, rev, rmaj, rmin, rrev, ok, name, value)           \
-    TS_PUSH_WARNING()                                                      \
-    TS_MSC_NOWARNING(5233) /* explicit lamba capture 'this' is not used */ \
-    TS_MSC_NOWARNING(5258) /* explicit capture of 'xx' is not required */  \
-    [&ok, this]<typename E = ::SRT_SOCKOPT>([[maybe_unused]] auto&& v) {   \
-        if constexpr (TS_SRT_CHECK(maj, min, rev, rmaj, rmin, rrev)) {     \
-            ok = setSockOpt<true>(E::name, #name, (v)) && ok;              \
-        }                                                                  \
-        else {                                                             \
-            /* Compiled when unsupported, E::name is not defined. */       \
-            /* Use a dummy option name (option will not be set). */        \
-            ok = setSockOpt<false>(E::SRTO_E_SIZE, #name, (v)) && ok;      \
-        }                                                                  \
-        TS_POP_WARNING()                                                   \
+// (in the form 'E::name') in an ignored 'if constexpr' branch.
+#define SETOPT(maj, min, rev, rmaj, rmin, rrev, ok, name, value)       \
+    [&ok, this]<typename E = ::SRT_SOCKOPT>(auto&& v) {                \
+        if constexpr (TS_SRT_CHECK(maj, min, rev, rmaj, rmin, rrev)) { \
+            ok = setSockOpt<true>(E::name, #name, v) && ok;            \
+        }                                                              \
+        else {                                                         \
+            /* Compiled when E::name is not defined. Use a dummy */    \
+            /* option name, ignored by setSockOpt<false>(). */         \
+            ok = setSockOpt<false>(E::SRTO_E_SIZE, #name, v) && ok;    \
+        }                                                              \
     }(value)
 
 
