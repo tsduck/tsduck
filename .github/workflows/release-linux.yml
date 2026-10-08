@@ -106,7 +106,7 @@ jobs:
         fi
         echo "ENABLE_SCRIPT=$ENABLE_SCRIPT" >>$GITHUB_ENV
 
-   - name: Dependencies check
+    - name: Dependencies check
       run: |
         echo "==== Path:"
         tr <<<$PATH ':' '\n'
