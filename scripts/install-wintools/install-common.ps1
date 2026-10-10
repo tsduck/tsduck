@@ -329,7 +329,10 @@ function Install-Standard-Exe([string]$ReleasePage, [string]$Pattern, [string]$F
     Download-Package $Url $InstallerPath
     if (-not $NoInstall) {
         Write-Output "Installing $InstallerName"
-        Start-Process -Wait -FilePath $InstallerPath -ArgumentList $InstallerParams
+        $Proc = Start-Process -Wait -PassThru -FilePath $InstallerPath -ArgumentList $InstallerParams
+        if ($Proc.ExitCode -ne 0) {
+            Exit-Script "Installation command failed with status $($Proc.ExitCode)"
+        }
     }
 }
 
@@ -344,7 +347,10 @@ function Install-GitHub-Exe([string]$Repo, [string]$Pattern, [string[]]$Installe
     Download-Package $Url $InstallerPath
     if (-not $NoInstall) {
         Write-Output "Installing $InstallerName"
-        Start-Process -Wait -FilePath $InstallerPath -ArgumentList $InstallerParams
+        $Proc = Start-Process -Wait -PassThru -FilePath $InstallerPath -ArgumentList $InstallerParams
+        if ($Proc.ExitCode -ne 0) {
+            Exit-Script "Installation command failed with status $($Proc.ExitCode)"
+        }
     }
 }
 
@@ -356,7 +362,10 @@ function Install-Msi([string]$Url)
     Download-Package $Url $InstallerPath
     if (-not $NoInstall) {
         Write-Output "Installing $InstallerName"
-        Start-Process -Wait -Verb runas -FilePath msiexec.exe -ArgumentList @("/i", $InstallerPath, "/quiet", "/qn", "/norestart")
+        $Proc = Start-Process -Wait -PassThru -Verb runas -FilePath msiexec.exe -ArgumentList @("/i", $InstallerPath, "/quiet", "/qn", "/norestart")
+        if ($Proc.ExitCode -ne 0) {
+            Exit-Script "Installation command failed with status $($Proc.ExitCode)"
+        }
     }
 }
 

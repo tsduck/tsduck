@@ -23,7 +23,7 @@ Write-Output "==== Robotweax SRT SDK download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-Install-GitHub-Exe 'Robotweax/srt' '/robotweax-srt-.*-windows-sdk-bcrypt\.exe$' @("/VERYSILENT /SUPPRESSMSGBOXES /NORESTART")
+Install-GitHub-Exe 'Robotweax/srt' '/robotweax-srt-.*-windows-sdk-bcrypt\.exe$' @("/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/LOG=`"$Destination\robotweax-sdk-install.log`"")
 
 Propagate-Environment "ROBOTWEAX_SRT_BCRYPT"
 
