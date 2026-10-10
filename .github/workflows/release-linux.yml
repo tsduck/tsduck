@@ -111,7 +111,6 @@ jobs:
         echo "==== Path:"
         tr <<<$PATH ':' '\n'
         echo "==== C++ compiler:"
-        ${{ matrix.compiler }} --version
         make cxxmacros
         echo "==== Java environment:"
         scripts/java-config.sh
