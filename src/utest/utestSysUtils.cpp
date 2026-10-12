@@ -734,6 +734,10 @@ TSUNIT_DEFINE_TEST(SysInfo)
     TSUNIT_EQUAL(ts::SysInfo::RISCV64, ts::SysInfo::Instance().arch());
 #elif defined(TS_S390X)
     TSUNIT_EQUAL(ts::SysInfo::S390X, ts::SysInfo::Instance().arch());
+#elif defined(TS_LOONGARCH64)
+    TSUNIT_EQUAL(ts::SysInfo::LOONG64, ts::SysInfo::Instance().arch());
+#elif defined(TS_LOONGARCH32)
+    TSUNIT_EQUAL(ts::SysInfo::LOONG32, ts::SysInfo::Instance().arch());
 #endif
 
     // We can't predict the number of CPU cores, except that this must be non-zero.

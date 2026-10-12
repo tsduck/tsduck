@@ -70,6 +70,12 @@ ts::SysInfo::SysInfo() :
 #elif defined(TS_S390X)
     _arch(S390X),
     _cpuName(u"S390X"),
+#elif defined(TS_LOONGARCH64)
+    _arch(LOONG64),
+    _cpuName(u"LoongArch-64"),
+#elif defined(TS_LOONGARCH32)
+    _arch(LOONG32),
+    _cpuName(u"LoongArch-32"),
 #else
     #error "Unsupported CPU architecture"
 #endif

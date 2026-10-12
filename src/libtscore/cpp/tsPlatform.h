@@ -44,7 +44,7 @@
 
 
 //----------------------------------------------------------------------------
-// Unified compiler naming: TS_GCC, TS_MSC (Microsoft C)
+// Unified compiler naming: TS_GCC, TS_LLVM, TS_MSC (Microsoft C)
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
@@ -350,6 +350,16 @@
     //! @ingroup cpp
     //!
     #define TS_S390X
+    //!
+    //! Defined when the target processor architecture is 32-bit LoongArch architecture.
+    //! @ingroup cpp
+    //!
+    #define TS_LOONGARCH32
+    //!
+    //! Defined when the target processor architecture is 64-bit LoongArch architecture.
+    //! @ingroup cpp
+    //!
+    #define TS_LOONGARCH64
 
 #elif defined(__i386__) || defined(TS_I386) || defined(_M_IX86)
     #if !defined(TS_I386)
@@ -401,6 +411,14 @@
 #elif defined(__s390x__)
     #if !defined(TS_S390X)
         #define TS_S390X 1
+    #endif
+#elif defined(__loongarch64)
+    #if !defined(TS_LOONGARCH64)
+        #define TS_LOONGARCH64 1
+    #endif
+#elif defined(__loongarch__) || defined(__loongarch32)
+    #if !defined(TS_LOONGARCH32)
+        #define TS_LOONGARCH32 1
     #endif
 #else
     #error "New unknown processor, please update tsPlatform.h"

@@ -86,6 +86,10 @@ TSDuck has been tested on the following CPU architectures on at least one operat
 |64 bits
 |Little endian
 
+|LoongArch
+|64 bits
+|Little endian
+
 |PowerPC
 |64 bits
 |Big endian
@@ -98,7 +102,7 @@ TSDuck has been tested on the following CPU architectures on at least one operat
 
 NOTE: Some tests were done by contributors and were not verified (MIPS for instance).
 Some tests were performed using `qemu`, on an emulated platform, not a physical CPU.
-This is the case for RISC-V, PowerPC, IBM s390x.
+This is the case for RISC-V, LoongArch, PowerPC, and IBM s390x.
 
 TSDuck has been tested with the following compilers on at least one operating system.
 

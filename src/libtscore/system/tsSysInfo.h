@@ -38,6 +38,8 @@ namespace ts {
             PPC64,    //!< 64-bit PowerPC.
             MIPS32,   //!< 32-bit MIPS.
             MIPS64,   //!< 64-bit MIPS.
+            LOONG32,  //!< 32-bit LoongArch.
+            LOONG64,  //!< 64-bit LoongArch.
             SPARC,    //!< Sun SPARC.
         };
         //!
