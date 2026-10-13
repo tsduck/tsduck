@@ -52,11 +52,11 @@ bool ts::CutoffPlugin::getOptions()
     // Resolve all allowed remote.
     UStringVector remotes;
     getValues(remotes, u"allow");
-    _allowedRemote.clear();
+    _allowed_temote.clear();
     for (const auto& it : remotes) {
         const IPAddress addr(it, *this);
         if (addr.hasAddress()) {
-            _allowedRemote.insert(addr);
+            _allowed_temote.insert(addr);
         }
         else {
             ok = false;
@@ -176,7 +176,7 @@ void ts::CutoffPlugin::main()
         while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp)) {
 
             // Filter out unauthorized remote systems.
-            if (!_allowedRemote.empty() && !_allowedRemote.contains(sender)) {
+            if (!_allowed_temote.empty() && !_allowed_temote.contains(sender)) {
                 warning(u"rejected remote command from unauthorized host %s", sender);
                 continue;
             }

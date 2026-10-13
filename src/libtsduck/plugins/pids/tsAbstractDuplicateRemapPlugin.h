@@ -39,10 +39,10 @@ namespace ts {
 
         using PIDMap = std::map<PID, PID>;    //!< A map from PID to PID.
         bool             _unchecked = false;  //!< Ignore conflicting input/output PID's.
-        PIDSet           _newPIDs {};         //!< Set of output (duplicated or remapped) PID values.
-        PIDMap           _pidMap {};          //!< Key = input pid, value = output PID.
-        TSPacketLabelSet _setLabels {};       //!< Labels to set on output packets.
-        TSPacketLabelSet _resetLabels {};     //!< Labels to reset on output packets.
+        PIDSet           _new_pids {};        //!< Set of output (duplicated or remapped) PID values.
+        PIDMap           _pid_map {};         //!< Key = input pid, value = output PID.
+        TSPacketLabelSet _set_labels {};      //!< Labels to set on output packets.
+        TSPacketLabelSet _reset_labels {};    //!< Labels to reset on output packets.
 
     private:
         const bool _remap;

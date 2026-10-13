@@ -221,10 +221,10 @@ namespace ts {
             UString&       _str;
             const uint8_t* _data;
             size_t         _size;
-            const CharMap* _G[4];     // G0-G3 character sets.
-            uint8_t        _GL;       // 0-3 index in _G[], current left character set
-            uint8_t        _GR;       // 0-3 index in _G[], current right character set
-            uint8_t        _lockedGL; // 0-3 index in _G[], locked left character set
+            const CharMap* _G[4];      // G0-G3 character sets.
+            uint8_t        _GL;        // 0-3 index in _G[], current left character set
+            uint8_t        _GR;        // 0-3 index in _G[], current right character set
+            uint8_t        _locked_gl; // 0-3 index in _G[], locked left character set
 
             // Nested decoding for macros: use the current mappings of another decoder.
             Decoder(const Decoder& other, const uint8_t* data, size_t size);

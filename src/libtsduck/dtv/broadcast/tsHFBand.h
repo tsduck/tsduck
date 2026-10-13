@@ -342,8 +342,8 @@ namespace ts {
             mutable std::recursive_mutex _mutex {};
             UString     _default_region {};
             HFBandMap   _objects {};
-            UStringList _allRegions {};
-            HFBandPtr   _voidBand {};
+            UStringList _all_regions {};
+            HFBandPtr   _void_band {};
         };
     };
 }

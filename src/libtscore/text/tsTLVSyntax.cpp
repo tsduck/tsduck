@@ -40,8 +40,8 @@ bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, 
     else {
         _start = start;
         _size = size;
-        _tagSize = tagSize;
-        _lengthSize = lengthSize;
+        _tag_size = tagSize;
+        _length_size = lengthSize;
         _msb = msb;
         return true;
     }
@@ -70,10 +70,10 @@ bool ts::TLVSyntax::fromString(const UString& s, Report& report)
         ok = fields[1].toInteger(_size, u",");
     }
     if (ok && fields.size() > 2 && !fields[2].empty()) {
-        ok = fields[2].toInteger(_tagSize) && (_tagSize == 1 || _tagSize == 2 || _tagSize == 4);
+        ok = fields[2].toInteger(_tag_size) && (_tag_size == 1 || _tag_size == 2 || _tag_size == 4);
     }
     if (ok && fields.size() > 3 && !fields[3].empty()) {
-        ok = fields[3].toInteger(_lengthSize) && (_lengthSize == 1 || _lengthSize == 2 || _lengthSize == 4);
+        ok = fields[3].toInteger(_length_size) && (_length_size == 1 || _length_size == 2 || _length_size == 4);
     }
     if (ok && fields.size() > 4 && !fields[4].empty()) {
         _msb = fields[4].similar(u"msb");
@@ -94,7 +94,7 @@ bool ts::TLVSyntax::fromString(const UString& s, Report& report)
 
 size_t ts::TLVSyntax::getTagAndLength(const uint8_t* data, size_t size, uint32_t& tag, size_t& length) const
 {
-    const size_t headerSize = _tagSize + _lengthSize;
+    const size_t headerSize = _tag_size + _length_size;
     if (size < headerSize) {
         // Cannot fit TL fields.
         tag = 0;
@@ -102,8 +102,8 @@ size_t ts::TLVSyntax::getTagAndLength(const uint8_t* data, size_t size, uint32_t
         return 0;
     }
     else {
-        tag = getInt(data, _tagSize);
-        length = getInt(data + _tagSize, _lengthSize);
+        tag = getInt(data, _tag_size);
+        length = getInt(data + _tag_size, _length_size);
         // Check if the V field fits (and prevent overflow).
         return size - headerSize < length ? 0 : headerSize;
     }
@@ -162,10 +162,10 @@ bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvS
 
 size_t ts::TLVSyntax::longestTLV(const uint8_t * data, size_t dataSize, size_t tlvStart) const
 {
-    const size_t headerSize = _tagSize + _lengthSize;
+    const size_t headerSize = _tag_size + _length_size;
     size_t index = tlvStart;
     while (index + headerSize <= dataSize) {
-        const size_t len = getInt(data + index + _tagSize, _lengthSize);
+        const size_t len = getInt(data + index + _tag_size, _length_size);
         const size_t next = bounded_add(index, bounded_add(headerSize, len));
         if (next > dataSize) {
             break; // would overflow data area

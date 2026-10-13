@@ -150,18 +150,18 @@ void tsunit::Test::afterTest()
 }
 
 // The null device is initialized by Main when no debug is allowed.
-std::ofstream tsunit::Test::_nulDevice;
+std::ofstream tsunit::Test::_nul_device;
 
 // Stream where the unitary tests send debug messages.
 std::ostream& tsunit::Test::debug()
 {
-    return _nulDevice.is_open() ? _nulDevice : std::cerr;
+    return _nul_device.is_open() ? _nul_device : std::cerr;
 }
 
 // This static method checks if debug mode is enabled.
 bool tsunit::Test::debugMode()
 {
-    return !_nulDevice.is_open();
+    return !_nul_device.is_open();
 }
 
 //---------------------------------------------------------------------------------
@@ -425,7 +425,7 @@ tsunit::TestRepository::Register::Register(std::type_index index, TestCase* test
 // A class running test suites and test cases.
 //----------------------------------------------------------------------------
 
-std::string tsunit::TestRunner::_currentTestName;
+std::string tsunit::TestRunner::_current_test_name;
 
 // Run a test, a test suite or all test suites. Return true when all tests passed.
 bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
@@ -464,8 +464,8 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
             }
             else {
                 // Run one test
-                _currentTestName = suite->getName() + "::" + test->getName();
-                Test::debug() << "== Running test " << _currentTestName << std::endl;
+                _current_test_name = suite->getName() + "::" + test->getName();
+                Test::debug() << "== Running test " << _current_test_name << std::endl;
                 // Run pre-test
                 ok = suite->runBeforeTest(test);
                 // Run test if pre-test succeeded.
@@ -474,13 +474,13 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
                     // Run post-test even if test is not OK (must do cleanup if the test ran in any way).
                     ok = suite->runAfterTest(test) && ok;
                 }
-                _currentTestName.clear();
+                _current_test_name.clear();
                 // Count passed and failed tests.
                 if (ok) {
-                    ++_passedCount;
+                    ++_passed_count;
                 }
                 else {
-                    ++_failedCount;
+                    ++_failed_count;
                 }
             }
         }
@@ -532,23 +532,23 @@ char const* tsunit::Failure::what() const noexcept
 // Generation of assertion failures.
 //---------------------------------------------------------------------------------
 
-std::atomic_size_t tsunit::Assertions::_passedCount(0);
-std::atomic_size_t tsunit::Assertions::_failedAssertionsCount(0);
-std::atomic_size_t tsunit::Assertions::_failedAssumptionsCount(0);
+std::atomic_size_t tsunit::Assertions::_passed_count(0);
+std::atomic_size_t tsunit::Assertions::_failed_assertions_count(0);
+std::atomic_size_t tsunit::Assertions::_failed_assumptions_count(0);
 
 void tsunit::Assertions::fail(const std::string& message, const char* sourcefile, int linenumber)
 {
-    ++_failedAssertionsCount;
+    ++_failed_assertions_count;
     throw Failure("test failed", message, sourcefile, linenumber);
 }
 
 void tsunit::Assertions::condition(bool cond, const std::string& expression, const char* sourcefile, int linenumber)
 {
     if (cond) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssertionsCount;
+        ++_failed_assertions_count;
         throw Failure("assertion failure", "condition: " + expression, sourcefile, linenumber);
     }
 }
@@ -556,10 +556,10 @@ void tsunit::Assertions::condition(bool cond, const std::string& expression, con
 void tsunit::Assertions::assumption(bool cond, const std::string& expression, const char* sourcefile, int linenumber)
 {
     if (cond) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssumptionsCount;
+        ++_failed_assumptions_count;
         // Same message as an exeption, but do not throw it.
         Failure fail("weak assumption failure", "condition: " + expression, sourcefile, linenumber);
         std::cout << std::endl << errorPrefix << TestRunner::getCurrentTestName() << ", " << fail.what() << std::endl;
@@ -569,10 +569,10 @@ void tsunit::Assertions::assumption(bool cond, const std::string& expression, co
 void tsunit::Assertions::equal(const Bytes& expected, const Bytes& actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber)
 {
     if (expected == actual) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssertionsCount;
+        ++_failed_assertions_count;
         const std::string details1("expected: " + toString(expected) + " (\"" + estring + "\")");
         const std::string details2("actual:   " + toString(actual) + " (\"" + vstring + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, sourcefile, linenumber);
@@ -601,14 +601,14 @@ tsunit::Main::Main(int argc, char* argv[]) :
                     _debug = true;
                     break;
                 case 'l':
-                    _listMode = true;
+                    _list_mode = true;
                     break;
                 case 't':
                     if (++arg >= argc) {
                         ok = false;
                     }
                     else {
-                        _testName = argv[arg];
+                        _test_name = argv[arg];
                     }
                     break;
                 default:
@@ -620,7 +620,7 @@ tsunit::Main::Main(int argc, char* argv[]) :
 
     // Error message if incorrect line
     if (!ok) {
-        _exitStatus = EXIT_FAILURE;
+        _exit_status = EXIT_FAILURE;
         std::cerr << _argv0 << ": invalid command" << std::endl
                   << std::endl
                   << "Syntax: " << _argv0 << " [options]" << std::endl
@@ -639,12 +639,12 @@ tsunit::Main::Main(int argc, char* argv[]) :
 int tsunit::Main::run()
 {
     // Filter previous errors
-    if (_exitStatus != EXIT_SUCCESS) {
-        return _exitStatus;
+    if (_exit_status != EXIT_SUCCESS) {
+        return _exit_status;
     }
 
     // In list mode, only print the list of tests.
-    if (_listMode) {
+    if (_list_mode) {
         // Get the list of all test suites.
         std::list<std::string> suiteNames;
         TestRepository* repo = TestRepository::instance();
@@ -669,19 +669,19 @@ int tsunit::Main::run()
     // Get optional test suite and test. When nullptr, run them all.
     tsunit::TestSuite* testSuite = nullptr;
     tsunit::TestCase* testCase = nullptr;
-    if (!_testName.empty()) {
+    if (!_test_name.empty()) {
         TestRepository* repo = TestRepository::instance();
         // First, try to interpret the name as a test suite.
-        testSuite = repo->getTestSuite(_testName);
+        testSuite = repo->getTestSuite(_test_name);
         if (testSuite == nullptr) {
             // Could not find a test suite, try to interpret the name as suite::test.
-            const size_t sep = _testName.rfind("::");
+            const size_t sep = _test_name.rfind("::");
             if (sep != std::string::npos) {
                 // Test suite name found, try to get it.
-                testSuite = repo->getTestSuite(_testName.substr(0, sep));
+                testSuite = repo->getTestSuite(_test_name.substr(0, sep));
                 if (testSuite != nullptr) {
                     // Test suite found, get the test name.
-                    testCase = testSuite->getTestCase(_testName.substr(sep + 2));
+                    testCase = testSuite->getTestCase(_test_name.substr(sep + 2));
                     if (testCase == nullptr) {
                         // Test not found, forget about test suite.
                         testSuite = nullptr;
@@ -690,7 +690,7 @@ int tsunit::Main::run()
             }
         }
         if (testSuite == nullptr) {
-            std::cerr << _argv0 << ": unknown test \"" << _testName << "\"" << std::endl;
+            std::cerr << _argv0 << ": unknown test \"" << _test_name << "\"" << std::endl;
             return EXIT_FAILURE;
         }
     }
@@ -703,11 +703,11 @@ int tsunit::Main::run()
         #else
             const char nul[] = "/dev/null";
         #endif
-        if (Test::_nulDevice.is_open()) {
-            Test::_nulDevice.close();
+        if (Test::_nul_device.is_open()) {
+            Test::_nul_device.close();
         }
-        Test::_nulDevice.open(nul);
-        if (!Test::_nulDevice) {
+        Test::_nul_device.open(nul);
+        if (!Test::_nul_device) {
             std::cerr << _argv0 << ": error opening " << nul << std::endl;
             return EXIT_FAILURE;
         }
@@ -719,8 +719,8 @@ int tsunit::Main::run()
     success = runner.run(testSuite, testCase);
 
     // Cleanup resources
-    if (Test::_nulDevice.is_open()) {
-        Test::_nulDevice.close();
+    if (Test::_nul_device.is_open()) {
+        Test::_nul_device.close();
     }
 
     // Print report.

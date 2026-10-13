@@ -36,9 +36,9 @@ void ts::TSPacketQueue::reset(size_t size)
 
     _eof = false;
     _stopped = false;
-    _inCount = 0;
-    _readIndex = 0;
-    _writeIndex = 0;
+    _in_count = 0;
+    _read_index = 0;
+    _write_index = 0;
     _bitrate = 0;
 }
 
@@ -56,7 +56,7 @@ size_t ts::TSPacketQueue::bufferSize() const
 size_t ts::TSPacketQueue::currentSize() const
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    return _inCount;
+    return _in_count;
 }
 
 
@@ -69,29 +69,29 @@ bool ts::TSPacketQueue::lockWriteBuffer(TSPacket*& buffer, TSPacketMetadata*& md
     std::unique_lock<std::mutex> lock(_mutex);
 
     // Maximum size we can allocate to the write window.
-    assert(_readIndex < _pkt_buffer.size());
-    assert(_writeIndex < _pkt_buffer.size());
-    const size_t max_size = _pkt_buffer.size() - _writeIndex;
+    assert(_read_index < _pkt_buffer.size());
+    assert(_write_index < _pkt_buffer.size());
+    const size_t max_size = _pkt_buffer.size() - _write_index;
 
     // We cannot ask for more than the distance to the end of the buffer.
     // But we also need to wait for at least one packet.
     min_size = std::max<size_t>(1, std::min(min_size, max_size));
 
     // Wait until we get enough free space.
-    while (!_stopped && _pkt_buffer.size() - _inCount < min_size) {
+    while (!_stopped && _pkt_buffer.size() - _in_count < min_size) {
         _dequeued.wait(lock);
     }
 
     // Return the write window.
-    buffer = &_pkt_buffer[_writeIndex];
-    mdata = &_md_buffer[_writeIndex];
+    buffer = &_pkt_buffer[_write_index];
+    mdata = &_md_buffer[_write_index];
     if (_stopped) {
         // The reader thread has reported a stop condition, we can no longer write into the buffer.
         buffer_size = 0;
     }
-    else if (_readIndex > _writeIndex) {
+    else if (_read_index > _write_index) {
         // The write window extends up to the read index (where packets were not yet consumed).
-        buffer_size = _readIndex - _writeIndex;
+        buffer_size = _read_index - _write_index;
     }
     else {
         // The write window wraps up at the end of the buffer.
@@ -113,9 +113,9 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
     std::lock_guard<std::mutex> lock(_mutex);
 
     // Verify that the specified size is compatible with the current write window.
-    assert(_readIndex < _pkt_buffer.size());
-    assert(_writeIndex < _pkt_buffer.size());
-    const size_t max_count = (_readIndex > _writeIndex ? _readIndex : _pkt_buffer.size()) - _writeIndex;
+    assert(_read_index < _pkt_buffer.size());
+    assert(_write_index < _pkt_buffer.size());
+    const size_t max_count = (_read_index > _write_index ? _read_index : _pkt_buffer.size()) - _write_index;
 
     // This is a bug in the application to specify more than the max size.
     assert(count <= max_count);
@@ -128,13 +128,13 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
     // When the writer thread did not specify a bitrate, analyze PCR's.
     if (_bitrate == 0) {
         for (size_t i = 0; i < count; ++i) {
-            _pcr.feedPacket(_pkt_buffer[_writeIndex + i]);
+            _pcr.feedPacket(_pkt_buffer[_write_index + i]);
         }
     }
 
     // Mark written packets as part of the buffer.
-    _inCount += count;
-    _writeIndex = (_writeIndex + count) % _pkt_buffer.size();
+    _in_count += count;
+    _write_index = (_write_index + count) % _pkt_buffer.size();
 
     // Signal that packets have been enqueued
     _enqueued.notify_all();
@@ -166,7 +166,7 @@ void ts::TSPacketQueue::setBitrate(const BitRate& bitrate)
 bool ts::TSPacketQueue::eof() const
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    return _eof && _inCount == 0;
+    return _eof && _in_count == 0;
 }
 
 
@@ -214,18 +214,18 @@ bool ts::TSPacketQueue::getPacket(TSPacket& packet, TSPacketMetadata* mdata, Bit
     bitrate = getBitrate();
 
     // Get packet when available.
-    if (_inCount == 0) {
+    if (_in_count == 0) {
         // No packet available.
         return false;
     }
     else {
         // Return next packet.
-        packet = _pkt_buffer[_readIndex];
+        packet = _pkt_buffer[_read_index];
         if (mdata != nullptr) {
-            *mdata = _md_buffer[_readIndex];
+            *mdata = _md_buffer[_read_index];
         }
-        _readIndex = (_readIndex + 1) % _pkt_buffer.size();
-        _inCount--;
+        _read_index = (_read_index + 1) % _pkt_buffer.size();
+        _in_count--;
 
         // Signal the condition that a packet was freed.
         _dequeued.notify_all();
@@ -246,20 +246,20 @@ bool ts::TSPacketQueue::waitPackets(TSPacket* buffer, TSPacketMetadata* mdata, s
 
     // Wait until there is some packet in the buffer.
     std::unique_lock<std::mutex> lock(_mutex);
-    while (!_eof && !_stopped && _inCount == 0) {
+    while (!_eof && !_stopped && _in_count == 0) {
         _enqueued.wait(lock);
     }
 
     // Return as many packets as we can. Ignore eof for now.
-    while (_inCount > 0 && buffer_count > 0) {
-        *buffer++ = _pkt_buffer[_readIndex];
+    while (_in_count > 0 && buffer_count > 0) {
+        *buffer++ = _pkt_buffer[_read_index];
         if (mdata != nullptr) {
-            *mdata++ = _md_buffer[_readIndex];
+            *mdata++ = _md_buffer[_read_index];
         }
         buffer_count--;
         actual_count++;
-        _readIndex = (_readIndex + 1) % _pkt_buffer.size();
-        _inCount--;
+        _read_index = (_read_index + 1) % _pkt_buffer.size();
+        _in_count--;
     }
 
     // Get bitrate, either from reader thread or from PCR analysis.

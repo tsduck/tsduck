@@ -80,7 +80,7 @@ class ARIBCharsetTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Encode25);
 
 private:
-    const bool _cSyntaxDebug = !ts::GetEnvironment(u"TS_UTEST_ARIB_CSYNTAX").empty();
+    const bool _c_syntax_debug = !ts::GetEnvironment(u"TS_UTEST_ARIB_CSYNTAX").empty();
     void dump(const ts::UString& title, const ts::ByteBlock& bb);
     void dump(const ts::UString& title, const ts::UString& str);
 };
@@ -95,7 +95,7 @@ TSUNIT_REGISTER(ARIBCharsetTest);
 void ARIBCharsetTest::dump(const ts::UString& title, const ts::ByteBlock& bb)
 {
     if (debugMode()) {
-        debug() << title.toJustifiedLeft(10) << ts::UString::Dump(bb, ts::UString::SINGLE_LINE | (_cSyntaxDebug ? ts::UString::C_STYLE : 0)) << std::endl;
+        debug() << title.toJustifiedLeft(10) << ts::UString::Dump(bb, ts::UString::SINGLE_LINE | (_c_syntax_debug ? ts::UString::C_STYLE : 0)) << std::endl;
     }
 }
 
@@ -104,7 +104,7 @@ void ARIBCharsetTest::dump(const ts::UString& title, const ts::UString& str)
     if (debugMode()) {
         debug() << title.toJustifiedLeft(10) << '"' << str << '"' << std::endl << "UTF-16:  ";
         for (size_t i = 0; i < str.size(); ++i) {
-            debug() << ts::UString::Format(u" %s%X%s", _cSyntaxDebug ? u"0x" : u"", uint16_t(str[i]), _cSyntaxDebug ? u"," : u"");
+            debug() << ts::UString::Format(u" %s%X%s", _c_syntax_debug ? u"0x" : u"", uint16_t(str[i]), _c_syntax_debug ? u"," : u"");
         }
         debug() << std::endl;
     }

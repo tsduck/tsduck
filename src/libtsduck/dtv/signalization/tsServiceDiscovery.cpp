@@ -23,7 +23,7 @@
 
 ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, SignalizationHandlerInterface* pmtHandler) :
     _duck(duck),
-    _pmtHandler(pmtHandler)
+    _pmt_handler(pmtHandler)
 {
     _pmt.invalidate();
 }
@@ -172,7 +172,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
         // If we do not know the service id, then there is no way to find the service.
         if (!hasId()) {
             _duck.report().error(u"service \"%s\" not found in SDT", getName());
-            _notFound = true;
+            _not_found = true;
         }
         return;
     }
@@ -258,7 +258,7 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
         // If we do not know the service id, then there is no way to find the service.
         if (!hasId()) {
             _duck.report().error(u"service \"%s\" not found in VCT", getName());
-            _notFound = true;
+            _not_found = true;
         }
         return;
     }
@@ -305,7 +305,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
         it = pat.pmts.find(getId());
         if (it == pat.pmts.end()) {
             _duck.report().error(u"service id %n not found in PAT", getId());
-            _notFound = true;
+            _not_found = true;
             return;
         }
     }
@@ -313,7 +313,7 @@ void ts::ServiceDiscovery::processPAT(const PAT& pat)
         // If no service was specified, use the first service from the PAT.
         if (pat.pmts.empty()) {
             _duck.report().error(u"no service found in PAT");
-            _notFound = true;
+            _not_found = true;
             return;
         }
         it = pat.pmts.begin();
@@ -351,7 +351,7 @@ void ts::ServiceDiscovery::processPMT(const PMT& pmt, PID pid)
     _pmt = pmt;
 
     // Notify the application.
-    if (_pmtHandler != nullptr) {
-        _pmtHandler->handlePMT(_pmt, pid);
+    if (_pmt_handler != nullptr) {
+        _pmt_handler->handlePMT(_pmt, pid);
     }
 }

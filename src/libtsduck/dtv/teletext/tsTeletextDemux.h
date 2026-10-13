@@ -48,13 +48,13 @@ namespace ts {
         //! Activate or deactivate the font color tags in the output text.
         //! @param [in] addColors If true, font colors tags will be inserted in the output text.
         //!
-        void setAddColors(bool addColors) { _addColors = addColors; }
+        void setAddColors(bool addColors) { _add_colors = addColors; }
 
         //!
         //! Check if font colors tags are inserted in the output text.
         //! @return True when font colors tags are inserted in the output text.
         //!
-        bool getAddColors() const { return _addColors; }
+        bool getAddColors() const { return _add_colors; }
 
         //!
         //! Flush any pending Teletext message.
@@ -67,7 +67,7 @@ namespace ts {
         //! Replace the Teletext handler.
         //! @param [in] handler The Teletext handler.
         //!
-        void setTeletextHandler(TeletextHandlerInterface* handler) { _txtHandler = handler; }
+        void setTeletextHandler(TeletextHandlerInterface* handler) { _txt_handler = handler; }
 
         //!
         //! Get the number of Teletext frames found in a given page.
@@ -206,8 +206,8 @@ namespace ts {
         static int pageBinaryToBcd(int bin);
 
         // Private members:
-        TeletextHandlerInterface* _txtHandler = nullptr;  //!< User handler.
-        PIDContextMap             _pids {};               //!< Map of PID analysis contexts.
-        bool                      _addColors = false;     //!< Add font color tags.
+        TeletextHandlerInterface* _txt_handler = nullptr;  // User handler.
+        PIDContextMap             _pids {};                // Map of PID analysis contexts.
+        bool                      _add_colors = false;     // Add font color tags.
     };
 }

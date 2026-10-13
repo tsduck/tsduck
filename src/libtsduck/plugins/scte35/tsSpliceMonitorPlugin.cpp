@@ -51,7 +51,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Display the content of SCTE-35 splice insert commands. "
          u"By default, only log a short event description.");
 
-    option(u"influx", 0, _eventStateEnum, 0, UNLIMITED_COUNT);
+    option(u"influx", 0, EventStateEnum, 0, UNLIMITED_COUNT);
     help(u"influx",
          u"Send to an InfluxDB server all events of the specified types. "
          u"See all other --influx-* options for more details. "
@@ -528,7 +528,7 @@ void ts::SpliceMonitorPlugin::sendInflux(PID splice_pid, const SpliceEvent& even
 
             // Event tags.
             UString tags;
-            tags.format(u"pid=%d,event=%d,direction=%s,state=%s", splice_pid, event.event_id, event.event_out ? u"out" : u"in", _eventStateEnum.name(state));
+            tags.format(u"pid=%d,event=%d,direction=%s,state=%s", splice_pid, event.event_id, event.event_out ? u"out" : u"in", EventStateEnum.name(state));
 
             // Event fields. Mandatory field: start = event start timestamps in milliseconds since UNIX Epoch.
             UString fields;

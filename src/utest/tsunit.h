@@ -132,7 +132,7 @@ namespace tsunit {
 
     private:
         friend class Main;
-        static std::ofstream _nulDevice;
+        static std::ofstream _nul_device;
     };
 
     //!
@@ -176,11 +176,11 @@ namespace tsunit {
         int run();
 
     private:
-        std::string _argv0 {};          // program name
-        std::string _testName {};       // name of test to run
-        bool        _listMode = false;  // list tests, do not execute
-        bool        _debug = false;     // enable debug messages
-        int         _exitStatus = EXIT_SUCCESS;
+        std::string _argv0 {};           // program name
+        std::string _test_name {};       // name of test to run
+        bool        _list_mode = false;  // list tests, do not execute
+        bool        _debug = false;      // enable debug messages
+        int         _exit_status = EXIT_SUCCESS;
 
         // Inaccessible operations.
         Main() = delete;
@@ -457,13 +457,13 @@ namespace tsunit {
     public:
         TestRunner() = default;
         bool run(TestSuite* suite = nullptr, TestCase* test = nullptr, bool prepost = true);
-        size_t getPassedCount() const { return _passedCount; }
-        size_t getFailedCount() const { return _failedCount; }
-        static std::string getCurrentTestName() { return _currentTestName; }
+        size_t getPassedCount() const { return _passed_count; }
+        size_t getFailedCount() const { return _failed_count; }
+        static std::string getCurrentTestName() { return _current_test_name; }
     private:
-        static std::string _currentTestName;
-        size_t _passedCount = 0;
-        size_t _failedCount = 0;
+        static std::string _current_test_name;
+        size_t _passed_count = 0;
+        size_t _failed_count = 0;
         TestRunner(TestRunner&&) = delete;
         TestRunner(const TestRunner&) = delete;
         TestRunner& operator=(TestRunner&&) = delete;
@@ -538,14 +538,14 @@ namespace tsunit {
     class Assertions
     {
     private:
-        static std::atomic_size_t _passedCount;
-        static std::atomic_size_t _failedAssertionsCount;
-        static std::atomic_size_t _failedAssumptionsCount;
+        static std::atomic_size_t _passed_count;
+        static std::atomic_size_t _failed_assertions_count;
+        static std::atomic_size_t _failed_assumptions_count;
     public:
         // Assertion counts.
-        static size_t getPassedCount() { return _passedCount; }
-        static size_t getFailedAssertionsCount() { return _failedAssertionsCount; }
-        static size_t getFailedAssumptionsCount() { return _failedAssumptionsCount; }
+        static size_t getPassedCount() { return _passed_count; }
+        static size_t getFailedAssertionsCount() { return _failed_assertions_count; }
+        static size_t getFailedAssumptionsCount() { return _failed_assumptions_count; }
 
         // Assertion functions.
         [[noreturn]] static void fail(const std::string& message, const char* sourcefile, int linenumber);
@@ -697,10 +697,10 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
 {
     using valuetype = typename underlying_type<ATYPE>::type;
     if (valuetype(expected) == valuetype(actual)) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssertionsCount;
+        ++_failed_assertions_count;
         const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
@@ -718,10 +718,10 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
     const double aexp = static_cast<double>(std::fabs(expected));
     const double aact = static_cast<double>(std::fabs(actual));
     if (diff <= (aexp < aact ? aact : aexp) * epsilon) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssertionsCount;
+        ++_failed_assertions_count;
         const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
         const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
         throw Failure("incorrect value", details1 + "\n" + details2, file, line);
@@ -732,10 +732,10 @@ template<typename T>
 void tsunit::Assertions::equal(const T* expected, const T* actual, const std::string& estr, const std::string& astr, const char* file, int line)
 {
     if (expected == actual) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssertionsCount;
+        ++_failed_assertions_count;
         const long long addrdiff = static_cast<long long>(reinterpret_cast<const char*>(actual) - reinterpret_cast<const char*>(expected));
         const long long typediff = static_cast<long long>(actual - expected);
         const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
@@ -752,10 +752,10 @@ template<typename CHAR>
 void tsunit::Assertions::equalString(const std::basic_string<CHAR>& expected, const std::basic_string<CHAR>& actual, const char* sourcefile, int linenumber)
 {
     if (expected == actual) {
-        ++_passedCount;
+        ++_passed_count;
     }
     else {
-        ++_failedAssertionsCount;
+        ++_failed_assertions_count;
         size_t diff = 0;
         while (diff < expected.size() && diff < actual.size() && expected[diff] == actual[diff]) {
             diff++;

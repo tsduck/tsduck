@@ -61,7 +61,7 @@ namespace ts {
         //! Replace the PMT handler.
         //! @param [in] h The new handler.
         //!
-        void setPMTHandler(SignalizationHandlerInterface* h) { _pmtHandler = h; }
+        void setPMTHandler(SignalizationHandlerInterface* h) { _pmt_handler = h; }
 
         //!
         //! Check if the PMT of the service is known.
@@ -80,12 +80,12 @@ namespace ts {
         //! @return True if the service is not yet found or found.
         //! Return false when we know that the service does not exist.
         //!
-        bool nonExistentService() const { return _notFound; }
+        bool nonExistentService() const { return _not_found; }
 
     private:
         DuckContext& _duck;
-        bool         _notFound = false;     // Set when service does not exist.
-        SignalizationHandlerInterface* _pmtHandler = nullptr;  // Handler to call for each new PMT.
+        bool         _not_found = false;    // Set when service does not exist.
+        SignalizationHandlerInterface* _pmt_handler = nullptr;  // Handler to call for each new PMT.
         PMT          _pmt {};               // Last valid PMT for the service.
         SectionDemux _demux {_duck, this};  // PSI demux for service discovery.
 

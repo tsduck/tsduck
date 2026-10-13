@@ -22,9 +22,9 @@ TS_DEFINE_SINGLETON(ts::DuckConfigFile);
 
 ts::DuckConfigFile::DuckConfigFile() :
     ConfigFile(UserConfigurationFileName(u".tsduck", u"tsduck.ini"), NULLREP, u"TSDUCK_NO_USER_CONFIG"),
-    _appName(UString(ExecutableFile().stem()).toLower()),
-    _appSection(section(_appName)),
-    _mainSection(section(u""))
+    _app_name(UString(ExecutableFile().stem()).toLower()),
+    _app_section(section(_app_name)),
+    _main_section(section(u""))
 {
 }
 
@@ -35,7 +35,7 @@ ts::DuckConfigFile::DuckConfigFile() :
 
 ts::UString ts::DuckConfigFile::value(const ts::UString& entry, const ts::UString& defvalue) const
 {
-    return _appSection.valueCount(entry) > 0 ? _appSection.value(entry) : _mainSection.value(entry, 0, defvalue);
+    return _app_section.valueCount(entry) > 0 ? _app_section.value(entry) : _main_section.value(entry, 0, defvalue);
 }
 
 
@@ -48,14 +48,14 @@ void ts::DuckConfigFile::getValues(const ts::UString& entry, ts::UStringVector& 
     values.clear();
     size_t count = 0;
 
-    if ((count = _appSection.valueCount(entry)) > 0) {
+    if ((count = _app_section.valueCount(entry)) > 0) {
         for (size_t i = 0; i < count; ++i) {
-            values.push_back(_appSection.value(entry, i));
+            values.push_back(_app_section.value(entry, i));
         }
     }
-    else if ((count = _mainSection.valueCount(entry)) > 0) {
+    else if ((count = _main_section.valueCount(entry)) > 0) {
         for (size_t i = 0; i < count; ++i) {
-            values.push_back(_mainSection.value(entry, i));
+            values.push_back(_main_section.value(entry, i));
         }
     }
 }

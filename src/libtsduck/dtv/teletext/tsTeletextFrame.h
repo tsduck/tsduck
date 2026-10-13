@@ -31,17 +31,17 @@ namespace ts {
         //! Full constructor.
         //! @param [in] pid PID number.
         //! @param [in] page Teletext page number.
-        //! @param [in] frameCount Frame counter in this page, starting at 1.
-        //! @param [in] showTimestamp Show frame at this timestamp (in ms from start of stream)
-        //! @param [in] hideTimestamp Hide frame at this timestamp (in ms from start of stream)
+        //! @param [in] frame_count Frame counter in this page, starting at 1.
+        //! @param [in] show_timestamp Show frame at this timestamp (in ms from start of stream)
+        //! @param [in] hide_timestamp Hide frame at this timestamp (in ms from start of stream)
         //! @param [in] lines Text lines.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
         TeletextFrame(PID pid,
                       int page,
-                      int frameCount,
-                      const cn::duration<Rep1,Period1>& showTimestamp,
-                      const cn::duration<Rep2,Period2>& hideTimestamp,
+                      int frame_count,
+                      const cn::duration<Rep1,Period1>& show_timestamp,
+                      const cn::duration<Rep2,Period2>& hide_timestamp,
                       const UStringList& lines = UStringList());
 
         //!
@@ -72,27 +72,27 @@ namespace ts {
         //! Get the frame number in this page, starting at 1.
         //! @return The frame number in this page, starting at 1.
         //!
-        int frameCount() const { return _frameCount; }
+        int frameCount() const { return _frame_count; }
 
         //!
         //! Get the "show" timestamp in ms from start of stream.
         //! @return The "show" timestamp in ms from start of stream.
         //!
-        cn::milliseconds showTimestamp() const { return _showTimestamp; }
+        cn::milliseconds showTimestamp() const { return _show_timestamp; }
 
         //!
         //! Get the "hide" timestamp in ms from start of stream.
         //! @return The "hide" timestamp in ms from start of stream.
         //!
-        cn::milliseconds hideTimestamp() const { return _hideTimestamp; }
+        cn::milliseconds hideTimestamp() const { return _hide_timestamp; }
 
-private:
-        PID              _pid = PID_NULL;     //!< PID number.
-        int              _page = 0;           //!< Teletext page number.
-        int              _frameCount = 0;     //!< Frame counter in this page, starting at 1.
-        cn::milliseconds _showTimestamp {0};  //!< Show frame at this timestamp (in ms from start of stream)
-        cn::milliseconds _hideTimestamp {0};  //!< Hide frame at this timestamp (in ms from start of stream)
-        UStringList      _lines {};           //!< Text lines. May contain embedded HTML tags.
+    private:
+        PID              _pid = PID_NULL;     // PID number.
+        int              _page = 0;           // Teletext page number.
+        int              _frame_count = 0;    // Frame counter in this page, starting at 1.
+        cn::milliseconds _show_timestamp {};  // Show frame at this timestamp (in ms from start of stream)
+        cn::milliseconds _hide_timestamp {};  // Hide frame at this timestamp (in ms from start of stream)
+        UStringList      _lines {};           // Text lines. May contain embedded HTML tags.
     };
 }
 
@@ -110,9 +110,9 @@ ts::TeletextFrame::TeletextFrame(PID pid, int page, int frameCount,
                                  const UStringList& lines) :
     _pid(pid),
     _page(page),
-    _frameCount(frameCount),
-    _showTimestamp(showTimestamp),
-    _hideTimestamp(hideTimestamp),
+    _frame_count(frameCount),
+    _show_timestamp(showTimestamp),
+    _hide_timestamp(hideTimestamp),
     _lines(lines)
 {
 }

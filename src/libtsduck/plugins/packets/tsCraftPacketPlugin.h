@@ -29,45 +29,45 @@ namespace ts {
 
     private:
         // Command line options:
-        bool      _setDiscontinuity = false;
-        bool      _clearDiscontinuity = false;
-        bool      _setTransportError = false;
-        bool      _clearTransportError = false;
-        bool      _setTransportPriority = false;
-        bool      _clearTransportPriority = false;
-        bool      _setESPriority = false;
-        bool      _clearESPriority = false;
-        bool      _resizePayload = false;
-        bool      _noRepeat = false;
-        size_t    _payloadSize = 0;
-        bool      _noPayload = false;
-        bool      _pesPayload = false;
-        ByteBlock _payloadPattern {};
-        ByteBlock _payloadAnd {};
-        ByteBlock _payloadOr {};
-        ByteBlock _payloadXor {};
-        size_t    _offsetPattern = 0;
-        ByteBlock _privateData {};
-        bool      _clearPrivateData = false;
-        bool      _clearPCR = false;
-        uint64_t  _newPCR = 0;
-        bool      _clearOPCR = false;
-        uint64_t  _newOPCR = 0;
-        bool      _setPID = false;
-        PID       _newPID = PID_NULL;
-        bool      _setPUSI = false;
-        bool      _clearPUSI = false;
-        bool      _setRandomAccess = false;
-        bool      _clearRandomAccess = false;
-        bool      _packPESHeader = false;
-        bool      _setScrambling = false;
-        uint8_t   _newScrambling = 0;
-        bool      _setCC = false;
-        uint8_t   _newCC = 0;
-        bool      _setSpliceCountdown = false;
-        bool      _clearSpliceCountdown = false;
-        uint8_t   _newSpliceCountdown = 0;
-        bool      _deleteRS204 = false;
+        bool      _set_discontinuity = false;
+        bool      _clear_discontinuity = false;
+        bool      _set_transport_error = false;
+        bool      _clear_transport_error = false;
+        bool      _set_transport_priority = false;
+        bool      _clear_transport_priority = false;
+        bool      _set_es_priority = false;
+        bool      _clear_es_priority = false;
+        bool      _resize_payload = false;
+        bool      _no_repeat = false;
+        size_t    _payload_size = 0;
+        bool      _no_payload = false;
+        bool      _pes_payload = false;
+        ByteBlock _payload_pattern {};
+        ByteBlock _payload_and {};
+        ByteBlock _payload_or {};
+        ByteBlock _payload_xor {};
+        size_t    _offset_pattern = 0;
+        ByteBlock _private_data {};
+        bool      _clear_private_data = false;
+        bool      _clear_pcr = false;
+        uint64_t  _new_pcr = 0;
+        bool      _clear_opcr = false;
+        uint64_t  _new_opcr = 0;
+        bool      _set_pid = false;
+        PID       _new_pid = PID_NULL;
+        bool      _set_pusi = false;
+        bool      _clear_pusi = false;
+        bool      _set_random_access = false;
+        bool      _clear_random_access = false;
+        bool      _pack_pes_header = false;
+        bool      _set_scrambling = false;
+        uint8_t   _new_scrambling = 0;
+        bool      _set_cc = false;
+        uint8_t   _new_cc = 0;
+        bool      _set_splice_countdown = false;
+        bool      _clear_splice_countdown = false;
+        uint8_t   _new_splice_countdown = 0;
+        bool      _delete_rs204 = false;
         ByteBlock _rs204 {};
 
         // Perform --pack-pes-header on a packet.
@@ -75,6 +75,6 @@ namespace ts {
 
         // Perform payload operations such as --payload-pattern, --payload-and, etc.
         template <typename Op>
-        void updatePayload(TSPacket& pkt, size_t payloadBase, const ByteBlock& pattern, Op assign);
+        void updatePayload(TSPacket& pkt, size_t payload_base, const ByteBlock& pattern, Op assign);
     };
 }

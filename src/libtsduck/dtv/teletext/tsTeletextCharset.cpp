@@ -319,11 +319,11 @@ namespace {
 
 ts::TeletextCharset::TeletextCharset() :
     _current(0x00),
-    _g0m29(UNDEFINED),
-    _g0x28(UNDEFINED),
-    _g0Default(LATIN)
+    _g0_m29(UNDEFINED),
+    _g0_x28(UNDEFINED),
+    _g0_default(LATIN)
 {
-    MemCopy(&_G0, G0Base, sizeof(_G0));
+    MemCopy(&_g0, G0Base, sizeof(_g0));
 }
 
 
@@ -342,11 +342,11 @@ ts::UChar ts::TeletextCharset::teletextToUcs2(uint8_t chr) const
         if (rchr < 0x20) {
             return rchr;
         }
-        else if (_g0Default == LATIN) {
-            return _G0[LATIN][rchr - 0x20];
+        else if (_g0_default == LATIN) {
+            return _g0[LATIN][rchr - 0x20];
         }
         else {
-            return G0Base[_g0Default][rchr - 0x20];
+            return G0Base[_g0_default][rchr - 0x20];
         }
     }
 }
@@ -383,44 +383,44 @@ void ts::TeletextCharset::setG0Charset(uint32_t triplet)
 {
     // ETS 300 706, Table 32
     if ((triplet & 0x3c00) != 0x1000) {
-        _g0Default = LATIN;
+        _g0_default = LATIN;
     }
     else if ((triplet & 0x0380) == 0x0000) {
-        _g0Default = CYRILLIC1;
+        _g0_default = CYRILLIC1;
     }
     else if ((triplet & 0x0380) == 0x0200) {
-        _g0Default = CYRILLIC2;
+        _g0_default = CYRILLIC2;
     }
     else if ((triplet & 0x0380) == 0x0280) {
-        _g0Default = CYRILLIC3;
+        _g0_default = CYRILLIC3;
     }
     else {
-        _g0Default = LATIN;
+        _g0_default = LATIN;
     }
 }
 
 void ts::TeletextCharset::setX28(uint8_t charset)
 {
-    if (_g0Default == LATIN) {
-        remapG0(_g0x28 = charset);
+    if (_g0_default == LATIN) {
+        remapG0(_g0_x28 = charset);
     }
 }
 
 void ts::TeletextCharset::setM29(uint8_t charset)
 {
-    if (_g0Default == LATIN) {
-        _g0m29 = charset;
-        if (_g0x28 == UNDEFINED) {
-            remapG0(_g0m29);
+    if (_g0_default == LATIN) {
+        _g0_m29 = charset;
+        if (_g0_x28 == UNDEFINED) {
+            remapG0(_g0_m29);
         }
     }
 }
 
 void ts::TeletextCharset::resetX28(uint8_t fallback)
 {
-    if (_g0Default == LATIN) {
-        _g0x28 = UNDEFINED;
-        remapG0(_g0m29 != UNDEFINED ? _g0m29 : fallback);
+    if (_g0_default == LATIN) {
+        _g0_x28 = UNDEFINED;
+        remapG0(_g0_m29 != UNDEFINED ? _g0_m29 : fallback);
     }
 }
 
@@ -435,7 +435,7 @@ void ts::TeletextCharset::remapG0(uint8_t charset)
         const uint8_t map = G0_LATIN_NATIONAL_SUBSETS_MAP[charset];
         if (map != 0xFF) {
             for (uint8_t n = 0; n < 13; n++) {
-                _G0[LATIN][G0_LATIN_NATIONAL_SUBSETS_POSITIONS[n]] = G0_LATIN_NATIONAL_SUBSETS[map][n];
+                _g0[LATIN][G0_LATIN_NATIONAL_SUBSETS_POSITIONS[n]] = G0_LATIN_NATIONAL_SUBSETS[map][n];
             }
             _current = charset;
         }

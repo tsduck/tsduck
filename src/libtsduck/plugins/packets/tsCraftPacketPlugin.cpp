@@ -180,55 +180,55 @@ ts::CraftPacketPlugin::CraftPacketPlugin(TSP* tsp_) :
 
 bool ts::CraftPacketPlugin::getOptions()
 {
-    _setDiscontinuity = present(u"discontinuity");
-    _clearDiscontinuity = present(u"clear-discontinuity");
-    _setTransportError = present(u"error");
-    _clearTransportError = present(u"clear-error");
-    _setTransportPriority = present(u"priority");
-    _clearTransportPriority = present(u"clear-priority");
-    _setESPriority = present(u"es-priority");
-    _clearESPriority = present(u"clear-es-priority");
-    _noPayload = present(u"no-payload");
-    _noRepeat = present(u"no-repeat");
-    _resizePayload = present(u"payload-size") || _noPayload;
-    getIntValue(_payloadSize, u"payload-size", 0);
-    _pesPayload = present(u"pes-payload");
-    getIntValue(_offsetPattern, u"offset-pattern", 0);
-    _clearPCR = present(u"no-pcr");
-    getIntValue(_newPCR, u"pcr", INVALID_PCR);
-    _clearOPCR = present(u"no-opcr");
-    getIntValue(_newOPCR, u"opcr", INVALID_PCR);
-    _setPID = present(u"pid");
-    getIntValue(_newPID, u"pid");
-    _setPUSI = present(u"pusi");
-    _clearPUSI = present(u"clear-pusi");
-    _setRandomAccess = present(u"random-access");
-    _clearRandomAccess = present(u"clear-random-access");
-    _packPESHeader = present(u"pack-pes-header");
-    _setScrambling = present(u"scrambling");
-    getIntValue(_newScrambling, u"scrambling");
-    _setCC = present(u"continuity-counter");
-    getIntValue(_newCC, u"continuity-counter");
-    _setSpliceCountdown = present(u"splice-countdown");
-    _clearSpliceCountdown = present(u"no-splice-countdown");
-    getIntValue(_newSpliceCountdown, u"splice-countdown");
-    _clearPrivateData = present(u"no-private-data");
-    getHexaValue(_payloadPattern, u"payload-pattern");
-    getHexaValue(_payloadAnd, u"payload-and");
-    getHexaValue(_payloadOr, u"payload-or");
-    getHexaValue(_payloadXor, u"payload-xor");
-    getHexaValue(_privateData, u"private-data");
-    _deleteRS204 = present(u"delete-rs204");
+    _set_discontinuity = present(u"discontinuity");
+    _clear_discontinuity = present(u"clear-discontinuity");
+    _set_transport_error = present(u"error");
+    _clear_transport_error = present(u"clear-error");
+    _set_transport_priority = present(u"priority");
+    _clear_transport_priority = present(u"clear-priority");
+    _set_es_priority = present(u"es-priority");
+    _clear_es_priority = present(u"clear-es-priority");
+    _no_payload = present(u"no-payload");
+    _no_repeat = present(u"no-repeat");
+    _resize_payload = present(u"payload-size") || _no_payload;
+    getIntValue(_payload_size, u"payload-size", 0);
+    _pes_payload = present(u"pes-payload");
+    getIntValue(_offset_pattern, u"offset-pattern", 0);
+    _clear_pcr = present(u"no-pcr");
+    getIntValue(_new_pcr, u"pcr", INVALID_PCR);
+    _clear_opcr = present(u"no-opcr");
+    getIntValue(_new_opcr, u"opcr", INVALID_PCR);
+    _set_pid = present(u"pid");
+    getIntValue(_new_pid, u"pid");
+    _set_pusi = present(u"pusi");
+    _clear_pusi = present(u"clear-pusi");
+    _set_random_access = present(u"random-access");
+    _clear_random_access = present(u"clear-random-access");
+    _pack_pes_header = present(u"pack-pes-header");
+    _set_scrambling = present(u"scrambling");
+    getIntValue(_new_scrambling, u"scrambling");
+    _set_cc = present(u"continuity-counter");
+    getIntValue(_new_cc, u"continuity-counter");
+    _set_splice_countdown = present(u"splice-countdown");
+    _clear_splice_countdown = present(u"no-splice-countdown");
+    getIntValue(_new_splice_countdown, u"splice-countdown");
+    _clear_private_data = present(u"no-private-data");
+    getHexaValue(_payload_pattern, u"payload-pattern");
+    getHexaValue(_payload_and, u"payload-and");
+    getHexaValue(_payload_or, u"payload-or");
+    getHexaValue(_payload_xor, u"payload-xor");
+    getHexaValue(_private_data, u"private-data");
+    _delete_rs204 = present(u"delete-rs204");
     getHexaValue(_rs204, u"rs204");
     if (!_rs204.empty()) {
         _rs204.resize(RS_SIZE, 0xFF);
     }
 
-    if (_payloadSize > 0 && _noPayload) {
+    if (_payload_size > 0 && _no_payload) {
         error(u"options --no-payload and --payload-size are mutually exclusive");
         return false;
     }
-    if (!_rs204.empty() && _deleteRS204) {
+    if (!_rs204.empty() && _delete_rs204) {
         error(u"options --rs204 and --delete-rs204 are mutually exclusive");
         return false;
     }
@@ -243,59 +243,59 @@ bool ts::CraftPacketPlugin::getOptions()
 ts::PacketProcessStatus ts::CraftPacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Hack the packet header. Just overwrite a few bits in place, nothing to move.
-    if (_clearTransportError) {
+    if (_clear_transport_error) {
         pkt.clearTEI();
     }
-    if (_setTransportError) {
+    if (_set_transport_error) {
         pkt.setTEI();
     }
-    if (_clearTransportPriority) {
+    if (_clear_transport_priority) {
         pkt.clearPriority();
     }
-    if (_setTransportPriority) {
+    if (_set_transport_priority) {
         pkt.setPriority();
     }
-    if (_clearPUSI) {
+    if (_clear_pusi) {
         pkt.clearPUSI();
     }
-    if (_setPUSI) {
+    if (_set_pusi) {
         pkt.setPUSI();
     }
-    if (_setPID) {
-        pkt.setPID(_newPID);
+    if (_set_pid) {
+        pkt.setPID(_new_pid);
     }
-    if (_setScrambling) {
-        pkt.setScrambling(_newScrambling);
+    if (_set_scrambling) {
+        pkt.setScrambling(_new_scrambling);
     }
-    if (_setCC) {
-        pkt.setCC(_newCC);
+    if (_set_cc) {
+        pkt.setCC(_new_cc);
     }
 
     // Remove fields or clear bits in the adaptation field.
     // These operations always succeed and do not change the size of the AF,
     // they only potentially increase the stuffing part of the AF.
-    if (_clearDiscontinuity) {
+    if (_clear_discontinuity) {
        pkt.clearDiscontinuityIndicator();
     }
-    if (_clearRandomAccess) {
+    if (_clear_random_access) {
        pkt.clearRandomAccessIndicator();
     }
-    if (_clearESPriority) {
+    if (_clear_es_priority) {
        pkt.clearESPI();
     }
-    if (_clearPCR) {
+    if (_clear_pcr) {
         pkt.removePCR();
     }
-    if (_clearOPCR) {
+    if (_clear_opcr) {
         pkt.removeOPCR();
     }
-    if (_clearSpliceCountdown) {
+    if (_clear_splice_countdown) {
         pkt.removeSpliceCountdown();
     }
-    if (_clearPrivateData) {
+    if (_clear_private_data) {
         pkt.removePrivateData();
     }
-    if (_packPESHeader) {
+    if (_pack_pes_header) {
         packPESHeader(pkt);
     }
 
@@ -303,54 +303,54 @@ ts::PacketProcessStatus ts::CraftPacketPlugin::processPacket(TSPacket& pkt, TSPa
     // With --pes-payload, we may do that only if the TS contains the start of a PES packet with some PES payload.
     const size_t pesHeaderSize = pkt.getPESHeaderSize();
     const bool pesPayloadPresent = pesHeaderSize > 0 && pkt.getPayloadSize() > pesHeaderSize;
-    const bool mayUpdatePayload = !_pesPayload || pesPayloadPresent;
-    const size_t payloadBase = _pesPayload ? pesHeaderSize : 0;
+    const bool mayUpdatePayload = !_pes_payload || pesPayloadPresent;
+    const size_t payloadBase = _pes_payload ? pesHeaderSize : 0;
 
     // If the payload must be resized to a specific size, do it now.
-    if (mayUpdatePayload && _resizePayload && !pkt.setPayloadSize(payloadBase + _payloadSize, true, 0xFF)) {
-        warning(u"packet %'d: cannot resize %s payload to %'d bytes", tsp->pluginPackets(), _pesPayload ? u"PES" : u"TS", _payloadSize);
+    if (mayUpdatePayload && _resize_payload && !pkt.setPayloadSize(payloadBase + _payload_size, true, 0xFF)) {
+        warning(u"packet %'d: cannot resize %s payload to %'d bytes", tsp->pluginPackets(), _pes_payload ? u"PES" : u"TS", _payload_size);
     }
 
     // Check if we are allowed to shrink the payload to any value.
     // We can shrink if the payload is replaced (--payload-pattern) and with no specified size.
-    const bool canShrinkPayload = !_payloadPattern.empty() && !_resizePayload;
+    const bool canShrinkPayload = !_payload_pattern.empty() && !_resize_payload;
 
     // Set individual flags in AF. Try to create minimal AF with flags field.
-    if (_setDiscontinuity && !pkt.setDiscontinuityIndicator(canShrinkPayload)) {
+    if (_set_discontinuity && !pkt.setDiscontinuityIndicator(canShrinkPayload)) {
         warning(u"packet %'d: no adaptation field to set discontinuity indicator", tsp->pluginPackets());
     }
-    if (_setESPriority && !pkt.setESPI(canShrinkPayload)) {
+    if (_set_es_priority && !pkt.setESPI(canShrinkPayload)) {
         warning(u"packet %'d: no adaptation field to set ES priority indicator", tsp->pluginPackets());
     }
-    if (_setRandomAccess && !pkt.setRandomAccessIndicator(canShrinkPayload)) {
+    if (_set_random_access && !pkt.setRandomAccessIndicator(canShrinkPayload)) {
         warning(u"packet %'d: no adaptation field to set random access indicator", tsp->pluginPackets());
     }
 
     // Set fields which need more space in the adaptation field.
-    if (_newPCR != INVALID_PCR && !pkt.setPCR(_newPCR, canShrinkPayload)) {
+    if (_new_pcr != INVALID_PCR && !pkt.setPCR(_new_pcr, canShrinkPayload)) {
         warning(u"packet %'d: no adaptation field to set PCR", tsp->pluginPackets());
     }
-    if (_newOPCR != INVALID_PCR && !pkt.setOPCR(_newOPCR, canShrinkPayload)) {
+    if (_new_opcr != INVALID_PCR && !pkt.setOPCR(_new_opcr, canShrinkPayload)) {
         warning(u"packet %'d: no adaptation field to set OPCR", tsp->pluginPackets());
     }
-    if (_setSpliceCountdown && !pkt.setSpliceCountdown(_newSpliceCountdown, canShrinkPayload)) {
+    if (_set_splice_countdown && !pkt.setSpliceCountdown(_new_splice_countdown, canShrinkPayload)) {
         warning(u"packet %'d: no adaptation field to set splicing point countdown", tsp->pluginPackets());
     }
-    if (!_privateData.empty() && !pkt.setPrivateData(_privateData, canShrinkPayload)) {
+    if (!_private_data.empty() && !pkt.setPrivateData(_private_data, canShrinkPayload)) {
         warning(u"packet %'d: adaptation field too short to set private data", tsp->pluginPackets());
     }
 
     // Fill payload with pattern.
     if (mayUpdatePayload) {
-        updatePayload(pkt, payloadBase, _payloadPattern, Assign<uint8_t>{});
-        updatePayload(pkt, payloadBase, _payloadAnd, AssignAnd<uint8_t>{});
-        updatePayload(pkt, payloadBase, _payloadOr, AssignOr<uint8_t>{});
-        updatePayload(pkt, payloadBase, _payloadXor, AssignXor<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payload_pattern, Assign<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payload_and, AssignAnd<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payload_or, AssignOr<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payload_xor, AssignXor<uint8_t>{});
     }
 
     // If the payload was explicitly resized to zero, set or reset payload presence.
-    if (_resizePayload && _payloadSize == 0 && pkt.getPayloadSize() == 0) {
-        if (_noPayload) {
+    if (_resize_payload && _payload_size == 0 && pkt.getPayloadSize() == 0) {
+        if (_no_payload) {
             // Was resized with --no-payload, clear payload existence.
             pkt.b[3] &= ~0x10;
         }
@@ -361,7 +361,7 @@ ts::PacketProcessStatus ts::CraftPacketPlugin::processPacket(TSPacket& pkt, TSPa
     }
 
     // Process metadata.
-    if (_deleteRS204) {
+    if (_delete_rs204) {
         pkt_data.setAuxData(nullptr, 0);
     }
     else if (!_rs204.empty()) {
@@ -377,16 +377,16 @@ ts::PacketProcessStatus ts::CraftPacketPlugin::processPacket(TSPacket& pkt, TSPa
 //----------------------------------------------------------------------------
 
 template <typename Op>
-void ts::CraftPacketPlugin::updatePayload(TSPacket& pkt, size_t payloadBase, const ByteBlock& pattern, Op assign)
+void ts::CraftPacketPlugin::updatePayload(TSPacket& pkt, size_t payload_base, const ByteBlock& pattern, Op assign)
 {
     if (!pattern.empty()) {
         const uint8_t* pat = pattern.data();
         const uint8_t* const endpat = pattern.data() + pattern.size();
-        uint8_t* data = pkt.getPayload() + payloadBase + _offsetPattern;
+        uint8_t* data = pkt.getPayload() + payload_base + _offset_pattern;
         while (data < pkt.b + PKT_SIZE) {
             assign(*data++, *pat++);
             if (pat >= endpat) {
-                if (_noRepeat) {
+                if (_no_repeat) {
                     break;
                 }
                 else {

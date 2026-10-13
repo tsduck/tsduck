@@ -32,7 +32,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    int _previousSeverity = 0;
+    int _previous_severity = 0;
 };
 
 TSUNIT_REGISTER(HLSTest);
@@ -45,7 +45,7 @@ TSUNIT_REGISTER(HLSTest);
 // Test suite initialization method.
 void HLSTest::beforeTest()
 {
-    _previousSeverity = CERR.maxSeverity();
+    _previous_severity = CERR.maxSeverity();
     if (tsunit::Test::debugMode()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
     }
@@ -54,7 +54,7 @@ void HLSTest::beforeTest()
 // Test suite cleanup method.
 void HLSTest::afterTest()
 {
-    CERR.setMaxSeverity(_previousSeverity);
+    CERR.setMaxSeverity(_previous_severity);
 }
 
 

@@ -35,7 +35,7 @@ ts::MuxCodeDescriptor::MuxCodeDescriptor() :
 
 void ts::MuxCodeDescriptor::clearContent()
 {
-    MuxCodeTableEntry.clear();
+    mux_code_table_entries.clear();
 }
 
 ts::MuxCodeDescriptor::MuxCodeDescriptor(DuckContext& duck, const Descriptor& desc) :
@@ -51,23 +51,23 @@ ts::MuxCodeDescriptor::MuxCodeDescriptor(DuckContext& duck, const Descriptor& de
 
 void ts::MuxCodeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it : MuxCodeTableEntry) {
+    for (auto it : mux_code_table_entries) {
         uint8_t _length = 2;  // 4 bit MuxCode, 4 bit version, 8 bit substructureCount
         for (const auto& it2 : it.substructure) {
             _length += 1 + // 5 bit slotCount, 3 bit repetitionCode
-                (2 * uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size())));
+                (2 * uint8_t(std::min(it2.m4_mux_channel.size(), it2.number_of_bytes.size())));
         }
         buf.putUInt8(_length);
-        buf.putBits(it.MuxCode, 4);
+        buf.putBits(it.mux_code, 4);
         buf.putBits(it.version, 4);
         buf.putUInt8(uint8_t(it.substructure.size()));
         for (auto it2 : it.substructure) {
-            uint8_t slotCount = uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size()));
+            uint8_t slotCount = uint8_t(std::min(it2.m4_mux_channel.size(), it2.number_of_bytes.size()));
             buf.putBits(slotCount, 5);
-            buf.putBits(it2.repetitionCount, 3);
+            buf.putBits(it2.repetition_count, 3);
             for (uint8_t i = 0; i < slotCount; i++) {
-                buf.putUInt8(it2.m4MuxChannel[i]);
-                buf.putUInt8(it2.numberOfBytes[i]);
+                buf.putUInt8(it2.m4_mux_channel[i]);
+                buf.putUInt8(it2.number_of_bytes[i]);
             }
         }
     }
@@ -84,23 +84,23 @@ void ts::MuxCodeDescriptor::deserializePayload(PSIBuffer& buf)
         uint8_t length = buf.getUInt8();
         if (buf.canReadBytes(length)) {
             MuxCodeTableEntry_type newMuxCodeEntry;
-            buf.getBits(newMuxCodeEntry.MuxCode, 4);
+            buf.getBits(newMuxCodeEntry.mux_code, 4);
             buf.getBits(newMuxCodeEntry.version, 4);
             uint8_t substructreCount = buf.getUInt8();
             for (uint8_t i = 0; i < substructreCount; i++) {
                 substructure_type newSubstructure;
                 uint8_t slotCount;
                 buf.getBits(slotCount, 5);
-                buf.getBits(newSubstructure.repetitionCount, 3);
+                buf.getBits(newSubstructure.repetition_count, 3);
                 for (uint8_t k = 0; k < slotCount; k++) {
                     uint8_t m4MuxChannel = buf.getUInt8();
-                    newSubstructure.m4MuxChannel.push_back(m4MuxChannel);
+                    newSubstructure.m4_mux_channel.push_back(m4MuxChannel);
                     uint8_t numberOfBytes = buf.getUInt8();
-                    newSubstructure.numberOfBytes.push_back(numberOfBytes);
+                    newSubstructure.number_of_bytes.push_back(numberOfBytes);
                 }
                 newMuxCodeEntry.substructure.push_back(newSubstructure);
             }
-            MuxCodeTableEntry.push_back(newMuxCodeEntry);
+            mux_code_table_entries.push_back(newMuxCodeEntry);
         }
     }
 }
@@ -116,11 +116,11 @@ void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Des
         buf.skipBits(8);  // length
         disp << margin << "index[" << int(MuxCodeIndex++) << "] MuxCode: " << buf.getBits<uint16_t>(4);
         disp << ", version: " << buf.getBits<uint16_t>(4) << std::endl;
-        uint8_t _substructureCount = buf.getUInt8();
-        for (uint8_t i = 0; i < _substructureCount; i++) {
-            uint8_t _slotCount = buf.getBits<uint8_t>(5);
+        uint8_t substructure_count = buf.getUInt8();
+        for (uint8_t i = 0; i < substructure_count; i++) {
+            uint8_t slot_count = buf.getBits<uint8_t>(5);
             disp << margin << " substructure[" << int(i) << "], repetition count: " << buf.getBits<uint16_t>(3) << std::endl;
-            for (uint8_t k = 0; k < _slotCount; k++) {
+            for (uint8_t k = 0; k < slot_count; k++) {
                 disp << margin << "  M4 mux channel: " << int(buf.getUInt8());
                 disp << ", byte count: " << int(buf.getUInt8()) << std::endl;
             }
@@ -135,19 +135,19 @@ void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Des
 
 void ts::MuxCodeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (const auto& it : MuxCodeTableEntry) {
+    for (const auto& it : mux_code_table_entries) {
         ts::xml::Element* _entry = root->addElement(u"MuxCodeEntry");
-        _entry->setIntAttribute(u"MuxCode", it.MuxCode);
+        _entry->setIntAttribute(u"MuxCode", it.mux_code);
         _entry->setIntAttribute(u"version", it.version);
 
         for (const auto& it2 : it.substructure) {
             ts::xml::Element* _substructure = _entry->addElement(u"substructure");
-            _substructure->setIntAttribute(u"repetitionCount", it2.repetitionCount);
-            uint8_t slotCount = uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size()));
+            _substructure->setIntAttribute(u"repetitionCount", it2.repetition_count);
+            uint8_t slotCount = uint8_t(std::min(it2.m4_mux_channel.size(), it2.number_of_bytes.size()));
             for (uint8_t k = 0; k < slotCount; k++) {
                 ts::xml::Element* _slot = _substructure->addElement(u"slot");
-                _slot->setIntAttribute(u"m4MuxChannel", it2.m4MuxChannel[k]);
-                _slot->setIntAttribute(u"numberOfBytes", it2.numberOfBytes[k]);
+                _slot->setIntAttribute(u"m4MuxChannel", it2.m4_mux_channel[k]);
+                _slot->setIntAttribute(u"numberOfBytes", it2.number_of_bytes[k]);
             }
         }
     }
@@ -162,25 +162,25 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 {
     bool ok = true;
     for (auto& xmce : element->children(u"MuxCodeEntry", &ok)) {
-        auto& MuxCodeEntry(MuxCodeTableEntry.emplace_back());
-        ok = xmce.getIntAttribute(MuxCodeEntry.MuxCode, u"MuxCode", true, 0, 0, 0x0F) &&
+        auto& MuxCodeEntry(mux_code_table_entries.emplace_back());
+        ok = xmce.getIntAttribute(MuxCodeEntry.mux_code, u"MuxCode", true, 0, 0, 0x0F) &&
              xmce.getIntAttribute(MuxCodeEntry.version, u"version", true, 0, 0, 0x0F);
 
         for (auto& xsub : xmce.children(u"substructure", &ok, 0, MAX_SUBSTRUCTURES)) {
             auto& substruct(MuxCodeEntry.substructure.emplace_back());
-            ok = xsub.getIntAttribute(substruct.repetitionCount, u"repetitionCount", true, 0, 0, 0x07);
+            ok = xsub.getIntAttribute(substruct.repetition_count, u"repetitionCount", true, 0, 0, 0x07);
 
             for (auto& xslot : xsub.children(u"slot", &ok, 0, MAX_SLOTS)) {
-                ok &= xslot.getIntAttribute(substruct.m4MuxChannel.emplace_back(), u"m4MuxChannel", true, 0, 0, 0xFF) &&
-                      xslot.getIntAttribute(substruct.numberOfBytes.emplace_back(), u"numberOfBytes", true, 0, 0, 0xFF);
+                ok &= xslot.getIntAttribute(substruct.m4_mux_channel.emplace_back(), u"m4MuxChannel", true, 0, 0, 0xFF) &&
+                      xslot.getIntAttribute(substruct.number_of_bytes.emplace_back(), u"numberOfBytes", true, 0, 0, 0xFF);
             }
         }
 
         // repetitionCount of zero is only permitted in the last substructire (ISO/IEC 14496-1 clause 7.4.2.5.2)
         for (size_t i = 0; i + 1 < MuxCodeEntry.substructure.size(); ++i) {
-            if (MuxCodeEntry.substructure[i].repetitionCount == 0) {
+            if (MuxCodeEntry.substructure[i].repetition_count == 0) {
                 element->report().error(u"repetitionCount=='%d' is only valid the last <substructure> [<%s>, line %d]",
-                                        MuxCodeEntry.substructure[i].repetitionCount, element->name(), xmce.lineNumber());
+                                        MuxCodeEntry.substructure[i].repetition_count, element->name(), xmce.lineNumber());
                 ok = false;
             }
         }

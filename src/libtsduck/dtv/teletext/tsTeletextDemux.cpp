@@ -140,7 +140,7 @@ int ts::TeletextDemux::pageBinaryToBcd(int bin)
 
 ts::TeletextDemux::TeletextDemux(DuckContext& duck, TeletextHandlerInterface* handler, const PIDSet& pidFilter) :
     SuperClass(duck, nullptr, pidFilter),
-    _txtHandler(handler)
+    _txt_handler(handler)
 {
 }
 
@@ -487,7 +487,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
             }
 
             if (col == colStart) {
-                if (foregroundColor != 0x7 && _addColors) {
+                if (foregroundColor != 0x7 && _add_colors) {
                     line.append(u"<font color=\"");
                     line.append(TELETEXT_COLORS[foregroundColor]);
                     line.append(u"\">");
@@ -499,7 +499,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
                 if (v <= 0x7) {
                     // ETS 300 706, chapter 12.2: Unless operating in "Hold Mosaics" mode,
                     // each character space occupied by a spacing attribute is displayed as a SPACE.
-                    if (_addColors) {
+                    if (_add_colors) {
                         if (fontTagOpened) {
                             line.append(u"</font> ");
                             fontTagOpened = false;
@@ -519,7 +519,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
                 }
 
                 // Translate some chars into entities, if in colour mode, to replace unsafe HTML tag chars
-                if (v >= 0x20 && _addColors) {
+                if (v >= 0x20 && _add_colors) {
                     struct HtmlEntity {
                         UChar character;
                         const UChar* entity;
@@ -546,7 +546,7 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
         }
 
         // No tag will be left opened!
-        if (_addColors && fontTagOpened) {
+        if (_add_colors && fontTagOpened) {
             line.append(u"</font>");
             fontTagOpened = false;
         }
@@ -557,8 +557,8 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
 
     // Now call the user-specified handler.
     // Note that the super class PESDemux has already placed us in "handler context".
-    if (_txtHandler != nullptr) {
-        _txtHandler->handleTeletextMessage(*this, frame);
+    if (_txt_handler != nullptr) {
+        _txt_handler->handleTeletextMessage(*this, frame);
     }
 }
 

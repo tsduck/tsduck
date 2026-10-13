@@ -149,7 +149,7 @@ ts::ARIBCharset::Decoder::Decoder(UString& str, const uint8_t* data, size_t size
        &KATAKANA_MAP},
     _GL(0),
     _GR(2),
-    _lockedGL(0)
+    _locked_gl(0)
 {
     decodeAll(data, size);
 }
@@ -189,7 +189,7 @@ void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
             // A left-side code.
             _success = decodeOneChar(_G[_GL]) && _success;
             // Restore locked shift if a single shift was used.
-            _GL = _lockedGL;
+            _GL = _locked_gl;
         }
         else if (*_data >= GR_FIRST && *_data <= GR_LAST) {
             // A right-side code.
@@ -197,11 +197,11 @@ void ts::ARIBCharset::Decoder::decodeAll(const uint8_t* data, size_t size)
         }
         else if (match(LS0)) {
             // Locking shift G0.
-            _GL = _lockedGL = 0;
+            _GL = _locked_gl = 0;
         }
         else if (match(LS1)) {
             // Locking shift G1.
-            _GL = _lockedGL = 1;
+            _GL = _locked_gl = 1;
         }
         else if (match(SS2)) {
             // Single shift G2.
@@ -353,11 +353,11 @@ bool ts::ARIBCharset::Decoder::escape()
             switch (F) {
                 case 0x6E:
                     // LS2: Locking shift G2.
-                    _GL = _lockedGL = 2;
+                    _GL = _locked_gl = 2;
                     return true;
                 case 0x6F:
                     // LS3: Locking shift G3.
-                    _GL = _lockedGL = 3;
+                    _GL = _locked_gl = 3;
                     return true;
                 case 0x7E:
                     // LS1R: Locking shift G1R.

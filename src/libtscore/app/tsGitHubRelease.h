@@ -60,7 +60,7 @@ namespace ts {
         //! Check if the content of this object is a valid release description.
         //! @return True if this object is valid.
         //!
-        bool isValid() const { return _isValid; }
+        bool isValid() const { return _is_valid; }
 
         //!
         //! Download the version information from GitHub.
@@ -178,7 +178,7 @@ namespace ts {
         static bool GetAllVersions(GitHubReleaseVector& versions, const UString& owner, const UString& repository, Report& report = CERR);
 
     private:
-        bool           _isValid = false;
+        bool           _is_valid = false;
         UString        _owner {};
         UString        _repository {};
         json::ValuePtr _root {};

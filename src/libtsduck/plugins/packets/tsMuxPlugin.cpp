@@ -142,8 +142,8 @@ bool ts::MuxPlugin::start()
     _pts_last_inserted = 0;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
-    getIntValues(_setLabels, u"set-label");
-    getIntValues(_resetLabels, u"reset-label");
+    getIntValues(_set_labels, u"set-label");
+    getIntValues(_reset_labels, u"reset-label");
     _file_format = LoadTSPacketFormatInputOption(*this);
 
     // Convert --inter-time from milliseconds to PTS units.
@@ -312,8 +312,8 @@ ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMeta
         _pid_next_pkt += _inter_pkt;
     }
     // Apply labels on muxed packets.
-    pkt_data.setLabels(_setLabels);
-    pkt_data.clearLabels(_resetLabels);
+    pkt_data.setLabels(_set_labels);
+    pkt_data.clearLabels(_reset_labels);
 
     return TSP_OK;
 }

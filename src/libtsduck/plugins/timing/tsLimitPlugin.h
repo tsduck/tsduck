@@ -42,36 +42,36 @@ namespace ts {
         static constexpr PacketCounter DEFAULT_THRESHOLD4 = 1000;
 
         // Plugin fields.
-        bool           _useWallClock = false;
-        BitRate        _maxBitrate = 0;
+        bool           _use_wall_clock = false;
+        BitRate        _max_bitrate = 0;
         PacketCounter  _threshold1 = 0;
         PacketCounter  _threshold2 = 0;
         PacketCounter  _threshold3 = 0;
         PacketCounter  _threshold4 = 0;
-        PacketCounter  _thresholdAV = 0;     // Threshold for audio/video packets.
-        BitRate        _curBitrate = 0;      // Instant bitrate (between to consecutive PCR).
-        PacketCounter  _excessPoint = 0;     // Last packet from which we computed excess packets.
-        PacketCounter  _excessPackets = 0;   // Number of packets in excess (to drop).
-        PacketCounter  _excessBits = 0;      // Number of bits in excess, in addition to packets.
+        PacketCounter  _threshold_av = 0;    // Threshold for audio/video packets.
+        BitRate        _cur_bitrate = 0;     // Instant bitrate (between to consecutive PCR).
+        PacketCounter  _excess_point = 0;    // Last packet from which we computed excess packets.
+        PacketCounter  _excess_packets = 0;  // Number of packets in excess (to drop).
+        PacketCounter  _excess_bits = 0;     // Number of bits in excess, in addition to packets.
         PIDSet         _pids1 {};            // PIDs to sacrifice at threshold 1.
         SectionDemux   _demux {duck, this};  // Demux to collect PAT and PMT's.
-        PIDContextMap  _pidContexts {};      // One context per PID in the TS.
+        PIDContextMap  _pid_contexts {};     // One context per PID in the TS.
         monotonic_time _clock {};            // Monotonic clock for live streams.
-        size_t         _bitsSecond = 0;      // Number of bits in current second.
+        size_t         _bits_second = 0;     // Number of bits in current second.
 
         // Context per PID in the TS.
         class PIDContext
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            PIDContext(PID pid);                  // Constructor.
-            const PID     pid;                    // PID value.
-            bool          psi = false;            // The PID contains PSI/SI.
-            bool          video = false;          // The PID contains video.
-            bool          audio = false;          // The PID contains audio.
-            uint64_t      pcrValue = INVALID_PCR; // Last PCR value.
-            PacketCounter pcrPacket = 0;          // Global packet index for pcrValue.
-            PacketCounter dropCount = 0;          // Number of dropped packets in this PID.
+            PIDContext(PID pid);                   // Constructor.
+            const PID     pid;                     // PID value.
+            bool          psi = false;             // The PID contains PSI/SI.
+            bool          video = false;           // The PID contains video.
+            bool          audio = false;           // The PID contains audio.
+            uint64_t      pcr_value = INVALID_PCR; // Last PCR value.
+            PacketCounter pcr_packet = 0;          // Global packet index for pcrValue.
+            PacketCounter drop_count = 0;          // Number of dropped packets in this PID.
         };
 
         // Get or create the context for a PID.

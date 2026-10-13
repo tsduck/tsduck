@@ -71,12 +71,12 @@ bool ts::RMSplicePlugin::getOptions()
 {
     duck.loadArgs(*this);
     _service.set(value(u""));
-    _dropStatus = present(u"stuffing") ? TSP_NULL : TSP_DROP;
+    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
     _continue = present(u"continue");
-    _adjustTime = present(u"adjust-time");
-    _fixCC = present(u"fix-cc");
-    _dryRun = present(u"dry-run");
-    getIntValues(_eventIDs, u"event-id");
+    _adjust_time = present(u"adjust-time");
+    _fix_cc = present(u"fix-cc");
+    _dry_run = present(u"dry-run");
+    getIntValues(_event_ids, u"event-id");
     return true;
 }
 
@@ -87,15 +87,15 @@ bool ts::RMSplicePlugin::getOptions()
 
 bool ts::RMSplicePlugin::start()
 {
-    _tagsByPID.clear();
+    _tags_by_pid.clear();
     _states.clear();
     _demux.reset();
-    _videoPID = PID_NULL;
+    _video_pid = PID_NULL;
     _abort = false;
 
-    _ccFixer.reset();
-    _ccFixer.setGenerator(true);
-    _ccFixer.setPIDFilter(NoPID());
+    _cc_fixer.reset();
+    _cc_fixer.setGenerator(true);
+    _cc_fixer.setPIDFilter(NoPID());
 
     return true;
 }
@@ -126,11 +126,11 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
             if (!_states.contains(pid)) {
                 // Enforce the creation of the state for this PID if non-existent.
                 PIDState& pidState(_states[pid]);
-                pidState.isAudio = stream.isAudio(duck);
-                pidState.isVideo = stream.isVideo(duck);
+                pidState.is_audio = stream.isAudio(duck);
+                pidState.is_video = stream.isVideo(duck);
                 // Remember the first video PID in the service.
-                if (_videoPID == PID_NULL && pidState.isVideo) {
-                    _videoPID = pid;
+                if (_video_pid == PID_NULL && pidState.is_video) {
+                    _video_pid = pid;
                 }
             }
 
@@ -138,7 +138,7 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
             uint8_t ctag = 0;
             if (stream.getComponentTag(ctag)) {
                 // We have found a component tag for this PID.
-                _tagsByPID[pid] = ctag;
+                _tags_by_pid[pid] = ctag;
             }
         }
     }
@@ -166,7 +166,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     }
 
     // Filter events by ids if --event-id was specified.
-    if (!_eventIDs.empty() && !_eventIDs.contains(cmd.event_id)) {
+    if (!_event_ids.empty() && !_event_ids.contains(cmd.event_id)) {
         return;
     }
 
@@ -174,7 +174,7 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
     if (cmd.canceled) {
         // Cancel an identified splice event. Search and remove from all PID's.
         verbose(u"cancelling splice event id %n", cmd.event_id);
-        if (!_dryRun) {
+        if (!_dry_run) {
             for (auto& it : _states) {
                 it.second.cancelEvent(cmd.event_id);
             }
@@ -184,19 +184,19 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
         // Add an immediate splice event, which doesn't have a PTS value and is handled differently that scheduled splice events.
         for (auto& it : _states) {
             verbose(u"adding 'immediate' splice %s with event ID %n on PID %n at PTS %d (%.3f s)",
-                    cmd.splice_out ? u"out" : u"in", cmd.event_id, it.second.pid, it.second.lastPTS,
-                    double(it.second.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ));
-            if (!_dryRun) {
-                it.second.addEvent(cmd, _tagsByPID);
+                    cmd.splice_out ? u"out" : u"in", cmd.event_id, it.second.pid, it.second.last_pts,
+                    double(it.second.last_pts) / double(SYSTEM_CLOCK_SUBFREQ));
+            if (!_dry_run) {
+                it.second.addEvent(cmd, _tags_by_pid);
             }
         }
     }
     else {
         // Add a new (or repeated) splice event for a given PTS value.
         verbose(u"adding splice %s at PTS %s with event ID %n", cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id);
-        if (!_dryRun)
+        if (!_dry_run)
             for (auto& it : _states) {
-                it.second.addEvent(cmd, _tagsByPID);
+                it.second.addEvent(cmd, _tags_by_pid);
 
         }
     }
@@ -207,29 +207,29 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
 // Add a splicing event in a PID, basic form.
 //----------------------------------------------------------------------------
 
-void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool spliceOut, uint32_t eventId, bool immediate)
+void ts::RMSplicePlugin::PIDState::addEvent(uint64_t pts, bool splice_out, uint32_t event_id, bool immediate)
 {
     if (immediate) {
         // Ignore immediate splice in events if not coupled with a prior splice out event
         // In addition, only support a single event ID at a time--if currently splicing out for a
         // particular event ID and receive a splice immediate event for another event ID, disregard it
-        if (immediateOut) {
-            if (!spliceOut && (immediateEventId == eventId)) {
-                cancelImmediateOut = true;
+        if (immediate_out) {
+            if (!splice_out && (immediate_event_id == event_id)) {
+                cancel_immediate_out = true;
             }
         }
-        else if (spliceOut) {
-            immediateOut = true;
-            immediateEventId = eventId;
-            cancelImmediateOut = false;
+        else if (splice_out) {
+            immediate_out = true;
+            immediate_event_id = event_id;
+            cancel_immediate_out = false;
         }
     }
     else {
         // Ignore invalid PTS or PTS from the past, before last PTS value in this PID.
         // Note that the initial "lastPTS" of a PID is an invalid value, indicating "not yet available".
-        if (pts <= PTS_DTS_MASK && (lastPTS > PTS_DTS_MASK || PTSTraits::Sequenced(lastPTS, pts))) {
+        if (pts <= PTS_DTS_MASK && (last_pts > PTS_DTS_MASK || PTSTraits::Sequenced(last_pts, pts))) {
             // Simply replace the event if it already existed.
-            events[pts] = Event(spliceOut, eventId);
+            events[pts] = Event(splice_out, event_id);
         }
     }
 }
@@ -315,8 +315,8 @@ ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacke
         if (pkt.hasPTS()) {
 
             // All possibly spliced PID's with at least one PCR should be CC-adjusted when --fix-cc
-            if (_fixCC) {
-                _ccFixer.addPID(pid); // can be added multiple times
+            if (_fix_cc) {
+                _cc_fixer.addPID(pid); // can be added multiple times
             }
 
             // Keep last PTS of the PID.
@@ -325,24 +325,24 @@ ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacke
                 // keep track of time between seek points
                 // this time is used for determining which audio seek point is closest to the
                 // video splice out time when handling immediate splice events
-                if (state.ptsLastSeekPoint != INVALID_PTS) {
-                    state.ptsBetweenSeekPoints = currentPTS - state.ptsLastSeekPoint;
+                if (state.pts_last_seek_point != INVALID_PTS) {
+                    state.pts_between_seek_points = currentPTS - state.pts_last_seek_point;
                 }
 
-                state.ptsLastSeekPoint = currentPTS;
+                state.pts_last_seek_point = currentPTS;
             }
-            state.lastPTS = currentPTS;
+            state.last_pts = currentPTS;
 
             // Remove all leading splicing events older than current PTS.
             uint64_t eventPTS = INVALID_PTS;
             Event event;
-            while (!state.events.empty() && state.events.begin()->first <= state.lastPTS) {
+            while (!state.events.empty() && state.events.begin()->first <= state.last_pts) {
                 eventPTS = state.events.begin()->first;
                 event = state.events.begin()->second;
                 state.events.erase(state.events.begin());
             }
 
-            if (state.immediateOut) {
+            if (state.immediate_out) {
                 // Handle immediate splicing here
                 //
                 // Basically, when splicing out and state.currentlyOut is false, we look for the first packet with the random access
@@ -364,28 +364,28 @@ ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacke
                 // to the GOP length to reach a seekable packet in the video stream.  Generally, it is preferable to use scheduled
                 // splice insert events, rather than immediate splice insert events, to allow encoders to make sure it is safe to
                 // splice in/out right around the point of the splice insert event.
-                if (state.cancelImmediateOut) {
-                    if (!state.currentlyOut) {
+                if (state.cancel_immediate_out) {
+                    if (!state.currently_out) {
                         // then didn't find any place to splice out in the stream
-                        state.cancelImmediateOut = false;
-                        state.immediateOut = false;
-                        state.immediateEventId = 0;
+                        state.cancel_immediate_out = false;
+                        state.immediate_out = false;
+                        state.immediate_event_id = 0;
 
                         verbose(u"Immediate splice out disregarded on PID %n at PTS %d (%.3f s)",
-                                pid, state.lastPTS, double(state.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ));
+                                pid, state.last_pts, double(state.last_pts) / double(SYSTEM_CLOCK_SUBFREQ));
                     }
                     else {
                         if (pkt.getRandomAccessIndicator()) {
                             bool doSpliceIn = true;
 
-                            if (state.isAudio && _videoPID != PID_NULL) {
-                                PIDState& videoState = _states[_videoPID];
-                                if (videoState.currentlyOut) {
+                            if (state.is_audio && _video_pid != PID_NULL) {
+                                PIDState& videoState = _states[_video_pid];
+                                if (videoState.currently_out) {
                                     doSpliceIn = false;
                                 }
-                                else if (state.lastPTS < videoState.lastOutEnd) {
-                                    if ((state.ptsBetweenSeekPoints == INVALID_PTS) ||
-                                        ((videoState.lastOutEnd - state.lastPTS) > (state.ptsBetweenSeekPoints / 2))) {
+                                else if (state.last_pts < videoState.last_out_end) {
+                                    if ((state.pts_between_seek_points == INVALID_PTS) ||
+                                        ((videoState.last_out_end - state.last_pts) > (state.pts_between_seek_points / 2))) {
                                         doSpliceIn = false;
                                     }
                                 }
@@ -393,49 +393,49 @@ ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacke
 
                             if (doSpliceIn) {
                                 // can splice back in at this point
-                                state.cancelImmediateOut = false;
-                                state.immediateOut = false;
-                                state.immediateEventId = 0;
-                                state.currentlyOut = false;
+                                state.cancel_immediate_out = false;
+                                state.immediate_out = false;
+                                state.immediate_event_id = 0;
+                                state.currently_out = false;
 
                                 // Splicing back in, restarting the transmission of the PID.
                                 // Add removed period to the total removed time (in PTS units).
-                                if (state.outStart != INVALID_PTS) {
-                                    state.totalAdjust = (state.totalAdjust + (state.lastPTS - state.outStart)) & PTS_DTS_MASK;
-                                    state.outStart = INVALID_PTS;
-                                    state.lastOutEnd = state.lastPTS;
+                                if (state.out_start != INVALID_PTS) {
+                                    state.total_adjust = (state.total_adjust + (state.last_pts - state.out_start)) & PTS_DTS_MASK;
+                                    state.out_start = INVALID_PTS;
+                                    state.last_out_end = state.last_pts;
                                 }
 
                                 verbose(u"Immediate splice in on PID %n at PTS %d (%.3f s)",
-                                        pid, state.lastPTS, double(state.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ));
+                                        pid, state.last_pts, double(state.last_pts) / double(SYSTEM_CLOCK_SUBFREQ));
                             }
                         }
                     }
                 }
                 else {
-                    if (!state.currentlyOut) {
+                    if (!state.currently_out) {
                         if (pkt.getRandomAccessIndicator()) {
                             bool doSpliceOut = true;
 
-                            if (state.isAudio && _videoPID != PID_NULL) {
-                                PIDState& videoState = _states[_videoPID];
-                                if (!videoState.currentlyOut) {
+                            if (state.is_audio && _video_pid != PID_NULL) {
+                                PIDState& videoState = _states[_video_pid];
+                                if (!videoState.currently_out) {
                                     doSpliceOut = false;
                                 }
-                                else if (state.lastPTS < videoState.outStart) {
-                                    if ((state.ptsBetweenSeekPoints == INVALID_PTS) ||
-                                        ((videoState.outStart - state.lastPTS) > (state.ptsBetweenSeekPoints / 2))) {
+                                else if (state.last_pts < videoState.out_start) {
+                                    if ((state.pts_between_seek_points == INVALID_PTS) ||
+                                        ((videoState.out_start - state.last_pts) > (state.pts_between_seek_points / 2))) {
                                         doSpliceOut = false;
                                     }
                                 }
                             }
 
                             if (doSpliceOut) {
-                                state.currentlyOut = true;
-                                state.outStart = state.lastPTS;
+                                state.currently_out = true;
+                                state.out_start = state.last_pts;
 
                                 verbose(u"Immediate splice out on PID %n at PTS %d (%.3f s)",
-                                        pid, state.lastPTS, double(state.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ));
+                                        pid, state.last_pts, double(state.last_pts) / double(SYSTEM_CLOCK_SUBFREQ));
                             }
                         }
                     }
@@ -444,55 +444,55 @@ ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacke
 
             // Process the last event, if there is one.
             // Ignore event if it would not change out state (bool + bool == 1 is a logical xor).
-            if (eventPTS != INVALID_PTS && state.currentlyOut + event.out == 1) {
+            if (eventPTS != INVALID_PTS && state.currently_out + event.out == 1) {
 
                 // The state of the PID is switched by the event.
-                state.currentlyOut = event.out;
+                state.currently_out = event.out;
 
                 if (event.out) {
                     // Splicing out, removing PID.
                     // Save time stamp of the splice out event.
-                    state.outStart = state.lastPTS;
+                    state.out_start = state.last_pts;
                 }
                 else {
                     // Splicing back in, restarting the transmission of the PID.
                     // Add removed period to the total removed time (in PTS units).
-                    if (state.outStart != INVALID_PTS) {
-                        state.totalAdjust = (state.totalAdjust + (state.lastPTS - state.outStart)) & PTS_DTS_MASK;
-                        state.outStart = INVALID_PTS;
+                    if (state.out_start != INVALID_PTS) {
+                        state.total_adjust = (state.total_adjust + (state.last_pts - state.out_start)) & PTS_DTS_MASK;
+                        state.out_start = INVALID_PTS;
                     }
                 }
 
                 // Display message in verbose mode. If the PTS is beyond the event PTS, display the delay.
                 verbose(u"%s PID %n at PTS 0x%09X (+%.3f s)",
-                        event.out ? u"suspending" : u"restarting", pid, state.lastPTS,
-                        double(state.lastPTS - eventPTS) / double(SYSTEM_CLOCK_SUBFREQ));
+                        event.out ? u"suspending" : u"restarting", pid, state.last_pts,
+                        double(state.last_pts - eventPTS) / double(SYSTEM_CLOCK_SUBFREQ));
             }
         }
 
-        if (state.currentlyOut) {
+        if (state.currently_out) {
             // If the PID is currently spliced out, drop the packet.
-            pktStatus = _dropStatus;
+            pktStatus = _drop_status;
         }
         else {
             // The PID is currently spliced in, adjust what should be adjusted.
             // Adjust PTS and DTS time stamps to compensate removed sequences.
-            if (_adjustTime && state.totalAdjust > 0) {
+            if (_adjust_time && state.total_adjust > 0) {
                 if (pkt.hasPTS()) {
-                    pkt.setPTS((pkt.getPTS() - state.totalAdjust) & PTS_DTS_MASK);
+                    pkt.setPTS((pkt.getPTS() - state.total_adjust) & PTS_DTS_MASK);
                 }
                 if (pkt.hasDTS()) {
-                    pkt.setDTS((pkt.getDTS() - state.totalAdjust) & PTS_DTS_MASK);
+                    pkt.setDTS((pkt.getDTS() - state.total_adjust) & PTS_DTS_MASK);
                 }
                 if (pkt.hasPCR()) {
-                    pkt.setPCR(pkt.getPCR() - state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR);
+                    pkt.setPCR(pkt.getPCR() - state.total_adjust * SYSTEM_CLOCK_SUBFACTOR);
                 }
                 if (pkt.hasOPCR()) {
-                    pkt.setOPCR(pkt.getOPCR() - state.totalAdjust * SYSTEM_CLOCK_SUBFACTOR);
+                    pkt.setOPCR(pkt.getOPCR() - state.total_adjust * SYSTEM_CLOCK_SUBFACTOR);
                 }
             }
             // Fix continuity counters if needed.
-            _ccFixer.feedPacket(pkt);
+            _cc_fixer.feedPacket(pkt);
         }
     }
 

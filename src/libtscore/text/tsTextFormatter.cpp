@@ -306,7 +306,7 @@ ts::TextFormatter& ts::TextFormatter::column(size_t col)
     // Do nothing if no line breaks are produced (there is no column).
     if (_formatting) {
 
-        // Flush pending output to get valid _column and _afterSpace.
+        // Flush pending output to get valid _column and _after_space.
         flush();
 
         // New line if we are farther than the target col.

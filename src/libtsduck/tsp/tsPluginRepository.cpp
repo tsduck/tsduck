@@ -44,8 +44,8 @@ void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory
 {
     CERR.debug(u"registering input plugin \"%s\", status: %s", name, allocator != nullptr ? u"ok" : u"error, no allocator");
     if (allocator != nullptr) {
-        if (_inputPlugins[name] == nullptr) {
-            _inputPlugins[name] = allocator;
+        if (_input_plugins[name] == nullptr) {
+            _input_plugins[name] = allocator;
         }
         else {
             CERR.debug(u"duplicated input plugin \"%s\" ignored", name);
@@ -57,8 +57,8 @@ void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPlugi
 {
     CERR.debug(u"registering processor plugin \"%s\", status: %s", name, allocator != nullptr ? u"ok" : u"error, no allocator");
     if (allocator != nullptr) {
-        if (_processorPlugins[name] == nullptr) {
-            _processorPlugins[name] = allocator;
+        if (_processor_plugins[name] == nullptr) {
+            _processor_plugins[name] = allocator;
         }
         else {
             CERR.debug(u"duplicated packet processor plugin \"%s\" ignored", name);
@@ -70,8 +70,8 @@ void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFacto
 {
     CERR.debug(u"registering output plugin \"%s\", status: %s", name, allocator != nullptr ? u"ok" : u"error, no allocator");
     if (allocator != nullptr) {
-        if (_outputPlugins[name] == nullptr) {
-            _outputPlugins[name] = allocator;
+        if (_output_plugins[name] == nullptr) {
+            _output_plugins[name] = allocator;
         }
         else {
             CERR.debug(u"duplicated output plugin \"%s\" ignored", name);
@@ -106,7 +106,7 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
     auto it = plugin_map.find(plugin_name);
 
     // Load a shared library if not found and allowed.
-    if (it == plugin_map.end() && _sharedLibraryAllowed) {
+    if (it == plugin_map.end() && _shared_library_allowed) {
         // Load shareable library. Use name resolution. Use permanent mapping to keep
         // the shareable image in memory after returning from this function. Also make
         // sure to include the plugin's directory in the shared library search path:
@@ -139,17 +139,17 @@ FACTORY ts::PluginRepository::getFactory(const UString& plugin_name, const UStri
 
 ts::PluginRepository::InputPluginFactory ts::PluginRepository::getInput(const UString& name, Report& report)
 {
-    return getFactory(name, u"input", _inputPlugins, report);
+    return getFactory(name, u"input", _input_plugins, report);
 }
 
 ts::PluginRepository::ProcessorPluginFactory ts::PluginRepository::getProcessor(const UString& name, Report& report)
 {
-    return getFactory(name, u"processor", _processorPlugins, report);
+    return getFactory(name, u"processor", _processor_plugins, report);
 }
 
 ts::PluginRepository::OutputPluginFactory ts::PluginRepository::getOutput(const UString& name, Report& report)
 {
-    return getFactory(name, u"output", _outputPlugins, report);
+    return getFactory(name, u"output", _output_plugins, report);
 }
 
 
@@ -159,17 +159,17 @@ ts::PluginRepository::OutputPluginFactory ts::PluginRepository::getOutput(const 
 
 ts::UStringList ts::PluginRepository::inputNames() const
 {
-    return MapKeysList(_inputPlugins);
+    return MapKeysList(_input_plugins);
 }
 
 ts::UStringList ts::PluginRepository::processorNames() const
 {
-    return MapKeysList(_processorPlugins);
+    return MapKeysList(_processor_plugins);
 }
 
 ts::UStringList ts::PluginRepository::outputNames() const
 {
-    return MapKeysList(_outputPlugins);
+    return MapKeysList(_output_plugins);
 }
 
 
@@ -203,7 +203,7 @@ namespace {
 void ts::PluginRepository::loadAllPlugins(Report& report)
 {
     // Do nothing if loading dynamic libraries is disallowed.
-    if (!_sharedLibraryAllowed) {
+    if (!_shared_library_allowed) {
         return;
     }
 
@@ -239,17 +239,17 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
     size_t name_width = 0;
     if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
         if ((flags & LIST_INPUT) != 0) {
-            for (const auto& it : _inputPlugins) {
+            for (const auto& it : _input_plugins) {
                 name_width = std::max(name_width, it.first.width());
             }
         }
         if ((flags & LIST_PACKET) != 0) {
-            for (const auto& it : _processorPlugins) {
+            for (const auto& it : _processor_plugins) {
                 name_width = std::max(name_width, it.first.width());
             }
         }
         if ((flags & LIST_OUTPUT) != 0) {
-            for (const auto& it : _outputPlugins) {
+            for (const auto& it : _output_plugins) {
                 name_width = std::max(name_width, it.first.width());
             }
         }
@@ -263,7 +263,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp input plugins:\n\n";
         }
-        for (const auto& it : _inputPlugins) {
+        for (const auto& it : _input_plugins) {
             Plugin* p = it.second(&tsp);
             ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
@@ -274,7 +274,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp output plugins:\n\n";
         }
-        for (const auto& it : _outputPlugins) {
+        for (const auto& it : _output_plugins) {
             Plugin* p = it.second(&tsp);
             ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
@@ -285,7 +285,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp packet processor plugins:\n\n";
         }
-        for (const auto& it : _processorPlugins) {
+        for (const auto& it : _processor_plugins) {
             Plugin* p = it.second(&tsp);
             ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;

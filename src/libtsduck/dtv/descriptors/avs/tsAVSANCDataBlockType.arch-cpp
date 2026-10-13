@@ -35,11 +35,11 @@ static ts::UString DataName(const ts::UChar* xml_name, const ts::UChar* section,
     return ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV)->nameFromSection(ts::UString::Format(u"%s.%s", xml_name, section), ts::NamesFile::Value(value), flags, ts::NamesFile::Value(alternate));
 }
 
-size_t ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::BitsInValue(uint8_t loudnessValueType) const
+size_t ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::BitsInValue(uint8_t loudness_value_type) const
 {
     size_t rc = 0;
     //!< see T/AI 109.7 table B.6
-    switch (loudnessValueType) {
+    switch (loudness_value_type) {
         case 0:  // unknown loudness type
         case 1:  // program loudness
         case 2:  // Anchor loudness
@@ -63,19 +63,19 @@ size_t ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::Bit
 }
 
 
-double ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::LoudnessValToRange(uint8_t _loudnessVal)
+double ts::anc_data_block_type::loudness_metadata_block_type::avs3_loudness::LoudnessValToRange(uint8_t loudness_val)
 {
-    if (_loudnessVal == 0) {
+    if (loudness_val == 0) {
         return 0.0;
     }
-    else if (_loudnessVal <= 128) {
-        return double(_loudnessVal) / 4.0;
+    else if (loudness_val <= 128) {
+        return double(loudness_val) / 4.0;
     }
-    else if (_loudnessVal <= 204) {
-        return 32.0 + (double(_loudnessVal - 128) / 2.0);
+    else if (loudness_val <= 204) {
+        return 32.0 + (double(loudness_val - 128) / 2.0);
     }
-    // else _loudnessVal <= 255
-    return (double(_loudnessVal) - 204.5) + 70.0;
+    // else loudness_val <= 255
+    return (double(loudness_val) - 204.5) + 70.0;
 }
 
 

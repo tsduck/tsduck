@@ -168,18 +168,18 @@ namespace ts::tsswitch {
         const InputSwitcherArgs&    _opt;               // Command line options.
         InputExecutorVector         _inputs;            // Input plugins threads.
         OutputExecutor              _output;            // Output plugin thread.
-        EventDispatcher             _eventDispatcher;   // External event dispatcher.
-        WatchDog                    _receiveWatchDog;   // Handle reception timeout.
+        EventDispatcher             _event_dispatcher;  // External event dispatcher.
+        WatchDog                    _receive_watchdog;  // Handle reception timeout.
         std::recursive_mutex        _mutex {};          // Global mutex, protect access to all subsequent fields.
-        std::condition_variable_any _gotInput {};       // Signaled each time an input plugin reports new packets.
-        size_t                      _curPlugin = 0;     // Index of current input plugin.
-        size_t                      _curCycle = 0;      // Current input cycle number.
+        std::condition_variable_any _got_input {};      // Signaled each time an input plugin reports new packets.
+        size_t                      _cur_plugin = 0;    // Index of current input plugin.
+        size_t                      _cur_cycle = 0;     // Current input cycle number.
         volatile bool               _terminate = false; // Terminate complete processing.
         ActionQueue                 _actions {};        // Sequential queue list of actions to execute.
         ActionSet                   _events {};         // Pending events, waiting to be cleared.
 
         // Names of actions for debug messages.
-        static const Names _actionNames;
+        static const Names _action_names;
 
         // Change input plugin with mutex already held.
         void setInputLocked(size_t index, bool abortCurrent);

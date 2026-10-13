@@ -260,14 +260,14 @@ namespace ts {
         //! Set the default CAS id to use.
         //! @param [in] cas Default CAS id to be used when the CAS is unknown.
         //!
-        void setDefaultCASId(CASID cas) { _casId = cas; }
+        void setDefaultCASId(CASID cas) { _cas_id = cas; }
 
         //!
         //! The actual CAS id to use.
         //! @param [in] cas Proposed CAS id. If equal to CASID_NULL, then another value can be returned.
         //! @return The actual CAS id to use.
         //!
-        CASID casId(CASID cas = CASID_NULL) const { return cas == CASID_NULL ? _casId : cas; }
+        CASID casId(CASID cas = CASID_NULL) const { return cas == CASID_NULL ? _cas_id : cas; }
 
         //!
         //! Set the fixing mode of missing PDS and REGID.
@@ -511,10 +511,10 @@ namespace ts {
     private:
         std::ostream*      _initial_out;   // Initial text output stream. Never null.
         std::ostream*      _out;           // Pointer to text output stream. Never null.
-        std::ofstream      _outFile {};    // Open stream when redirected to a file by name.
+        std::ofstream      _out_file {};   // Open stream when redirected to a file by name.
         const Charset*     _charset_in;    // DVB character set to interpret strings without prefix code.
         const Charset*     _charset_out;   // Preferred DVB character set to generate strings.
-        CASID              _casId = CASID_NULL;               // Preferred CAS id.
+        CASID              _cas_id = CASID_NULL;              // Preferred CAS id.
         bool               _fix_pds = false;                  // Automatically fix missing PDS and REGID from XML tables.
         PDS                _default_pds = 0;                  // Default PDS value if undefined.
         REGIDVector        _default_regids {};                // Default registration id to initially set.

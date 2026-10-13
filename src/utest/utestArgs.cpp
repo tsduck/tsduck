@@ -85,8 +85,8 @@ public:
 private:
     using Double = ts::FloatingPoint<double>;
     using USV = ts::UStringVector;
-    fs::path _tempFile1 {};
-    fs::path _tempFile2 {};
+    fs::path _temp_file1 {};
+    fs::path _temp_file2 {};
 };
 
 TSUNIT_REGISTER(ArgsTest);
@@ -99,15 +99,15 @@ TSUNIT_REGISTER(ArgsTest);
 // Test suite initialization method.
 void ArgsTest::beforeTest()
 {
-    _tempFile1 = ts::TempFile();
-    _tempFile2 = ts::TempFile();
+    _temp_file1 = ts::TempFile();
+    _temp_file2 = ts::TempFile();
 }
 
 // Test suite cleanup method.
 void ArgsTest::afterTest()
 {
-    fs::remove(_tempFile1, &ts::ErrCodeReport());
-    fs::remove(_tempFile2, &ts::ErrCodeReport());
+    fs::remove(_temp_file1, &ts::ErrCodeReport());
+    fs::remove(_temp_file2, &ts::ErrCodeReport());
 }
 
 
@@ -735,10 +735,10 @@ TSUNIT_DEFINE_TEST(Redirection)
 {
     TestArgs args(&CERR);
 
-    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"param2", u"--opt1", u"--opt2", u"@@foo"}), _tempFile1));
-    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"--opt4", u"3", u"@" + _tempFile1}), _tempFile2));
+    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"param2", u"--opt1", u"--opt2", u"@@foo"}), _temp_file1));
+    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"--opt4", u"3", u"@" + _temp_file1}), _temp_file2));
 
-    TSUNIT_ASSERT(args.analyze(u"test", {u"param1", u"@" + _tempFile2, u"--opt4", u"5"}));
+    TSUNIT_ASSERT(args.analyze(u"test", {u"param1", u"@" + _temp_file2, u"--opt4", u"5"}));
     TSUNIT_ASSERT(args.present(u""));
     TSUNIT_ASSERT(args.present(u"opt1"));
     TSUNIT_ASSERT(args.present(u"opt2"));

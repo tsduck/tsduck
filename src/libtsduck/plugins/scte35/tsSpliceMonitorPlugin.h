@@ -75,7 +75,7 @@ namespace ts {
             EV_OCCURRED  = 0x0008,
             EV_ALL       = 0x000F
         };
-        const Names _eventStateEnum{
+        const Names EventStateEnum{
             {u"none",      EV_NONE},
             {u"signalled", EV_SIGNALLED},
             {u"immediate", EV_IMMEDIATE},

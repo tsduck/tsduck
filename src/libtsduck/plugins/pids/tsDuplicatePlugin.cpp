@@ -56,7 +56,7 @@ bool ts::DuplicatePlugin::getOptions()
 bool ts::DuplicatePlugin::start()
 {
     _queue.clear();
-    verbose(u"%d PID's duplicated", _pidMap.size());
+    verbose(u"%d PID's duplicated", _pid_map.size());
     return true;
 }
 
@@ -69,12 +69,12 @@ ts::PacketProcessStatus ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPack
 {
     // Get old and new PID.
     const PID pid = pkt.getPID();
-    const auto it = _pidMap.find(pid);
-    const bool duplicate = it != _pidMap.end();
+    const auto it = _pid_map.find(pid);
+    const bool duplicate = it != _pid_map.end();
     const PID newpid = duplicate ? it->second : pid;
 
     // Check PID conflicts.
-    if (!_unchecked && !duplicate && _newPIDs.test(pid)) {
+    if (!_unchecked && !duplicate && _new_pids.test(pid)) {
         error(u"PID conflict: PID %n present both in input and duplicate", pid);
         return TSP_END;
     }
@@ -86,8 +86,8 @@ ts::PacketProcessStatus ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPack
         // And remove it from the list.
         _queue.pop_front();
         // Apply labels on duplicated packets.
-        pkt_data.setLabels(_setLabels);
-        pkt_data.clearLabels(_resetLabels);
+        pkt_data.setLabels(_set_labels);
+        pkt_data.clearLabels(_reset_labels);
     }
 
     // Copy packets to duplicate in the buffer.

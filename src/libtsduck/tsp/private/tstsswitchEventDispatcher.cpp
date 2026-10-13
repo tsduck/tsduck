@@ -19,9 +19,9 @@
 ts::tsswitch::EventDispatcher::EventDispatcher(const InputSwitcherArgs& opt, Report& log) :
     _opt(opt),
     _log(log),
-    _sendCommand(!_opt.event_command.empty()),
-    _sendUDP(_opt.event_udp.hasAddress() && _opt.event_udp.hasPort()),
-    _userData(_opt.event_user_data)
+    _send_command(!_opt.event_command.empty()),
+    _send_udp(_opt.event_udp.hasAddress() && _opt.event_udp.hasPort()),
+    _user_data(_opt.event_user_data)
 {
 }
 
@@ -38,9 +38,9 @@ bool ts::tsswitch::EventDispatcher::sendCommand(const UString& eventName, const 
         command.append(u" ");
         command.append(otherParameters);
     }
-    if (!_userData.empty()) {
+    if (!_user_data.empty()) {
         command.append(u" ");
-        command.append(_userData.toQuoted());
+        command.append(_user_data.toQuoted());
     }
     return ForkPipe::Launch(command, _log, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
 }
@@ -75,7 +75,7 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
     object.add(u"command", u"tsswitch");
     object.add(u"event", eventName);
     object.add(u"timestamp", Time::CurrentLocalTime().format());
-    object.add(u"user-data", _userData);
+    object.add(u"user-data", _user_data);
     object.print(text);
     const std::string line(text.toString().toUTF8());
 
@@ -91,10 +91,10 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
 bool ts::tsswitch::EventDispatcher::signalNewInput(size_t oldPluginIndex, size_t newPluginIndex)
 {
     bool success = true;
-    if (_sendCommand) {
+    if (_send_command) {
         success = sendCommand(u"newinput", UString::Format(u"%d %d", oldPluginIndex, newPluginIndex));
     }
-    if (_sendUDP) {
+    if (_send_udp) {
         json::Object root;
         root.add(u"previous-input", oldPluginIndex);
         root.add(u"new-input", newPluginIndex);

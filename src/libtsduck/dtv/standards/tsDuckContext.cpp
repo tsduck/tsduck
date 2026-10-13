@@ -61,13 +61,13 @@ ts::DuckContext::~DuckContext()
 
 void ts::DuckContext::reset()
 {
-    if (_outFile.is_open()) {
-        _outFile.close();
+    if (_out_file.is_open()) {
+        _out_file.close();
     }
 
     _out = _initial_out;
     _charset_in = _charset_out = &DVBCharset::DVB;
-    _casId = CASID_NULL;
+    _cas_id = CASID_NULL;
     _fix_pds = false;
     _default_pds = 0;
     _default_regids.clear();
@@ -265,8 +265,8 @@ void ts::DuckContext::setOutput(std::ostream* stream, bool override)
 {
     // Do not override output if not standard output (or explicit override).
     if (override || _out == &std::cout) {
-        if (_out == &_outFile) {
-            _outFile.close();
+        if (_out == &_out_file) {
+            _out_file.close();
         }
         _out = stream == nullptr ? &std::cout : stream;
     }
@@ -277,20 +277,20 @@ bool ts::DuckContext::setOutput(const fs::path& fileName, bool override)
     // Do not override output if not standard output (or explicit override).
     if (override || _out == &std::cout) {
         // Close previous file, if any.
-        if (_out == &_outFile) {
-            _outFile.close();
+        if (_out == &_out_file) {
+            _out_file.close();
             _out = &std::cout;
         }
 
         // Open new file if any.
         if (!fileName.empty() && fileName != u"-") {
             report().verbose(u"creating %s", fileName);
-            _outFile.open(fileName, std::ios::out);
-            if (!_outFile) {
+            _out_file.open(fileName, std::ios::out);
+            if (!_out_file) {
                 report().error(u"cannot create %s", fileName);
                 return false;
             }
-            _out = &_outFile;
+            _out = &_out_file;
         }
     }
     return true;
@@ -655,13 +655,13 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_defined_cmd_options & CMD_CAS) {
         int count = 0;
         if (args.present(u"default-cas-id")) {
-            _casId = args.intValue<uint16_t>(u"default-cas-id");
+            _cas_id = args.intValue<uint16_t>(u"default-cas-id");
             count++;
         }
         // Predefined CAS options:
         for (const auto& cas : _predefined_cas) {
             if (args.present(cas.second)) {
-                _casId = cas.first;
+                _cas_id = cas.first;
                 count++;
             }
         }
@@ -706,7 +706,7 @@ void ts::DuckContext::saveArgs(SavedArgs& args) const
     args._cmd_standards = _cmd_standards;
     args._charset_in_name = _charset_in->name();
     args._charset_out_name = _charset_out->name();
-    args._cas_id = _casId;
+    args._cas_id = _cas_id;
     args._fix_pds = _fix_pds;
     args._default_pds = _default_pds;
     args._default_regids = _default_regids;
@@ -731,7 +731,7 @@ void ts::DuckContext::restoreArgs(const SavedArgs& args)
         }
     }
     if (_defined_cmd_options & CMD_CAS) {
-        _casId = args._cas_id;
+        _cas_id = args._cas_id;
     }
     if (_defined_cmd_options & CMD_FIX_PDS) {
         _fix_pds = args._fix_pds;

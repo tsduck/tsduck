@@ -346,7 +346,7 @@ namespace ts {
         uint8_t          _cc_pes {1};               // Continuity counter in PES ASYNC mode.
         PIDCCMap         _last_cc {};               // Continuity counter by PID.
         size_t           _late_distance = 0;        // Distance from the last packet in output PID.
-        size_t           _late_max_packets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _latePackets.
+        size_t           _late_max_packets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _late_packets.
         size_t           _late_index = 0;           // Next index to read in first late packet.
         TSPacketPtrQueue _late_packets {};          // Packets to insert later.
         size_t           _delayed_initial = 0;      // Number of initial delayed packets before computing PTS (synchronous PES mode).

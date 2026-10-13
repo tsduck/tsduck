@@ -23,13 +23,13 @@ ts::tslatencymonitor::InputExecutor::InputExecutor(const LatencyMonitorArgs& opt
     PluginThread(&log, opt.app_name, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _monitor(monitor),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
-    _pluginIndex(index),
-    _pluginCount(opt.inputs.size()),
+    _plugin_index(index),
+    _plugin_count(opt.inputs.size()),
     _buffer(BUFFERED_PACKETS),
     _metadata(BUFFERED_PACKETS)
 {
     // Make sure that the input plugins display their index.
-    setLogName(UString::Format(u"%s[%d]", pluginName(), _pluginIndex));
+    setLogName(UString::Format(u"%s[%d]", pluginName(), _plugin_index));
 }
 
 ts::tslatencymonitor::InputExecutor::~InputExecutor()
@@ -62,7 +62,7 @@ bool ts::tslatencymonitor::InputExecutor::thisJointTerminated() const
 
 size_t ts::tslatencymonitor::InputExecutor::pluginCount() const
 {
-    return _pluginCount;
+    return _plugin_count;
 }
 
 void ts::tslatencymonitor::InputExecutor::signalPluginEvent(uint32_t event_code, Object* plugin_data) const
@@ -71,7 +71,7 @@ void ts::tslatencymonitor::InputExecutor::signalPluginEvent(uint32_t event_code,
 
 size_t ts::tslatencymonitor::InputExecutor::pluginIndex() const
 {
-    return _pluginIndex;
+    return _plugin_index;
 }
 
 
@@ -103,7 +103,7 @@ void ts::tslatencymonitor::InputExecutor::main()
             }
 
             // Pass packet to monitor for analyzing
-            _monitor.processPacket(_buffer, _metadata, count, _pluginIndex);
+            _monitor.processPacket(_buffer, _metadata, count, _plugin_index);
         }
     }
 }

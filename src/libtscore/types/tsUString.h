@@ -2813,7 +2813,7 @@ namespace ts {
             //! @return True if debug is active.
             //!
             static inline bool debugActive() {
-                return _debugValid ? _debugOn : debugInit();
+                return _debug_valid ? _debug_on : debugInit();
             }
 
             //!
@@ -2829,9 +2829,9 @@ namespace ts {
         private:
             const UChar* const _format;        //!< Format string.
             const bool _output;                //!< Output context (Format), not input (Scan).
-            static volatile bool _debugOn;     //!< Check if debugging is on.
-            static volatile bool _debugValid;  //!< Check if _debugOn is valid.
-            static bool debugInit();           //!< Set _debugOn, normally executed only once.
+            static volatile bool _debug_on;    //!< Check if debugging is on.
+            static volatile bool _debug_valid; //!< Check if _debug_on is valid.
+            static bool debugInit();           //!< Set _debug_on, normally executed only once.
         };
 
         //!

@@ -61,12 +61,12 @@ namespace ts {
             void terminateInput();
 
         private:
-            LatencyMonitor&        _monitor;     // Monitor core instance
-            InputPlugin*           _input;       // Plugin API.
-            const size_t           _pluginIndex; // Index of this input plugin.
-            const size_t           _pluginCount; // Count of total plugin
-            TSPacketVector         _buffer;      // Packet buffer.
-            TSPacketMetadataVector _metadata;    // Packet metadata.
+            LatencyMonitor&        _monitor;      // Monitor core instance
+            InputPlugin*           _input;        // Plugin API.
+            const size_t           _plugin_index; // Index of this input plugin.
+            const size_t           _plugin_count; // Count of total plugin
+            TSPacketVector         _buffer;       // Packet buffer.
+            TSPacketMetadataVector _metadata;     // Packet metadata.
 
             static constexpr size_t BUFFERED_PACKETS = 512; // Input size buffer in packets.
 

@@ -154,13 +154,13 @@ namespace ts {
         mutable std::mutex              _mutex {};         // Protect access to shared data.
         mutable std::condition_variable _enqueued {};      // Signaled when packets are inserted.
         mutable std::condition_variable _dequeued {};      // Signaled when packets were freed.
-        TSPacketVector         _pkt_buffer {};   // The packet buffer.
-        TSPacketMetadataVector _md_buffer {};    // The packet metadata buffer.
-        PCRAnalyzer            _pcr {1, 12};     // PCR analyzer to get the bitrate.
-        size_t                 _inCount = 0;     // Number of packets currently inside the buffer.
-        size_t                 _readIndex = 0;   // Index of next packet to read.
-        size_t                 _writeIndex = 0;  // Index of next packet to write.
-        BitRate                _bitrate = 0;     // Bitrate as set by the writer thread.
+        TSPacketVector         _pkt_buffer {};    // The packet buffer.
+        TSPacketMetadataVector _md_buffer {};     // The packet metadata buffer.
+        PCRAnalyzer            _pcr {1, 12};      // PCR analyzer to get the bitrate.
+        size_t                 _in_count = 0;     // Number of packets currently inside the buffer.
+        size_t                 _read_index = 0;   // Index of next packet to read.
+        size_t                 _write_index = 0;  // Index of next packet to write.
+        BitRate                _bitrate = 0;      // Bitrate as set by the writer thread.
 
         // Get bitrate, must be called with mutex held.
         BitRate getBitrate() const;

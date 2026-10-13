@@ -13,10 +13,10 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::SubRipGenerator::SubRipGenerator(const fs::path& fileName, Report& report)
+ts::SubRipGenerator::SubRipGenerator(const fs::path& file_name, Report& report)
 {
-    if (!fileName.empty()) {
-        open(fileName, report);
+    if (!file_name.empty()) {
+        open(file_name, report);
     }
 }
 
@@ -35,18 +35,18 @@ ts::SubRipGenerator::~SubRipGenerator()
 // Open or re-open the generator.
 //----------------------------------------------------------------------------
 
-bool ts::SubRipGenerator::open(const fs::path& fileName, Report& report)
+bool ts::SubRipGenerator::open(const fs::path& file_name, Report& report)
 {
     close();
 
-    _outputStream.open(fileName, std::ios::out);
+    _output_stream.open(file_name, std::ios::out);
 
-    if (!_outputStream) {
-        report.error(u"error creating file %s", fileName);
+    if (!_output_stream) {
+        report.error(u"error creating file %s", file_name);
         return false;
     }
     else {
-        _stream = &_outputStream;
+        _stream = &_output_stream;
         return true;
     }
 }
@@ -69,8 +69,8 @@ void ts::SubRipGenerator::close()
         _stream->flush();
         _stream = nullptr;
     }
-    if (_outputStream.is_open()) {
-        _outputStream.close();
+    if (_output_stream.is_open()) {
+        _output_stream.close();
     }
-    _frameCount = 0;
+    _frame_count = 0;
 }

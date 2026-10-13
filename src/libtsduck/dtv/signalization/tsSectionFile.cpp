@@ -473,7 +473,7 @@ bool ts::SectionFile::loadThisModel()
         return true; // already loaded
     }
     else {
-        _model.setTweaks(_xmlTweaks);
+        _model.setTweaks(_xml_tweaks);
         return LoadModel(_model, true);
     }
 }
@@ -529,21 +529,21 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
 bool ts::SectionFile::loadXML(const UString& file_name)
 {
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return doc.load(file_name, false) && parseDocument(doc);
 }
 
 bool ts::SectionFile::loadXML(std::istream& strm)
 {
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return doc.load(strm) && parseDocument(doc);
 }
 
 bool ts::SectionFile::parseXML(const UString& xml_content)
 {
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return doc.parse(xml_content) && parseDocument(doc);
 }
 
@@ -585,14 +585,14 @@ bool ts::SectionFile::parseDocument(const xml::Document& doc)
 bool ts::SectionFile::saveXML(const UString& file_name) const
 {
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return generateDocument(doc) && doc.save(file_name);
 }
 
 ts::UString ts::SectionFile::toXML() const
 {
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
     return generateDocument(doc) ? doc.toString() : UString();
 }
 
@@ -605,7 +605,7 @@ bool ts::SectionFile::loadJSON(const UString& file_name)
 {
     json::ValuePtr root;
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
 
     return loadThisModel() &&
            json::LoadFile(root, file_name, _duck.report()) &&
@@ -617,7 +617,7 @@ bool ts::SectionFile::loadJSON(std::istream& strm)
 {
     json::ValuePtr root;
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
 
     return loadThisModel() &&
            json::LoadStream(root, strm, _duck.report()) &&
@@ -629,7 +629,7 @@ bool ts::SectionFile::parseJSON(const UString& json_content)
 {
     json::ValuePtr root;
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
 
     return loadThisModel() &&
            json::Parse(root, json_content, _duck.report()) &&
@@ -645,7 +645,7 @@ bool ts::SectionFile::parseJSON(const UString& json_content)
 ts::json::ValuePtr ts::SectionFile::convertToJSON()
 {
     xml::Document doc(_duck.report());
-    doc.setTweaks(_xmlTweaks);
+    doc.setTweaks(_xml_tweaks);
 
     // Load the XML model, generate the initial XML document, convert XML into JSON.
     if (loadThisModel() && generateDocument(doc)) {

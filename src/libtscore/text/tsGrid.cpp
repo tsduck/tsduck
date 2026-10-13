@@ -32,24 +32,24 @@ ts::Grid::~Grid()
 void ts::Grid::setLineWidth(size_t lineWidth, size_t marginWidth)
 {
     // Cap line length with minimal value.
-    _lineWidth = std::max<size_t>(10, lineWidth);
+    _line_width = std::max<size_t>(10, lineWidth);
 
     // The margin cannot be larger that 1/10 of the line width, possibly zero.
-    _marginWidth = std::min<size_t>(_lineWidth / 10, marginWidth);
+    _margin_width = std::min<size_t>(_line_width / 10, marginWidth);
 
     // Adjust margin strings.
-    _leftMargin = _border + UString(_marginWidth, SPACE);
-    _rightMargin = UString(_marginWidth, SPACE) + _border;
+    _left_margin = _border + UString(_margin_width, SPACE);
+    _right_margin = UString(_margin_width, SPACE) + _border;
 
     // Compute internal dimensions.
-    assert(_leftMargin.length() + _rightMargin.length() < _lineWidth);
-    _contentWidth = _lineWidth - _leftMargin.length() - _rightMargin.length();
+    assert(_left_margin.length() + _right_margin.length() < _line_width);
+    _content_width = _line_width - _left_margin.length() - _right_margin.length();
 
     // Build header lines.
-    _tableTop.assign(_lineWidth, u'=');
-    _tableBottom.assign(_lineWidth, u'=');
-    _sectionLine = _border + UString(_lineWidth - 2, u'=') + _border;
-    _subSectionLine = _border + UString(_lineWidth - 2, u'-') + _border;
+    _table_top.assign(_line_width, u'=');
+    _table_bottom.assign(_line_width, u'=');
+    _section_line = _border + UString(_line_width - 2, u'=') + _border;
+    _subsection_line = _border + UString(_line_width - 2, u'-') + _border;
 
     // Recompute column layout.
     adjustLayout();
@@ -62,36 +62,36 @@ void ts::Grid::setLineWidth(size_t lineWidth, size_t marginWidth)
 
 void ts::Grid::openTable()
 {
-    if (!_tableOpen) {
-        _out << std::endl << _tableTop << std::endl;
-        _lineCount += 2;
-        _tableOpen = true;
+    if (!_table_open) {
+        _out << std::endl << _table_top << std::endl;
+        _line_count += 2;
+        _table_open = true;
     }
 }
 
 void ts::Grid::closeTable()
 {
-    if (_tableOpen) {
-        _out << _tableBottom << std::endl << std::endl;
-        _lineCount += 2;
-        _tableOpen = false;
+    if (_table_open) {
+        _out << _table_bottom << std::endl << std::endl;
+        _line_count += 2;
+        _table_open = false;
     }
 
 }
 
 void ts::Grid::section()
 {
-    if (_tableOpen) {
-        _out << _sectionLine << std::endl;
-        _lineCount++;
+    if (_table_open) {
+        _out << _section_line << std::endl;
+        _line_count++;
     }
 }
 
 void ts::Grid::subSection()
 {
-    if (_tableOpen) {
-        _out << _subSectionLine << std::endl;
-        _lineCount++;
+    if (_table_open) {
+        _out << _subsection_line << std::endl;
+        _line_count++;
     }
 }
 
@@ -102,14 +102,14 @@ void ts::Grid::subSection()
 
 void ts::Grid::putLine(const UString& line)
 {
-    _out << _leftMargin << line.toJustifiedLeft(_contentWidth, SPACE, true) << _rightMargin << std::endl;
-    _lineCount++;
+    _out << _left_margin << line.toJustifiedLeft(_content_width, SPACE, true) << _right_margin << std::endl;
+    _line_count++;
 }
 
 void ts::Grid::putMultiLine(const UString& text)
 {
     UStringList lines;
-    text.splitLines(lines, _contentWidth, UString(), UString(), true);
+    text.splitLines(lines, _content_width, UString(), UString(), true);
     for (const auto& it : lines) {
         putLine(it);
     }
@@ -124,34 +124,34 @@ void ts::Grid::putLine(const UString& left, const UString& right, bool oneLine)
     const size_t leftWidth = left.width();
     const size_t rightWidth = right.width();
 
-    if (leftWidth + _marginWidth + rightWidth <= _contentWidth) {
+    if (leftWidth + _margin_width + rightWidth <= _content_width) {
         // Display on one line, no truncation.
-        _out << _leftMargin
+        _out << _left_margin
              << left
-             << std::string(_contentWidth - leftWidth - rightWidth, ' ')
+             << std::string(_content_width - leftWidth - rightWidth, ' ')
              << right
-             << _rightMargin
+             << _right_margin
              << std::endl;
-        _lineCount++;
+        _line_count++;
     }
     else if (oneLine) {
         // Truncate and pack on one line.
-        const size_t excess = leftWidth + _marginWidth + rightWidth - _contentWidth;
+        const size_t excess = leftWidth + _margin_width + rightWidth - _content_width;
         const size_t leftExcess = excess / 2;
         const size_t rightExcess = excess - leftExcess;
-        _out << _leftMargin
+        _out << _left_margin
              << left.toJustifiedLeft(leftWidth - leftExcess, SPACE, true)
-             << std::string(_marginWidth, ' ')
+             << std::string(_margin_width, ' ')
              << right.toJustifiedRight(rightWidth - rightExcess, SPACE, true)
-             << _rightMargin
+             << _right_margin
              << std::endl;
-        _lineCount++;
+        _line_count++;
     }
     else {
         // Display on two lines.
-        _out << _leftMargin << left.toJustifiedLeft(_contentWidth, SPACE, true) << _rightMargin << std::endl
-             << _leftMargin << right.toJustifiedRight(_contentWidth, SPACE, true) << _rightMargin << std::endl;
-        _lineCount += 2;
+        _out << _left_margin << left.toJustifiedLeft(_content_width, SPACE, true) << _right_margin << std::endl
+             << _left_margin << right.toJustifiedRight(_content_width, SPACE, true) << _right_margin << std::endl;
+        _line_count += 2;
     }
 }
 
@@ -187,8 +187,8 @@ ts::Grid::ColumnText::ColumnText(const std::initializer_list<UString> texts) :
 
 void ts::Grid::setLayout(const std::initializer_list<ColumnLayout> layout)
 {
-    _requestedLayout.clear();
-    _requestedLayout.reserve(layout.size());
+    _requested_layout.clear();
+    _requested_layout.reserve(layout.size());
 
     // Skip leading borders.
     auto begin = layout.begin();
@@ -208,8 +208,8 @@ void ts::Grid::setLayout(const std::initializer_list<ColumnLayout> layout)
 
     // Copy layout, skipping adjacent borders.
     while (begin != end) {
-        if (!begin->isBorder() || _requestedLayout.empty() || !_requestedLayout.back().isBorder()) {
-            _requestedLayout.push_back(*begin);
+        if (!begin->isBorder() || _requested_layout.empty() || !_requested_layout.back().isBorder()) {
+            _requested_layout.push_back(*begin);
         }
         ++begin;
     }
@@ -226,7 +226,7 @@ void ts::Grid::setLayout(const std::initializer_list<ColumnLayout> layout)
 void ts::Grid::adjustLayout()
 {
     // Copy requested layout.
-    _layout = _requestedLayout;
+    _layout = _requested_layout;
 
     // Number of columns containing text (ie. not a border).
     size_t textColCount = 0;
@@ -237,7 +237,7 @@ void ts::Grid::adjustLayout()
         if (!it.isBorder()) {
             textColCount++;
         }
-        allWidth += _marginWidth + it._width;
+        allWidth += _margin_width + it._width;
     }
 
     // If there is nothing to display, done.
@@ -246,19 +246,19 @@ void ts::Grid::adjustLayout()
     }
 
     // Revert one extra margin.
-    assert(allWidth >= _marginWidth);
-    allWidth -= _marginWidth;
+    assert(allWidth >= _margin_width);
+    allWidth -= _margin_width;
 
     // Now adjust the width of columns.
-    if (allWidth > _contentWidth) {
+    if (allWidth > _content_width) {
         // Reduce the width of text columns.
         // Try to reduce the size of each text column, but not less than 2 (plus margins).
         const size_t minSize = 2;
-        size_t lessPerCol = std::max<size_t>(1, (allWidth - _contentWidth) / textColCount);
+        size_t lessPerCol = std::max<size_t>(1, (allWidth - _content_width) / textColCount);
         bool canDoMore = false;
         do {
             canDoMore = false;
-            for (auto it = _layout.begin(); it != _layout.end() && allWidth > _contentWidth; ++it) {
+            for (auto it = _layout.begin(); it != _layout.end() && allWidth > _content_width; ++it) {
                 if (!it->isBorder() && it->_width > minSize) {
                     const size_t less = std::min<size_t>(it->_width - minSize, lessPerCol);
                     it->_width -= less;
@@ -266,24 +266,24 @@ void ts::Grid::adjustLayout()
                     canDoMore = canDoMore || it->_width > minSize;
                 }
             }
-        } while (canDoMore && allWidth > _contentWidth);
+        } while (canDoMore && allWidth > _content_width);
         // At this point, all columns are shrunk to the minimum.
         // Try deleting borders, starting by the end.
         // We should use a reverse_iterator but erase() only accepts an iterator.
-        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _contentWidth; ) {
+        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _content_width; ) {
             --it;
             if (it->isBorder()) {
-                assert(allWidth >= it->_width + _marginWidth);
-                allWidth -= it->_width + _marginWidth;
+                assert(allWidth >= it->_width + _margin_width);
+                allWidth -= it->_width + _margin_width;
                 it = _layout.erase(it);
             }
         }
         // As a last chance, remove text columns, starting by the end.
-        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _contentWidth; ) {
+        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _content_width; ) {
             --it;
             assert(!it->isBorder());
-            assert(allWidth >= it->_width + _marginWidth);
-            allWidth -= it->_width + _marginWidth;
+            assert(allWidth >= it->_width + _margin_width);
+            allWidth -= it->_width + _margin_width;
             it = _layout.erase(it);
             textColCount--;
         }
@@ -291,12 +291,12 @@ void ts::Grid::adjustLayout()
 
     // We fall-through here even if we already reduced the column sizes because if
     // we decided to remove borders, we may have reduced the width a bit too much.
-    if (allWidth < _contentWidth && textColCount > 0) {
+    if (allWidth < _content_width && textColCount > 0) {
         // Distribute more space on all text columns.
         // The value "more" may be insufficient because of rounding.
         // We allocate one more space is the last columns to compensate rounding.
-        const size_t more = (_contentWidth - allWidth) / textColCount;
-        const size_t evenMore = (_contentWidth - allWidth) % textColCount;
+        const size_t more = (_content_width - allWidth) / textColCount;
+        const size_t evenMore = (_content_width - allWidth) % textColCount;
         for (auto& it : _layout) {
             if (!it.isBorder()) {
                 const size_t adjust = textColCount <= evenMore ? 1 : 0;
@@ -306,7 +306,7 @@ void ts::Grid::adjustLayout()
             }
         }
         assert(textColCount == 0);
-        assert(allWidth == _contentWidth);
+        assert(allWidth == _content_width);
     }
 }
 
@@ -318,10 +318,10 @@ void ts::Grid::adjustLayout()
 void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
 {
     // Begin of line.
-    _out << _leftMargin;
+    _out << _left_margin;
 
     // Inner margins.
-    const UString margin(_marginWidth, ' ');
+    const UString margin(_margin_width, ' ');
 
     // Iterator through text to display
     auto iText = text.begin();
@@ -334,7 +334,7 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
         // Left margin between columns (except for first column).
         if (currentWidth > 0) {
             _out << margin;
-            currentWidth += _marginWidth;
+            currentWidth += _margin_width;
         }
         currentWidth += iLayout._width;
 
@@ -418,7 +418,7 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
     }
 
     // End of line.
-    assert(currentWidth <= _contentWidth);
-    _out << std::string(_contentWidth - currentWidth, ' ') << _rightMargin << std::endl;
-    _lineCount++;
+    assert(currentWidth <= _content_width);
+    _out << std::string(_content_width - currentWidth, ' ') << _right_margin << std::endl;
+    _line_count++;
 }

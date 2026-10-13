@@ -59,7 +59,7 @@ namespace ts {
     {
     private:
 #if defined(TS_COM_INSTRUMENTATION)
-        mutable bool _traceCreator = false;  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
+        mutable bool _trace_creator = false;  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
 #endif
         COMCLASS* _ptr = nullptr;  // Encapsulated pointer to COM object.
 
@@ -271,8 +271,8 @@ namespace ts {
 #define TRACE_COCREATE()  (_ptr != nullptr ? (TRACE_HEADER(0) << "CoCreateInstance" << TRACE_TRAILER()) : std::cerr)
 #define TRACE_QUERY()     (_ptr != nullptr ? (TRACE_HEADER(0) << "QueryInterface" << TRACE_TRAILER()) : std::cerr)
 #define TRACE_BIND()      (_ptr != nullptr ? (TRACE_HEADER(0) << "BindToObject" << TRACE_TRAILER()) : std::cerr)
-#define TRACE_CREATOR()   (_traceCreator = true)
-#define TRACE_ENTRY()     (_traceCreator ? ((_ptr != nullptr ? (TRACE_HEADER(0) << "creator" << TRACE_TRAILER()) : std::cerr), _traceCreator = false) : false)
+#define TRACE_CREATOR()   (_trace_creator = true)
+#define TRACE_ENTRY()     (_trace_creator ? ((_ptr != nullptr ? (TRACE_HEADER(0) << "creator" << TRACE_TRAILER()) : std::cerr), _trace_creator = false) : false)
 #define TRACE_ADDREF()    (TRACE_HEADER(0) << "AddRef" << TRACE_TRAILER())
 #define TRACE_RELEASE()   (TRACE_HEADER(-1) << "Release" << TRACE_TRAILER())  // Must be traced before calling Release() => adjust refcount by -1.
 

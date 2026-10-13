@@ -34,9 +34,9 @@ ts::TextParser::TextParser(const UString& text, Report& report) :
 
 ts::TextParser::Position::Position(const UStringList& textLines) :
     _lines(&textLines),
-    _curLine(textLines.begin()),
-    _curLineNumber(1),
-    _curIndex(0)
+    _cur_line(textLines.begin()),
+    _cur_line_number(1),
+    _cur_index(0)
 {
 }
 
@@ -120,7 +120,7 @@ bool ts::TextParser::saveStream(std::ostream& strm)
 
 bool ts::TextParser::isAtPosition(const Position& pos) const
 {
-    return pos._lines == _pos._lines && pos._curLine == _pos._curLine && pos._curIndex == _pos._curIndex;
+    return pos._lines == _pos._lines && pos._cur_line == _pos._cur_line && pos._cur_index == _pos._cur_index;
 }
 
 bool ts::TextParser::seek(const Position& pos)
@@ -143,12 +143,12 @@ bool ts::TextParser::seek(const Position& pos)
 
 bool ts::TextParser::eof() const
 {
-    return _pos._curLine == _pos._lines->end();
+    return _pos._cur_line == _pos._lines->end();
 }
 
 bool ts::TextParser::eol() const
 {
-    return _pos._curLine == _pos._lines->end() || _pos._curIndex >= _pos._curLine->length();
+    return _pos._cur_line == _pos._lines->end() || _pos._cur_index >= _pos._cur_line->length();
 }
 
 void ts::TextParser::rewind()
@@ -163,19 +163,19 @@ void ts::TextParser::rewind()
 
 bool ts::TextParser::skipWhiteSpace()
 {
-    while (_pos._curLine != _pos._lines->end()) {
+    while (_pos._cur_line != _pos._lines->end()) {
         // Skip spaces in current line.
-        while (_pos._curIndex < _pos._curLine->length() && IsSpace((*_pos._curLine)[_pos._curIndex])) {
-            _pos._curIndex++;
+        while (_pos._cur_index < _pos._cur_line->length() && IsSpace((*_pos._cur_line)[_pos._cur_index])) {
+            _pos._cur_index++;
         }
         // Stop if not at end of line (non-space character found).
-        if (_pos._curIndex < _pos._curLine->length()) {
+        if (_pos._cur_index < _pos._cur_line->length()) {
             return true;
         }
         // Move to next line.
-        _pos._curLine++;
-        _pos._curLineNumber++;
-        _pos._curIndex = 0;
+        _pos._cur_line++;
+        _pos._cur_line_number++;
+        _pos._cur_index = 0;
     }
     return true;
 }
@@ -187,10 +187,10 @@ bool ts::TextParser::skipWhiteSpace()
 
 bool ts::TextParser::skipLine()
 {
-    while (_pos._curLine != _pos._lines->end()) {
-        _pos._curLine++;
-        _pos._curLineNumber++;
-        _pos._curIndex = 0;
+    while (_pos._cur_line != _pos._lines->end()) {
+        _pos._cur_line++;
+        _pos._cur_line_number++;
+        _pos._cur_index = 0;
     }
     return true;
 }
@@ -202,22 +202,22 @@ bool ts::TextParser::skipLine()
 
 bool ts::TextParser::match(const UString& str, bool skipIfMatch, CaseSensitivity cs)
 {
-    if (_pos._curLine == _pos._lines->end()) {
+    if (_pos._cur_line == _pos._lines->end()) {
         // Already at end of document.
         return false;
     }
 
-    size_t lineIndex = _pos._curIndex;
+    size_t lineIndex = _pos._cur_index;
     size_t strIndex = 0;
     while (strIndex < str.length()) {
-        if (lineIndex >= _pos._curLine->length() || !Match(str[strIndex++], (*_pos._curLine)[lineIndex++], cs)) {
+        if (lineIndex >= _pos._cur_line->length() || !Match(str[strIndex++], (*_pos._cur_line)[lineIndex++], cs)) {
             // str does not match
             return false;
         }
     }
 
     if (skipIfMatch) {
-        _pos._curIndex = lineIndex;
+        _pos._cur_index = lineIndex;
     }
     return true;
 }
@@ -239,9 +239,9 @@ bool ts::TextParser::isXMLNameChar(UChar c) const
 
 bool ts::TextParser::isAtXMLNameStart() const
 {
-    return _pos._curLine != _pos._lines->end() &&
-        _pos._curIndex < _pos._curLine->length() &&
-        isXMLNameStartChar((*_pos._curLine)[_pos._curIndex]);
+    return _pos._cur_line != _pos._lines->end() &&
+        _pos._cur_index < _pos._cur_line->length() &&
+        isXMLNameStartChar((*_pos._cur_line)[_pos._cur_index]);
 }
 
 
@@ -260,9 +260,9 @@ bool ts::TextParser::parseXMLName(UString& name)
 
     // Get the name.
     UChar c;
-    while (_pos._curIndex < _pos._curLine->length() && isXMLNameChar(c = (*_pos._curLine)[_pos._curIndex])) {
+    while (_pos._cur_index < _pos._cur_line->length() && isXMLNameChar(c = (*_pos._cur_line)[_pos._cur_index])) {
         name.append(c);
-        _pos._curIndex++;
+        _pos._cur_index++;
     }
     return true;
 }
@@ -275,9 +275,9 @@ bool ts::TextParser::parseXMLName(UString& name)
 bool ts::TextParser::isAtNumberStart() const
 {
     UChar c = CHAR_NULL;
-    return _pos._curLine != _pos._lines->end() &&
-        _pos._curIndex < _pos._curLine->length() &&
-        (IsDigit(c = (*_pos._curLine)[_pos._curIndex]) || c == u'-' || c == u'+');
+    return _pos._cur_line != _pos._lines->end() &&
+        _pos._cur_index < _pos._cur_line->length() &&
+        (IsDigit(c = (*_pos._cur_line)[_pos._cur_index]) || c == u'-' || c == u'+');
 }
 
 
@@ -290,13 +290,13 @@ bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allo
     str.clear();
 
     // Eliminate end of file or line.
-    if (_pos._curLine == _pos._lines->end() || _pos._curIndex >= _pos._curLine->length()) {
+    if (_pos._cur_line == _pos._lines->end() || _pos._cur_index >= _pos._cur_line->length()) {
         return false;
     }
 
-    const UString& line(*_pos._curLine);
+    const UString& line(*_pos._cur_line);
     const size_t end = line.length();
-    size_t index = _pos._curIndex;
+    size_t index = _pos._cur_index;
 
     // Skip optional sign.
     if (line[index] == u'-' || line[index] == u'+') {
@@ -355,8 +355,8 @@ bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allo
     }
     else {
         // Now we have a valid numeric literal.
-        str = _pos._curLine->substr(_pos._curIndex, index - _pos._curIndex);
-        _pos._curIndex = index;
+        str = _pos._cur_line->substr(_pos._cur_index, index - _pos._cur_index);
+        _pos._cur_index = index;
         return true;
     }
 }
@@ -371,14 +371,14 @@ bool ts::TextParser::parseStringLiteral(UString& str, UChar requiredQuote)
     str.clear();
 
     // Check that we are at the beginning of something.
-    if (_pos._curLine == _pos._lines->end() || _pos._curIndex >= _pos._curLine->length()) {
+    if (_pos._cur_line == _pos._lines->end() || _pos._cur_index >= _pos._cur_line->length()) {
         // At eol or eof.
         return false;
     }
 
-    const UString& line(*_pos._curLine);
+    const UString& line(*_pos._cur_line);
     const size_t end = line.length();
-    size_t index = _pos._curIndex;
+    size_t index = _pos._cur_index;
 
     // Validate the type of quote.
     const UChar quote = line[index++];
@@ -406,8 +406,8 @@ bool ts::TextParser::parseStringLiteral(UString& str, UChar requiredQuote)
     }
     else {
         // Now we have a string literal.
-        str = line.substr(_pos._curIndex, index + 1 - _pos._curIndex);
-        _pos._curIndex = index + 1;
+        str = line.substr(_pos._cur_index, index + 1 - _pos._cur_index);
+        _pos._cur_index = index + 1;
         return true;
     }
 }
@@ -444,22 +444,22 @@ bool ts::TextParser::parseText(UString& result, const UString& endToken, bool sk
     bool found = false;
 
     // Loop on all lines until the end token is found.
-    while (!found && _pos._curLine != _pos._lines->end()) {
+    while (!found && _pos._cur_line != _pos._lines->end()) {
 
         // Search for the end token in current line.
-        const size_t end = _pos._curLine->find(endToken, _pos._curIndex);
+        const size_t end = _pos._cur_line->find(endToken, _pos._cur_index);
         if (end == NPOS) {
             // End token not found, include the complete end of line.
-            result.append(*_pos._curLine, _pos._curIndex);
+            result.append(*_pos._cur_line, _pos._cur_index);
             result.append(LINE_FEED);
-            _pos._curLine++;
-            _pos._curLineNumber++;
-            _pos._curIndex = 0;
+            _pos._cur_line++;
+            _pos._cur_line_number++;
+            _pos._cur_index = 0;
         }
         else {
             // Found end token, stop here.
-            result.append(*_pos._curLine, _pos._curIndex, end - _pos._curIndex);
-            _pos._curIndex = skipIfMatch ? end + endToken.length() : end;
+            result.append(*_pos._cur_line, _pos._cur_index, end - _pos._cur_index);
+            _pos._cur_index = skipIfMatch ? end + endToken.length() : end;
             found = true;
         }
     }

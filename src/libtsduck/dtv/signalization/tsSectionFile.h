@@ -118,7 +118,7 @@ namespace ts {
         //! Set new parsing and formatting tweaks for XML files.
         //! @param [in] tweaks XML tweaks.
         //!
-        void setTweaks(const xml::Tweaks& tweaks) { _xmlTweaks = tweaks; }
+        void setTweaks(const xml::Tweaks& tweaks) { _xml_tweaks = tweaks; }
 
         //!
         //! Set the CRC32 processing mode when loading binary sections.
@@ -432,7 +432,7 @@ namespace ts {
         SectionPtrVector     _sections {};            // All sections from the file.
         SectionPtrVector     _orphan_sections {};     // Sections which do not belong to any table.
         xml::JSONConverter   _model {_duck.report()}; // XML model for tables.
-        xml::Tweaks          _xmlTweaks {};           // XML formatting and parsing tweaks.
+        xml::Tweaks          _xml_tweaks {};          // XML formatting and parsing tweaks.
         CRC32::Validation    _crc_op = CRC32::IGNORE; // Processing of CRC32 when loading sections.
 
         // Load the XML model in this instance, if not already done.

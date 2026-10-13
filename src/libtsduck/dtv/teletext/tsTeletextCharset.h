@@ -117,10 +117,10 @@ namespace ts {
         void remapG0(uint8_t charset);
 
         // Private members.
-        uint8_t        _current;   //!< Current charset index.
-        uint8_t        _g0m29;     //!< M/29 charset.
-        uint8_t        _g0x28;     //!< X/28 charset.
-        G0CharsetIndex _g0Default; //!< Default G0 index.
-        G0CharsetData  _G0;        //!< Current character set data.
+        uint8_t        _current;    // Current charset index.
+        uint8_t        _g0_m29;     // M/29 charset.
+        uint8_t        _g0_x28;     // X/28 charset.
+        G0CharsetIndex _g0_default; // Default G0 index.
+        G0CharsetData  _g0;         // Current character set data.
     };
 }

@@ -43,8 +43,8 @@ namespace ts {
         void getValues(const UString& entry, UStringVector& values) const;
 
     private:
-        const UString        _appName;
-        const ConfigSection& _appSection;
-        const ConfigSection& _mainSection;
+        const UString        _app_name;
+        const ConfigSection& _app_section;
+        const ConfigSection& _main_section;
     };
 }

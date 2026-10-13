@@ -42,7 +42,7 @@ namespace ts {
         // Plugin private fields.
         volatile bool    _terminate = false;
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
-        IPAddressSet     _allowedRemote {};
+        IPAddressSet     _allowed_temote {};
         UDPReceiverArgs  _sock_args {};
         UDPReceiver      _sock {this};
         CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};

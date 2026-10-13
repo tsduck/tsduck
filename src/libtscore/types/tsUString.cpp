@@ -2178,8 +2178,8 @@ bool ts::UString::scanHelper(size_t& extractedCount, size_type& endIndex, const 
 // Debugging support for Format and Scan.
 //----------------------------------------------------------------------------
 
-volatile bool ts::UString::ArgMixContext::_debugOn = false;
-volatile bool ts::UString::ArgMixContext::_debugValid = false;
+volatile bool ts::UString::ArgMixContext::_debug_on = false;
+volatile bool ts::UString::ArgMixContext::_debug_valid = false;
 
 ts::UString::ArgMixContext::ArgMixContext(const UChar* fmt, bool output) :
     _fmt(fmt),
@@ -2190,9 +2190,9 @@ ts::UString::ArgMixContext::ArgMixContext(const UChar* fmt, bool output) :
 
 bool ts::UString::ArgMixContext::debugInit()
 {
-    _debugOn = EnvironmentExists(u"TSDUCK_FORMAT_DEBUG");
-    _debugValid = true;
-    return _debugOn;
+    _debug_on = EnvironmentExists(u"TSDUCK_FORMAT_DEBUG");
+    _debug_valid = true;
+    return _debug_on;
 }
 
 void ts::UString::ArgMixContext::debug(const UString& message, UChar cmd) const

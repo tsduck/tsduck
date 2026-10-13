@@ -23,7 +23,7 @@
 int MainWrapper(int (*func)(int argc, char* argv[]), int argc, _TS_ARGV_TYPE* argv[])
 {
     // Save console state, set UTF-8 output, restore state on exit.
-    ts::ConsoleState _consoleState;
+    ts::ConsoleState _console_state;
 
     try {
 #if defined(TS_WINDOWS)

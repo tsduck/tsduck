@@ -71,13 +71,13 @@ namespace ts {
         //! Get the size in bytes of the Tag field.
         //! @return The size in bytes of the Tag field.
         //!
-        size_t getTagSize() const { return _tagSize; }
+        size_t getTagSize() const { return _tag_size; }
 
         //!
         //! Get the size in bytes of the Length field.
         //! @return The size in bytes of the Length field.
         //!
-        size_t getLengthSize() const { return _lengthSize; }
+        size_t getLengthSize() const { return _length_size; }
 
         //!
         //! Set the values of a TLVSyntax object from a string representation.
@@ -123,8 +123,8 @@ namespace ts {
     private:
         int    _start = 0;
         int    _size = 0;
-        size_t _tagSize {1};
-        size_t _lengthSize {1};
+        size_t _tag_size {1};
+        size_t _length_size {1};
         bool   _msb = true;
 
         // Compute the size of the longest TLV area starting at tlvStart.

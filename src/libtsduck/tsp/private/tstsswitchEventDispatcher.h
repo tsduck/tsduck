@@ -43,9 +43,9 @@ namespace ts::tsswitch {
     private:
         const InputSwitcherArgs& _opt;
         Report&   _log;
-        bool      _sendCommand = false;
-        bool      _sendUDP = false;
-        UString   _userData {};
+        bool      _send_command = false;
+        bool      _send_udp = false;
+        UString   _user_data {};
         UDPSocket _socket {&_log};
 
         // Send command and UDP message.

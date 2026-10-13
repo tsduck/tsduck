@@ -48,15 +48,15 @@ ts::GitHubRelease::GitHubRelease(const UString& owner, const UString& repository
 bool ts::GitHubRelease::validate(Report& report)
 {
     // We simply check the presence of a few fields in the object.
-    _isValid = _root != nullptr &&
+    _is_valid = _root != nullptr &&
                _root->value(u"name").isString() && !_root->value(u"name").toString().empty() &&
                _root->value(u"tag_name").isString() && !_root->value(u"tag_name").toString().empty();
 
-    if (!_isValid) {
+    if (!_is_valid) {
         InvalidResponse(_root, report);
     }
 
-    return _isValid;
+    return _is_valid;
 }
 
 
@@ -143,7 +143,7 @@ bool ts::GitHubRelease::downloadInfo(const UString& owner, const UString& reposi
     _root.reset();
     _owner = owner;
     _repository = repository;
-    _isValid = false;
+    _is_valid = false;
 
     // Send the request to GitHub. We expect a JSON object.
     return CallGitHub(_root, json::Type::Object, owner, repository, tag.empty() ? u"/releases/latest" : u"/releases/tags/" + tag, report) && validate(report);
@@ -248,7 +248,7 @@ ts::Time ts::GitHubRelease::StringToTime(const UString& str)
 
 ts::UString ts::GitHubRelease::tag() const
 {
-    return _isValid ? _root->value(u"tag_name").toString() : UString();
+    return _is_valid ? _root->value(u"tag_name").toString() : UString();
 }
 
 ts::UString ts::GitHubRelease::version() const
@@ -262,22 +262,22 @@ ts::UString ts::GitHubRelease::version() const
 
 ts::UString ts::GitHubRelease::versionName() const
 {
-    return _isValid ? _root->value(u"name").toString() : UString();
+    return _is_valid ? _root->value(u"name").toString() : UString();
 }
 
 ts::Time ts::GitHubRelease::publishDate() const
 {
-    return _isValid ? StringToTime(_root->value(u"published_at").toString()) : Time::Epoch;
+    return _is_valid ? StringToTime(_root->value(u"published_at").toString()) : Time::Epoch;
 }
 
 ts::UString ts::GitHubRelease::sourceTarURL() const
 {
-    return _isValid ? _root->value(u"tarball_url").toString() : UString();
+    return _is_valid ? _root->value(u"tarball_url").toString() : UString();
 }
 
 ts::UString ts::GitHubRelease::sourceZipURL() const
 {
-    return _isValid ? _root->value(u"zipball_url").toString() : UString();
+    return _is_valid ? _root->value(u"zipball_url").toString() : UString();
 }
 
 bool ts::GitHubRelease::useSourceZip() const
@@ -305,7 +305,7 @@ ts::UString ts::GitHubRelease::sourceFileName() const
 int ts::GitHubRelease::assetDownloadCount() const
 {
     int count = 0;
-    if (_isValid) {
+    if (_is_valid) {
         // Get the array of assets.
         const json::Value& arr(_root->value(u"assets"));
         for (size_t i = 0; i < arr.size(); ++i) {
@@ -324,7 +324,7 @@ void ts::GitHubRelease::getAssets(AssetList& assets) const
 {
     assets.clear();
 
-    if (_isValid) {
+    if (_is_valid) {
         // Get the array of assets.
         const json::Value& arr(_root->value(u"assets"));
         for (size_t i = 0; i < arr.size(); ++i) {

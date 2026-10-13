@@ -36,7 +36,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    int _previousSeverity = 0;
+    int _previous_severity = 0;
 };
 
 TSUNIT_REGISTER(TLSTest);
@@ -49,7 +49,7 @@ TSUNIT_REGISTER(TLSTest);
 // Test suite initialization method.
 void TLSTest::beforeTest()
 {
-    _previousSeverity = CERR.maxSeverity();
+    _previous_severity = CERR.maxSeverity();
     if (tsunit::Test::debugMode()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
     }
@@ -58,7 +58,7 @@ void TLSTest::beforeTest()
 // Test suite cleanup method.
 void TLSTest::afterTest()
 {
-    CERR.setMaxSeverity(_previousSeverity);
+    CERR.setMaxSeverity(_previous_severity);
 }
 
 

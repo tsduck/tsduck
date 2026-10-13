@@ -95,8 +95,8 @@ public:
     virtual void afterTest() override;
 
 private:
-    fs::path _tempFilePrefix {};
-    int _nextFileIndex = 0;
+    fs::path _temp_file_prefix {};
+    int _next_file_index = 0;
     ts::UString temporaryFileName(int) const;
     ts::UString newTemporaryFileName();
 
@@ -124,10 +124,10 @@ TSUNIT_REGISTER(UStringTest);
 void UStringTest::beforeTest()
 {
     // Select the directory name and prefix for temporary files
-    _tempFilePrefix = ts::TempFile(u".");
+    _temp_file_prefix = ts::TempFile(u".");
 
     // Next file will use suffix "000"
-    _nextFileIndex = 0;
+    _next_file_index = 0;
 }
 
 // Test suite cleanup method.
@@ -135,24 +135,24 @@ void UStringTest::afterTest()
 {
     // Delete all temporary files
     ts::UStringVector tempFiles;
-    ts::ExpandWildcard(tempFiles, _tempFilePrefix + u"*");
+    ts::ExpandWildcard(tempFiles, _temp_file_prefix + u"*");
     for (const auto& file : tempFiles) {
         debug() << "UStringTest: deleting temporary file \"" << file << "\"" << std::endl;
         fs::remove(file, &ts::ErrCodeReport(CERR, u"error deleting", file));
     }
-    _nextFileIndex = 0;
+    _next_file_index = 0;
 }
 
 // Get the name of a temporary file from an index
 ts::UString UStringTest::temporaryFileName (int index) const
 {
-    return _tempFilePrefix + ts::UString::Format(u"%03d", index);
+    return _temp_file_prefix + ts::UString::Format(u"%03d", index);
 }
 
 // Get the name of the next temporary file
 ts::UString UStringTest::newTemporaryFileName()
 {
-    return temporaryFileName(_nextFileIndex++);
+    return temporaryFileName(_next_file_index++);
 }
 
 

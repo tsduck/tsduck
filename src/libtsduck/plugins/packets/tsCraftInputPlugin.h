@@ -33,9 +33,9 @@ namespace ts {
 
     private:
         // Command line options:
-        uint8_t       _initCC = 0;          // continuity_counter
-        bool          _constantCC = false;  // Do not increment continuity counter
-        PacketCounter _maxCount = 0;        // Number of packets to generate
+        uint8_t       _init_cc = 0;          // continuity_counter
+        bool          _constant_cc = false;  // Do not increment continuity counter
+        PacketCounter _max_count = 0;        // Number of packets to generate
 
         // Working data:
         PacketCounter    _limit = 0;            // Current max number of packets

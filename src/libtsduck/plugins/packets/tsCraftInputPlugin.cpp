@@ -109,9 +109,9 @@ ts::CraftInputPlugin::CraftInputPlugin(TSP* tsp_) :
 bool ts::CraftInputPlugin::getOptions()
 {
     // Processing options.
-    _initCC = intValue<uint8_t>(u"cc");
-    _constantCC = present(u"constant-cc");
-    _maxCount = intValue<PacketCounter>(u"count", std::numeric_limits<PacketCounter>::max());
+    _init_cc = intValue<uint8_t>(u"cc");
+    _constant_cc = present(u"constant-cc");
+    _max_count = intValue<PacketCounter>(u"count", std::numeric_limits<PacketCounter>::max());
     tsp->useJointTermination(present(u"joint-termination"));
 
     // Options for packet content.
@@ -201,7 +201,7 @@ bool ts::CraftInputPlugin::getOptions()
         uint8_t((scrambling & 0x03) << 6) |
         (afSize > 0 ? 0x20 : 0x00) |
         (payloadSize > 0 || !noPayload ? 0x10 : 0x00) |
-        (_initCC & 0x0F);
+        (_init_cc & 0x0F);
 
     // Build adaptation field.
     if (afSize > 0) {
@@ -266,8 +266,8 @@ bool ts::CraftInputPlugin::getOptions()
 
 bool ts::CraftInputPlugin::start()
 {
-    _packet.setCC(_initCC);
-    _limit = _maxCount;
+    _packet.setCC(_init_cc);
+    _limit = _max_count;
     return true;
 }
 
@@ -310,7 +310,7 @@ size_t ts::CraftInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_dat
         buffer[n] = _packet;
         pkt_data[n] = _mdata;
         // Increment the continuity counter for the next packet when necessary.
-        if (!_constantCC && _packet.hasPayload()) {
+        if (!_constant_cc && _packet.hasPayload()) {
             _packet.setCC((_packet.getCC() + 1) & CC_MASK);
         }
     }

@@ -24,7 +24,7 @@ ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() {}
 
 // A fixed AES-128 key for post-processing.
 namespace {
-    const uint8_t _fixedKey[] = {
+    const uint8_t _fixed_key[] = {
         0x68, 0xA3, 0xA1, 0xE0, 0x68, 0x89, 0x7F, 0x9A, 0x05, 0xD5, 0x90, 0xDC, 0xD9, 0x0D, 0x70, 0x4F,
     };
 }
@@ -53,7 +53,7 @@ ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
     }
 
     // Initialize the AES engine with our fixed key.
-    if (!_aes.setKey(_fixedKey, sizeof(_fixedKey))) {
+    if (!_aes.setKey(_fixed_key, sizeof(_fixed_key))) {
         _ready = false;
     }
 }

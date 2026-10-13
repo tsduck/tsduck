@@ -95,7 +95,7 @@ TSUNIT_DEFINE_TEST(Severity)
 
 // Log sequence for testString
 namespace {
-    void _testStringSequence(TestBuffer& log, int level)
+    void TestStringSequence(TestBuffer& log, int level)
     {
         const ts::UString str1(u"1");
         const ts::UString str2(u"2");
@@ -126,7 +126,7 @@ TSUNIT_DEFINE_TEST(String)
     TestBuffer log;
     TSUNIT_ASSERT(log.empty());
 
-    _testStringSequence(log, ts::Severity::Debug);
+    TestStringSequence(log, ts::Severity::Debug);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"1\n"
                  u"Debug: 2\n"
@@ -138,7 +138,7 @@ TSUNIT_DEFINE_TEST(String)
                  u"Error: 8",
                  log.messages());
 
-    _testStringSequence(log, ts::Severity::Info);
+    TestStringSequence(log, ts::Severity::Info);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"1\n"
                  u"Warning: 4\n"
@@ -148,7 +148,7 @@ TSUNIT_DEFINE_TEST(String)
                  u"Error: 8",
                  log.messages());
 
-    _testStringSequence(log, ts::Severity::Warning);
+    TestStringSequence(log, ts::Severity::Warning);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"Warning: 4\n"
                  u"FATAL ERROR: 6\n"
@@ -156,27 +156,27 @@ TSUNIT_DEFINE_TEST(String)
                  u"Error: 8",
                  log.messages());
 
-    _testStringSequence(log, ts::Severity::Error);
+    TestStringSequence(log, ts::Severity::Error);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                  u"FATAL ERROR: 7\n"
                  u"Error: 8",
                  log.messages());
 
-    _testStringSequence(log, ts::Severity::Fatal);
+    TestStringSequence(log, ts::Severity::Fatal);
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                  u"FATAL ERROR: 7",
                  log.messages());
 
-    _testStringSequence(log, ts::Severity::Fatal - 1);
+    TestStringSequence(log, ts::Severity::Fatal - 1);
     TSUNIT_ASSERT(log.empty());
     TSUNIT_EQUAL(u"", log.messages());
 }
 
 // Log sequence for testPrintf
 namespace {
-    void _testPrintfSequence(TestBuffer& log, int level)
+    void TestPrintfSequence(TestBuffer& log, int level)
     {
         log.setMaxSeverity(level);
         log.clear();
@@ -197,7 +197,7 @@ TSUNIT_DEFINE_TEST(Printf)
 {
     TestBuffer log;
 
-    _testPrintfSequence(log, ts::Severity::Debug);
+    TestPrintfSequence(log, ts::Severity::Debug);
     TSUNIT_EQUAL(u"1\n"
                  u"Debug: 2\n"
                  u"Debug: 3\n"
@@ -208,7 +208,7 @@ TSUNIT_DEFINE_TEST(Printf)
                  u"Error: 8",
                  log.messages());
 
-    _testPrintfSequence(log, ts::Severity::Info);
+    TestPrintfSequence(log, ts::Severity::Info);
     TSUNIT_EQUAL(u"1\n"
                  u"Warning: 4\n"
                  u"5\n"
@@ -217,25 +217,25 @@ TSUNIT_DEFINE_TEST(Printf)
                  u"Error: 8",
                  log.messages());
 
-    _testPrintfSequence(log, ts::Severity::Warning);
+    TestPrintfSequence(log, ts::Severity::Warning);
     TSUNIT_EQUAL(u"Warning: 4\n"
                  u"FATAL ERROR: 6\n"
                  u"FATAL ERROR: 7\n"
                  u"Error: 8",
                  log.messages());
 
-    _testPrintfSequence(log, ts::Severity::Error);
+    TestPrintfSequence(log, ts::Severity::Error);
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                  u"FATAL ERROR: 7\n"
                  u"Error: 8",
                  log.messages());
 
-    _testPrintfSequence(log, ts::Severity::Fatal);
+    TestPrintfSequence(log, ts::Severity::Fatal);
     TSUNIT_EQUAL(u"FATAL ERROR: 6\n"
                  u"FATAL ERROR: 7",
                  log.messages());
 
-    _testPrintfSequence(log, ts::Severity::Fatal - 1);
+    TestPrintfSequence(log, ts::Severity::Fatal - 1);
     TSUNIT_ASSERT(log.empty());
     TSUNIT_EQUAL(u"", log.messages());
 }

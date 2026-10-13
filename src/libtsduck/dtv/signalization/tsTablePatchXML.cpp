@@ -20,7 +20,7 @@
 
 void ts::TablePatchXML::clear()
 {
-    _patchFiles.clear();
+    _patch_files.clear();
     _patches.clear();
     _expand_env = false;
 }
@@ -54,24 +54,24 @@ void ts::TablePatchXML::defineArgs(Args& args)
 
 bool ts::TablePatchXML::loadArgs(DuckContext& duck, Args& args)
 {
-    args.getValues(_patchFiles, u"patch-xml");
+    args.getValues(_patch_files, u"patch-xml");
     _expand_env = args.present(u"expand-patch-xml");
     return true;
 }
 
 void ts::TablePatchXML::addPatchFileName(const UString& filename)
 {
-    _patchFiles.push_back(filename);
+    _patch_files.push_back(filename);
 }
 
 void ts::TablePatchXML::addPatchFileNames(const UStringVector& filenames)
 {
-    _patchFiles.insert(_patchFiles.end(), filenames.begin(), filenames.end());
+    _patch_files.insert(_patch_files.end(), filenames.begin(), filenames.end());
 }
 
 void ts::TablePatchXML::addPatchFileNames(const UStringList& filenames)
 {
-    _patchFiles.insert(_patchFiles.end(), filenames.begin(), filenames.end());
+    _patch_files.insert(_patch_files.end(), filenames.begin(), filenames.end());
 }
 
 
@@ -86,15 +86,15 @@ bool ts::TablePatchXML::loadPatchFiles(const xml::Tweaks& tweaks)
 
     // Load Xml files one by one.
     bool ok = true;
-    for (size_t i = 0; i < _patchFiles.size(); ++i) {
+    for (size_t i = 0; i < _patch_files.size(); ++i) {
         PatchDocumentPtr doc = std::make_shared<xml::PatchDocument>(_duck.report());
         doc->setTweaks(tweaks);
-        if (doc->load(_patchFiles[i], false)) {
+        if (doc->load(_patch_files[i], false)) {
             _patches.push_back(doc);
         }
         else {
             ok = false;
-            _duck.report().error(u"error loading patch file %s", xml::Document::DisplayFileName(_patchFiles[i]));
+            _duck.report().error(u"error loading patch file %s", xml::Document::DisplayFileName(_patch_files[i]));
         }
     }
     return ok;

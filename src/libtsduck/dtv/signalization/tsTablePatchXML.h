@@ -144,7 +144,7 @@ namespace ts {
         using PatchDocumentVector = std::vector<PatchDocumentPtr>;
 
         DuckContext&        _duck;                // TSDuck execution context.
-        UStringVector       _patchFiles {};       // XML patch file names.
+        UStringVector       _patch_files {};      // XML patch file names.
         PatchDocumentVector _patches {};          // XML patch files as loaded documents
         bool                _expand_env = false;  // Expand environment variables in patch files before patching.
     };

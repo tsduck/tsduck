@@ -112,21 +112,21 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
 
 bool ts::TriggerPlugin::getOptions()
 {
-    getChronoValue(_minInterTime, u"min-inter-time");
-    getIntValue(_minInterPacket, u"min-inter-packet");
+    getChronoValue(_min_inter_time, u"min-inter-time");
+    getIntValue(_min_inter_packet, u"min-inter-packet");
     getValue(_execute, u"execute");
     getPathValue(_copy_source, u"copy");
     getPathValue(_copy_dest, u"destination");
-    getSocketValue(_udpDestination, u"udp");
-    getIPValue(_udpLocal, u"local-address");
-    getIntValue(_udpTTL, u"ttl");
+    getSocketValue(_udp_destination, u"udp");
+    getIPValue(_udp_local, u"local-address");
+    getIntValue(_udp_ttl, u"ttl");
     getIntValues(_labels, u"label");
-    getHexaValue(_udpMessage, u"udp-message");
-    _onStart = present(u"start");
-    _onStop = present(u"stop");
+    getHexaValue(_udp_message, u"udp-message");
+    _on_start = present(u"start");
+    _on_stop = present(u"stop");
     _once = present(u"once");
-    _allLabels = present(u"all-labels");
-    _allPackets = !_onStart && !_onStop && _labels.none();
+    _all_labels = present(u"all-labels");
+    _all_packets = !_on_start && !_on_stop && _labels.none();
     _wait_mode = present(u"synchronous") ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS;
 
     if (!_copy_source.empty() && _copy_dest.empty()) {
@@ -143,18 +143,18 @@ bool ts::TriggerPlugin::getOptions()
 
 bool ts::TriggerPlugin::start()
 {
-    _lastPacket = INVALID_PACKET_COUNTER;
-    _lastTime = Time::Epoch;
-    _currentLabels = _labels;
+    _last_packet = INVALID_PACKET_COUNTER;
+    _last_time = Time::Epoch;
+    _current_labels = _labels;
 
     // Initialize UDP output.
-    if (_udpDestination.hasAddress()) {
-        if (!_sock.open(_udpDestination.generation())) {
+    if (_udp_destination.hasAddress()) {
+        if (!_sock.open(_udp_destination.generation())) {
             return false;
         }
-        if (!_sock.setDefaultDestination(_udpDestination) ||
-            (!_udpLocal.hasAddress() && !_sock.setOutgoingMulticast(_udpLocal)) ||
-            (_udpTTL > 0 && !_sock.setTTL(_udpTTL)))
+        if (!_sock.setDefaultDestination(_udp_destination) ||
+            (!_udp_local.hasAddress() && !_sock.setOutgoingMulticast(_udp_local)) ||
+            (_udp_ttl > 0 && !_sock.setTTL(_udp_ttl)))
         {
             _sock.close();
             return false;
@@ -162,7 +162,7 @@ bool ts::TriggerPlugin::start()
     }
 
     // Initial trigger.
-    if (_onStart) {
+    if (_on_start) {
         trigger();
     }
     return true;
@@ -176,7 +176,7 @@ bool ts::TriggerPlugin::start()
 bool ts::TriggerPlugin::stop()
 {
     // Final trigger.
-    if (_onStop) {
+    if (_on_stop) {
         trigger();
     }
 
@@ -196,20 +196,20 @@ ts::PacketProcessStatus ts::TriggerPlugin::processPacket(TSPacket& pkt, TSPacket
     // Check if the packet shall be selected.
     Time now(Time::Epoch);
     const bool select =
-        (_allPackets || (_allLabels && pkt_data.hasAllLabels(_currentLabels)) || (!_allLabels && pkt_data.hasAnyLabel(_currentLabels))) &&
-        (_minInterPacket == 0 || _lastPacket == INVALID_PACKET_COUNTER || tsp->pluginPackets() >= _lastPacket + _minInterPacket) &&
-        (_minInterTime == cn::milliseconds::zero() || _lastTime == Time::Epoch || (now = Time::CurrentUTC()) >= _lastTime + _minInterTime);
+        (_all_packets || (_all_labels && pkt_data.hasAllLabels(_current_labels)) || (!_all_labels && pkt_data.hasAnyLabel(_current_labels))) &&
+        (_min_inter_packet == 0 || _last_packet == INVALID_PACKET_COUNTER || tsp->pluginPackets() >= _last_packet + _min_inter_packet) &&
+        (_min_inter_time == cn::milliseconds::zero() || _last_time == Time::Epoch || (now = Time::CurrentUTC()) >= _last_time + _min_inter_time);
 
     if (select) {
         // The packet shall be selected.
         debug(u"triggering action, packet %'d", tsp->pluginPackets());
-        _lastTime = now == Time::Epoch ? Time::CurrentUTC() : now;
-        _lastPacket = tsp->pluginPackets();
+        _last_time = now == Time::Epoch ? Time::CurrentUTC() : now;
+        _last_packet = tsp->pluginPackets();
         trigger();
 
         // Reset the labels after first trigger.
         if (_once) {
-            _currentLabels &= ~pkt_data.labels();
+            _current_labels &= ~pkt_data.labels();
         }
     }
 
@@ -235,6 +235,6 @@ void ts::TriggerPlugin::trigger()
 
     // Send message over a socket.
     if (_sock.isOpen()) {
-        _sock.send(_udpMessage.data(), _udpMessage.size());
+        _sock.send(_udp_message.data(), _udp_message.size());
     }
 }

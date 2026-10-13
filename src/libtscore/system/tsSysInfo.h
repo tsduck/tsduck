@@ -80,50 +80,50 @@ namespace ts {
         //! Get the operating system family.
         //! @return The operating system family.
         //!
-        SysOS os() const { return _osFamily; }
+        SysOS os() const { return _os_family; }
         //!
         //! Get the operating system flavor.
         //! @return The operating system flavor.
         //!
-        SysFlavor osFlavor() const { return _osFlavor; }
+        SysFlavor osFlavor() const { return _os_flavor; }
         //!
         //! Check if the CPU supports accelerated instructions for CRC32 computation.
         //! @return True if the CPU supports CRC32 instructions.
         //!
-        bool crcInstructions() const { return _crcInstructions; }
+        bool crcInstructions() const { return _crc_instructions; }
         //!
         //! Get the operating system version.
         //! @return The operating system version.
         //!
-        UString systemVersion() const { return _systemVersion; }
+        UString systemVersion() const { return _system_version; }
         //!
         //! Get the operating system major version as an integer.
         //! The exact meaning of this number is system dependent.
         //! @return The operating system major version or -1 if unknown.
         //!
-        int systemMajorVersion() const { return _systemMajorVersion; }
+        int systemMajorVersion() const { return _system_major_version; }
         //!
         //! Get the operating system build as an integer.
         //! The exact meaning of this number is system dependent.
         //! On Windows, it returns the Windows build number.
         //! @return The operating system build or -1 if unknown.
         //!
-        int systemBuild() const { return _systemBuild; }
+        int systemBuild() const { return _system_build; }
         //!
         //! Get the operating system name.
         //! @return The operating system name.
         //!
-        UString systemName() const { return _systemName; }
+        UString systemName() const { return _system_name; }
         //!
         //! Get the name of the system host.
         //! @return The name of the system host.
         //!
-        UString hostName() const { return _hostName; }
+        UString hostName() const { return _host_name; }
         //!
         //! Get the name of the CPU architecure.
         //! @return The name of the CPU architecure.
         //!
-        UString cpuName() const { return _cpuName; }
+        UString cpuName() const { return _cpu_name; }
         //!
         //! Get the number of CPU cores.
         //! This is typically the number of logical cores, which can be different from the number
@@ -132,12 +132,12 @@ namespace ts {
         //! considered as a hint only and not accurate.
         //! @return The number of CPU cores.
         //!
-        size_t cpuCoreCount() const { return _cpuCoreCount; }
+        size_t cpuCoreCount() const { return _cpu_core_count; }
         //!
         //! Get system memory page size.
         //! @return The system memory page size in bytes.
         //!
-        size_t memoryPageSize() const { return _memoryPageSize; }
+        size_t memoryPageSize() const { return _memory_page_size; }
 
         //!
         //! Build a string representing the system on which the application runs.
@@ -159,16 +159,16 @@ namespace ts {
 
     private:
         SysArch   _arch;
-        UString   _cpuName;
-        SysOS     _osFamily;
-        SysFlavor _osFlavor = UNKNOWN;
-        bool      _crcInstructions = false;
-        int       _systemMajorVersion = -1;
-        int       _systemBuild = -1;
-        UString   _systemVersion {};
-        UString   _systemName {};
-        UString   _hostName {};
-        size_t    _cpuCoreCount = 0;
-        size_t    _memoryPageSize = 0;
+        UString   _cpu_name;
+        SysOS     _os_family;
+        SysFlavor _os_flavor = UNKNOWN;
+        bool      _crc_instructions = false;
+        int       _system_major_version = -1;
+        int       _system_build = -1;
+        UString   _system_version {};
+        UString   _system_name {};
+        UString   _host_name {};
+        size_t    _cpu_core_count = 0;
+        size_t    _memory_page_size = 0;
     };
 }

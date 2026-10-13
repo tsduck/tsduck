@@ -129,9 +129,9 @@ namespace ts {
             friend class TextParser;
 
             const UStringList*          _lines;
-            UStringList::const_iterator _curLine;
-            size_t                      _curLineNumber;
-            size_t                      _curIndex;
+            UStringList::const_iterator _cur_line;
+            size_t                      _cur_line_number;
+            size_t                      _cur_index;
         };
 
         //!
@@ -158,7 +158,7 @@ namespace ts {
         //! Get the current line number.
         //! @return The current line number.
         //!
-        size_t lineNumber() const { return _pos._curLineNumber; }
+        size_t lineNumber() const { return _pos._cur_line_number; }
 
         //!
         //! Skip all whitespaces, including end of lines.

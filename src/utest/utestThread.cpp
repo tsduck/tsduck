@@ -203,20 +203,20 @@ namespace {
     {
     private:
         std::timed_mutex& _mutex;
-        std::mutex& _mutexSig;
-        std::condition_variable& _condSig;
-        bool _gotMutex = false;
+        std::mutex& _mutex_sig;
+        std::condition_variable& _cond_sig;
+        bool _got_mutex = false;
     public:
-        TestThreadMutexTimeout(std::timed_mutex& mutex, std::mutex& mutexSig, std::condition_variable& condSig) :
+        TestThreadMutexTimeout(std::timed_mutex& mutex, std::mutex& mutex_sig, std::condition_variable& cond_sig) :
             utest::TSUnitThread(),
             _mutex(mutex),
-            _mutexSig(mutexSig),
-            _condSig(condSig)
+            _mutex_sig(mutex_sig),
+            _cond_sig(cond_sig)
         {
         }
         bool gotMutex() const
         {
-            return _gotMutex;
+            return _got_mutex;
         }
         virtual ~TestThreadMutexTimeout() override
         {
@@ -228,9 +228,9 @@ namespace {
             TSUNIT_ASSERT(_mutex.try_lock());
             // Signal that we have acquired it.
             {
-                std::lock_guard<std::mutex> lock(_mutexSig);
-                _gotMutex = true;
-                _condSig.notify_one();
+                std::lock_guard<std::mutex> lock(_mutex_sig);
+                _got_mutex = true;
+                _cond_sig.notify_one();
             }
             // And sleep 100 ms.
             std::this_thread::sleep_for(cn::milliseconds(100));
@@ -242,15 +242,15 @@ namespace {
 TSUNIT_DEFINE_TEST(MutexTimeout)
 {
     std::timed_mutex mutex;
-    std::mutex mutexSig;
-    std::condition_variable condSig;
-    TestThreadMutexTimeout thread(mutex, mutexSig, condSig);
+    std::mutex mutex_sig;
+    std::condition_variable cond_sig;
+    TestThreadMutexTimeout thread(mutex, mutex_sig, cond_sig);
 
     // Start thread and wait for it to acquire mutex.
     {
-        std::unique_lock<std::mutex> lock(mutexSig);
+        std::unique_lock<std::mutex> lock(mutex_sig);
         TSUNIT_ASSERT(thread.start());
-        condSig.wait(lock, [&thread]() { return thread.gotMutex(); });
+        cond_sig.wait(lock, [&thread]() { return thread.gotMutex(); });
     }
 
     // Now, the thread holds the mutex for 100 ms.

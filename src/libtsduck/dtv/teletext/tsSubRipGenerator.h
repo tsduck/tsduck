@@ -26,11 +26,11 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in] fileName Optional output file name. If non-empty, the file is created and open.
+        //! @param [in] file_name Optional output file name. If non-empty, the file is created and open.
         //! Use isOpen() to check if the file was correctly created.
         //! @param [in,out] report Where to report errors.
         //!
-        explicit SubRipGenerator(const fs::path& fileName = UString(), Report& report = NULLREP);
+        explicit SubRipGenerator(const fs::path& file_name = UString(), Report& report = NULLREP);
 
         //!
         //! Constructor.
@@ -46,11 +46,11 @@ namespace ts {
         //!
         //! Open or re-open the generator to a new file.
         //! The previous file is closed.
-        //! @param [in] fileName Output file name.
+        //! @param [in] file_name Output file name.
         //! @param [in,out] report Where to report errors.
         //! @return True if the file was correctly created and open, false otherwise.
         //!
-        bool open(const fs::path& fileName, Report& report = NULLREP);
+        bool open(const fs::path& file_name, Report& report = NULLREP);
 
         //!
         //! Open or re-open the generator to a new text stream.
@@ -73,30 +73,30 @@ namespace ts {
 
         //!
         //! Add a multi-lines subtitle frame.
-        //! @param [in] showTimestamp Show frame at this timestamp (from start of stream)
-        //! @param [in] hideTimestamp Hide frame at this timestamp (from start of stream)
+        //! @param [in] show_timestamp Show frame at this timestamp (from start of stream)
+        //! @param [in] hide_timestamp Hide frame at this timestamp (from start of stream)
         //! @param [in] lines Text lines.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
-        void addFrame(const cn::duration<Rep1,Period1>& showTimestamp, const cn::duration<Rep2,Period2>& hideTimestamp, const UStringList& lines);
+        void addFrame(const cn::duration<Rep1,Period1>& show_timestamp, const cn::duration<Rep2,Period2>& hide_timestamp, const UStringList& lines);
 
         //!
         //! Add a one-line subtitle frame.
-        //! @param [in] showTimestamp Show frame at this timestamp (from start of stream)
-        //! @param [in] hideTimestamp Hide frame at this timestamp (from start of stream)
+        //! @param [in] show_timestamp Show frame at this timestamp (from start of stream)
+        //! @param [in] hide_timestamp Hide frame at this timestamp (from start of stream)
         //! @param [in] line Text line.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
-        void addFrame(const cn::duration<Rep1,Period1>& showTimestamp, const cn::duration<Rep2,Period2>& hideTimestamp, const UString& line)
+        void addFrame(const cn::duration<Rep1,Period1>& show_timestamp, const cn::duration<Rep2,Period2>& hide_timestamp, const UString& line)
         {
-            addFrame(showTimestamp, hideTimestamp, UStringList {line});
+            addFrame(show_timestamp, hide_timestamp, UStringList {line});
         }
 
         //!
         //! Get the number of generated frames fo far.
         //! @return The number of generated frames fo far.
         //!
-        int frameCount() const { return _frameCount; }
+        int frameCount() const { return _frame_count; }
 
         //!
         //! Format a timestamp as SRT time.
@@ -108,20 +108,20 @@ namespace ts {
 
         //!
         //! Format a duration as SRT header.
-        //! @param [in] showTimestamp Show frame at this timestamp (in ms from start of stream)
-        //! @param [in] hideTimestamp Hide frame at this timestamp (in ms from start of stream)
+        //! @param [in] show_timestamp Show frame at this timestamp (in ms from start of stream)
+        //! @param [in] hide_timestamp Hide frame at this timestamp (in ms from start of stream)
         //! @return SRT formatted duration.
         //!
         template <class Rep1, class Period1, class Rep2, class Period2>
-        static UString FormatDuration(const cn::duration<Rep1,Period1>& showTimestamp, const cn::duration<Rep2,Period2>& hideTimestamp)
+        static UString FormatDuration(const cn::duration<Rep1,Period1>& show_timestamp, const cn::duration<Rep2,Period2>& hide_timestamp)
         {
-            return FormatTime(showTimestamp) + u" --> " + FormatTime(hideTimestamp);
+            return FormatTime(show_timestamp) + u" --> " + FormatTime(hide_timestamp);
         }
 
     private:
-        std::ofstream _outputStream {};   // Text stream for output file.
+        std::ofstream _output_stream {};  // Text stream for output file.
         std::ostream* _stream = nullptr;  // Output text stream.
-        int           _frameCount = 0;    // Number of output frames.
+        int           _frame_count = 0;   // Number of output frames.
     };
 }
 
@@ -162,7 +162,7 @@ void ts::SubRipGenerator::addFrame(const cn::duration<Rep1,Period1>& showTimesta
     if (notEmpty && _stream != nullptr) {
         // First line: Frame count, starting at 1.
         // Second line: Start and end timestamps.
-        *_stream << ++_frameCount << std::endl
+        *_stream << ++_frame_count << std::endl
                  << FormatDuration(showTimestamp, hideTimestamp) << std::endl;
 
         // Subsequent lines: Subtitle text.

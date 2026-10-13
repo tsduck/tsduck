@@ -56,7 +56,7 @@ public:
     virtual void afterTest() override;
 
 private:
-    int _previousSeverity = 0;
+    int _previous_severity = 0;
 };
 
 TSUNIT_REGISTER(NetworkingTest);
@@ -69,7 +69,7 @@ TSUNIT_REGISTER(NetworkingTest);
 // Test suite initialization method.
 void NetworkingTest::beforeTest()
 {
-    _previousSeverity = CERR.maxSeverity();
+    _previous_severity = CERR.maxSeverity();
     if (tsunit::Test::debugMode()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
     }
@@ -78,7 +78,7 @@ void NetworkingTest::beforeTest()
 // Test suite cleanup method.
 void NetworkingTest::afterTest()
 {
-    CERR.setMaxSeverity(_previousSeverity);
+    CERR.setMaxSeverity(_previous_severity);
 }
 
 
@@ -673,12 +673,12 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(TCPClient);
     private:
-        uint16_t _portNumber;
+        uint16_t _port_number;
     public:
         // Constructor
         explicit TCPClient(uint16_t portNumber) :
             utest::TSUnitThread(),
-            _portNumber(portNumber)
+            _port_number(portNumber)
         {
         }
 
@@ -695,7 +695,7 @@ namespace {
             CERR.debug(u"TCPSocketTest: client thread: started");
 
             // Connect to the server.
-            const ts::IPSocketAddress serverAddress(ts::IPAddress::LocalHost4, _portNumber);
+            const ts::IPSocketAddress serverAddress(ts::IPAddress::LocalHost4, _port_number);
             const ts::IPSocketAddress clientAddress(ts::IPAddress::LocalHost4, ts::IPSocketAddress::AnyPort);
             ts::TCPConnection session(&CERR);
             TSUNIT_ASSERT(!session.isOpen());
@@ -713,7 +713,7 @@ namespace {
             TSUNIT_ASSERT(session.getPeer(peer));
             TSUNIT_ASSERT(peer == serverAddress);
             TSUNIT_ASSERT(ts::IPAddress(peer) == ts::IPAddress::LocalHost4);
-            TSUNIT_ASSERT(peer.port() == _portNumber);
+            TSUNIT_ASSERT(peer.port() == _port_number);
 
             // Send a message
             const char message[] = "Hello";
@@ -804,12 +804,12 @@ namespace {
     {
         TS_NOBUILD_NOCOPY(UDPClient);
     private:
-        uint16_t _portNumber;
+        uint16_t _port_number;
     public:
         // Constructor
         explicit UDPClient(uint16_t portNumber) :
             utest::TSUnitThread(),
-            _portNumber(portNumber)
+            _port_number(portNumber)
         {
         }
 
@@ -830,9 +830,9 @@ namespace {
             TSUNIT_ASSERT(sock.setSendBufferSize(1024));
             TSUNIT_ASSERT(sock.setReceiveBufferSize(1024));
             TSUNIT_ASSERT(sock.bind(ts::IPSocketAddress(ts::IPAddress::LocalHost4, ts::IPSocketAddress::AnyPort)));
-            TSUNIT_ASSERT(sock.setDefaultDestination(ts::IPSocketAddress(ts::IPAddress::LocalHost4, _portNumber)));
+            TSUNIT_ASSERT(sock.setDefaultDestination(ts::IPSocketAddress(ts::IPAddress::LocalHost4, _port_number)));
             TSUNIT_ASSERT(ts::IPAddress(sock.getDefaultDestination()) == ts::IPAddress::LocalHost4);
-            TSUNIT_ASSERT(sock.getDefaultDestination().port() == _portNumber);
+            TSUNIT_ASSERT(sock.getDefaultDestination().port() == _port_number);
 
             // Send a message
             const char message[] = "Hello";
@@ -850,7 +850,7 @@ namespace {
             TSUNIT_EQUAL(sizeof(message), size);
             TSUNIT_EQUAL(0, ts::MemCompare(message, buffer, size));
             TSUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost4);
-            TSUNIT_ASSERT(sender.port() == _portNumber);
+            TSUNIT_ASSERT(sender.port() == _port_number);
 
             CERR.debug(u"UDPSocketTest: client thread terminated");
         }

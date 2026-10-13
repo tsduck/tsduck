@@ -66,7 +66,7 @@ bool ts::RemapPlugin::start()
     // Do not care about PMT if no need to update PSI
     _pmt_ready = !_update_psi;
 
-    verbose(u"%d PID's remapped", _pidMap.size());
+    verbose(u"%d PID's remapped", _pid_map.size());
     return true;
 }
 
@@ -77,8 +77,8 @@ bool ts::RemapPlugin::start()
 
 ts::PID ts::RemapPlugin::remap(PID pid)
 {
-    const auto it = _pidMap.find(pid);
-    return it == _pidMap.end() ? pid : it->second;
+    const auto it = _pid_map.find(pid);
+    return it == _pid_map.end() ? pid : it->second;
 }
 
 
@@ -206,7 +206,7 @@ ts::PacketProcessStatus ts::RemapPlugin::processPacket(TSPacket& pkt, TSPacketMe
     }
 
     // Check conflicts
-    if (!_unchecked && new_pid == pid && _newPIDs.test(pid)) {
+    if (!_unchecked && new_pid == pid && _new_pids.test(pid)) {
         error(u"PID conflict: PID %n present both in input and remap", pid);
         return TSP_END;
     }
@@ -215,8 +215,8 @@ ts::PacketProcessStatus ts::RemapPlugin::processPacket(TSPacket& pkt, TSPacketMe
     if (pid != new_pid) {
         pkt.setPID(new_pid);
         // Apply labels on remapped packets.
-        pkt_data.setLabels(_setLabels);
-        pkt_data.clearLabels(_resetLabels);
+        pkt_data.setLabels(_set_labels);
+        pkt_data.clearLabels(_reset_labels);
     }
 
     return TSP_OK;

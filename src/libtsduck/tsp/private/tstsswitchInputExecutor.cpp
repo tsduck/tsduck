@@ -23,12 +23,12 @@ ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
     PluginExecutor(opt, handlers, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), core, log),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
-    _pluginIndex(index),
+    _plugin_index(index),
     _buffer(opt.buffered_packets),
     _metadata(opt.buffered_packets)
 {
     // Make sure that the input plugins display their index.
-    setLogName(UString::Format(u"%s[%d]", pluginName(), _pluginIndex));
+    setLogName(UString::Format(u"%s[%d]", pluginName(), _plugin_index));
 }
 
 ts::tsswitch::InputExecutor::~InputExecutor()
@@ -43,7 +43,7 @@ ts::tsswitch::InputExecutor::~InputExecutor()
 
 size_t ts::tsswitch::InputExecutor::pluginIndex() const
 {
-    return _pluginIndex;
+    return _plugin_index;
 }
 
 
@@ -56,9 +56,9 @@ void ts::tsswitch::InputExecutor::startInput(bool isCurrent)
     debug(u"received start request, current: %s", isCurrent);
 
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    _isCurrent = isCurrent;
-    _startRequest = true;
-    _stopRequest = false;
+    _is_current = isCurrent;
+    _start_request = true;
+    _stop_request = false;
     _todo.notify_one();
 }
 
@@ -72,8 +72,8 @@ void ts::tsswitch::InputExecutor::stopInput()
     debug(u"received stop request");
 
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    _startRequest = false;
-    _stopRequest = true;
+    _start_request = false;
+    _stop_request = true;
     _todo.notify_one();
 }
 
@@ -95,7 +95,7 @@ bool ts::tsswitch::InputExecutor::abortInput()
 void ts::tsswitch::InputExecutor::setCurrent(bool isCurrent)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    _isCurrent = isCurrent;
+    _is_current = isCurrent;
 }
 
 
@@ -119,10 +119,10 @@ void ts::tsswitch::InputExecutor::terminateInput()
 void ts::tsswitch::InputExecutor::getOutputArea(ts::TSPacket*& first, TSPacketMetadata*& data, size_t& count)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    first = &_buffer[_outFirst];
-    data = &_metadata[_outFirst];
-    count = std::min(_outCount, _buffer.size() - _outFirst);
-    _outputInUse = count > 0;
+    first = &_buffer[_out_first];
+    data = &_metadata[_out_first];
+    count = std::min(_out_count, _buffer.size() - _out_first);
+    _output_in_use = count > 0;
     _todo.notify_one();
 }
 
@@ -135,10 +135,10 @@ void ts::tsswitch::InputExecutor::getOutputArea(ts::TSPacket*& first, TSPacketMe
 void ts::tsswitch::InputExecutor::freeOutput(size_t count)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    assert(count <= _outCount);
-    _outFirst = (_outFirst + count) % _buffer.size();
-    _outCount -= count;
-    _outputInUse = false;
+    assert(count <= _out_count);
+    _out_first = (_out_first + count) % _buffer.size();
+    _out_count -= count;
+    _output_in_use = false;
     _todo.notify_one();
 }
 
@@ -159,10 +159,10 @@ void ts::tsswitch::InputExecutor::main()
         {
             std::unique_lock<std::recursive_mutex> lock(_mutex);
             // Reset input buffer.
-            _outFirst = 0;
-            _outCount = 0;
+            _out_first = 0;
+            _out_count = 0;
             // Wait for start or terminate.
-            while (!_startRequest && !_terminated) {
+            while (!_start_request && !_terminated) {
                 _todo.wait(lock);
             }
             // Exit main loop when termination is requested.
@@ -170,8 +170,8 @@ void ts::tsswitch::InputExecutor::main()
                 break;
             }
             // At this point, start is requested, reset trigger.
-            _startRequest = false;
-            _stopRequest = false;
+            _start_request = false;
+            _stop_request = false;
             // Inform the TSP layer to reset plugin session accounting.
             restartPluginSession();
         }
@@ -180,11 +180,11 @@ void ts::tsswitch::InputExecutor::main()
         debug(u"starting input plugin");
         const bool started = _input->start();
         debug(u"input plugin started, status: %s", started);
-        _core.inputStarted(_pluginIndex, started);
+        _core.inputStarted(_plugin_index, started);
 
         if (!started) {
             // Failed to start.
-            _core.inputStopped(_pluginIndex, false);
+            _core.inputStopped(_plugin_index, false);
             // Loop back, waiting for a new session.
             continue;
         }
@@ -200,8 +200,8 @@ void ts::tsswitch::InputExecutor::main()
             {
                 // Wait for free buffer or stop.
                 std::unique_lock<std::recursive_mutex> lock(_mutex);
-                while (_outCount >= _buffer.size() && !_stopRequest && !_terminated) {
-                    if (_isCurrent || !_opt.fast_switch) {
+                while (_out_count >= _buffer.size() && !_stop_request && !_terminated) {
+                    if (_is_current || !_opt.fast_switch) {
                         // This is the current input, we must not lose packet.
                         // Wait for the output thread to free some packets.
                         _todo.wait(lock);
@@ -209,22 +209,22 @@ void ts::tsswitch::InputExecutor::main()
                     else {
                         // Not the current input plugin in --fast-switch mode.
                         // Drop older packets, free at most --max-input-packets.
-                        assert(_outFirst < _buffer.size());
-                        const size_t freeCount = std::min(_opt.max_input_packets, _buffer.size() - _outFirst);
-                        assert(freeCount <= _outCount);
-                        _outFirst = (_outFirst + freeCount) % _buffer.size();
-                        _outCount -= freeCount;
+                        assert(_out_first < _buffer.size());
+                        const size_t freeCount = std::min(_opt.max_input_packets, _buffer.size() - _out_first);
+                        assert(freeCount <= _out_count);
+                        _out_first = (_out_first + freeCount) % _buffer.size();
+                        _out_count -= freeCount;
                     }
                 }
                 // Exit input when termination is requested.
-                if (_stopRequest || _terminated) {
-                    debug(u"exiting session: stop request: %s, terminated: %s", _stopRequest, _terminated);
+                if (_stop_request || _terminated) {
+                    debug(u"exiting session: stop request: %s, terminated: %s", _stop_request, _terminated);
                     break;
                 }
                 // There is some free buffer, compute first index and size of receive area.
                 // The receive area is limited by end of buffer and max input size.
-                inFirst = (_outFirst + _outCount) % _buffer.size();
-                inCount = std::min(_opt.max_input_packets, std::min(_buffer.size() - _outCount, _buffer.size() - inFirst));
+                inFirst = (_out_first + _out_count) % _buffer.size();
+                inCount = std::min(_opt.max_input_packets, std::min(_buffer.size() - _out_count, _buffer.size() - inFirst));
             }
 
             assert(inFirst < _buffer.size());
@@ -255,9 +255,9 @@ void ts::tsswitch::InputExecutor::main()
             // Signal the presence of received packets.
             {
                 std::lock_guard<std::recursive_mutex> lock(_mutex);
-                _outCount += inCount;
+                _out_count += inCount;
             }
-            _core.inputReceived(_pluginIndex);
+            _core.inputReceived(_plugin_index);
         }
 
         // At end of session, make sure that the output buffer is not in use by the output plugin.
@@ -265,18 +265,18 @@ void ts::tsswitch::InputExecutor::main()
             // Wait for the output plugin to release the buffer.
             // In case of normal end of input (no stop, no terminate), wait for all output to be gone.
             std::unique_lock<std::recursive_mutex> lock(_mutex);
-            while (_outputInUse || (_outCount > 0 && !_stopRequest && !_terminated)) {
+            while (_output_in_use || (_out_count > 0 && !_stop_request && !_terminated)) {
                 debug(u"input terminated, waiting for output plugin to release the buffer");
                 _todo.wait(lock);
             }
             // And reset the output part of the buffer.
-            _outFirst = 0;
-            _outCount = 0;
+            _out_first = 0;
+            _out_count = 0;
         }
 
         // End of input session.
         debug(u"stopping input plugin");
-        _core.inputStopped(_pluginIndex, _input->stop());
+        _core.inputStopped(_plugin_index, _input->stop());
     }
 
     debug(u"input thread terminated");

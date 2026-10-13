@@ -56,7 +56,7 @@ namespace ts {
         //! Loading is initially enabled by default.
         //! @param [in] allowed When true, dynamically loading plugins is allowed.
         //!
-        void setSharedLibraryAllowed(bool allowed) { _sharedLibraryAllowed = allowed; }
+        void setSharedLibraryAllowed(bool allowed) { _shared_library_allowed = allowed; }
 
         //!
         //! Register an input plugin.
@@ -110,19 +110,19 @@ namespace ts {
         //! Get the number of registered input plugins.
         //! @return The number of registered input plugins.
         //!
-        size_t inputCount() const { return _inputPlugins.size(); }
+        size_t inputCount() const { return _input_plugins.size(); }
 
         //!
         //! Get the number of registered processor plugins.
         //! @return The number of registered processor plugins.
         //!
-        size_t processorCount() const { return _processorPlugins.size(); }
+        size_t processorCount() const { return _processor_plugins.size(); }
 
         //!
         //! Get the number of registered output plugins.
         //! @return The number of registered output plugins.
         //!
-        size_t outputCount() const { return _outputPlugins.size(); }
+        size_t outputCount() const { return _output_plugins.size(); }
 
         //!
         //! Get the names of all registered input plugins.
@@ -215,10 +215,10 @@ namespace ts {
         using ProcessorMap = std::map<UString, ProcessorPluginFactory>;
         using OutputMap = std::map<UString, OutputPluginFactory>;
 
-        bool         _sharedLibraryAllowed = true;
-        InputMap     _inputPlugins {};
-        ProcessorMap _processorPlugins {};
-        OutputMap    _outputPlugins {};
+        bool         _shared_library_allowed = true;
+        InputMap     _input_plugins {};
+        ProcessorMap _processor_plugins {};
+        OutputMap    _output_plugins {};
 
         // Get plugin factory by name.
         template <typename FACTORY>

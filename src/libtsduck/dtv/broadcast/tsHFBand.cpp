@@ -440,7 +440,7 @@ bool ts::HFBand::HFBandIndex::operator<(const HFBandIndex& other) const
 TS_DEFINE_SINGLETON(ts::HFBand::HFBandRepository);
 
 ts::HFBand::HFBandRepository::HFBandRepository() :
-    _voidBand(new HFBand(u""))
+    _void_band(new HFBand(u""))
 {
 }
 
@@ -515,7 +515,7 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
 
     // Build a sorted list of region names.
     for (const auto& it : regionSet) {
-        _allRegions.push_back(it);
+        _all_regions.push_back(it);
     }
 
     return success;
@@ -556,7 +556,7 @@ const ts::HFBand* ts::HFBand::HFBandRepository::get(const UString& band, const U
     }
     else {
         report.warning(u"no definition for %s", index);
-        return _voidBand.get();
+        return _void_band.get();
     }
 }
 
@@ -570,7 +570,7 @@ const ts::UStringList& ts::HFBand::HFBandRepository::allRegions() const
     // Lock access to the repository.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
 
-    return _allRegions;
+    return _all_regions;
 }
 
 

@@ -99,19 +99,19 @@ namespace ts::tsswitch {
         virtual size_t pluginIndex() const override;
 
     private:
-        InputPlugin*           _input;                // Plugin API.
-        const size_t           _pluginIndex;          // Index of this input plugin.
-        TSPacketVector         _buffer;               // Packet buffer.
-        TSPacketMetadataVector _metadata;             // Packet metadata.
-        std::recursive_mutex   _mutex {};             // Mutex to protect all subsequent fields.
-        std::condition_variable_any _todo {};         // Condition to signal something to do.
-        bool                   _isCurrent = false;    // This plugin is the current input one.
-        bool                   _outputInUse = false;  // The output part of the buffer is currently in use by the output plugin.
-        bool                   _startRequest = false; // Start input requested.
-        bool                   _stopRequest = false;  // Stop input requested.
-        bool                   _terminated = false;   // Terminate thread.
-        size_t                 _outFirst = 0;         // Index of first packet to output in _buffer.
-        size_t                 _outCount = 0;         // Number of packets to output, not always contiguous, may wrap up.
+        InputPlugin*           _input;                 // Plugin API.
+        const size_t           _plugin_index;          // Index of this input plugin.
+        TSPacketVector         _buffer;                // Packet buffer.
+        TSPacketMetadataVector _metadata;              // Packet metadata.
+        std::recursive_mutex   _mutex {};              // Mutex to protect all subsequent fields.
+        std::condition_variable_any _todo {};          // Condition to signal something to do.
+        bool                   _is_current = false;    // This plugin is the current input one.
+        bool                   _output_in_use = false; // The output part of the buffer is currently in use by the output plugin.
+        bool                   _start_request = false; // Start input requested.
+        bool                   _stop_request = false;  // Stop input requested.
+        bool                   _terminated = false;    // Terminate thread.
+        size_t                 _out_first = 0;         // Index of first packet to output in _buffer.
+        size_t                 _out_count = 0;         // Number of packets to output, not always contiguous, may wrap up.
         monotonic_time         _start_time {monotonic_time::clock::now()}; // Creation time, initialized with current system time.
 
         // Implementation of Thread.

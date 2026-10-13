@@ -84,8 +84,8 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
 bool ts::LimitPlugin::start()
 {
     // Get option values
-    _useWallClock = present(u"wall-clock");
-    getValue(_maxBitrate, u"bitrate");
+    _use_wall_clock = present(u"wall-clock");
+    getValue(_max_bitrate, u"bitrate");
     getIntValue(_threshold1, u"threshold1", DEFAULT_THRESHOLD1);
     getIntValue(_threshold2, u"threshold2", DEFAULT_THRESHOLD2);
     getIntValue(_threshold3, u"threshold3", DEFAULT_THRESHOLD3);
@@ -107,17 +107,17 @@ bool ts::LimitPlugin::start()
 
     // Threshold for audio/video packets. If a list of --pid is specified, we start
     // dropping other a/v at --threshold3 only. But, without any --pid, we start at --threshold1.
-    _thresholdAV = _pids1.any() ? _threshold3 : _threshold1;
+    _threshold_av = _pids1.any() ? _threshold3 : _threshold1;
 
-    debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", _threshold1, _threshold2, _threshold3, _threshold4, _thresholdAV);
+    debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", _threshold1, _threshold2, _threshold3, _threshold4, _threshold_av);
 
     // Reset plugin state.
-    _bitsSecond = 0;
-    _excessPoint = 0;
-    _excessPackets = 0;
-    _excessBits = 0;
-    _curBitrate = 0;
-    _pidContexts.clear();
+    _bits_second = 0;
+    _excess_point = 0;
+    _excess_packets = 0;
+    _excess_bits = 0;
+    _cur_bitrate = 0;
+    _pid_contexts.clear();
     _demux.reset();
     _demux.setPIDFilter(PID_PAT);
 
@@ -131,13 +131,13 @@ bool ts::LimitPlugin::start()
 
 ts::LimitPlugin::PIDContextPtr ts::LimitPlugin::getContext(PID pid)
 {
-    auto it = _pidContexts.find(pid);
-    if (it != _pidContexts.end()) {
+    auto it = _pid_contexts.find(pid);
+    if (it != _pid_contexts.end()) {
         return it->second;
     }
     else {
         const auto pc = std::make_shared<PIDContext>(pid);
-        _pidContexts.insert(std::make_pair(pid, pc));
+        _pid_contexts.insert(std::make_pair(pid, pc));
         return pc;
     }
 }
@@ -203,9 +203,9 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 
 void ts::LimitPlugin::addExcessBits(uint64_t bits)
 {
-    _excessBits += bits;
-    _excessPackets += _excessBits / PKT_SIZE_BITS;
-    _excessBits %= PKT_SIZE_BITS;
+    _excess_bits += bits;
+    _excess_packets += _excess_bits / PKT_SIZE_BITS;
+    _excess_bits %= PKT_SIZE_BITS;
 }
 
 
@@ -230,13 +230,13 @@ ts::PacketProcessStatus ts::LimitPlugin::processPacket(TSPacket& pkt, TSPacketMe
     const PIDContextPtr pc(getContext(pid));
 
     // Process bitrates.
-    if (_useWallClock) {
+    if (_use_wall_clock) {
         // Compute bitrates from wall clock.
         // Reset the monotonic clock every second.
         const auto duration = monotonic_time::clock::now() - _clock;
         if (duration >= cn::seconds(1)) {
             // More than one second elapsed, reset.
-            _bitsSecond = 0;
+            _bits_second = 0;
             if (duration < cn::seconds(2)) {
                 // Slightly more than 1 second, keep a monotonic behaviour.
                 _clock += cn::seconds(1);
@@ -249,10 +249,10 @@ ts::PacketProcessStatus ts::LimitPlugin::processPacket(TSPacket& pkt, TSPacketMe
         }
 
         // Accumulate packets in current second.
-        _bitsSecond += PKT_SIZE_BITS;
-        if (_bitsSecond > _maxBitrate) {
+        _bits_second += PKT_SIZE_BITS;
+        if (_bits_second > _max_bitrate) {
             // This packet is in excess, at least partially.
-            const size_t excess = size_t((_bitsSecond - _maxBitrate).toInt());
+            const size_t excess = size_t((_bits_second - _max_bitrate).toInt());
             addExcessBits(excess < PKT_SIZE_BITS ? excess : PKT_SIZE_BITS);
         }
     }
@@ -262,51 +262,51 @@ ts::PacketProcessStatus ts::LimitPlugin::processPacket(TSPacket& pkt, TSPacketMe
         const uint64_t pcr = pkt.getPCR();
 
         // Compute instant bitrate if the PID had a previous PCR.
-        if (pc->pcrValue != INVALID_PCR && pc->pcrValue < pcr) {
+        if (pc->pcr_value != INVALID_PCR && pc->pcr_value < pcr) {
             // We compute TS instant bitrate using only two consecutive PCR's
             // in one single PID. This can be not always precise. To be improved maybe.
-            const BitRate newBitrate = BitRate((tsp->pluginPackets() - pc->pcrPacket) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / BitRate(pcr - pc->pcrValue);
+            const BitRate newBitrate = BitRate((tsp->pluginPackets() - pc->pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / BitRate(pcr - pc->pcr_value);
 
             // Report state change.
-            if (_curBitrate > _maxBitrate && newBitrate <= _maxBitrate) {
+            if (_cur_bitrate > _max_bitrate && newBitrate <= _max_bitrate) {
                 verbose(u"bitrate back to normal (%'d b/s)", newBitrate);
             }
-            else if (_curBitrate <= _maxBitrate && newBitrate > _maxBitrate) {
+            else if (_cur_bitrate <= _max_bitrate && newBitrate > _max_bitrate) {
                 verbose(u"bitrate exceeds maximum (%'d b/s), starting to drop packets", newBitrate);
             }
-            else if (_curBitrate != newBitrate && (_curBitrate > newBitrate ? _curBitrate - newBitrate : newBitrate - _curBitrate) > _curBitrate / 20) {
+            else if (_cur_bitrate != newBitrate && (_cur_bitrate > newBitrate ? _cur_bitrate - newBitrate : newBitrate - _cur_bitrate) > _cur_bitrate / 20) {
                 // Report new bitrate when more than 5% change.
                 debug(u"new bitrate: %'d b/s", newBitrate);
             }
 
             // Save current bitrate.
-            _curBitrate = newBitrate;
+            _cur_bitrate = newBitrate;
 
-            if (_curBitrate <= _maxBitrate) {
+            if (_cur_bitrate <= _max_bitrate) {
                 // Current bitrate is OK, no longer drop packets, even if a past excess is not yet absorbed.
-                _excessPackets = 0;
-                _excessBits = 0;
+                _excess_packets = 0;
+                _excess_bits = 0;
             }
             else {
                 // The instant bitrate is too high.
-                assert(tsp->pluginPackets() > _excessPoint);
-                assert(_curBitrate > 0);
+                assert(tsp->pluginPackets() > _excess_point);
+                assert(_cur_bitrate > 0);
                 // Number of actual bits since the last "excess point":
-                const uint64_t bits = (tsp->pluginPackets() - _excessPoint) * PKT_SIZE_BITS;
+                const uint64_t bits = (tsp->pluginPackets() - _excess_point) * PKT_SIZE_BITS;
                 // Number of bits in excess, based on maximum bandwidth:
-                addExcessBits(((bits * (_curBitrate - _maxBitrate)) / _curBitrate).toInt());
+                addExcessBits(((bits * (_cur_bitrate - _max_bitrate)) / _cur_bitrate).toInt());
                 // Last time we computed the excess packets is remembered.
-                _excessPoint = tsp->pluginPackets();
+                _excess_point = tsp->pluginPackets();
             }
         }
 
         // Remember last PCR.
-        pc->pcrValue = pcr;
-        pc->pcrPacket = tsp->pluginPackets();
+        pc->pcr_value = pcr;
+        pc->pcr_packet = tsp->pluginPackets();
     }
 
     // Decide to drop packet if needed.
-    if (_excessPackets > 0) {
+    if (_excess_packets > 0) {
         // Packets with PCR or PUSI are more precious because they provide
         // synchronization to the receiver devices.
         const bool precious = pkt.hasPCR() || pkt.getPUSI();
@@ -314,22 +314,22 @@ ts::PacketProcessStatus ts::LimitPlugin::processPacket(TSPacket& pkt, TSPacketMe
         // Check all threshold to determine if the packet should be dropped.
         const bool drop =
             // Drop any packet above --threshold4.
-            (_excessPackets >= _threshold4) ||
+            (_excess_packets >= _threshold4) ||
             // Drop non-precious audio/video packets above --threshold4 (or --threshold1 if there is no --pid).
-            (_thresholdAV > 0 && _excessPackets >= _thresholdAV && !precious && (pc->audio || pc->video)) ||
+            (_threshold_av > 0 && _excess_packets >= _threshold_av && !precious && (pc->audio || pc->video)) ||
             // Drop non-precious audio packets of the pid list above --threshold2.
-            (_threshold3 > 0 && _excessPackets >= _threshold2 && !precious && _pids1.test(pid)) ||
+            (_threshold3 > 0 && _excess_packets >= _threshold2 && !precious && _pids1.test(pid)) ||
             // Drop non-precious video packets of the pid list above --threshold1.
-            (_threshold2 > 0 && _excessPackets >= _threshold1 && !precious && pc->video && _pids1.test(pid)) ||
+            (_threshold2 > 0 && _excess_packets >= _threshold1 && !precious && pc->video && _pids1.test(pid)) ||
             // Drop any null packet (if the threshold is not disabled).
             (_threshold1 > 0 && pid == PID_NULL);
 
         if (drop) {
-            if (pc->dropCount++ == 0) {
+            if (pc->drop_count++ == 0) {
                 // First time we drop packets in this PID.
                 verbose(u"starting to drop packets on PID %n", pid);
             }
-            _excessPackets--;
+            _excess_packets--;
             status = TSP_DROP;
         }
     }

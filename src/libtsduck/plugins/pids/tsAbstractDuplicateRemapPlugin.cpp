@@ -66,11 +66,11 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
 {
     const bool single = present(u"single");
     _unchecked = single || present(u"unchecked");
-    getIntValues(_setLabels, u"set-label");
-    getIntValues(_resetLabels, u"reset-label");
+    getIntValues(_set_labels, u"set-label");
+    getIntValues(_reset_labels, u"reset-label");
 
-    _pidMap.clear();
-    _newPIDs.reset();
+    _pid_map.clear();
+    _new_pids.reset();
 
     // Decode all PID duplications/remappings.
     for (size_t i = 0; i < count(u""); ++i) {
@@ -108,21 +108,21 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
 
             // Check that we don't remap/duplicate the same PID twice on distinct taget PID's.
             // Ignore --unchecked since this is always inconsistent.
-            const auto it = _pidMap.find(pid1);
-            if (it != _pidMap.end() && it->second != newpid) {
+            const auto it = _pid_map.find(pid1);
+            if (it != _pid_map.end() && it->second != newpid) {
                 error(u"PID %n %s twice", pid1, _verbed);
                 return false;
             }
 
             // Remember PID mapping.
-            _pidMap.insert(std::make_pair(pid1, newpid));
+            _pid_map.insert(std::make_pair(pid1, newpid));
 
             // Remember output PID's
-            if (!_unchecked && _newPIDs.test(newpid)) {
+            if (!_unchecked && _new_pids.test(newpid)) {
                 error(u"duplicated output PID %n", newpid);
                 return false;
             }
-            _newPIDs.set(newpid);
+            _new_pids.set(newpid);
 
             ++pid1;
             if (!single) {

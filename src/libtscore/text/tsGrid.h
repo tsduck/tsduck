@@ -61,19 +61,19 @@ namespace ts {
         //! Get the report display line width.
         //! @return The line width.
         //!
-        size_t lineWidth() const { return _lineWidth; }
+        size_t lineWidth() const { return _line_width; }
 
         //!
         //! Get the report display margin width.
         //! @return The margin width.
         //!
-        size_t marginWidth() const { return _marginWidth; }
+        size_t marginWidth() const { return _margin_width; }
 
         //!
         //! Get the number of displayed lines.
         //! @return The number of displayed lines.
         //!
-        size_t lineCount() const { return _lineCount; }
+        size_t lineCount() const { return _line_count; }
 
         //!
         //! Open a table, if not already done.
@@ -84,7 +84,7 @@ namespace ts {
         //! Check if a table is open.
         //! @return True if a table is open.
         //!
-        bool tableIsOpen() const { return _tableOpen; }
+        bool tableIsOpen() const { return _table_open; }
 
         //!
         //! Close a table, if not already done.
@@ -253,21 +253,21 @@ namespace ts {
     private:
         using LayoutVector = std::vector<ColumnLayout>;
 
-        std::ostream& _out;                 // Output text device.
-        size_t        _lineWidth = 0;       // Display line width.
-        size_t        _marginWidth = 0;     // Display margin width.
-        size_t        _contentWidth = 0;    // Line content width, without borders and margins.
-        size_t        _lineCount = 0;       // Number of displayed lines.
-        bool          _tableOpen = false;   // A table has been open.
-        UChar         _border {u'|'};       // Vertical border character.
-        UString       _tableTop {};         // Line to display on top of a table.
-        UString       _tableBottom {};      // Line to display on bottom of a table.
-        UString       _sectionLine {};      // Line to display before a section.
-        UString       _subSectionLine {};   // Line to display before a subsection.
-        UString       _leftMargin {};       // Left margin content.
-        UString       _rightMargin {};      // Right margin content.
-        LayoutVector  _requestedLayout {};  // User-requested ColumnLayout layout.
-        LayoutVector  _layout {};           // Actual column layout, after adjustment.
+        std::ostream& _out;                  // Output text device.
+        size_t        _line_width = 0;       // Display line width.
+        size_t        _margin_width = 0;     // Display margin width.
+        size_t        _content_width = 0;    // Line content width, without borders and margins.
+        size_t        _line_count = 0;       // Number of displayed lines.
+        bool          _table_open = false;   // A table has been open.
+        UChar         _border {u'|'};        // Vertical border character.
+        UString       _table_top {};         // Line to display on top of a table.
+        UString       _table_bottom {};      // Line to display on bottom of a table.
+        UString       _section_line {};      // Line to display before a section.
+        UString       _subsection_line {};   // Line to display before a subsection.
+        UString       _left_margin {};       // Left margin content.
+        UString       _right_margin {};      // Right margin content.
+        LayoutVector  _requested_layout {};  // User-requested ColumnLayout layout.
+        LayoutVector  _layout {};            // Actual column layout, after adjustment.
 
         // Recompute layout based on grid width.
         void adjustLayout();
