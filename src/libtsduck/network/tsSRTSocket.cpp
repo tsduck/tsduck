@@ -127,6 +127,9 @@ ts::UString ts::SRTSocket::GetLibraryVersion()
                             static const std::map<int, const UChar*> backend_names {
                                 {ROBOTWEAX_SRT_CRYPTO_BACKEND_OPENSSL, u"OpenSSL"},
                                 {ROBOTWEAX_SRT_CRYPTO_BACKEND_BCRYPT,  u"Microsoft BCrypt"},
+                                #if ROBOTWEAX_SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(0, 3, 0)
+                                    {ROBOTWEAX_SRT_CRYPTO_BACKEND_MBEDTLS, u"MbedTLS"},
+                                #endif
                             };
                             const auto it = backend_names.find(value);
                             if (it != backend_names.end()) {

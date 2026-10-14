@@ -32,7 +32,11 @@ NOGITHUB          # No version check, no download, no upgrade from GitHub (for d
 NOHWACCEL         # Disable hardware acceleration such as crypto instructions.
 NOPCSTD           # Remove the std=c++17 flag from libtsduck's pkg-config file.
 NODOC             # Do not build the documentation, install TSDuck without documentation.
+
+# Build with alternative libraries
+# --------------------------------
 ROBOTWEAX_SRT_DIR # Installation root directory of Robotweax SRT, optional replacement for standard libsrt.
+ROBOTWEAX_SRT_CRYPTO_BACKEND # Some option as when building Robotweax SRT, value: openssl (default), mbedtls.
 
 # Options to define the representation of bitrates
 # ------------------------------------------------

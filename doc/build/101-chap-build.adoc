@@ -890,6 +890,14 @@ published an alternative version of the SRT library (see
 libsrt and interoperable with it. It is expected to be lighter, with a more
 modern implementation, than the original libsrt.
 
+Robotweax SRT can be built with several cryptographic backends. As of version
+0.3.0, the available backends are:
+
+* OpenSSL: This is the default on all operating systems.
+* MbedTLS: Available on Linux and macOS only, starting with version 0.3.0.
+* BCrypt: Available on Windows only, starting with version 0.2.4. BCrypt is
+  the Microsoft CNG library, the "Cryptography New Generation".
+
 By default, TSDuck is built with the SRT library which is installed on the
 build system. It is possible to explicitly build TSDuck with the Robotweax SRT
 library, even if the standard libsrt is installed on the build system.
@@ -908,10 +916,28 @@ To build Robotweax SRT and install it on a specific directory, for instance
 ----
 $ git clone https://github.com/Robotweax/srt.git robotweax-srt
 $ cd robotweax-srt
-$ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+$ cmake -S . -B build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+      -DROBOTWEAX_SRT_BUILD_TESTS=OFF \
+      -DROBOTWEAX_SRT_BUILD_BENCHMARKS=OFF \
+      -DROBOTWEAX_SRT_BUILD_TOOLS=OFF \
+      -DROBOTWEAX_SRT_WARNINGS_AS_ERRORS=OFF
 $ cmake --build build --parallel
 $ cmake --install build --prefix /opt/robotweax
 ----
+
+Starting with version 0.3.0, Robotweax SRT can be built with MbedTLS
+cryptographic backend. To enable it, add the following option to the `cmake`
+configuration command:
+
+[source,shell]
+----
+      -DROBOTWEAX_SRT_CRYPTO_BACKEND=mbedtls
+----
+
+Add `-DMbedTLS_ROOT=/path/to/prefix` if MbedTLS is installed in a non-standard
+location, after a local rebuild for instance.
 
 Then, build TSDuck with symbol or environment variable `ROBOTWEAX_SRT_DIR`
 pointing to the Robotweax SRT installation prefix:
@@ -923,6 +949,31 @@ $ make ROBOTWEAX_SRT_DIR=/opt/robotweax
 
 You may of course install Robotweax SRT anywhere else and use other common
 `make` options, especially `-j` to parallelize the huge TSDuck build.
+
+In case of doubt, the actual version can be displayed using options
+`--version=srt` or `--version=all`:
+
+[source,shell]
+----
+$ tsversion --version=srt
+libsrt version 1.5.7 (Robotweax SRT version 0.3.0 with OpenSSL backend)
+----
+
+If Robotweax SRT was built with a non-default cryptographic backend, use the
+same option as used when building Robotweax SRT:
+
+[source,shell]
+----
+$ make ROBOTWEAX_SRT_DIR=/opt/robotweax ROBOTWEAX_SRT_CRYPTO_BACKEND=mbedtls
+----
+
+Which can be seen as follow:
+
+[source,shell]
+----
+$ tsversion --version=srt
+libsrt version 1.5.7 (Robotweax SRT version 0.3.0 with MbedTLS backend)
+----
 
 When building with Robotweax SRT on UNIX systems, the SRT library is statically
 linked inside the TSDuck library (`libtsduck.so` or `libtsduck.dylib`). The
@@ -958,8 +1009,9 @@ available and installed one is used, in order of preference:
 * Haivision original libsrt.
 * No SRT support.
 
-Therefore, installing the Robotweax SRT SDK is sufficient to rebuild TSDuck
-with Robotweax SRT.
+Therefore, installing the Robotweax SRT SDK is sufficient to rebuild TSDuck with
+Robotweax SRT. By default, the script `install-prerequisites.ps1`, in the TSDuck
+`scripts` subdirectory, installs the Robotweax SRT SDK with BCrypt backend.
 
 In case of doubt, the actual version can be displayed using options
 `--version=srt` or `--version=all`:

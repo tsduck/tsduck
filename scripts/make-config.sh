@@ -869,8 +869,19 @@ elif [[ -n $ROBOTWEAX_SRT_DIR ]]; then
     # Alternative Robotweax SRT implementation.
     ROBOTWEAX_SRT_LIB="$ROBOTWEAX_SRT_DIR/lib64/librobotweax-srt.a"
     [[ -e "$ROBOTWEAX_SRT_LIB" ]] || ROBOTWEAX_SRT_LIB="$ROBOTWEAX_SRT_DIR/lib/librobotweax-srt.a"
-    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $ROBOTWEAX_SRT_LIB -lcrypto"
+    LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $ROBOTWEAX_SRT_LIB"
     LIBTSDUCK_CXXFLAGS_INCLUDES="-I$ROBOTWEAX_SRT_DIR/include/robotweax-srt $LIBTSDUCK_CXXFLAGS_INCLUDES"
+    case ${ROBOTWEAX_SRT_CRYPTO_BACKEND:-openssl} in
+        openssl)
+            LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lcrypto"
+            ;;
+        mbedtls)
+            LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lmbedcrypto"
+            ;;
+        *)
+            echo >&2 "warning: unknown backend '$ROBOTWEAX_SRT_CRYPTO_BACKEND' for Robotweax SRT"
+            ;;
+    esac
 else
     # Standard Haivision SRT.
     LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS -lsrt"
