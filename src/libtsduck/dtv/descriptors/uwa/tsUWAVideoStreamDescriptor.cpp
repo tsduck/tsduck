@@ -77,12 +77,12 @@ void ts::UWAVideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
 
 const ts::Names& ts::UWAVideoStreamDescriptor::VersionNumbers()
 {
-    static const Names data({
+    static const Names data {
         {u"1.0", 0x0005},
         {u"2.0", 0x0006},
         {u"3.0", 0x0007},
         {u"4.0", 0x0008},
-    });
+    };
     return data;
 }
 

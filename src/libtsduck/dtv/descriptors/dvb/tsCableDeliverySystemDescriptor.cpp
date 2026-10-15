@@ -86,29 +86,29 @@ const std::map<int, ts::Modulation>& ts::CableDeliverySystemDescriptor::ToModula
 
 const ts::Names& ts::CableDeliverySystemDescriptor::ModulationNames()
 {
-    static const Names data({
+    static const Names data {
         {u"16-QAM",  1},
         {u"32-QAM",  2},
         {u"64-QAM",  3},
         {u"128-QAM", 4},
         {u"256-QAM", 5},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::CableDeliverySystemDescriptor::OuterFecNames()
 {
-    static const Names data({
+    static const Names data {
         {u"undefined", 0},
         {u"none",      1},
         {u"RS",        2},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::CableDeliverySystemDescriptor::InnerFecNames()
 {
-    static const Names data({
+    static const Names data {
         {u"undefined", 0},
         {u"1/2",       1},
         {u"2/3",       2},
@@ -120,7 +120,7 @@ const ts::Names& ts::CableDeliverySystemDescriptor::InnerFecNames()
         {u"4/5",       8},
         {u"9/10",      9},
         {u"none",     15},
-    });
+    };
     return data;
 }
 

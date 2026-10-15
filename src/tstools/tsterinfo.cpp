@@ -19,34 +19,6 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-// Lists of possible real values for DVB-T modulation parameters
-// (exclude "auto" and "unspecified" values).
-//----------------------------------------------------------------------------
-
-namespace {
-    // No need to worry about initialization order, this is used in a main program.
-    const ts::Names DVBTModulationEnum({
-        {u"QPSK",   ts::QPSK},
-        {u"16-QAM", ts::QAM_16},
-        {u"64-QAM", ts::QAM_64},
-    });
-    const ts::Names DVBTHPFECEnum({
-        {u"1/2",  ts::FEC_1_2},
-        {u"2/3",  ts::FEC_2_3},
-        {u"3/4",  ts::FEC_3_4},
-        {u"5/6",  ts::FEC_5_6},
-        {u"7/8",  ts::FEC_7_8},
-    });
-    const ts::Names DVBTGuardIntervalEnum({
-        {u"1/32", ts::GUARD_1_32},
-        {u"1/16", ts::GUARD_1_16},
-        {u"1/8",  ts::GUARD_1_8},
-        {u"1/4",  ts::GUARD_1_4},
-    });
-}
-
-
-//----------------------------------------------------------------------------
 //  Command line options
 //----------------------------------------------------------------------------
 
@@ -85,7 +57,11 @@ Options::Options(int argc, char *argv[]) :
          u"Transport stream bitrate in b/s, based on 188-byte packets. Given this "
          u"bitrate, tsterinfo will try to guess the OFDM modulation parameters.");
 
-    option(u"constellation", 'c', DVBTModulationEnum);
+    option(u"constellation", 'c', ts::Names {
+        {u"QPSK",   ts::QPSK},
+        {u"16-QAM", ts::QAM_16},
+        {u"64-QAM", ts::QAM_64},
+    });
     help(u"constellation", u"Specify the OFMD constellation, used to compute the resulting bitrate.");
 
     option(u"default-region", 'd');
@@ -95,11 +71,22 @@ Options::Options(int argc, char *argv[]) :
     option(u"frequency", 'f', UNSIGNED);
     help(u"frequency", u"Carrier frequency in Hz. UHF or VHF channel and offset will be displayed.");
 
-    option(u"guard-interval", 'g', DVBTGuardIntervalEnum);
+    option(u"guard-interval", 'g', ts::Names {
+        {u"1/32", ts::GUARD_1_32},
+        {u"1/16", ts::GUARD_1_16},
+        {u"1/8",  ts::GUARD_1_8},
+        {u"1/4",  ts::GUARD_1_4},
+    });
     help(u"guard-interval",
          u"Specify the OFMD guard interval, used to compute the resulting bitrate.");
 
-    option(u"high-priority-fec", 'h', DVBTHPFECEnum);
+    option(u"high-priority-fec", 'h', ts::Names {
+        {u"1/2",  ts::FEC_1_2},
+        {u"2/3",  ts::FEC_2_3},
+        {u"3/4",  ts::FEC_3_4},
+        {u"5/6",  ts::FEC_5_6},
+        {u"7/8",  ts::FEC_7_8},
+    });
     help(u"high-priority-fec",
          u"Specify the OFMD error correction for high priority streams, "
          u"used to compute the resulting bitrate.");

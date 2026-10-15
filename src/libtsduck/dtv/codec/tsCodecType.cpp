@@ -17,7 +17,7 @@
 const ts::Names& ts::CodecTypeEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Names data({
+    static const Names data {
         {u"undefined",      CodecType::UNDEFINED},
         {u"MPEG-1 Video",   CodecType::MPEG1_VIDEO},
         {u"MPEG-1 Audio",   CodecType::MPEG1_AUDIO},
@@ -49,7 +49,7 @@ const ts::Names& ts::CodecTypeEnum()
         {u"AES3 PCM Audio", CodecType::AES3_PCM},
         {u"VC-1",           CodecType::VC1},
         {u"VC-4",           CodecType::VC4},
-    });
+    };
     return data;
 }
 
@@ -57,7 +57,7 @@ const ts::Names& ts::CodecTypeEnum()
 const ts::Names& ts::CodecTypeArgEnum()
 {
     // Thread-safe init-safe static data pattern:
-    static const Names data({
+    static const Names data {
         {u"undefined",     CodecType::UNDEFINED},
         {u"MPEG-1-Video",  CodecType::MPEG1_VIDEO},
         {u"MP1Video",      CodecType::MPEG1_VIDEO},
@@ -97,7 +97,7 @@ const ts::Names& ts::CodecTypeArgEnum()
         {u"AES3Audio",     CodecType::AES3_PCM},
         {u"VC1",           CodecType::VC1},
         {u"VC4",           CodecType::VC4},
-    });
+    };
     return data;
 }
 

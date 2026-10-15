@@ -329,30 +329,30 @@ void ts::AVS3AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
 
 const ts::Names& ts::AVS3AudioDescriptor::GeneralBitstreamTypes()
 {
-    static const Names data({
+    static const Names data {
         {u"uniform", 0},
         {u"variable", 1},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::AVS3AudioDescriptor::Resolutions()
 {
-    static const Names data({
+    static const Names data {
         {u"8 bits", 0},
         {u"16 bits", 1},
         {u"24 bits", 2},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::AVS3AudioDescriptor::CodingProfiles()
 {
-    static const Names data({
+    static const Names data {
         {u"basic", 0},
         {u"object", 1},
         {u"HOA", 2},
-    });
+    };
     return data;
 }
 

@@ -1721,14 +1721,14 @@ namespace {
     const ts::Names& BoolEnum()
     {
         // Thread-safe init-safe static data pattern:
-        static const ts::Names data({
+        static const ts::Names data {
             {u"false", 0},
             {u"true",  1},
             {u"yes",   1},
             {u"no",    0},
             {u"on",    1},
             {u"off",   0},
-        });
+        };
         return data;
     }
 }
@@ -1776,7 +1776,7 @@ namespace {
     const ts::Names& TristateEnum()
     {
         // Thread-safe init-safe static data pattern:
-        static const ts::Names data({
+        static const ts::Names data {
             {u"false",   TSE_FALSE},
             {u"true",    TSE_TRUE},
             {u"yes",     TSE_YES},
@@ -1785,7 +1785,7 @@ namespace {
             {u"off",     TSE_OFF},
             {u"maybe",   TSE_MAYBE},
             {u"unknown", TSE_UNKNOWN},
-        });
+        };
         return data;
     }
 }

@@ -201,8 +201,8 @@ namespace ts {
         // This internal structure describes the content of one PID.
         struct PIDType
         {
-            uint8_t   stream_type {ST_NULL};                 // Stream type from PMT.
-            CodecType default_codec {CodecType::UNDEFINED};  // Default codec if not otherwise sepcified.
+            uint8_t   stream_type = ST_NULL;                 // Stream type from PMT.
+            CodecType default_codec = CodecType::UNDEFINED;  // Default codec if not otherwise sepcified.
 
             // Default constructor:
             PIDType() = default;

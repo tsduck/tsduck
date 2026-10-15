@@ -343,7 +343,7 @@ namespace ts {
         BitRate          _bitrate = 0;              // Bitrate computed from last PCR.
         bool             _insert_pcr = false;       // Insert a PCR in next output packet.
         uint8_t          _cc_output = 0;            // Continuity counter in output PID.
-        uint8_t          _cc_pes {1};               // Continuity counter in PES ASYNC mode.
+        uint8_t          _cc_pes = 1;               // Continuity counter in PES ASYNC mode.
         PIDCCMap         _last_cc {};               // Continuity counter by PID.
         size_t           _late_distance = 0;        // Distance from the last packet in output PID.
         size_t           _late_max_packets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _late_packets.

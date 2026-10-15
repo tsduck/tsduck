@@ -164,27 +164,27 @@ const std::map<int, ts::RollOff>& ts::SatelliteDeliverySystemDescriptor::ToRollO
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::DirectionNames()
 {
-    static const Names data({
+    static const Names data {
         {u"west", 0},
         {u"east", 1},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::PolarizationNames()
 {
-    static const Names data({
+    static const Names data {
         {u"horizontal", 0},
         {u"vertical",   1},
         {u"left",       2},
         {u"right",      3},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
 {
-    static const Names data({
+    static const Names data {
         {u"0.35",     0},
         {u"0.25",     1},
         {u"0.20",     2},
@@ -192,36 +192,36 @@ const ts::Names& ts::SatelliteDeliverySystemDescriptor::RollOffNames()
         {u"0.15",     4},  // DVB-S2X
         {u"0.10",     5},  // DVB-S2X
         {u"0.05",     6},  // DVB-S2X
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::ModulationNamesDVB()
 {
-    static const Names data({
+    static const Names data {
         {u"auto",   0},
         {u"QPSK",   1},
         {u"8PSK",   2},
         {u"16-QAM", 3},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::ModulationNamesISDB()
 {
-    static const Names data({
+    static const Names data {
         {u"auto",         0},
         {u"QPSK",         1},
         {u"ISDB-S",       8}, // TC8PSK ?
         {u"2.6GHzMobile", 9},
         {u"AdvancedCS",  10},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
 {
-    static const Names data({
+    static const Names data {
         {u"undefined", 0},
         {u"1/2",       1},
         {u"2/3",       2},
@@ -233,13 +233,13 @@ const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesDVB()
         {u"4/5",       8},
         {u"9/10",      9},
         {u"none",     15},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
 {
-    static const Names data({
+    static const Names data {
         {u"undefined",    0},
         {u"1/2",          1},
         {u"2/3",          2},
@@ -250,7 +250,7 @@ const ts::Names& ts::SatelliteDeliverySystemDescriptor::CodeRateNamesISDB()
         {u"2.6GHzMobile", 9},
         {u"AdvancedCS",  10},
         {u"none",        15},
-    });
+    };
     return data;
 }
 

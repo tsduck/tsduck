@@ -25,14 +25,14 @@
 
 const ts::Names& ts::Args::HelpFormatEnum()
 {
-    static const Names data({
+    static const Names data {
         {u"name",        ts::Args::HELP_NAME},
         {u"description", ts::Args::HELP_DESCRIPTION},
         {u"usage",       ts::Args::HELP_USAGE},
         {u"syntax",      ts::Args::HELP_SYNTAX},
         {u"full",        ts::Args::HELP_FULL},
         {u"options",     ts::Args::HELP_OPTIONS},
-    });
+    };
     return data;
 }
 

@@ -137,76 +137,76 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"The valid range is 50,000,000 Hz to 1,000,000,000 Hz. "
          u"The default is 473,000,000 Hz.");
 
-    option(u"bandwidth", 0, Names({
+    option(u"bandwidth", 0, Names {
          {u"1.7", Guts::tsvatek_bw_1_7},
          {u"5",   Guts::tsvatek_bw_5},
          {u"6",   Guts::tsvatek_bw_6},
          {u"7",   Guts::tsvatek_bw_7},
          {u"8",   Guts::tsvatek_bw_8},
          {u"10",  Guts::tsvatek_bw_10},
-    }));
+    });
     help(u"bandwidth",
          u"DVB-T, DVB-T2, DMB-T (DTMB): indicate bandwidth in MHz. "
          u"The default is 8 MHz. "
          u"The bandwidth values 1.7 and 10 MHz are valid for DVB-T2 only.");
 
-    option(u"constellation", 0, Names({
+    option(u"constellation", 0, Names {
         {u"QPSK",   dvb_t_qpsk},
         {u"16-QAM", dvb_t_qam16},
         {u"64-QAM", dvb_t_qam64},
-    }));
+    });
     help(u"constellation",
          u"DVB-T, ISDB-T: indicate the constellation type. The default is 64-QAM.");
 
-    option(u"j83-qam", 0, Names({
+    option(u"j83-qam", 0, Names {
         {u"16-QAM",  j83a_qam16},
         {u"32-QAM",  j83a_qam32},
         {u"64-QAM",  j83a_qam64},
         {u"128-QAM", j83a_qam128},
         {u"256-QAM", j83a_qam256},
-    }));
+    });
     help(u"j83-qam",
          u"The specified value and default depends on the modulation type.\n"
          u"J83A : 16-QAM, 32-QAM, 64-QAM, 128-QAM, 256-QAM. default 64-QAM.\n"
          u"J83B : 64-QAM, 256-QAM. default 256-QAM.\n"
          u"J83C : 64-QAM, 256-QAM. default 256-QAM.\n");
 
-    option(u"convolutional-rate", 'r', Names({
+    option(u"convolutional-rate", 'r', Names {
         {u"1/2",  coderate_1_2},
         {u"2/3",  coderate_2_3},
         {u"3/4",  coderate_3_4},
         {u"5/6",  coderate_5_6},
         {u"7/8",  coderate_7_8},
-    }));
+    });
     help(u"convolutional-rate",
          u"Indicate the convolutional rate. "
          u"The specified value depends on the modulation type. "
          u"DVB-T,ISDB-T: 1/2, 2/3, 3/4, 5/6, 7/8. "
          u"The default is 5/6.");
 
-    option(u"dmb-constellation", 0, Names({
+    option(u"dmb-constellation", 0, Names {
         {u"4-QAM-NR", dtmb_qam4_nr},
         {u"4-QAM",    dtmb_qpsk},
         {u"16-QAM",   dtmb_qam16},
         {u"32-QAM",   dtmb_qam32},
         {u"64-QAM",   dtmb_qam64},
-    }));
+    });
     help(u"dmb-constellation",
          u"DMB-T (DTMB): indicate the constellation type. The default is 64-QAM.");
 
-    option(u"dmb-fec", 0, Names({
+    option(u"dmb-fec", 0, Names {
         {u"0.4", dtmb_code_rate_0_4},
         {u"0.6", dtmb_code_rate_0_6},
         {u"0.8", dtmb_code_rate_0_8},
-    }));
+    });
     help(u"dmb-fec",
          u"DMB-T (DTMB): indicate the FEC code rate. The default is 0.8. "
          u"4-QAM-NR and 32-QAM can be used only with --dmb-fec 0.8.");
 
-    option(u"dmb-carrier", 0, Names({
+    option(u"dmb-carrier", 0, Names {
         {u"1",    dtmb_carrier_1},
         {u"3780", dtmb_carrier_3780},
-    }));
+    });
     help(u"dmb-carrier",
          u"DMB-T (DTMB): indicate the carrier mode. The default is 3780.");
 
@@ -215,44 +215,44 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"DMB-T/H, ADTB-T: indicate to use frame numbering. "
          u"The default is to use no frame numbering.");
 
-    option(u"dmb-header", 0, Names({
+    option(u"dmb-header", 0, Names {
         {u"PN420", dtmb_framesync_420},
         {u"PN595", dtmb_framesync_595},
         {u"PN945", dtmb_framesync_945},
-    }));
+    });
     help(u"dmb-header",
          u"DMB-T/H, ADTB-T: indicate the FEC frame header mode. "
          u"The default is PN945.");
 
-    option(u"dmb-interleaver", 0, Names({
+    option(u"dmb-interleaver", 0, Names {
         {u"1", dtmb_interleaved_240},
         {u"2", dtmb_interleaved_720},
-    }));
+    });
     help(u"dmb-interleaver",
          u"DMB-T (DTMB): indicate the interleaver mode. "
          u"Must be 1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.");
 
-    option(u"guard-interval", 'g', Names({
+    option(u"guard-interval", 'g', Names {
         {u"1/32", guard_interval_1_32},
         {u"1/16", guard_interval_1_16},
         {u"1/8",  guard_interval_1_8},
         {u"1/4",  guard_interval_1_4},
-    }));
+    });
     help(u"guard-interval", u"DVB-T and ISDB-T modulators: indicate the guard interval. The default is 1/16.");
 
-    option(u"fft-mode", 0, Names({
+    option(u"fft-mode", 0, Names {
         {u"1K",  t2_fft_1k},
         {u"2K",  t2_fft_2k},
         {u"4K",  t2_fft_4k},
         {u"8K",  t2_fft_8k},
         {u"16K", t2_fft_16k},
-    }));
+    });
     help(u"fft-mode", u"DVB-T2: indicate the FFT mode. The default is 8K.");
 
     option(u"pilots", 0);
     help(u"pilots", u"DVB-S2 and ADTB-T: enable pilots (default: no pilot).");
 
-    option(u"pilot-pattern", 'p', Names({
+    option(u"pilot-pattern", 'p', Names {
         {u"1", pilot_pattern_1},
         {u"2", pilot_pattern_2},
         {u"3", pilot_pattern_3},
@@ -261,40 +261,40 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"6", pilot_pattern_6},
         {u"7", pilot_pattern_7},
         {u"8", pilot_pattern_8},
-    }));
+    });
     help(u"pilot-pattern",
          u"DVB-T2: indicate the pilot pattern to use, a value in the range 1 to 8. The default is 7.");
 
-    option(u"plp0-code-rate", 0, Names({
+    option(u"plp0-code-rate", 0, Names {
         {u"1/2", t2_coderate_1_2},
         {u"3/5", t2_coderate_3_5},
         {u"2/3", t2_coderate_2_3},
         {u"3/4", t2_coderate_3_4},
         {u"4/5", t2_coderate_4_5},
         {u"5/6", t2_coderate_5_6},
-    }));
+    });
     help(u"plp0-code-rate",
          u"DVB-T2: indicate the convolutional coding rate used by the PLP #0. The default is 2/3.");
 
-    option(u"plp0-fec-type", 0, Names({
+    option(u"plp0-fec-type", 0, Names {
         {u"16K", t2_fec_16200},
         {u"64K", t2_fec_64800},
-    }));
+    });
     help(u"plp0-fec-type", u"DVB-T2: indicate the FEC type used by the PLP #0. The default is 64K LPDC.");
 
-    option(u"plp0-issy", 0, Names({
+    option(u"plp0-issy", 0, Names {
         {u"NONE",  t2_issy_disable},
         {u"SHORT", t2_issy_short},
         {u"LONG",  t2_issy_long},
-    }));
+    });
     help(u"plp0-issy",
          u"DVB-T2: type of ISSY field to compute and insert in PLP #0. "
          u"The default is NONE.");
 
-    option(u"t2-version", 0, Names({
+    option(u"t2-version", 0, Names {
         {u"ver131",      t2_ver_131},
         {u"ver131_lite", t2_ver_131_lite,},
-    }));
+    });
     help(u"t2-version", u"DVB-T2: version tag. The default is ver131.");
 
     option(u"plp0-high-efficiency");
@@ -302,12 +302,12 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"DVB-T2: indicate that the PLP #0 uses High Efficiency Mode (HEM). "
          u"Otherwise Normal Mode (NM) is used.");
 
-    option(u"plp0-modulation", 0, Names({
+    option(u"plp0-modulation", 0, Names {
         {u"QPSK",    t2_plp_qpsk},
         {u"16-QAM",  t2_plp_qam16},
         {u"64-QAM",  t2_plp_qam64},
         {u"256-QAM", t2_plp_qam256},
-    }));
+    });
     help(u"plp0-modulation",
          u"DVB-T2: indicate the modulation used by PLP #0. The default is 256-QAM.");
 
@@ -325,7 +325,7 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"J83a: Specify the symbol rate in symbols/second. "
          u"The default is 5,120,000 sym/s");
 
-    option(u"t2-guard-interval", 0, Names({
+    option(u"t2-guard-interval", 0, Names {
         {u"1/128",  t2_gi_1_128},
         {u"1/32",   t2_gi_1_32},
         {u"1/16",   t2_gi_1_16},
@@ -333,16 +333,16 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"1/8",    t2_gi_1_8},
         {u"19/128", t2_gi_19_128},
         {u"1/4",    t2_gi_1_4},
-    }));
+    });
     help(u"t2-guard-interval",
          u"DVB-T2: indicates the guard interval. The default is 1/128.");
 
-    option(u"t2-l1-modulation", 0, Names({
+    option(u"t2-l1-modulation", 0, Names {
         {u"BPSK",   t2_l1_bpsk},
         {u"QPSK",   t2_l1_qpsk},
         {u"16-QAM", t2_l1_qam16},
         {u"64-QAM", t2_l1_qam64},
-    }));
+    });
     help(u"t2-l1-modulation",
          u"DVB-T2: indicate the modulation type used for the L1-post "
          u"signalling block. The default is 16-QAM.");
@@ -362,15 +362,15 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"DVB-T2: indicate that the extended carrier mode is used. "
          u"By default, use normal carrier mode.");
 
-    option(u"transmission-mode", 't', Names({
+    option(u"transmission-mode", 't', Names {
         {u"2K", fft_2k},
         {u"4K", fft_4k},
         {u"8K", fft_8k},
-    }));
+    });
     help(u"transmission-mode",
          u"DVB-T, ISDB-T: indicate the transmission mode. The default is 8K.");
 
-    option(u"modulation", 'm', Names({
+    option(u"modulation", 'm', Names {
         {u"DVB-T",    modulator_dvb_t},
         {u"DVB-T2",   modulator_dvb_t2},
         {u"J83A",     modulator_j83a},
@@ -380,24 +380,24 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"J83C",     modulator_j83c},
         {u"DMB-T",    modulator_dtmb},
         {u"DTMB",     modulator_dtmb},
-    }));
+    });
     help(u"modulation",
          u"Indicate the modulation type. "
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is DVB-T.");
 
-    option(u"remux", 0, Names({
+    option(u"remux", 0, Names {
         {u"remux",       ustream_remux_pcr},
         {u"passthrough", ustream_remux_passthrough},
-    }));
+    });
     help(u"remux",
          u"remux: Lock the first PCR to keep USB transfer TS stable, TS must contain some PCR to operate.\n"
          u"passthrough: Bypass TS without padding null packets (input bitrate = output bitrate).");
 
-    option(u"pcradjust", 0, Names({
+    option(u"pcradjust", 0, Names {
         {u"disable", pcr_disable},
         {u"adjust",  pcr_adjust},
-    }));
+    });
     help(u"pcradjust", u"Adjust the buffer transmission speed according to different application.");
 }
 

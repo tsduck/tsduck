@@ -123,64 +123,64 @@ const std::map<int, ts::Hierarchy>& ts::TerrestrialDeliverySystemDescriptor::ToH
 
 const ts::Names& ts::TerrestrialDeliverySystemDescriptor::BandwidthNames()
 {
-    static const Names data({
+    static const Names data {
         {u"8MHz", 0},
         {u"7MHz", 1},
         {u"6MHz", 2},
         {u"5MHz", 3},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::TerrestrialDeliverySystemDescriptor::PriorityNames()
 {
-    static const Names data({
+    static const Names data {
         {u"HP", 1},
         {u"LP", 0},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::TerrestrialDeliverySystemDescriptor::ConstellationNames()
 {
-    static const Names data({
+    static const Names data {
         {u"QPSK",   0},
         {u"16-QAM", 1},
         {u"64-QAM", 2},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::TerrestrialDeliverySystemDescriptor::CodeRateNames()
 {
-    static const Names data({
+    static const Names data {
         {u"1/2", 0},
         {u"2/3", 1},
         {u"3/4", 2},
         {u"5/6", 3},
         {u"7/8", 4},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::TerrestrialDeliverySystemDescriptor::GuardIntervalNames()
 {
-    static const Names data({
+    static const Names data {
         {u"1/32", 0},
         {u"1/16", 1},
         {u"1/8",  2},
         {u"1/4",  3},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::TerrestrialDeliverySystemDescriptor::TransmissionModeNames()
 {
-    static const Names data({
+    static const Names data {
         {u"2k", 0},
         {u"8k", 1},
         {u"4k", 2},
-    });
+    };
     return data;
 }
 

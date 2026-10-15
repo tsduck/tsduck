@@ -141,28 +141,28 @@ void ts::T2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 
 const ts::Names& ts::T2DeliverySystemDescriptor::SisoNames()
 {
-    static const Names data({
+    static const Names data {
         {u"SISO", 0},
         {u"MISO", 1},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::T2DeliverySystemDescriptor::BandwidthNames()
 {
-    static const Names data({
+    static const Names data {
         {u"8MHz",     0},
         {u"7MHz",     1},
         {u"6MHz",     2},
         {u"5MHz",     3},
         {u"10MHz",    4},
         {u"1.712MHz", 5},
-    });
+    };
     return data;
 }
 const ts::Names& ts::T2DeliverySystemDescriptor::GuardIntervalNames()
 {
-    static const Names data({
+    static const Names data {
         {u"1/32",   0},
         {u"1/16",   1},
         {u"1/8",    2},
@@ -170,19 +170,19 @@ const ts::Names& ts::T2DeliverySystemDescriptor::GuardIntervalNames()
         {u"1/128",  4},
         {u"19/128", 5},
         {u"19/256", 6},
-    });
+    };
     return data;
 }
 const ts::Names& ts::T2DeliverySystemDescriptor::TransmissionModeNames()
 {
-    static const Names data({
+    static const Names data {
         {u"2k",  0},
         {u"8k",  1},
         {u"4k",  2},
         {u"1k",  3},
         {u"16k", 4},
         {u"32k", 5},
-    });
+    };
     return data;
 }
 

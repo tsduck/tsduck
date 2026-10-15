@@ -413,25 +413,25 @@ void ts::VCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 const ts::Names& ts::VCT::ModulationModeEnum()
 {
-    static const Names data({
+    static const Names data {
         {u"analog",  0x01},
         {u"64-QAM",  0x02},
         {u"256-QAM", 0x03},
         {u"8-VSB",   0x04},
         {u"16-VSB",  0x05},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::VCT::ServiceTypeEnum()
 {
-    static const Names data({
+    static const Names data {
         {u"analog",   0x01},
         {u"dtv",      0x02},
         {u"audio",    0x03},
         {u"data",     0x04},
         {u"software", 0x05},
-    });
+    };
     return data;
 }
 

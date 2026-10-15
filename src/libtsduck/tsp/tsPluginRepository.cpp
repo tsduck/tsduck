@@ -23,7 +23,7 @@ ts::PluginRepository::PluginRepository() {}
 const ts::Names& ts::PluginRepository::ListProcessorEnum()
 {
     // Thread-safe init-safe static data patterns.
-    static const Names data({
+    static const Names data {
         {u"all",          LIST_ALL},
         {u"input",        LIST_INPUT  | LIST_COMPACT},
         {u"output",       LIST_OUTPUT | LIST_COMPACT},
@@ -31,7 +31,7 @@ const ts::Names& ts::PluginRepository::ListProcessorEnum()
         {u"names-input",  LIST_INPUT  | LIST_NAMES},
         {u"names-output", LIST_OUTPUT | LIST_NAMES},
         {u"names-packet", LIST_PACKET | LIST_NAMES},
-    });
+    };
     return data;
 }
 

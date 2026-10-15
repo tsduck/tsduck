@@ -65,13 +65,13 @@ void ts::CueIdentifierDescriptor::deserializePayload(PSIBuffer& buf)
 const ts::Names& ts::CueIdentifierDescriptor::CueStreamTypeNames()
 {
     // Thread-safe init-safe static data patterns.
-    static const Names data({
+    static const Names data {
         {u"insert_null_schedule", 0x00},
         {u"all",                  0x01},
         {u"segmentation",         0x02},
         {u"tiered_splicing",      0x03},
         {u"tiered_segmentation",  0x04},
-    });
+    };
     return data;
 }
 

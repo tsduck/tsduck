@@ -72,18 +72,18 @@ const std::map<int, ts::GuardInterval>& ts::ISDBTerrestrialDeliverySystemDescrip
 
 const ts::Names& ts::ISDBTerrestrialDeliverySystemDescriptor::GuardIntervalNames()
 {
-    static const Names data({
+    static const Names data {
         {u"1/32", 0},
         {u"1/16", 1},
         {u"1/8",  2},
         {u"1/4",  3},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::ISDBTerrestrialDeliverySystemDescriptor::TransmissionModeNames()
 {
-    static const Names data({
+    static const Names data {
         {u"2k",        0},
         {u"mode1",     0},
         {u"4k",        1},
@@ -91,7 +91,7 @@ const ts::Names& ts::ISDBTerrestrialDeliverySystemDescriptor::TransmissionModeNa
         {u"8k",        2},
         {u"mode3",     2},
         {u"undefined", 3},
-    });
+    };
     return data;
 }
 

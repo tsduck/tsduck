@@ -375,10 +375,10 @@ void ts::LinkageDescriptor::DisplayPrivateDeferredINT(TablesDisplay& disp, PSIBu
 
 const ts::Names& ts::LinkageDescriptor::OriginTypeNames()
 {
-    static const Names data({
+    static const Names data {
         {u"NIT", 0},
         {u"SDT", 1}
-    });
+    };
     return data;
 }
 

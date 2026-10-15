@@ -170,7 +170,7 @@ namespace ts {
             BitRate        _value_0 = 0;
             BitRate        _diffs = 0;
             BitRate        _average = 0;
-            size_t         _reset_percent {DEFAULT_BITRATE_RESET_PERCENT};
+            size_t         _reset_percent = DEFAULT_BITRATE_RESET_PERCENT;
         };
 
         // PacketInsertionController private members.

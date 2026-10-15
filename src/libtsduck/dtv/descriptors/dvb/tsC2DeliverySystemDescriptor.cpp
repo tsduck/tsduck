@@ -83,10 +83,10 @@ void ts::C2DeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 
 const ts::Names& ts::C2DeliverySystemDescriptor::C2GuardIntervalNames()
 {
-    static const Names data({
+    static const Names data {
         {u"1/128", 0},
         {u"1/64",  1},
-    });
+    };
     return data;
 }
 

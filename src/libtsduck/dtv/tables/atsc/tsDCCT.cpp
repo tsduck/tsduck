@@ -210,10 +210,10 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 const ts::Names& ts::DCCT::DCCContextNames()
 {
-    static const Names data({
+    static const Names data {
         {u"temporary_retune", temporary_retune},
         {u"channel_redirect", channel_redirect},
-    });
+    };
     return data;
 }
 

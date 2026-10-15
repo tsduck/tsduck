@@ -98,7 +98,7 @@
 #include "tsMemory.h"
 
 // Define single instance
-const ts::ARIBCharset ts::ARIBCharset::B24({u"ARIB-STD-B24", u"ARIB"});
+const ts::ARIBCharset ts::ARIBCharset::B24 {u"ARIB-STD-B24", u"ARIB"};
 
 
 //----------------------------------------------------------------------------

@@ -77,7 +77,7 @@ namespace ts {
         PID           _input_pid = PID_NULL;       // Input PID.
         bool          _synchronized = false;       // Input PID fully synchronized.
         uint8_t       _cc_input = 0;               // Continuity counter in input PID.
-        size_t        _next_index {1};             // Current size of _next_packet (not full yet), 1 points after sync byte.
+        size_t        _next_index = 1;             // Current size of _next_packet (not full yet), 1 points after sync byte.
         TSPacket      _next_packet {{SYNC_BYTE}};  // Next packet, partially decapsulated, sync byte is implicit.
         UString       _last_error {};              // Last error message.
 

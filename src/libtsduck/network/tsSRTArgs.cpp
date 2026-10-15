@@ -57,10 +57,10 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"The connect timeout is 10 times the value set for the rendezvous mode "
               u"(which can be used as a workaround for this connection problem with earlier versions).");
 
-    args.option(u"display-url", 0, Names({
+    args.option(u"display-url", 0, Names {
         {u"standard", SRTURLMode::STANDARD},
         {u"all",      SRTURLMode::ALL},
-    }), 0, 1, true);
+    }, 0, 1, true);
     args.help(u"display-url",
               u"Display resulting srt:// URL as information. "
               u"If specified without value, display standard srt:// URL parameters only. "
@@ -283,10 +283,10 @@ void ts::SRTArgs::defineArgs(Args& args)
               u"packets that have no chance to be delivered in time. It is automatically enabled "
               u"in sender if receiver supports it. The default is true in Live mode, false in File mode.");
 
-    args.option(u"transtype", 0, Names({ // bool live_mode
+    args.option(u"transtype", 0, Names { // bool live_mode
         {u"file", false},
         {u"live", true},
-    }));
+    });
     args.help(u"transtype",
               u"Sets the SRT transmission type for the socket. "
               u"The default is live (continue transmission while requesting missed packets).");

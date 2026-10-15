@@ -31,13 +31,6 @@ namespace {
 
     // Minimum interval between two send operations.
     static constexpr cn::milliseconds MIN_SEND_INTERVAL = cn::milliseconds(4);
-
-    // Values for --type option.
-    const ts::Names DataTypeEnum({
-        {u"emm",          0},
-        {u"private-data", 1},
-        {u"ecm",          2},
-    });
 }
 
 
@@ -193,7 +186,11 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
          u"This option sets the DVB SimulCrypt parameter 'data_stream_id'. "
          u"Default: 1.");
 
-    option(u"type", 't', DataTypeEnum);
+    option(u"type", 't', ts::Names {
+        {u"emm", 0},
+        {u"private-data", 1},
+        {u"ecm", 2},
+    });
     help(u"type",
          u"This option sets the DVB SimulCrypt parameter 'data_type'. Default: 0 (EMM). "
          u"In addition to integer values, names can be used.");

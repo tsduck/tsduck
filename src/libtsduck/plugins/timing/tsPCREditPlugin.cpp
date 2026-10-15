@@ -57,14 +57,14 @@ ts::PCREditPlugin::PCREditPlugin(TSP* tsp_) :
          u"The added value is a random number in the range -n to +n where n is the absolute value of the corresponding parameter. "
          u"This option is typically used to intentionally corrupt time stamps.");
 
-    option(u"unit", 'u', Names({
+    option(u"unit", 'u', Names {
         {u"default",     UNIT_DEFAULT},
         {u"pcr",         UNIT_PCR},
         {u"pts",         UNIT_PTS},
         {u"dts",         UNIT_PTS},
         {u"millisecond", UNIT_MILLISEC},
         {u"nanosecond",  UNIT_NANOSEC},
-    }));
+    });
     help(u"unit", u"name",
          u"Specify the unit of numeric values for options such as --add-pcr, --add-pts or --add-dts. "
          u"The default unit is \"default\", meaning that each value is a raw number to be applied "

@@ -15,11 +15,11 @@
 
 const ts::Names& ts::PolledFile::StatusEnumeration()
 {
-    static const Names data({
+    static const Names data {
         {u"modified", MODIFIED},
         {u"added",    ADDED},
         {u"deleted",  DELETED},
-    });
+    };
     return data;
 }
 

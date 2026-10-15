@@ -86,10 +86,10 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     DefineDektecIOStandardArgs(*this);
     DefineDektecIPArgs(*this, true); // true = receive
 
-    option(u"c2-bandwidth", 0, Names({
+    option(u"c2-bandwidth", 0, Names {
         {u"6-MHz",  DTAPI_DVBC2_6MHZ},
         {u"8-MHz",  DTAPI_DVBC2_8MHZ},
-    }));
+    });
     help(u"c2-bandwidth",
          u"DVB-C2 demodulators: indicate the DVB-C2 bandwidth. The default is 8-MHz.");
 
@@ -98,7 +98,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"Channel index on the input Dektec device. By default, use the "
          u"first input channel on the device.");
 
-    option(u"code-rate", 0, Names({
+    option(u"code-rate", 0, Names {
         {u"auto", DTAPI_MOD_CR_AUTO}, // auto detect
         {u"1/2",  DTAPI_MOD_1_2},     // DVB-S, S2, T
         {u"1/3",  DTAPI_MOD_1_3},     // DVB-S2
@@ -113,7 +113,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
         {u"7/8",  DTAPI_MOD_7_8},     // DVB-S, S2, T
         {u"8/9",  DTAPI_MOD_8_9},     // DVB-S2
         {u"9/10", DTAPI_MOD_9_10},    // DVB-S2
-    }));
+    });
     help(u"code-rate",
          u"For demodulators devices only: specify the code rate. "
          u"The specified value depends on the modulation type.\n"
@@ -122,12 +122,12 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"DVB-T: 1/2, 2/3, 3/4, 5/6, 7/8.\n"
          u"The default is auto.");
 
-    option(u"constellation", 0, Names({
+    option(u"constellation", 0, Names {
         {u"auto",   DTAPI_MOD_DVBT_CO_AUTO},
         {u"QPSK",   DTAPI_MOD_DVBT_QPSK},
         {u"16-QAM", DTAPI_MOD_DVBT_QAM16},
         {u"64-QAM", DTAPI_MOD_DVBT_QAM64},
-    }));
+    });
     help(u"constellation",
          u"DVB-T demodulators: indicate the constellation type. The default is auto.");
 
@@ -138,14 +138,14 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"complete list of devices in the system. By default, use the first "
          u"input Dektec device.");
 
-    option(u"dvbt-bandwidth", 0, Names({
+    option(u"dvbt-bandwidth", 0, Names {
         {u"1.7", DTAPI_DVBT2_1_7MHZ},
         {u"5",   DTAPI_DVBT2_5MHZ},
         {u"6",   DTAPI_DVBT2_6MHZ},
         {u"7",   DTAPI_DVBT2_7MHZ},
         {u"8",   DTAPI_DVBT2_8MHZ},
         {u"10",  DTAPI_DVBT2_10MHZ},
-    }));
+    });
     help(u"dvbt-bandwidth",
          u"DVB-T/T2 demodulators: indicate the bandwidth in MHz. The default is 8 MHz. "
          u"The bandwidth values 1.7, 5 and 10 MHz are valid for DVB-T2 only.");
@@ -167,30 +167,30 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"instead of --frequency when the intermediate frequency is unknown. "
          u"For DTA-2137 receivers, the valid range is 950 MHz to 2150 MHz (L Band).");
 
-    option(u"guard-interval", 0, Names({
+    option(u"guard-interval", 0, Names {
         {u"auto", DTAPI_MOD_DVBT_GU_AUTO},
         {u"1/32", DTAPI_MOD_DVBT_G_1_32},
         {u"1/16", DTAPI_MOD_DVBT_G_1_16},
         {u"1/8",  DTAPI_MOD_DVBT_G_1_8},
         {u"1/4",  DTAPI_MOD_DVBT_G_1_4},
-    }));
+    });
     help(u"guard-interval",
          u"DVB-T demodulators: indicate the guard interval. The default is auto.");
 
-    option(u"isdbt-bandwidth", 0, Names({
+    option(u"isdbt-bandwidth", 0, Names {
         {u"5", DTAPI_ISDBT_BW_5MHZ},
         {u"6", DTAPI_ISDBT_BW_6MHZ},
         {u"7", DTAPI_ISDBT_BW_7MHZ},
         {u"8", DTAPI_ISDBT_BW_8MHZ},
-    }));
+    });
     help(u"isdbt-bandwidth",
          u"ISDB-T demodulators: indicate the bandwidth in MHz. The default is 8 MHz.");
 
-    option(u"isdbt-segments", 0, Names({
+    option(u"isdbt-segments", 0, Names {
         {u"1",  DTAPI_ISDBT_SEGM_1},
         {u"3",  DTAPI_ISDBT_SEGM_3},
         {u"13", DTAPI_ISDBT_SEGM_13},
-    }));
+    });
     help(u"isdbt-segments",
          u"ISDB-T demodulators: indicate the number of segments. The default is 1.");
 
@@ -199,11 +199,11 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"ISDB-T demodulators: indicate the sub-channel number (0..41) of the centre segment of the spectrum. "
          u"The default is 22.");
 
-    option(u"j83", 0, Names({
+    option(u"j83", 0, Names {
         {u"A", DTAPI_MOD_J83_A},
         {u"B", DTAPI_MOD_J83_B},
         {u"C", DTAPI_MOD_J83_C},
-    }));
+    });
     help(u"j83",
          u"QAM demodulators: indicate the ITU-T J.83 annex to use. "
          u"A is DVB-C, B is American QAM, C is Japanese QAM. The default is A.");
@@ -218,7 +218,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"For compatibility, the legacy format 'low_freq[,high_freq,switch_freq]' is also accepted "
          u"(all frequencies are in MHz). The default is a universal extended LNB.");
 
-    option(u"modulation", 'm', Names({
+    option(u"modulation", 'm', Names {
         {u"ATSC-VSB",      DTAPI_MOD_ATSC},
         {u"DAB",           DTAPI_MOD_DAB},
         {u"DVB-C2",        DTAPI_MOD_DVBC2},
@@ -238,7 +238,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
         {u"128-QAM",       DTAPI_MOD_QAM128},
         {u"256-QAM",       DTAPI_MOD_QAM256},
         {u"QAM",           DTAPI_MOD_QAM_AUTO},
-    }));
+    });
     help(u"modulation",
          u"For demodulators, indicate the modulation type. "
          u"The supported modulation types depend on the device model. "
@@ -252,7 +252,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     help(u"polarity",
          u"DVB-S/S2 receivers: indicate the polarity. The default is \"vertical\".");
 
-    option(u"qam-b", 0, Names({
+    option(u"qam-b", 0, Names {
         {u"auto",     DTAPI_MOD_QAMB_IL_AUTO},
         {u"I128-J1D", DTAPI_MOD_QAMB_I128_J1D},
         {u"I64-J2",   DTAPI_MOD_QAMB_I64_J2},
@@ -267,7 +267,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
         {u"I128-J6",  DTAPI_MOD_QAMB_I128_J6},
         {u"I128-J7",  DTAPI_MOD_QAMB_I128_J7},
         {u"I128-J8",  DTAPI_MOD_QAMB_I128_J8},
-    }));
+    });
     help(u"qam-b",
          u"QAM demodulators: with --j83 B, indicate the QAM-B interleaver mode. "
          u"The default is auto.");
@@ -300,25 +300,25 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"DVB-C/S/S2 demodulators: Specify the symbol rate in symbols/second. "
          u"By default, automatically detect the symbol rate.");
 
-    option(u"t2-profile", 0, Names({
+    option(u"t2-profile", 0, Names {
         {u"base", DTAPI_DVBT2_PROFILE_BASE},
         {u"lite", DTAPI_DVBT2_PROFILE_LITE},
-    }));
+    });
     help(u"t2-profile",
          u"DVB-T2 demodulators: indicate the DVB-T2 profile. The default is base.");
 
-    option(u"transmission-mode", 0, Names({
+    option(u"transmission-mode", 0, Names {
         {u"auto", DTAPI_MOD_DVBT_MD_AUTO},
         {u"2K",   DTAPI_MOD_DVBT_2K},
         {u"8K",   DTAPI_MOD_DVBT_8K},
-    }));
+    });
     help(u"transmission-mode",
          u"DVB-T demodulators: indicate the transmission mode. The default is auto.");
 
-    option(u"vsb", 0, Names({
+    option(u"vsb", 0, Names {
         {u"8",  DTAPI_MOD_ATSC_VSB8},
         {u"16", DTAPI_MOD_ATSC_VSB16},
-    }));
+    });
     help(u"vsb",
          u"ATSC demodulators: indicate the VSB constellation. The default is 8.");
 }

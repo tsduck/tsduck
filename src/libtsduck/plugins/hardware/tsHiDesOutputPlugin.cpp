@@ -28,11 +28,11 @@ ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
 
     DefineLegacyBandWidthArg(*this, u"bandwidth", 'b', 8'000'000);
 
-    option(u"constellation", 'c', Names({
+    option(u"constellation", 'c', Names {
         {u"QPSK",   QPSK},
         {u"16-QAM", QAM_16},
         {u"64-QAM", QAM_64},
-    }));
+    });
     help(u"constellation", u"Constellation type. The default is 64-QAM.");
 
     option(u"dc-compensation", 0, STRING);
@@ -55,31 +55,31 @@ ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
          u"Adjust the output gain to the specified value in dB. "
          u"The allowed gain range depends on the device, the frequency and the bandwidth.");
 
-    option(u"guard-interval", 'g', Names({
+    option(u"guard-interval", 'g', Names {
         {u"1/32", GUARD_1_32},
         {u"1/16", GUARD_1_16},
         {u"1/8",  GUARD_1_8},
         {u"1/4",  GUARD_1_4},
-    }));
+    });
     help(u"guard-interval", u"Guard interval. The default is 1/32.");
 
-    option(u"high-priority-fec", 'h', Names({
+    option(u"high-priority-fec", 'h', Names {
         {u"1/2", FEC_1_2},
         {u"2/3", FEC_2_3},
         {u"3/4", FEC_3_4},
         {u"5/6", FEC_5_6},
         {u"7/8", FEC_7_8},
-    }));
+    });
     help(u"high-priority-fec", u"Error correction for high priority streams. The default is 2/3.");
 
     option(u"spectral-inversion", 's', SpectralInversionEnum());
     help(u"spectral-inversion", u"Spectral inversion. The default is auto.");
 
-    option(u"transmission-mode", 't', Names({
+    option(u"transmission-mode", 't', Names {
         {u"2K", TM_2K},
         {u"4K", TM_4K},
         {u"8K", TM_8K},
-    }));
+    });
     help(u"transmission-mode", u"Transmission mode. The default is 8K.");
 }
 

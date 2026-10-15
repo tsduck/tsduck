@@ -33,7 +33,7 @@
 namespace {
     using namespace ts;
     MAP_SINGLETON(UpperLower, UChar, UChar);
-    UpperLower::UpperLower() : SuperClass({
+    UpperLower::UpperLower() : SuperClass {
         {LATIN_CAPITAL_LETTER_A_WITH_GRAVE,        LATIN_SMALL_LETTER_A_WITH_GRAVE},
         {LATIN_CAPITAL_LETTER_A_WITH_ACUTE,        LATIN_SMALL_LETTER_A_WITH_ACUTE},
         {LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX,   LATIN_SMALL_LETTER_A_WITH_CIRCUMFLEX},
@@ -208,7 +208,7 @@ namespace {
         {CYRILLIC_CAPITAL_LETTER_KJE,              CYRILLIC_SMALL_LETTER_KJE},
         {CYRILLIC_CAPITAL_LETTER_SHORT_U,          CYRILLIC_SMALL_LETTER_SHORT_U},
         {CYRILLIC_CAPITAL_LETTER_DZHE,             CYRILLIC_SMALL_LETTER_DZHE},
-    }) {}
+    } {}
 }
 
 
@@ -235,7 +235,7 @@ namespace {
 namespace {
     using namespace ts;
     MAP_SINGLETON(WithoutAccent, UChar, const char*);
-    WithoutAccent::WithoutAccent() : SuperClass({
+    WithoutAccent::WithoutAccent() : SuperClass {
         {LATIN_CAPITAL_LETTER_A_WITH_GRAVE,        "A"},
         {LATIN_CAPITAL_LETTER_A_WITH_ACUTE,        "A"},
         {LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX,   "A"},
@@ -439,7 +439,7 @@ namespace {
         {BLACKLETTER_CAPITAL_I,                    "I"},
         {SCRIPT_CAPITAL_P,                         "P"},
         {BLACKLETTER_CAPITAL_R,                    "R"},
-    }) {}
+    } {}
 }
 
 
@@ -451,7 +451,7 @@ namespace {
 namespace {
     using namespace ts;
     MAP_SINGLETON(HTMLEntities, UChar, const char*);
-    HTMLEntities::HTMLEntities() : SuperClass({
+    HTMLEntities::HTMLEntities() : SuperClass {
         {QUOTATION_MARK, "quot"},
         {AMPERSAND, "amp"},
         {APOSTROPHE, "apos"},
@@ -705,7 +705,7 @@ namespace {
         {BLACK_CLUB_SUIT, "clubs"},
         {BLACK_HEART_SUIT, "hearts"},
         {BLACK_DIAMOND_SUIT, "diams"},
-    }) {}
+    } {}
 }
 
 //----------------------------------------------------------------------------
@@ -737,7 +737,7 @@ namespace {
 namespace {
     using namespace ts;
     MAP_SINGLETON(CombiningSequences, UChar, uint32_t);
-    CombiningSequences::CombiningSequences() : SuperClass({
+    CombiningSequences::CombiningSequences() : SuperClass {
        {LATIN_CAPITAL_LETTER_A_WITH_GRAVE,           DIAC(LATIN_CAPITAL_LETTER_A, COMBINING_GRAVE_ACCENT)},
        {LATIN_CAPITAL_LETTER_A_WITH_ACUTE,           DIAC(LATIN_CAPITAL_LETTER_A, COMBINING_ACUTE_ACCENT)},
        {LATIN_CAPITAL_LETTER_A_WITH_CIRCUMFLEX,      DIAC(LATIN_CAPITAL_LETTER_A, COMBINING_CIRCUMFLEX_ACCENT)},
@@ -946,7 +946,7 @@ namespace {
        {LATIN_SMALL_LETTER_W_WITH_DIAERESIS,         DIAC(LATIN_SMALL_LETTER_W, COMBINING_DIAERESIS)},
        {LATIN_CAPITAL_LETTER_Y_WITH_GRAVE,           DIAC(LATIN_CAPITAL_LETTER_Y, COMBINING_GRAVE_ACCENT)},
        {LATIN_SMALL_LETTER_Y_WITH_GRAVE,             DIAC(LATIN_SMALL_LETTER_Y, COMBINING_GRAVE_ACCENT)},
-    }) {}
+    } {}
 }
 
 
@@ -974,7 +974,7 @@ namespace {
 namespace {
     using namespace ts;
     MAP_SINGLETON(CharChar, UChar, uint32_t);
-    CharChar::CharChar() : SuperClass({
+    CharChar::CharChar() : SuperClass {
         {CHAR_NULL,                                  0},
         {START_OF_HEADING,                           0},
         {START_OF_TEXT,                              0},
@@ -1886,7 +1886,7 @@ namespace {
         {BLACK_CLUB_SUIT,                            CCHAR_PRINT},
         {BLACK_HEART_SUIT,                           CCHAR_PRINT},
         {BLACK_DIAMOND_SUIT,                         CCHAR_PRINT},
-    }) {}
+    } {}
 }
 
 uint32_t ts::UCharacteristics(UChar c)

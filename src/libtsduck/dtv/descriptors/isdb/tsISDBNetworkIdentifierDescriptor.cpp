@@ -92,14 +92,14 @@ void ts::ISDBNetworkIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp,
 
 const ts::Names& ts::ISDBNetworkIdentifierDescriptor::MediaTypes()
 {
-    static const Names data({
+    static const Names data {
         // media_type table in ARIB STD-B21, 9.1.8.3 (as corrected in email by ARIB)
         {u"AB", 0x4142},  // Advanced BS
         {u"AC", 0x4143},  // Advanced wide-band CS
         {u"BS", 0x4253},  // BS/broadband CS
         {u"CS", 0x4353},  // Narrow-band CS / Advanced narrow-band
         {u"TB", 0x5442},  // Terrestrial broadcasting
-    });
+    };
     return data;
 }
 

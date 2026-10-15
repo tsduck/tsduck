@@ -70,10 +70,10 @@ void ts::OutputPager::init(const UString& env_name, bool stdout_only)
             UString command;
             UString parameters;
         };
-        const std::list<PredefinedPager> pagers({
+        const std::list<PredefinedPager> pagers {
             {u"less", u"-QFXS"},
             {u"more", u""}
-        });
+        };
 
         // Search the predefined pager commands in the path.
         for (auto it_pager = pagers.begin(); it_pager != pagers.end() && _pager_command.empty(); ++it_pager) {

@@ -62,19 +62,19 @@ namespace ts {
         //! Check if this interrupt handler is active.
         //! @return True if this interrupt handler is active.
         //!
-        bool isActive() const {return _active;}
+        bool isActive() const { return _active; }
 
         //!
         //! Check if this interrupt was triggered.
         //! @return True if this interrupt handler was triggered.
         //!
-        bool isInterrupted() const {return _interrupted;}
+        bool isInterrupted() const { return _interrupted; }
 
         //!
         //! Reset interrupt state.
         //! Now, isInterrupted() will return false, until the next time the interrupt is triggered.
         //!
-        void resetInterrupted() {_interrupted = false;}
+        void resetInterrupted() { _interrupted = false; }
 
         //!
         //! Activate this interrupt handler.
@@ -105,7 +105,7 @@ namespace ts {
         volatile ::sig_atomic_t _got_sigint = 0;
     #if defined(TS_MAC)
         std::string             _sem_name {};
-        ::sem_t*                _sem_address {SEM_FAILED};
+        ::sem_t*                _sem_address = SEM_FAILED;
     #else
         ::sem_t                 _sem_instance {};
     #endif

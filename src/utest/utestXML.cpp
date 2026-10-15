@@ -179,7 +179,7 @@ TSUNIT_DEFINE_TEST(Invalid)
 TSUNIT_DEFINE_TEST(FileBOM)
 {
     // Binary content of XML file with BOM, accented characters and HTML entities.
-    const ts::ByteBlock fileData({
+    static const ts::ByteBlock file_data {
         0xEF, 0xBB, 0xBF, 0x3C, 0x3F, 0x78, 0x6D, 0x6C, 0x20, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E,
         0x3D, 0x27, 0x31, 0x2E, 0x30, 0x27, 0x20, 0x65, 0x6E, 0x63, 0x6F, 0x64, 0x69, 0x6E, 0x67, 0x3D,
         0x27, 0x55, 0x54, 0x46, 0x2D, 0x38, 0x27, 0x3F, 0x3E, 0x0A, 0x3C, 0x66, 0x6F, 0x6F, 0x3E, 0x0A,
@@ -187,16 +187,16 @@ TSUNIT_DEFINE_TEST(FileBOM)
         0xC3, 0xA9, 0x22, 0x3E, 0x0A, 0x20, 0x20, 0x20, 0x20, 0x66, 0x26, 0x6C, 0x74, 0x3B, 0x26, 0x67,
         0x74, 0x3B, 0x0A, 0x20, 0x20, 0x3C, 0x2F, 0x42, 0xC3, 0x80, 0x41, 0xC3, 0x87, 0x3E, 0x0A, 0x3C,
         0x2F, 0x66, 0x6F, 0x6F, 0x3E, 0x0A,
-    });
+    };
 
-    const ts::UString rootName(u"foo");
-    const ts::UString childName({u'b', ts::LATIN_SMALL_LETTER_A_WITH_GRAVE, u'A', ts::LATIN_SMALL_LETTER_C_WITH_CEDILLA});
-    const ts::UString childAttrName({u'f', ts::LATIN_SMALL_LETTER_U_WITH_GRAVE});
-    const ts::UString childAttrValue({u'c', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE});
-    const ts::UString childText1(u"\n    f<>\n  ");
-    const ts::UString childText2(u"f<>");
+    const ts::UString rootName = u"foo";
+    const ts::UString childName {u'b', ts::LATIN_SMALL_LETTER_A_WITH_GRAVE, u'A', ts::LATIN_SMALL_LETTER_C_WITH_CEDILLA};
+    const ts::UString childAttrName {u'f', ts::LATIN_SMALL_LETTER_U_WITH_GRAVE};
+    const ts::UString childAttrValue {u'c', ts::LATIN_SMALL_LETTER_E_WITH_ACUTE};
+    const ts::UString childText1 = u"\n    f<>\n  ";
+    const ts::UString childText2 = u"f<>";
 
-    TSUNIT_ASSERT(fileData.saveToFile(_temp_file_name, &report()));
+    TSUNIT_ASSERT(file_data.saveToFile(_temp_file_name, &report()));
 
     ts::xml::Document doc(report());
     TSUNIT_ASSERT(doc.load(_temp_file_name));
@@ -223,7 +223,7 @@ TSUNIT_DEFINE_TEST(Validation)
     ts::xml::ModelDocument model(report());
     TSUNIT_ASSERT(model.load(ts::SectionFile::XML_TABLES_MODEL));
 
-    const ts::UString xmlContent(
+    static const ts::UString xml_content =
         u"<?xml version='1.0' encoding='UTF-8'?>\n"
         u"<tsduck>\n"
         u"  <PAT version='2' transport_stream_id='27'>\n"
@@ -241,10 +241,10 @@ TSUNIT_DEFINE_TEST(Validation)
         u"      </ca_descriptor>\n"
         u"    </component>\n"
         u"  </PMT>\n"
-        u"</tsduck>");
+        u"</tsduck>";
 
     ts::xml::Document doc(report());
-    TSUNIT_ASSERT(doc.parse(xmlContent));
+    TSUNIT_ASSERT(doc.parse(xml_content));
     TSUNIT_ASSERT(model.validate(doc));
 }
 

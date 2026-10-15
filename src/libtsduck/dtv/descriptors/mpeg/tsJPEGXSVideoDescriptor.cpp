@@ -205,11 +205,11 @@ void ts::JPEGXSVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts:
 
 const ts::Names& ts::JPEGXSVideoDescriptor::FramerateDenominators()
 {
-    static const Names data({
+    static const Names data {
         // Table A.8 of ISO/IEC 21122-3
         {u"1",     1},
         {u"1.001", 2},
-    });
+    };
     return data;
 }
 

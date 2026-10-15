@@ -166,9 +166,9 @@ namespace ts {
         static UString GetHelpString();
 
     private:
-        UString _language_code {3, SPACE};  // always 3-chars
+        UString _language_code {u"   "};  // always 3-chars
         uint8_t _audio_type = 0;
-        uint8_t _audio_stream_number {1};   // use first audio stream by default, use PID if zero
+        uint8_t _audio_stream_number = 1; // use first audio stream by default, use PID if zero
         PID     _pid = PID_NULL;
     };
 

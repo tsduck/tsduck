@@ -64,10 +64,10 @@ void ts::ISPAccessModeDescriptor::deserializePayload(PSIBuffer& buf)
 
 const ts::Names& ts::ISPAccessModeDescriptor::AccessModeNames()
 {
-    static const Names data({
+    static const Names data {
         {u"unused", 0},
         {u"dialup", 1},
-    });
+    };
     return data;
 }
 

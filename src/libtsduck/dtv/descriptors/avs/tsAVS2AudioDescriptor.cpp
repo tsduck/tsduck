@@ -181,10 +181,10 @@ void ts::AVS2AudioDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::D
 
 const ts::Names& ts::AVS2AudioDescriptor::CodingProfiles()
 {
-    static const Names data({
+    static const Names data {
         {u"basic",  0},
         {u"object", 1},
-    });
+    };
     return data;
 }
 

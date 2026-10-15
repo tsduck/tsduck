@@ -88,14 +88,14 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"Set the specified port in input mode. This applies to bidirectional "
          u"ports which can be either set in input or output mode.");
 
-    option(u"led", 'l', Names({
+    option(u"led", 'l', Names {
         {u"off",      DTAPI_LED_OFF},
         {u"green",    DTAPI_LED_GREEN},
         {u"red",      DTAPI_LED_RED},
         {u"yellow",   DTAPI_LED_YELLOW},
         {u"blue",     DTAPI_LED_BLUE},
         {u"hardware", DTAPI_LED_HARDWARE},
-    }));
+    });
     help(u"led", u"state",
          u"Set the state of the LED on the rear panel. Useful to identify a "
          u"Dektec device when more than one is present. See also "

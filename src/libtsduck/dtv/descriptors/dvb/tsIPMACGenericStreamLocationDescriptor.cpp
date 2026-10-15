@@ -75,12 +75,12 @@ void ts::IPMACGenericStreamLocationDescriptor::deserializePayload(PSIBuffer& buf
 
 const ts::Names& ts::IPMACGenericStreamLocationDescriptor::ModulationTypeNames()
 {
-    static const Names data({
+    static const Names data {
         {u"DVB-S2",  0},
         {u"DVB-T2",  1},
         {u"DVB-C2",  2},
         {u"DVB-NGH", 3},
-    });
+    };
     return data;
 }
 

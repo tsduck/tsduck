@@ -386,14 +386,14 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(0, pkt.getAFStuffingSize());
     TSUNIT_EQUAL(184, pkt.getPayloadSize());
 
-    const ts::ByteBlock refPayload({0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29});
-    const ts::ByteBlock refPrivate1({0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59});
-    const ts::ByteBlock refPrivate2({0x60, 0x61, 0x62});
+    const ts::ByteBlock ref_payload  {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29};
+    const ts::ByteBlock ref_private1 {0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59};
+    const ts::ByteBlock ref_private2 {0x60, 0x61, 0x62};
 
     uint8_t* pl = pkt.getPayload();
-    ts::MemCopy(pl, refPayload.data(), refPayload.size());
+    ts::MemCopy(pl, ref_payload.data(), ref_payload.size());
 
-    TSUNIT_ASSERT(!pkt.setPrivateData(refPrivate1, false));
+    TSUNIT_ASSERT(!pkt.setPrivateData(ref_private1, false));
 
     TSUNIT_ASSERT(!pkt.hasAF());
     TSUNIT_ASSERT(!pkt.hasPrivateData());
@@ -402,7 +402,7 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(0, pkt.getAFStuffingSize());
     TSUNIT_EQUAL(184, pkt.getPayloadSize());
 
-    TSUNIT_ASSERT(pkt.setPrivateData(refPrivate1, true));
+    TSUNIT_ASSERT(pkt.setPrivateData(ref_private1, true));
 
     TSUNIT_ASSERT(pkt.hasAF());
     TSUNIT_ASSERT(pkt.hasPrivateData());
@@ -411,14 +411,14 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(0, pkt.getAFStuffingSize());
     TSUNIT_EQUAL(171, pkt.getPayloadSize());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 13);
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
-    TSUNIT_EQUAL(ts::UString::Dump(refPrivate1, ts::UString::SINGLE_LINE),
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), ref_payload.data(), ref_payload.size()));
+    TSUNIT_EQUAL(ts::UString::Dump(ref_private1, ts::UString::SINGLE_LINE),
                  ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate1.data(), refPrivate1.size()));
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), ref_private1.data(), ref_private1.size()));
     pkt.getPrivateData(data);
-    TSUNIT_ASSERT(data == refPrivate1);
+    TSUNIT_ASSERT(data == ref_private1);
 
-    TSUNIT_ASSERT(pkt.setPrivateData(refPrivate2, false));
+    TSUNIT_ASSERT(pkt.setPrivateData(ref_private2, false));
 
     TSUNIT_ASSERT(pkt.hasAF());
     TSUNIT_ASSERT(pkt.hasPrivateData());
@@ -427,12 +427,12 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(7, pkt.getAFStuffingSize());
     TSUNIT_EQUAL(171, pkt.getPayloadSize());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 13);
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
-    TSUNIT_EQUAL(ts::UString::Dump(refPrivate2, ts::UString::SINGLE_LINE),
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), ref_payload.data(), ref_payload.size()));
+    TSUNIT_EQUAL(ts::UString::Dump(ref_private2, ts::UString::SINGLE_LINE),
                  ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()));
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), ref_private2.data(), ref_private2.size()));
     pkt.getPrivateData(data);
-    TSUNIT_ASSERT(data == refPrivate2);
+    TSUNIT_ASSERT(data == ref_private2);
 
     TSUNIT_ASSERT(pkt.setPCR(0x000000126789ABCD, false));
 
@@ -445,13 +445,13 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(171, pkt.getPayloadSize());
     TSUNIT_EQUAL(0x000000126789ABCD, pkt.getPCR());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 13);
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
-    TSUNIT_EQUAL(ts::UString::Dump(refPrivate2, ts::UString::SINGLE_LINE),
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), ref_payload.data(), ref_payload.size()));
+    TSUNIT_EQUAL(ts::UString::Dump(ref_private2, ts::UString::SINGLE_LINE),
                  ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()));
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), ref_private2.data(), ref_private2.size()));
     data.clear();
     pkt.getPrivateData(data);
-    TSUNIT_ASSERT(data == refPrivate2);
+    TSUNIT_ASSERT(data == ref_private2);
 
     TSUNIT_ASSERT(!pkt.setOPCR(0x000000AB67925678, false));
     TSUNIT_ASSERT(pkt.setOPCR(0x000000AB67925678, true));
@@ -467,13 +467,13 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(0x000000126789ABCD, pkt.getPCR());
     TSUNIT_EQUAL(0x000000AB67925678, pkt.getOPCR());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 18);
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
-    TSUNIT_EQUAL(ts::UString::Dump(refPrivate2, ts::UString::SINGLE_LINE),
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), ref_payload.data(), ref_payload.size()));
+    TSUNIT_EQUAL(ts::UString::Dump(ref_private2, ts::UString::SINGLE_LINE),
                                   ts::UString::Dump(pkt.getPrivateData(), pkt.getPrivateDataSize(), ts::UString::SINGLE_LINE));
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), refPrivate2.data(), refPrivate2.size()));
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPrivateData(), ref_private2.data(), ref_private2.size()));
     data.clear();
     pkt.getPrivateData(data);
-    TSUNIT_ASSERT(data == refPrivate2);
+    TSUNIT_ASSERT(data == ref_private2);
 
     pkt.removePrivateData();
 
@@ -488,7 +488,7 @@ TSUNIT_DEFINE_TEST(PrivateData)
     TSUNIT_EQUAL(0x000000126789ABCD, pkt.getPCR());
     TSUNIT_EQUAL(0x000000AB67925678, pkt.getOPCR());
     TSUNIT_ASSERT(pkt.getPayload() == pl + 18);
-    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), refPayload.data(), refPayload.size()));
+    TSUNIT_EQUAL(0, ts::MemCompare(pkt.getPayload(), ref_payload.data(), ref_payload.size()));
     pkt.getPrivateData(data);
     TSUNIT_ASSERT(data.empty());
 }

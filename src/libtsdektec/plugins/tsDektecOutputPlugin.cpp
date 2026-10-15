@@ -96,14 +96,14 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"ASI devices: Send 204-byte packets (188 meaningful bytes plus 16 "
          u"stuffing bytes for RS coding). By default, send 188-byte packets.");
 
-    option(u"bandwidth", 0, Names({
+    option(u"bandwidth", 0, Names {
         {u"1.7", DTAPI_DVBT2_1_7MHZ},
         {u"5",   DTAPI_DVBT2_5MHZ},
         {u"6",   DTAPI_DVBT2_6MHZ},
         {u"7",   DTAPI_DVBT2_7MHZ},
         {u"8",   DTAPI_DVBT2_8MHZ},
         {u"10",  DTAPI_DVBT2_10MHZ},
-    }));
+    });
     help(u"bandwidth",
          u"DVB-T/H, DVB-T2, ADTB-T and DMB-T/H modulators: indicate bandwidth "
          u"in MHz. The default is 8 MHz. "
@@ -139,15 +139,15 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"Channel index on the output Dektec device. By default, use the "
          u"first output channel on the device.");
 
-    option(u"constellation", 0, Names({
+    option(u"constellation", 0, Names {
         {u"QPSK",   DTAPI_MOD_DVBT_QPSK},
         {u"16-QAM", DTAPI_MOD_DVBT_QAM16},
         {u"64-QAM", DTAPI_MOD_DVBT_QAM64},
-    }));
+    });
     help(u"constellation",
          u"DVB-T modulators: indicate the constellation type. The default is 64-QAM.");
 
-    option(u"convolutional-rate", 'r', Names({
+    option(u"convolutional-rate", 'r', Names {
         {u"1/2",  DTAPI_MOD_1_2},
         {u"1/3",  DTAPI_MOD_1_3},  // DVB-S.2 only
         {u"1/4",  DTAPI_MOD_1_4},  // DVB-S.2 only
@@ -161,7 +161,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"7/8",  DTAPI_MOD_7_8},
         {u"8/9",  DTAPI_MOD_8_9},  // DVB-S.2 only
         {u"9/10", DTAPI_MOD_9_10}, // DVB-S.2 only
-    }));
+    });
     help(u"convolutional-rate",
          u"For modulators devices only: specify the convolutional rate. "
          u"The specified value depends on the modulation type.\n"
@@ -177,22 +177,22 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"complete list of devices in the system. By default, use the first "
          u"output Dektec device.");
 
-    option(u"dmb-constellation", 0, Names({
+    option(u"dmb-constellation", 0, Names {
         {u"4-QAM-NR", DTAPI_MOD_DTMB_QAM4NR},
         {u"4-QAM",    DTAPI_MOD_DTMB_QAM4},
         {u"16-QAM",   DTAPI_MOD_DTMB_QAM16},
         {u"32-QAM",   DTAPI_MOD_DTMB_QAM32},
         {u"64-QAM",   DTAPI_MOD_DTMB_QAM64},
-    }));
+    });
     help(u"dmb-constellation",
          u"DMB-T/H, ADTB-T modulators: indicate the constellation type. The default is 64-QAM. "
          u"4-QAM-NR and 32-QAM can be used only with --dmb-fec 0.8.");
 
-    option(u"dmb-fec", 0, Names({
+    option(u"dmb-fec", 0, Names {
         {u"0.4", DTAPI_MOD_DTMB_0_4},
         {u"0.6", DTAPI_MOD_DTMB_0_6},
         {u"0.8", DTAPI_MOD_DTMB_0_8},
-    }));
+    });
     help(u"dmb-fec",
          u"DMB-T/H, ADTB-T modulators: indicate the FEC code rate. The default is 0.8. ");
 
@@ -201,19 +201,19 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DMB-T/H, ADTB-T modulators: indicate to use frame numbering. The default "
          u"is to use no frame numbering.");
 
-    option(u"dmb-header", 0, Names({
+    option(u"dmb-header", 0, Names {
         {u"PN420", DTAPI_MOD_DTMB_PN420},
         {u"PN595", DTAPI_MOD_DTMB_PN595},
         {u"PN945", DTAPI_MOD_DTMB_PN945},
-    }));
+    });
     help(u"dmb-header",
          u"DMB-T/H, ADTB-T modulators: indicate the FEC frame header mode. "
          u"The default is PN945.");
 
-    option(u"dmb-interleaver", 0, Names({
+    option(u"dmb-interleaver", 0, Names {
         {u"1", DTAPI_MOD_DTMB_IL_1},
         {u"2", DTAPI_MOD_DTMB_IL_2},
-    }));
+    });
     help(u"dmb-interleaver",
          u"DMB-T/H, ADTB-T modulators: indicate the interleaver mode. Must be one "
          u"1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.");
@@ -250,11 +250,11 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DVB-T2 modulators: indicate the S2-field value in the P1 signalling data. "
          u"Valid values: 1, 3, 5, 7, 9, 11, 13 and 15. The default is 1.");
 
-    option(u"fef-signal", 0, Names({
+    option(u"fef-signal", 0, Names {
         {u"0",      DTAPI_DVBT2_FEF_ZERO},
         {u"1K",     DTAPI_DVBT2_FEF_1K_OFDM},
         {u"1K-384", DTAPI_DVBT2_FEF_1K_OFDM_384},
-    }));
+    });
     help(u"fef-signal",
          u"DVB-T2 modulators: indicate the type of signal generated during the FEF "
          u"period. Must be one of \"0\" (zero I/Q samples during FEF), \"1K\" (1K "
@@ -268,14 +268,14 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DVB-T2 modulators: indicate the FEF type. The valid range is 0 ... 15. "
          u"The default is 0.");
 
-    option(u"fft-mode", 0, Names({
+    option(u"fft-mode", 0, Names {
         {u"1K",  DTAPI_DVBT2_FFT_1K},
         {u"2K",  DTAPI_DVBT2_FFT_2K},
         {u"4K",  DTAPI_DVBT2_FFT_4K},
         {u"8K",  DTAPI_DVBT2_FFT_8K},
         {u"16K", DTAPI_DVBT2_FFT_16K},
         {u"32K", DTAPI_DVBT2_FFT_32K},
-    }));
+    });
     help(u"fft-mode",
          u"DVB-T2 modulators: indicate the FFT mode. The default is 32K.");
 
@@ -296,12 +296,12 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"For DTA-110 and 110T modulators, the valid range is 400 MHz to 862 MHz. "
          u"For DTA-115 modulators, the valid range is 47 MHz to 862 MHz.");
 
-    option(u"guard-interval", 'g', Names({
+    option(u"guard-interval", 'g', Names {
         {u"1/32", DTAPI_MOD_DVBT_G_1_32},
         {u"1/16", DTAPI_MOD_DVBT_G_1_16},
         {u"1/8",  DTAPI_MOD_DVBT_G_1_8},
         {u"1/4",  DTAPI_MOD_DVBT_G_1_4},
-    }));
+    });
     help(u"guard-interval",
          u"DVB-T modulators: indicate the guard interval. The default is 1/32.");
 
@@ -330,11 +330,11 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     option(u"inversion");
     help(u"inversion", u"All modulators devices: enable spectral inversion.");
 
-    option(u"j83", 0, Names({
+    option(u"j83", 0, Names {
         {u"A", DTAPI_MOD_J83_A},
         {u"B", DTAPI_MOD_J83_B},
         {u"C", DTAPI_MOD_J83_C},
-    }));
+    });
     help(u"j83",
          u"QAM modulators: indicate the ITU-T J.83 annex to use. Must be one of "
          u"\"A\" (DVB-C), \"B\" (American QAM) or \"C\" (Japanese QAM). The default is A.");
@@ -363,19 +363,19 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"to maintain the delay from real-time. If the FIFO size drops to zero bytes, "
          u"pause transmission till it gets back to the preload FIFO size.");
 
-    option(u"miso", 0, Names({
+    option(u"miso", 0, Names {
         {u"OFF",  DTAPI_DVBT2_MISO_OFF},
         {u"1",    DTAPI_DVBT2_MISO_TX1},
         {u"2",    DTAPI_DVBT2_MISO_TX2},
         {u"BOTH", DTAPI_DVBT2_MISO_TX1TX2},
-    }));
+    });
     help(u"miso",
          u"DVB-T2 modulators: indicate the MISO mode. "
          u"The default si OFF. This mode can be used to simulate antenna 1, "
          u"antenna 2 or the average of antenna 1 and antenna 2 to simulate reception "
          u"halfway between the antennas.");
 
-    option(u"modulation", 'm', Names({
+    option(u"modulation", 'm', Names {
         {u"DVB-S",         DTAPI_MOD_DVBS_QPSK},
         {u"DVB-S-QPSK",    DTAPI_MOD_DVBS_QPSK},
         {u"DVB-S-BPSK",    DTAPI_MOD_DVBS_BPSK},
@@ -396,7 +396,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"ISDB-T",        DTAPI_MOD_ISDBT},
         {u"DMB-T",         DTAPI_MOD_DMBTH},
         {u"ADTB-T",        DTAPI_MOD_ADTBT},
-    }));
+    });
     help(u"modulation",
          u"For modulators, indicate the modulation type. "
          u"For DVB-H, specify DVB-T. For DMB-H, specify DMB-T. "
@@ -419,12 +419,12 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"VHF channel. The default is zero. See options --uhf-channel and "
          u"--vhf-channel.");
 
-    option(u"papr", 0, Names({
+    option(u"papr", 0, Names {
         {u"NONE", DTAPI_DVBT2_PAPR_NONE},
         {u"ACE",  DTAPI_DVBT2_PAPR_ACE},
         {u"TR",   DTAPI_DVBT2_PAPR_TR},
         {u"BOTH", DTAPI_DVBT2_PAPR_ACE_TR},
-    }));
+    });
     help(u"papr",
          u"DVB-T2 modulators: indicate the Peak to Average Power Reduction method. "
          u"Must be one of NONE, ACE (Active Constellation Extension), TR (power "
@@ -434,7 +434,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     option(u"pilots", 0);
     help(u"pilots", u"DVB-S2 and ADTB-T modulators: enable pilots (default: no pilot).");
 
-    option(u"pilot-pattern", 'p', Names({
+    option(u"pilot-pattern", 'p', Names {
         {u"1", DTAPI_DVBT2_PP_1},
         {u"2", DTAPI_DVBT2_PP_2},
         {u"3", DTAPI_DVBT2_PP_3},
@@ -443,27 +443,27 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"6", DTAPI_DVBT2_PP_6},
         {u"7", DTAPI_DVBT2_PP_7},
         {u"8", DTAPI_DVBT2_PP_8},
-    }));
+    });
     help(u"pilot-pattern",
          u"DVB-T2 modulators: indicate the pilot pattern to use, a value in the "
          u"range 1 to 8. The default is 7.");
 
-    option(u"plp0-code-rate", 0, Names({
+    option(u"plp0-code-rate", 0, Names {
         {u"1/2", DTAPI_DVBT2_COD_1_2},
         {u"3/5", DTAPI_DVBT2_COD_3_5},
         {u"2/3", DTAPI_DVBT2_COD_2_3},
         {u"3/4", DTAPI_DVBT2_COD_3_4},
         {u"4/5", DTAPI_DVBT2_COD_4_5},
         {u"5/6", DTAPI_DVBT2_COD_5_6},
-    }));
+    });
     help(u"plp0-code-rate",
          u"DVB-T2 modulators: indicate the convolutional coding rate used by the "
          u"PLP #0. The default is 2/3.");
 
-    option(u"plp0-fec-type", 0, Names({
+    option(u"plp0-fec-type", 0, Names {
         {u"16K", DTAPI_DVBT2_LDPC_16K},
         {u"64K", DTAPI_DVBT2_LDPC_64K},
-    }));
+    });
     help(u"plp0-fec-type",
          u"DVB-T2 modulators: indicate the FEC type used by the PLP #0. The default is 64K LPDC.");
 
@@ -491,10 +491,10 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"number of T2 frames to which each interleaving frame is mapped. "
          u"The valid range is 0 to 255. The default is 3.");
 
-    option(u"plp0-il-type", 0, Names({
+    option(u"plp0-il-type", 0, Names {
         {u"ONE-TO-ONE", DTAPI_DVBT2_IL_ONETOONE},
         {u"MULTI",      DTAPI_DVBT2_IL_MULTI},
-    }));
+    });
     help(u"plp0-il-type",
          u"DVB-T2 modulators: indicate the type of interleaving used by the PLP #0. "
          u"Must be one of \"ONE-TO-ONE\" (one interleaving frame corresponds to one "
@@ -506,22 +506,22 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DVB-T2 modulators: indicate that the in-band flag is set and in-band "
          u"signalling information is inserted in PLP #0.");
 
-    option(u"plp0-issy", 0, Names({
+    option(u"plp0-issy", 0, Names {
         {u"NONE",  DTAPI_DVBT2_ISSY_NONE},
         {u"SHORT", DTAPI_DVBT2_ISSY_SHORT},
         {u"LONG",  DTAPI_DVBT2_ISSY_LONG},
-    }));
+    });
     help(u"plp0-issy",
          u"DVB-T2 modulators: type of ISSY field to compute and insert in PLP #0. "
          u"The default is NONE.");
 
-    option(u"plp0-modulation", 0, Names({
+    option(u"plp0-modulation", 0, Names {
         {u"BPSK",    DTAPI_DVBT2_BPSK},
         {u"QPSK",    DTAPI_DVBT2_QPSK},
         {u"16-QAM",  DTAPI_DVBT2_QAM16},
         {u"64-QAM",  DTAPI_DVBT2_QAM64},
         {u"256-QAM", DTAPI_DVBT2_QAM256},
-    }));
+    });
     help(u"plp0-modulation",
          u"DVB-T2 modulators: indicate the modulation used by PLP #0. The default is 256-QAM.");
 
@@ -537,11 +537,11 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     help(u"plp0-tsrate",
          u"DVB-T2 modulators: PLP #0 bitrate. The default is 0 (all available).");
 
-    option(u"plp0-type", 0, Names({
+    option(u"plp0-type", 0, Names {
         {u"COMMON", DTAPI_DVBT2_PLP_TYPE_COMM},
         {u"1",      DTAPI_DVBT2_PLP_TYPE_1},
         {u"2",      DTAPI_DVBT2_PLP_TYPE_2},
-    }));
+    });
     help(u"plp0-type",
          u"DVB-T2 modulators: indicate the PLP type for PLP #0. The default is COMMON.");
 
@@ -574,7 +574,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"over the --preload-fifo-percentage option. There is no default value, and the valid "
          u"range is 100-100000.");
 
-    option(u"qam-b", 'q', Names({
+    option(u"qam-b", 'q', Names {
         {u"I128-J1D", DTAPI_MOD_QAMB_I128_J1D},
         {u"I64-J2",   DTAPI_MOD_QAMB_I64_J2},
         {u"I32-J4",   DTAPI_MOD_QAMB_I32_J4},
@@ -588,12 +588,12 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"I128-J6",  DTAPI_MOD_QAMB_I128_J6},
         {u"I128-J7",  DTAPI_MOD_QAMB_I128_J7},
         {u"I128-J8",  DTAPI_MOD_QAMB_I128_J8},
-    }));
+    });
     help(u"qam-b",
          u"QAM modulators: with --j83 B, indicate the QAM-B interleaver mode. "
          u"The default is I128-J1D.");
 
-    option(u"roll-off", 0, Names({
+    option(u"roll-off", 0, Names {
         {u"auto", DTAPI_MOD_ROLLOFF_AUTO},
         {u"none", DTAPI_MOD_ROLLOFF_NONE},
         {u"0.03", DTAPI_MOD_ROLLOFF_3},
@@ -603,7 +603,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"0.20", DTAPI_MOD_ROLLOFF_20},
         {u"0.25", DTAPI_MOD_ROLLOFF_25},
         {u"0.35", DTAPI_MOD_ROLLOFF_35},
-    }));
+    });
     help(u"roll-off",
          u"DVB-S2/S2X modulators: indicate the roll-off factor. The default is auto.");
 
@@ -647,7 +647,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DVB-T2 modulators: indicate the number of T2 frames per super-frame. "
          u"Must be in the range 1 to 255. The default is 2.");
 
-    option(u"t2-guard-interval", 0, Names({
+    option(u"t2-guard-interval", 0, Names {
         {u"1/128", DTAPI_DVBT2_GI_1_128},
         {u"1/32", DTAPI_DVBT2_GI_1_32},
         {u"1/16", DTAPI_DVBT2_GI_1_16},
@@ -655,16 +655,16 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"1/8", DTAPI_DVBT2_GI_1_8},
         {u"19/128", DTAPI_DVBT2_GI_19_128},
         {u"1/4", DTAPI_DVBT2_GI_1_4},
-    }));
+    });
     help(u"t2-guard-interval",
          u"DVB-T2 modulators: indicates the guard interval. The default is 1/128.");
 
-    option(u"t2-l1-modulation", 0, Names({
+    option(u"t2-l1-modulation", 0, Names {
         {u"BPSK",   DTAPI_DVBT2_BPSK},
         {u"QPSK",   DTAPI_DVBT2_QPSK},
         {u"16-QAM", DTAPI_DVBT2_QAM16},
         {u"64-QAM", DTAPI_DVBT2_QAM64},
-    }));
+    });
     help(u"t2-l1-modulation",
          u"DVB-T2 modulators: indicate the modulation type used for the L1-post "
          u"signalling block. The default is 16-QAM.");
@@ -684,11 +684,11 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DVB-T/H modulators: indicate that at least one elementary stream uses "
          u"time slicing (DVB-H signalling).");
 
-    option(u"transmission-mode", 't', Names({
+    option(u"transmission-mode", 't', Names {
         {u"2K", DTAPI_MOD_DVBT_2K},
         {u"4K", DTAPI_MOD_DVBT_4K},
         {u"8K", DTAPI_MOD_DVBT_8K},
-    }));
+    });
     help(u"transmission-mode",
          u"DVB-T modulators: indicate the transmission mode. The default is 8K.");
 
@@ -710,10 +710,10 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"Can be combined with an --offset-count option. "
          u"The VHF frequency layout depends on the region, see --hf-band-region option.");
 
-    option(u"vsb", 0, Names({
+    option(u"vsb", 0, Names {
         {u"8",  DTAPI_MOD_ATSC_VSB8},
         {u"16", DTAPI_MOD_ATSC_VSB16},
-    }));
+    });
     help(u"vsb",
          u"ATSC modulators: indicate the VSB constellation. The default is 8.");
 

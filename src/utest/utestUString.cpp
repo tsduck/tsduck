@@ -177,7 +177,7 @@ TSUNIT_DEFINE_TEST(UTF)
 {
     // Reference UTF-8 text.
     // Was entered manually in Notepad++ and separately saved in UTF-8 and UTF-16.
-    static const uint8_t utf8_bytes[] = {
+    static const uint8_t utf8_bytes[] {
         0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x66, 0x6b, 0x6c,
         0x6d, 0x6e, 0x6f, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,
         0x79, 0x7a, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x46,
@@ -202,7 +202,7 @@ TSUNIT_DEFINE_TEST(UTF)
     };
 
     // Corresponding UTF-16 values.
-    static const uint16_t utf16_values[] = {
+    static const uint16_t utf16_values[] {
         0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067, 0x0068, 0x0069,
         0x0066, 0x006b, 0x006c, 0x006d, 0x006e, 0x006f, 0x0070, 0x0071, 0x0072,
         0x0073, 0x0074, 0x0075, 0x0076, 0x0077, 0x0078, 0x0079, 0x007a, 0x0041,
@@ -259,7 +259,7 @@ TSUNIT_DEFINE_TEST(Diacritical)
 
 TSUNIT_DEFINE_TEST(Surrogate)
 {
-    const ts::UString ab({MATH_A1, MATH_A2, MATH_B1, MATH_B2});
+    static const ts::UString ab {MATH_A1, MATH_A2, MATH_B1, MATH_B2};
     // Displayed string may be screwed up, depending of the terminal...
     debug() << "UStringTest::testSurrogate: '" << ab << "'" << std::endl;
 
@@ -287,8 +287,8 @@ TSUNIT_DEFINE_TEST(Width)
 {
     TSUNIT_EQUAL(0, ts::UString().width());
     TSUNIT_EQUAL(3, ts::UString(u"ABC").width());
-    TSUNIT_EQUAL(3, (u"A" + ts::UString({ts::ACUTE_ACCENT}) + u"BC").width());
-    TSUNIT_EQUAL(2, ts::UString({MATH_A1, MATH_A2, MATH_B1, MATH_B2}).width());
+    TSUNIT_EQUAL(3, (u"A" + ts::UString {ts::ACUTE_ACCENT} + u"BC").width());
+    TSUNIT_EQUAL(2, (ts::UString {MATH_A1, MATH_A2, MATH_B1, MATH_B2}).width());
 }
 
 TSUNIT_DEFINE_TEST(DisplayPosition)
@@ -298,7 +298,7 @@ TSUNIT_DEFINE_TEST(DisplayPosition)
     TSUNIT_EQUAL(0, ts::UString().displayPosition(6, 7, ts::RIGHT_TO_LEFT));
     TSUNIT_EQUAL(2, ts::UString(u"ABCDE").displayPosition(2));
 
-    const ts::UString s({u'A', ts::ACUTE_ACCENT, u'B', u'C', u'D', u'E'});
+    static const ts::UString s {u'A', ts::ACUTE_ACCENT, u'B', u'C', u'D', u'E'};
     TSUNIT_EQUAL(6, s.size());
     TSUNIT_EQUAL(6, s.length());
     TSUNIT_EQUAL(5, s.width());
@@ -1914,7 +1914,7 @@ TSUNIT_DEFINE_TEST(Format)
     TSUNIT_EQUAL(u"i = -1,234, u16 = 0x0080, 27 abc def ghi jkl", ts::UString::Format(u"i = %'d, u16 = 0x%X, %d %s %s %s %s", i, u16, 27, us, s, u"ghi", "jkl"));
 
     // Character.
-    const ts::UString ref1({u'A', ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS, u'B'});
+    const ts::UString ref1 {u'A', ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS, u'B'};
     TSUNIT_EQUAL(ref1, ts::UString::Format(u"A%cB", int(ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS)));
     TSUNIT_EQUAL(ref1, ts::UString::Format(u"A%cB", ts::GREEK_CAPITAL_LETTER_ALPHA_WITH_TONOS));
     TSUNIT_EQUAL(u"AxyB", ts::UString::Format(u"A%c%cB", 'x', u'y'));

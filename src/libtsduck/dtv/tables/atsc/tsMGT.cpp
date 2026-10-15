@@ -151,7 +151,7 @@ void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 //----------------------------------------------------------------------------
 
 ts::MGT::TableTypeNames::TableTypeNames() :
-    Names({
+    Names {
         {u"TVCT-current", 0x0000},
         {u"TVCT-next",    0x0001},
         {u"CVCT-current", 0x0002},
@@ -159,7 +159,7 @@ ts::MGT::TableTypeNames::TableTypeNames() :
         {u"ETT",          0x0004},
         {u"DCCSCT",       0x0005},
         {u"LTST",         0x0006},
-    })
+    }
 {
     // 0x0100-0x017F EIT-0 to EIT-127
     for (int val = 0x0100; val <= 0x017F; ++val) {

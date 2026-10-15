@@ -116,11 +116,13 @@ void NamesTest::afterTest()
 
 TSUNIT_DEFINE_TEST(Name)
 {
-    ts::Names e1({{u"FirstElement", -1},
-                  {u"SecondElement", 7},
-                  {u"FirstRepetition", 47},
-                  {u"OtherValue", -123},
-                  {u"AddedElement", 458}});
+    ts::Names e1 {
+        {u"FirstElement", -1},
+        {u"SecondElement", 7},
+        {u"FirstRepetition", 47},
+        {u"OtherValue", -123},
+        {u"AddedElement", 458}
+    };
 
     TSUNIT_ASSERT(!e1.empty());
     TSUNIT_EQUAL(u"FirstElement", e1.name(-1));
@@ -136,11 +138,13 @@ TSUNIT_DEFINE_TEST(Name)
 
 TSUNIT_DEFINE_TEST(Names)
 {
-    ts::Names e1({{u"FirstElement", -1},
-                  {u"SecondElement", 7},
-                  {u"FirstRepetition", 47},
-                  {u"OtherValue", -123},
-                  {u"AddedElement", 458}});
+    ts::Names e1 {
+        {u"FirstElement", -1},
+        {u"SecondElement", 7},
+        {u"FirstRepetition", 47},
+        {u"OtherValue", -123},
+        {u"AddedElement", 458}
+    };
 
     std::vector<int> vec;
     TSUNIT_EQUAL(u"", e1.names(vec));
@@ -157,11 +161,13 @@ TSUNIT_DEFINE_TEST(Names)
 
 TSUNIT_DEFINE_TEST(Value)
 {
-    ts::Names e1({{u"FirstElement", -1},
-                  {u"SecondElement", 7},
-                  {u"FirstRepetition", 47},
-                  {u"OtherValue", -123},
-                  {u"AddedElement", 458}});
+    ts::Names e1 {
+        {u"FirstElement", -1},
+        {u"SecondElement", 7},
+        {u"FirstRepetition", 47},
+        {u"OtherValue", -123},
+        {u"AddedElement", 458}
+    };
 
     TSUNIT_ASSERT(e1.value(u"FirstElement") == -1);
     TSUNIT_ASSERT(e1.value(u"SecondElement") == 7);
@@ -250,10 +256,12 @@ TSUNIT_DEFINE_TEST(NameList)
 
 TSUNIT_DEFINE_TEST(Error)
 {
-    ts::Names e({{u"version",   0},
-                 {u"verbose",   1},
-                 {u"versatile", 2},
-                 {u"other",     3}});
+    ts::Names e {
+        {u"version",   0},
+        {u"verbose",   1},
+        {u"versatile", 2},
+        {u"other",     3}
+    };
 
     TSUNIT_EQUAL(u"", e.error(u"oth"));
     TSUNIT_EQUAL(u"", e.error(u"versi"));

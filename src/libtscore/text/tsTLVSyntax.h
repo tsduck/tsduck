@@ -123,8 +123,8 @@ namespace ts {
     private:
         int    _start = 0;
         int    _size = 0;
-        size_t _tag_size {1};
-        size_t _length_size {1};
+        size_t _tag_size = 1;
+        size_t _length_size = 1;
         bool   _msb = true;
 
         // Compute the size of the longest TLV area starting at tlvStart.

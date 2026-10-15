@@ -242,8 +242,8 @@ namespace ts {
         PID                   _output_pid = PID_NULL;
         cn::milliseconds      _start_time_offset {};
         bool                  _date_only = false;
-        size_t                _max_buffered_sections {DEFAULT_BUFFERED_SECTIONS};
-        SectionDemux          _demux;
+        size_t                _max_buffered_sections = DEFAULT_BUFFERED_SECTIONS;
+        SectionDemux          _demux {_duck, nullptr, this};
         Packetizer            _packetizer;
         std::list<SectionPtr> _sections {};
         std::set<TID>         _removed_tids {};

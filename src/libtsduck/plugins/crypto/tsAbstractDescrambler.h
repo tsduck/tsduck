@@ -189,7 +189,7 @@ namespace ts {
             // Constructor
             ECMStream(AbstractDescrambler* parent) : scrambling(parent->_scrambling) {}
 
-            TID           last_tid {TID_NULL};  // Last table id (0x80 or 0x81)
+            TID           last_tid = TID_NULL;  // Last table id (0x80 or 0x81)
             TSScrambling  scrambling;           // Descrambling using CW from the ECM's of this stream.
             // -- start of write-protected, read-volatile area --
             volatile bool cw_valid = false;     // CW's are valid

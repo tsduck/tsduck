@@ -20,7 +20,6 @@
 ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
     _duck(duck),
     _output_pid(pid),
-    _demux(_duck, nullptr, this),
     _packetizer(_duck, pid, this)
 {
     _input_pids.set(pid);

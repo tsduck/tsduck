@@ -195,21 +195,21 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
 
 const ts::Names& ts::MediaServiceKindDescriptor::MediaDescriptionFlag()
 {
-    static const Names data({
+    static const Names data {
         {u"self",      0},
         {u"associate", 1},
-    });
+    };
     return data;
 }
 
 const ts::Names& ts::MediaServiceKindDescriptor::MediaType()
 {
-    static const Names data({
+    static const Names data {
         {u"unknown",   0},
         {u"video",     1},
         {u"audio",     2},
         {u"text/data", 3},
-    });
+    };
     return data;
 }
 

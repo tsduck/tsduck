@@ -224,7 +224,7 @@ namespace ts {
         SectionDescList _sched_sections {};      // Scheduled sections, with repetition rates
         SectionDescList _other_sections {};      // Unscheduled sections
         PacketCounter   _sched_packets = 0;      // Size in TS packets of all sections in _sched_sections
-        SectionCounter  _current_cycle {1};      // Cycle number (start at 1, always increasing)
+        SectionCounter  _current_cycle = 1;      // Cycle number (start at 1, always increasing)
         size_t          _remain_in_cycle = 0;    // Number of unsent sections in this cycle
         SectionCounter  _cycle_end = UNDEFINED;  // At end of cycle, contains the index of last section
 

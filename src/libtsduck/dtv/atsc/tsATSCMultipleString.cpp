@@ -19,12 +19,12 @@
 
 const std::set<uint8_t>& ts::ATSCMultipleString::UNICODE_MODES()
 {
-    static const std::set<uint8_t> data({
+    static const std::set<uint8_t> data {
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
         0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
         0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
         0x30, 0x31, 0x32, 0x33
-    });
+    };
     return data;
 }
 
@@ -34,7 +34,7 @@ const std::set<uint8_t>& ts::ATSCMultipleString::UNICODE_MODES()
 //----------------------------------------------------------------------------
 
 ts::ATSCMultipleString::ATSCMultipleString(const UString& language, const UString& text) :
-    _strings({StringElement(language, text)})
+    _strings {StringElement(language, text)}
 {
 }
 
