@@ -876,7 +876,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 {
     _plugin->debug(u"UDP server thread started");
 
-    uint8_t inbuf[65536];
+    ByteBlock inbuf(65536);
     size_t insize = 0;
     IPSocketAddress sender;
     IPSocketAddress destination;
@@ -887,9 +887,9 @@ void ts::SpliceInjectPlugin::UDPListener::main()
         ReporterGuard repguard(_client, &error);
 
         // Loop on incoming messages.
-        while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _plugin->tsp)) {
+        while (_client.receive(inbuf.data(), inbuf.size(), insize, sender, destination, _plugin->tsp)) {
             _plugin->verbose(u"received message, %d bytes, from %s", insize, sender);
-            _plugin->processSectionMessage(inbuf, insize);
+            _plugin->processSectionMessage(inbuf.data(), insize);
         }
     }
 

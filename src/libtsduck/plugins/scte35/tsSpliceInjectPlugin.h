@@ -59,7 +59,7 @@ namespace ts {
         static constexpr std::uintmax_t DEFAULT_MAX_FILE_SIZE = 2048;
 
         // Stack size of listener threads.
-        static constexpr size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
+        static constexpr size_t SERVER_THREAD_STACK_SIZE = 256 * 1024;
 
         // Command line options:
         bool             _use_files = false;         // Use file polling input.

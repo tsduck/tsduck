@@ -47,7 +47,6 @@ bool ts::TLSContext::initServer(void*) TS_NOT_IMPL
 bool ts::TLSContext::provideClearData(const void*, size_t, size_t&) TS_NOT_IMPL
 size_t ts::TLSContext::getDataSizeToSend() const { return 0; }
 bool ts::TLSContext::getDataToSend(ByteBlock&) TS_NOT_IMPL
-bool ts::TLSContext::needReceive() const TS_NOT_IMPL
 bool ts::TLSContext::provideReceivedData(const void*, size_t, size_t&, ByteBlock&) TS_NOT_IMPL
 bool ts::TLSContext::initShutdown(bool) TS_NOT_IMPL
 
