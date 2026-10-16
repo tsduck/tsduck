@@ -74,7 +74,7 @@ void ts::Charset::Repository::add(const UString& name, const Charset* charset)
         _map.insert(std::make_pair(name, charset));
     }
     else {
-        throw DuplicateCharset(name);
+        CERR.debug(u"duplicated character set \"%s\" ignored", name);
     }
 }
 

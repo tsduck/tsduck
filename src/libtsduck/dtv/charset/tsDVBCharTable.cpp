@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharTable.h"
+#include "tsCerrReport.h"
 #include "tsMemory.h"
 
 
@@ -62,7 +63,7 @@ void ts::DVBCharTable::TableCodeRepository::add(uint32_t code, const DVBCharTabl
         _map.insert(std::make_pair(code, charset));
     }
     else {
-        throw DuplicateCharset(charset->name());
+        CERR.debug(u"duplicated DVB character table \"%s\" ignored", charset->name());
     }
 }
 

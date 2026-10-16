@@ -25,10 +25,6 @@ namespace ts {
         TS_NOCOPY(Charset);
     public:
         //!
-        //! Exception thrown when registering duplicate charsets.
-        //!
-        TS_DECLARE_EXCEPTION(DuplicateCharset);
-        //!
         //! Exception thrown when registering invalid charsets.
         //!
         TS_DECLARE_EXCEPTION(InvalidCharset);
