@@ -105,13 +105,16 @@ VERSION=$(($MAJOR * 100 + $MINOR))
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
     PKGLIST+=(git bash gnu-sed grep make dos2unix coreutils python3)
-    [[ -z $NOOPENSSL ]] && PKGLIST+=(openssl)
-    [[ -z $NORIST    ]] && PKGLIST+=(librist)
-    [[ -z $NOSRT     ]] && PKGLIST+=(srt)
-    [[ -z $NOVATEK   ]] && PKGLIST+=(libvatek)
-    [[ -z $NOJAVA    ]] && PKGLIST+=(openjdk)
-    [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
-    [[ -z $NODOC     ]] && PKGLIST+=(ruby asciidoctor qpdf)
+    [[ -z $NOOPENSSL  ]] && PKGLIST+=(openssl)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
+    [[ -z $NOZLIB     ]] && PKGLIST+=(zlib-ng-compat)
+    [[ -z $NOCURL     ]] && PKGLIST+=(curl)
+    [[ -z $NORIST     ]] && PKGLIST+=(librist)
+    [[ -z $NOSRT      ]] && PKGLIST+=(srt)
+    [[ -z $NOVATEK    ]] && PKGLIST+=(libvatek)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NODOC      ]] && PKGLIST+=(ruby asciidoctor qpdf)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0

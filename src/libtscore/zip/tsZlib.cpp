@@ -22,9 +22,15 @@
 
 // Include zlib.
 #if !defined(TS_NO_ZLIB)
+    // Zlib-ng generates macros with C-style casts. Not seen in zlib.
+    TS_LLVM_NOWARNING(old-style-cast)
+    TS_GCC_NOWARNING(old-style-cast)
+
+    // Needed by zlib, not zlib-ng.
     #if !defined(ZLIB_CONST)
         #define ZLIB_CONST 1
     #endif
+
     #include <zlib.h>
 #endif
 

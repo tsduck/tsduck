@@ -4,10 +4,22 @@ TEMPLATE = lib
 TARGET = libtscore
 INCLUDEPATH += $$system("find $$SRCROOT/libtscore -type d ! -name windows ! -name \\*bsd ! -name $$NOSYSDIR ! -name __pycache__")
 
+exists(/opt/homebrew/opt/curl/bin/curl-config) {
+    CURLCONFIG = /opt/homebrew/opt/curl/bin/curl-config
+}
+else {
+    CURLCONFIG = curl-config
+}
+
+mac {
+    QMAKE_CXXFLAGS += -I/opt/homebrew/opt/libedit/include -I/opt/homebrew/opt/zlib-ng-compat/include
+    LIBS += -L/opt/homebrew/opt/libedit/lib -L/opt/homebrew/opt/zlib-ng-compat/lib
+}
+
 linux|mac {
-    QMAKE_CXXFLAGS += $$system("curl-config --cflags")
-    LIBS += $$system("curl-config --libs")
-    LIBS += -lssl -lcrypto
+    QMAKE_CXXFLAGS += $$system("$$CURLCONFIG --cflags")
+    LIBS += $$system("$$CURLCONFIG --libs")
+    LIBS += -lssl -lcrypto -ledit -lz
 }
 
 mac {

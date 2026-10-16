@@ -841,6 +841,10 @@ LIBTSDUCK_LDLIBS="$LIBTSDUCK_LDLIBS $LDLIBS_PCSC"
 if [[ -n $NOEDITLINE ]]; then
     LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -DTS_NO_EDITLINE=1"
 else
+    if [[ -n $MACOS$LINUXBREW ]]; then
+        LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -L$ALTDEVROOT/opt/libedit/lib"
+        LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -I$ALTDEVROOT/opt/libedit/include"
+    fi
     LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -ledit"
 fi
 if [[ -n $NOCURL ]]; then
@@ -848,9 +852,14 @@ if [[ -n $NOCURL ]]; then
 else
     if [[ -z $CURL_DONE ]]; then
         CURL_DONE=1
-        CXXFLAGS_CURL="$(curl-config --cflags)"
+        if [[ -n $MACOS$LINUXBREW && -x "$ALTDEVROOT/opt/curl/bin/curl-config" ]]; then
+            CURL_CONFIG="$ALTDEVROOT/opt/curl/bin/curl-config"
+        else
+            CURL_CONFIG=curl-config
+        fi
+        CXXFLAGS_CURL=$("$CURL_CONFIG" --cflags)
         # Remove useless explicit references to /usr/lib which break usage of alternative compilers
-        LDLIBS_CURL=$(curl-config --libs | $SED -e 's|-L/usr/lib||' -e 's|-Wl,-R/usr/lib||')
+        LDLIBS_CURL=$("$CURL_CONFIG" --libs | $SED -e 's|-L/usr/lib||' -e 's|-Wl,-R/usr/lib||')
     fi
     LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES $CXXFLAGS_CURL"
     LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS $LDLIBS_CURL"
@@ -858,6 +867,10 @@ fi
 if [[ -n $NOZLIB ]]; then
     LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -DTS_NO_ZLIB=1"
 else
+    if [[ -n $MACOS$LINUXBREW ]]; then
+        LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -L$ALTDEVROOT/opt/zlib-ng-compat/lib"
+        LIBTSCORE_CXXFLAGS_INCLUDES="$LIBTSCORE_CXXFLAGS_INCLUDES -I$ALTDEVROOT/opt/zlib-ng-compat/include"
+    fi
     LIBTSCORE_LDLIBS="$LIBTSCORE_LDLIBS -lz"
 fi
 if [[ -n $NOSDEFL ]]; then
