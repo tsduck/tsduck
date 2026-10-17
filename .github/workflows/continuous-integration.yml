@@ -62,19 +62,19 @@ jobs:
         # std: [20, 23]
         std: [20]
         include:
-        - os: ubuntu-24.04
+        - os: ubuntu-26.04
           make: make DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
-        - os: ubuntu-24.04
+        - os: ubuntu-26.04
           compiler: clang
           llvm: true
-        - os: macos-15
+        - os: macos-latest
           # It has been noted on GitHub macOS runners that the host name can change
           # between steps or even the middle of a step. This breaks the naming scheme
           # of the build directory for binaries. As a consequence, we force BINDIR=bin.
           bindir: bin
           make: gmake DEBUG=${{ inputs.DEBUG }} VERBOSE=${{ inputs.VERBOSE }}
         exclude:
-        - os: macos-15
+        - os: macos-latest
           compiler: gcc
           # Don't use gcc on macOS.
     name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}

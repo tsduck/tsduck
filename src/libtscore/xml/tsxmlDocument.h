@@ -49,6 +49,8 @@ namespace ts::xml {
         //!
         //! Parse an XML document.
         //! @param [in] text The XML document.
+        //! @param [in] max_nested Maximum number of nested levels to parse.
+        //! The default value is recommended to avoid stack overflow.
         //! @return True on success, false on error.
         //!
         bool parse(const UString& text, size_t max_nested = DEFAULT_MAX_NESTED);
