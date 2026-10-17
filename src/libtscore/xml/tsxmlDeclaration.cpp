@@ -58,7 +58,7 @@ void ts::xml::Declaration::print(TextFormatter& output, bool keep_node_open) con
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Declaration::parseNode(TextParser& parser, const Node* parent)
+bool ts::xml::Declaration::parseNode(TextParser& parser, const Node* parent, size_t max_nested)
 {
     // The current point of parsing is right after "<?".
     // The content of the declaration is up (but not including) the "?>".

@@ -77,34 +77,34 @@ ts::UString ts::xml::Document::DisplayFileName(const UString& name, bool stdInpu
 // Parse an XML document.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::parse(const UStringList& lines)
+bool ts::xml::Document::parse(const UStringList& lines, size_t max_nested)
 {
     TextParser parser(lines, report());
-    return parseNode(parser, nullptr);
+    return parseNode(parser, nullptr, max_nested);
 }
 
-bool ts::xml::Document::parse(const UString& text)
+bool ts::xml::Document::parse(const UString& text, size_t max_nested)
 {
     TextParser parser(text, report());
-    return parseNode(parser, nullptr);
+    return parseNode(parser, nullptr, max_nested);
 }
 
-bool ts::xml::Document::load(std::istream& strm)
+bool ts::xml::Document::load(std::istream& strm, size_t max_nested)
 {
     TextParser parser(report());
-    return parser.loadStream(strm) && parseNode(parser, nullptr);
+    return parser.loadStream(strm) && parseNode(parser, nullptr, max_nested);
 }
 
-bool ts::xml::Document::load(const UString& file_name, bool search)
+bool ts::xml::Document::load(const UString& file_name, bool search, size_t max_nested)
 {
     // Specific case of inline XML content, when the string is not the name of a file but directly an XML content.
     if (IsInlineXML(file_name)) {
-        return parse(file_name);
+        return parse(file_name, max_nested);
     }
 
     // Specific case of the standard input.
     if (file_name.empty() || file_name == u"-") {
-        return load(std::cin);
+        return load(std::cin, max_nested);
     }
 
     // Actual file name to load after optional search in directories.
@@ -119,7 +119,7 @@ bool ts::xml::Document::load(const UString& file_name, bool search)
     // Parse the document from the file.
     TextParser parser(report());
     report().debug(u"loading XML file %s", actual_file_name);
-    return parser.loadFile(actual_file_name) && parseNode(parser, nullptr);
+    return parser.loadFile(actual_file_name) && parseNode(parser, nullptr, max_nested);
 }
 
 
@@ -155,10 +155,10 @@ void ts::xml::Document::printClose(TextFormatter& output, size_t levels) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
+bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent, size_t max_nested)
 {
     // The document is a simple list of children.
-    if (!parseChildren(parser)) {
+    if (!parseChildren(parser, max_nested)) {
         return false;
     }
 

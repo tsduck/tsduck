@@ -286,7 +286,7 @@ namespace ts::xml {
         //! @param [in] levels Number of levels to close. By default, close the complete document.
         //! If zero, no output is produced.
         //!
-        virtual void printClose(TextFormatter& output, size_t levels = std::numeric_limits<size_t>::max()) const;
+        virtual void printClose(TextFormatter& output, size_t levels = UNLIMITED) const;
 
         //!
         //! Format the value as a one-liner XML text.
@@ -357,17 +357,27 @@ namespace ts::xml {
         //! parser after the tag which identified the node ("<?", "<!- -", etc.) On output, it
         //! must be after the last character of the node.
         //! @param [in] parent Candidate parent node, for information only, do not modify. Can be null.
+        //! @param [in] max_nested Maximum number of nested levels to explore.
         //! @return True on success, false on error.
         //!
-        virtual bool parseNode(TextParser& parser, const Node* parent) = 0;
+        virtual bool parseNode(TextParser& parser, const Node* parent, size_t max_nested) = 0;
 
         //!
         //! Parse children nodes and add them to the node.
         //! Stop either at end of document or before a "</" sequence or on error.
         //! @param [in,out] parser The document parser.
+        //! @param [in] max_nested Maximum number of nested levels to explore.
         //! @return True on success, false on error.
         //!
-        virtual bool parseChildren(TextParser& parser);
+        virtual bool parseChildren(TextParser& parser, size_t max_nested);
+
+        //!
+        //! Check if we reached the maximum number of nested levels of elements.
+        //! Print an error message in case of error.
+        //! @param [in] max_nested Maximum number of nested levels to explore.
+        //! @return True on success (@a max_nested is greater than zero), false on error (@a max_nested is zero).
+        //!
+        bool allowNested(size_t max_nested);
 
         //!
         //! Called by the subclass when its spaces shall be preserved.

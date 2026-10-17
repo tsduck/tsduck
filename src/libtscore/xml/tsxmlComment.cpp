@@ -53,7 +53,7 @@ void ts::xml::Comment::print(TextFormatter& output, bool keep_node_open) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Comment::parseNode(TextParser& parser, const Node* parent)
+bool ts::xml::Comment::parseNode(TextParser& parser, const Node* parent, size_t max_nested)
 {
     // The current point of parsing is right after "<!--".
     // The content of the comment is up (but not including) the "-->".

@@ -56,7 +56,14 @@ namespace ts {
         using ElementVector = std::vector<const Element*>;
 
         //!
-        //! Specify an unlimited number of elements.
+        //! Specify the defaut maximum number of nested levels of elements.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
+        //! @ingroup xml
+        //!
+        static constexpr size_t DEFAULT_MAX_NESTED = 256;
+
+        //!
+        //! Specify an unlimited number of elements or unlimited number of nested levels.
         //! @ingroup xml
         //!
         static constexpr size_t UNLIMITED = std::numeric_limits<size_t>::max();

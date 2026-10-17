@@ -1302,7 +1302,7 @@ namespace ts::xml {
 
     protected:
         // Inherited from xml::Node.
-        virtual bool parseNode(TextParser& parser, const Node* parent) override;
+        virtual bool parseNode(TextParser& parser, const Node* parent, size_t max_nested) override;
 
     private:
         // Attributes are stored indexed by name.

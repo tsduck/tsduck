@@ -79,7 +79,7 @@ void ts::xml::Text::print(TextFormatter& output, bool keep_node_open) const
 // Parse the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent)
+bool ts::xml::Text::parseNode(TextParser& parser, const Node* parent, size_t max_nested)
 {
     bool ok;
     UString content;

@@ -103,7 +103,7 @@ bool ts::json::IsInlineJSON(const UString& name)
 // Load a JSON value (typically an object or array) from a text file.
 //----------------------------------------------------------------------------
 
-bool ts::json::LoadFile(ValuePtr& value, const UString& filename, Report& report)
+bool ts::json::LoadFile(ValuePtr& value, const UString& filename, Report& report, size_t max_nested)
 {
     TextParser parser(report);
     bool ok = true;
@@ -116,13 +116,13 @@ bool ts::json::LoadFile(ValuePtr& value, const UString& filename, Report& report
     else {
         ok = parser.loadFile(filename);
     }
-    return ok && Parse(value, parser, true, report);
+    return ok && Parse(value, parser, true, report, max_nested);
 }
 
-bool ts::json::LoadStream(ValuePtr& value, std::istream& strm, Report& report)
+bool ts::json::LoadStream(ValuePtr& value, std::istream& strm, Report& report, size_t max_nested)
 {
     TextParser parser(report);
-    return parser.loadStream(strm) && Parse(value, parser, true, report);
+    return parser.loadStream(strm) && Parse(value, parser, true, report, max_nested);
 }
 
 
@@ -130,19 +130,19 @@ bool ts::json::LoadStream(ValuePtr& value, std::istream& strm, Report& report)
 // Parse a JSON value (typically an object or array).
 //----------------------------------------------------------------------------
 
-bool ts::json::Parse(ValuePtr& value, const UStringList& lines, Report& report)
+bool ts::json::Parse(ValuePtr& value, const UStringList& lines, Report& report, size_t max_nested)
 {
     TextParser parser(lines, report);
-    return Parse(value, parser, true, report);
+    return Parse(value, parser, true, report, max_nested);
 }
 
-bool ts::json::Parse(ValuePtr& value, const UString& text, Report& report)
+bool ts::json::Parse(ValuePtr& value, const UString& text, Report& report, size_t max_nested)
 {
     TextParser parser(text, report);
-    return Parse(value, parser, true, report);
+    return Parse(value, parser, true, report, max_nested);
 }
 
-bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report)
+bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report, size_t max_nested)
 {
     value.reset();
 
@@ -180,6 +180,11 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
         }
     }
     else if (parser.match(u"{", true)) {
+        // Need to recurse, validate the depth first.
+        if (max_nested == 0) {
+            report.error(u"line %d: too many nested JSON objects", parser.lineNumber());
+            return false;
+        }
         // Parse an object.
         value = std::make_shared<Object>();
         // Loop on all fields of the object.
@@ -194,7 +199,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
                 !parser.skipWhiteSpace() ||
                 !parser.match(u":", true) ||
                 !parser.skipWhiteSpace() ||
-                !Parse(element, parser, false, report))
+                !Parse(element, parser, false, report, max_nested - 1))
             {
                 return false;
             }
@@ -213,6 +218,11 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
         }
     }
     else if (parser.match(u"[", true)) {
+        // Need to recurse, validate the depth first.
+        if (max_nested == 0) {
+            report.error(u"line %d: too many nested JSON objects", parser.lineNumber());
+            return false;
+        }
         // Parse an array.
         value = std::make_shared<Array>();
         // Loop on all elements of the array.
@@ -223,7 +233,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
                 break;
             }
             ValuePtr element;
-            if (!Parse(element, parser, false, report)) {
+            if (!Parse(element, parser, false, report, max_nested - 1)) {
                 return false;
             }
             // Found an element.

@@ -57,6 +57,13 @@ namespace ts::json {
     using ValuePtrList = std::list<ValuePtr>;
 
     //!
+    //! Specify the defaut maximum number of nested levels of objects.
+    //! Higher numbers of nested levels may put pressure on the thread stack size.
+    //! @ingroup xml
+    //!
+    static constexpr size_t DEFAULT_MAX_NESTED = 256;
+
+    //!
     //! Definition of the type of a value.
     //! JSON defines 7 types of value.
     //! @ingroup json
@@ -103,9 +110,11 @@ namespace ts::json {
     //! @param [out] value A smart pointer to the parsed JSON value (null on error).
     //! @param [in] lines List of text lines forming the JSON value.
     //! @param [in,out] report Where to report errors.
+    //! @param [in] max_nested Maximum number of nested levels to parse.
+    //! The default value is recommended to avoid stack overflow.
     //! @return True on success, false on error.
     //!
-    TSCOREDLL bool Parse(ValuePtr& value, const UStringList& lines, Report& report = NULLREP);
+    TSCOREDLL bool Parse(ValuePtr& value, const UStringList& lines, Report& report = NULLREP, size_t max_nested = DEFAULT_MAX_NESTED);
 
     //!
     //! Parse a JSON value (typically an object or array).
@@ -113,9 +122,11 @@ namespace ts::json {
     //! @param [out] value A smart pointer to the parsed JSON value (null on error).
     //! @param [in] text The text forming the JSON value.
     //! @param [in,out] report Where to report errors.
+    //! @param [in] max_nested Maximum number of nested levels to parse.
+    //! The default value is recommended to avoid stack overflow.
     //! @return True on success, false on error.
     //!
-    TSCOREDLL bool Parse(ValuePtr& value, const UString& text, Report& report = NULLREP);
+    TSCOREDLL bool Parse(ValuePtr& value, const UString& text, Report& report = NULLREP, size_t max_nested = DEFAULT_MAX_NESTED);
 
     //!
     //! Parse a JSON value (typically an object or array).
@@ -126,9 +137,11 @@ namespace ts::json {
     //! the JSON value (except white spaces). If false, on output, the position of the parser
     //! is right after the JSON value.
     //! @param [in,out] report Where to report errors.
+    //! @param [in] max_nested Maximum number of nested levels to parse.
+    //! The default value is recommended to avoid stack overflow.
     //! @return True on success, false on error.
     //!
-    TSCOREDLL bool Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report = NULLREP);
+    TSCOREDLL bool Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report& report = NULLREP, size_t max_nested = DEFAULT_MAX_NESTED);
 
     //!
     //! Load a JSON value (typically an object or array) from a text file.
@@ -138,9 +151,11 @@ namespace ts::json {
     //! If @a filename starts with "{" or "[", this is considered as "inline JSON content".
     //! The document is loaded from this string instead of reading a file.
     //! @param [in,out] report Where to report errors.
+    //! @param [in] max_nested Maximum number of nested levels to parse.
+    //! The default value is recommended to avoid stack overflow.
     //! @return True on success, false on error.
     //!
-    TSCOREDLL bool LoadFile(ValuePtr& value, const UString& filename, Report& report = NULLREP);
+    TSCOREDLL bool LoadFile(ValuePtr& value, const UString& filename, Report& report = NULLREP, size_t max_nested = DEFAULT_MAX_NESTED);
 
     //!
     //! Load a JSON value (typically an object or array) from an open text stream.
@@ -148,9 +163,11 @@ namespace ts::json {
     //! @param [out] value A smart pointer to the parsed JSON value (null on error).
     //! @param [in,out] strm A standard text stream in input mode.
     //! @param [in,out] report Where to report errors.
+    //! @param [in] max_nested Maximum number of nested levels to parse.
+    //! The default value is recommended to avoid stack overflow.
     //! @return True on success, false on error.
     //!
-    TSCOREDLL bool LoadStream(ValuePtr& value, std::istream& strm, Report& report = NULLREP);
+    TSCOREDLL bool LoadStream(ValuePtr& value, std::istream& strm, Report& report = NULLREP, size_t max_nested = DEFAULT_MAX_NESTED);
 
     //!
     //! Check if a "file name" is in fact inline JSON content instead of a file name.

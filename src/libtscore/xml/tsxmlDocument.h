@@ -40,16 +40,18 @@ namespace ts::xml {
         //!
         //! Parse an XML document.
         //! @param [in] lines List of text lines forming the XML document.
+        //! @param [in] max_nested Maximum number of nested levels to parse.
+        //! The default value is recommended to avoid stack overflow.
         //! @return True on success, false on error.
         //!
-        bool parse(const UStringList& lines);
+        bool parse(const UStringList& lines, size_t max_nested = DEFAULT_MAX_NESTED);
 
         //!
         //! Parse an XML document.
         //! @param [in] text The XML document.
         //! @return True on success, false on error.
         //!
-        bool parse(const UString& text);
+        bool parse(const UString& text, size_t max_nested = DEFAULT_MAX_NESTED);
 
         //!
         //! Load and parse an XML file.
@@ -59,17 +61,21 @@ namespace ts::xml {
         //! The document is loaded from this string instead of reading a file.
         //! @param [in] search If true, search the XML file in the TSDuck configuration directories
         //! if @a file_name is not found and does not contain any directory part.
+        //! @param [in] max_nested Maximum number of nested levels to parse.
+        //! The default value is recommended to avoid stack overflow.
         //! @return True on success, false on error.
         //! @see SearchConfigurationFile()
         //!
-        bool load(const UString& file_name, bool search = true);
+        bool load(const UString& file_name, bool search = true, size_t max_nested = DEFAULT_MAX_NESTED);
 
         //!
         //! Load and parse an XML file.
         //! @param [in,out] strm A standard text stream in input mode.
+        //! @param [in] max_nested Maximum number of nested levels to parse.
+        //! The default value is recommended to avoid stack overflow.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm);
+        bool load(std::istream& strm, size_t max_nested = DEFAULT_MAX_NESTED);
 
         //!
         //! Save an XML file.
@@ -140,7 +146,7 @@ namespace ts::xml {
 
     protected:
         // Inherited from xml::Node.
-        virtual bool parseNode(TextParser& parser, const Node* parent) override;
+        virtual bool parseNode(TextParser& parser, const Node* parent, size_t max_nested) override;
 
     private:
         Tweaks _tweaks {};  // Global XML tweaks for the document.

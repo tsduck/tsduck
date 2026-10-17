@@ -361,17 +361,22 @@ ts::xml::Element* ts::xml::Node::firstChildElement()
 // Parse children nodes and add them to the node.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Node::parseChildren(TextParser& parser)
+bool ts::xml::Node::parseChildren(TextParser& parser, size_t max_nested)
 {
+    // Limit the depth of recursion.
+    if (!allowNested(max_nested)) {
+        return false;
+    }
+
     bool result = true;
-    Node* node;
+    Node* node = nullptr;
 
     // Loop on each token we find.
     // Exit loop either at end of document or before a "</" sequence.
     while ((node = identifyNextNode(parser)) != nullptr) {
 
         // Read the complete node.
-        if (node->parseNode(parser, this)) {
+        if (node->parseNode(parser, this, max_nested - 1)) {
             // The child node is fine, insert it.
             node->reparent(this);
         }
@@ -383,6 +388,22 @@ bool ts::xml::Node::parseChildren(TextParser& parser)
     }
 
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if we reached the maximum number of nested levels of elements.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Node::allowNested(size_t max_nested)
+{
+    if (max_nested > 0) {
+        return true;
+    }
+    else {
+        report().error(u"%s at line %d exceeds the maximum number of nested elements", typeName(), lineNumber());
+        return false;
+    }
 }
 
 
