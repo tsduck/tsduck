@@ -86,6 +86,9 @@ void ts::xml::Node::clear()
     // Clear other fields.
     _value.clear();
     _input_line_num = 0;
+    _preserve_space = false;
+    _ignore_namespace = false;
+    _fatal_parsing = false;
 }
 
 
@@ -364,16 +367,26 @@ ts::xml::Element* ts::xml::Node::firstChildElement()
 bool ts::xml::Node::parseChildren(TextParser& parser, size_t max_nested)
 {
     // Limit the depth of recursion.
-    if (!allowNested(max_nested)) {
-        return false;
+    if (max_nested == 0) {
+        const Element* e = dynamic_cast<const Element*>(this);
+        UString id;
+        if (e == nullptr) {
+            id = typeName();
+        }
+        else {
+            id.format(u"<%s>", e->name());
+        }
+        report().error(u"%s at line %d exceeds the maximum number of nested elements", id, lineNumber());
+        // Cannot continue parsing the document, just give up.
+        _fatal_parsing = true;
     }
 
-    bool result = true;
+    bool result = !_fatal_parsing;
     Node* node = nullptr;
 
     // Loop on each token we find.
     // Exit loop either at end of document or before a "</" sequence.
-    while ((node = identifyNextNode(parser)) != nullptr) {
+    while (!_fatal_parsing && (node = identifyNextNode(parser)) != nullptr) {
 
         // Read the complete node.
         if (node->parseNode(parser, this, max_nested - 1)) {
@@ -382,28 +395,13 @@ bool ts::xml::Node::parseChildren(TextParser& parser, size_t max_nested)
         }
         else {
             // Error, we expect the child's parser to have displayed the error message.
-            delete node;
             result = false;
+            _fatal_parsing = node->_fatal_parsing;
+            delete node;
         }
     }
 
     return result;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if we reached the maximum number of nested levels of elements.
-//----------------------------------------------------------------------------
-
-bool ts::xml::Node::allowNested(size_t max_nested)
-{
-    if (max_nested > 0) {
-        return true;
-    }
-    else {
-        report().error(u"%s at line %d exceeds the maximum number of nested elements", typeName(), lineNumber());
-        return false;
-    }
 }
 
 

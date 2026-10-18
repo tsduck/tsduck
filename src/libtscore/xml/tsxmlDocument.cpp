@@ -79,32 +79,35 @@ ts::UString ts::xml::Document::DisplayFileName(const UString& name, bool stdInpu
 
 bool ts::xml::Document::parse(const UStringList& lines, size_t max_nested)
 {
+    clear();
     TextParser parser(lines, report());
-    return parseNode(parser, nullptr, max_nested);
+    return parseNode(parser, nullptr, max_nested + 1);
 }
 
 bool ts::xml::Document::parse(const UString& text, size_t max_nested)
 {
+    clear();
     TextParser parser(text, report());
-    return parseNode(parser, nullptr, max_nested);
+    return parseNode(parser, nullptr, max_nested + 1);
 }
 
 bool ts::xml::Document::load(std::istream& strm, size_t max_nested)
 {
+    clear();
     TextParser parser(report());
-    return parser.loadStream(strm) && parseNode(parser, nullptr, max_nested);
+    return parser.loadStream(strm) && parseNode(parser, nullptr, max_nested + 1);
 }
 
 bool ts::xml::Document::load(const UString& file_name, bool search, size_t max_nested)
 {
     // Specific case of inline XML content, when the string is not the name of a file but directly an XML content.
     if (IsInlineXML(file_name)) {
-        return parse(file_name, max_nested);
+        return parse(file_name, max_nested + 1);
     }
 
     // Specific case of the standard input.
     if (file_name.empty() || file_name == u"-") {
-        return load(std::cin, max_nested);
+        return load(std::cin, max_nested + 1);
     }
 
     // Actual file name to load after optional search in directories.
@@ -117,9 +120,10 @@ bool ts::xml::Document::load(const UString& file_name, bool search, size_t max_n
     }
 
     // Parse the document from the file.
+    clear();
     TextParser parser(report());
     report().debug(u"loading XML file %s", actual_file_name);
-    return parser.loadFile(actual_file_name) && parseNode(parser, nullptr, max_nested);
+    return parser.loadFile(actual_file_name) && parseNode(parser, nullptr, max_nested + 1);
 }
 
 

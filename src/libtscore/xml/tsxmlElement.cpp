@@ -9,7 +9,6 @@
 #include "tsxmlElement.h"
 #include "tsxmlText.h"
 #include "tsBase64.h"
-#include "tsFatal.h"
 
 
 //----------------------------------------------------------------------------
@@ -1243,11 +1242,6 @@ void ts::xml::Element::printClose(TextFormatter& output, size_t levels) const
 
 bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent, size_t max_nested)
 {
-    // Limit the depth of recursion.
-    if (!allowNested(max_nested)) {
-        return false;
-    }
-
     // We just read the "<". Skip spaces and read the tag name.
     UString node_name;
     parser.skipWhiteSpace();
@@ -1332,7 +1326,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent, size_t 
     }
 
     // End of tag, swallow all children.
-    if (!parseChildren(parser, max_nested - 1)) {
+    if (!parseChildren(parser, max_nested)) {
         return false;
     }
 

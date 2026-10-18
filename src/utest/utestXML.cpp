@@ -44,6 +44,7 @@ class XMLTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(PreserveSpace);
     TSUNIT_DECLARE_TEST(IntValue);
     TSUNIT_DECLARE_TEST(Iterators);
+    TSUNIT_DECLARE_TEST(Depth);
 
 public:
     virtual void beforeTest() override;
@@ -889,4 +890,29 @@ TSUNIT_DEFINE_TEST(Iterators)
     TSUNIT_EQUAL(1, count);
     TSUNIT_ASSERT(!valid);
     TSUNIT_EQUAL(u"Error: <doc>, line 2, contains 4 <a>, allowed 1 to 3", rep.messages());
+}
+
+TSUNIT_DEFINE_TEST(Depth)
+{
+    static constexpr size_t depth = ts::xml::DEFAULT_MAX_NESTED + 10;
+    ts::UString text(u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    for (size_t i = 1; i <= depth; i++) {
+        text.format(u"<a%d>\n", i);
+    }
+    for (size_t i = depth; i > 0; i--) {
+        text.format(u"</a%d>\n", i);
+    }
+
+    ts::ReportBuffer<> rep;
+    ts::xml::Document doc(rep);
+    TSUNIT_ASSERT(!doc.parse(text));
+    TSUNIT_EQUAL(u"Error: <a257> at line 258 exceeds the maximum number of nested elements", rep.messages());
+
+    rep.clear();
+    TSUNIT_ASSERT(!doc.parse(text, depth - 1));
+    TSUNIT_EQUAL(u"Error: <a266> at line 267 exceeds the maximum number of nested elements", rep.messages());
+
+    rep.clear();
+    TSUNIT_ASSERT(doc.parse(text, depth));
+    TSUNIT_EQUAL(u"", rep.messages());
 }

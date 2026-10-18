@@ -372,14 +372,6 @@ namespace ts::xml {
         virtual bool parseChildren(TextParser& parser, size_t max_nested);
 
         //!
-        //! Check if we reached the maximum number of nested levels of elements.
-        //! Print an error message in case of error.
-        //! @param [in] max_nested Maximum number of nested levels to explore.
-        //! @return True on success (@a max_nested is greater than zero), false on error (@a max_nested is zero).
-        //!
-        bool allowNested(size_t max_nested);
-
-        //!
         //! Called by the subclass when its spaces shall be preserved.
         //! Typically called when xml:space="preserve" is encountered.
         //! @param [in] on True is spaces shall be preserved.
@@ -394,6 +386,7 @@ namespace ts::xml {
         size_t  _input_line_num = 0;        // Line number in input document, zero if build programmatically.
         bool    _preserve_space = false;    // Has attribute xml:space="preserve".
         bool    _ignore_namespace = false;  // Ignore namespace by default when comparing element and attribute names.
+        bool    _fatal_parsing = false;     // Fatal parsing error, give up document.
 
         // No default constructor or assignment.
         Node() = delete;
