@@ -564,7 +564,7 @@ bool ts::SRTSocket::Guts::setSockOptPost()
     const auto& a = _parent->_args;
     bool ok = true;
 
-    SETOPT(1, 4, 2, 0, 0, 0, ok, SRTO_DRIFTTRACER, *a.drift_tracer);
+    SETOPT(1, 4, 2, 0, 0, 0, ok, SRTO_DRIFTTRACER, a.drift_tracer);
     SETOPT(1, 2, 0, 0, 0, 0, ok, SRTO_LOSSMAXTTL, a.lossmaxttl);
     SETOPT(1, 0, 5, 0, 0, 0, ok, SRTO_MAXBW, a.max_bw);
     SETOPT(1, 0, 5, 0, 0, 0, ok, SRTO_INPUTBW, a.input_bw);

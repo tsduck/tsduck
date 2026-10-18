@@ -443,7 +443,7 @@ ts::CommandStatus ts::ZlibCommands::decompress(const UString& command, Args& arg
     loadArgs(args);
 
     ByteBlock input, output;
-    return loadInput(input, args) && Zlib::Decompress(output, input, args, use_sdefl) && saveOutput(output, args) ?
+    return loadInput(input, args) && Zlib::Decompress(output, input, NPOS, args, use_sdefl) && saveOutput(output, args) ?
         CommandStatus::SUCCESS : CommandStatus::ERROR;
 }
 

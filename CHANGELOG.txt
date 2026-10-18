@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4843 (October 2026)
+VERSION 3.46-4847 (October 2026)
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,6 +12,8 @@ VERSION 3.46-4843 (October 2026)
     using external shared libraries remains.  Specifically, the plugin "dektec"
     remains  in  an  external  shared  library  because it is linked against an
     additional shared library which contains non-free code from Dektec.
+  * The  compilation  on  UNIX  systems  now  includes  more stringent security
+    hardening options.
   * The plugins "srt" now accept a srt:// URL as parameter. The URL can contain
     most usual SRT parameters. The format of these URLs is not yet standardized
     and the specification may evolve.
@@ -32,13 +34,15 @@ VERSION 3.46-4843 (October 2026)
   * Fixed issue #1749:  A regression  was  introduced  in  v3.45  in TR 101 290
     analysis: consecutive PCR in range -100 .. -1 were no longer detected as an
     error.
-  * Fixed  potential  crash  (thread stack overflow) when injecting XML or JSON
-    documents  with  more than 300 nested levels.  This vulnerability was found
-    using AI.
   * Fixed a regression in input plugins "http" and "hls". The entire stream was
     loaded in memory before starting.  With plugin "hls", an entire segment was
     loaded first.  With continuous and endless "http" streams, the memory could
     have been exhausted.
+  * Fixed  potential  crash  (thread stack overflow) when injecting XML or JSON
+    documents  with  more than 300 nested levels.  This vulnerability was found
+    using AI.
+  * Fixed  a potential infinite loop when a DSMCC carousel contained an invalid
+    truncated compressed container This vulnerability was found using AI.
 
 -------------------------------------------------------------------------------
 

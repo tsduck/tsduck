@@ -80,7 +80,7 @@ bool ts::ContainerTable::getContainer(ByteBlock& container) const
     else if (compression_wrapper[0] == 1 && compression_wrapper.size() >= 4) {
         // Zlib-compressed.
         const size_t original_size = GetUInt24(compression_wrapper.data() + 1);
-        return Zlib::Decompress(container, compression_wrapper.data() + 4, compression_wrapper.size() - 4) && container.size() == original_size;
+        return Zlib::Decompress(container, compression_wrapper.data() + 4, compression_wrapper.size() - 4, original_size) && container.size() == original_size;
     }
     else {
         // Invalid compression method.

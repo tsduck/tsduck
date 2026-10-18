@@ -42,12 +42,18 @@ namespace ts {
         //!
         RestArgs(const UString& description = u"server", const UString& prefix = UString(), bool tls_default = false);
 
+        static constexpr size_t DEFAULT_MAX_HEADER_COUNT = 256;  //!< Default maximum number of received headers.
+        static constexpr size_t DEFAULT_MAX_LINE_SIZE = 2048;    //!< Default maximum size of received text lines.
+        static constexpr size_t DEFAULT_MAX_POST_SIZE = 65536;   //!< Default maximum size of received POST data.
+
         // Common client and server options.
         UString auth_token {};  //!< Authentication token.
         UString api_root {};    //!< Optional root path for api (e.g. "/serve/api").
 
         // Server-specific options.
-        // (None at this level)
+        size_t max_header_count = DEFAULT_MAX_HEADER_COUNT;  //!< Maximum number of received headers.
+        size_t max_line_size = DEFAULT_MAX_LINE_SIZE;        //!< Maximum size of received text lines.
+        size_t max_post_size = DEFAULT_MAX_POST_SIZE;        //!< Maximum size of received POST data.
 
         // Client-specific options.
         // (None at this level)
@@ -59,6 +65,6 @@ namespace ts {
         virtual bool loadClientArgs(Args& args, const UChar* server_option = nullptr) override;
 
     private:
-        UString _opt_token;  //) Option name for --[prefix-]token.
+        UString _opt_token;  // Option name for --[prefix-]token.
     };
 }

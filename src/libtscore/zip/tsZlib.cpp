@@ -118,19 +118,26 @@ bool ts::Zlib::SdeflSupported()
 bool ts::Zlib::checkZlibStatus(void* stream, int status, const UChar* func, Report& report)
 {
 #if !defined(TS_NO_ZLIB)
-    if (status != Z_OK && status != Z_STREAM_END && status != Z_BUF_ERROR) {
+
+    // Could not pass stream as ::z_stream* if zlib.h was not included.
+    ::z_stream* strm = reinterpret_cast<::z_stream*>(stream);
+
+    // Z_BUF_ERROR is an error only when there is nothing to read. Otherwise, it means "need more output space".
+    if (status != Z_OK && status != Z_STREAM_END && (status != Z_BUF_ERROR || (strm != nullptr && strm->avail_in == 0))) {
         UString msg;
         msg.format(u"zlib error %d", status);
         if (func != nullptr && *func != 0) {
             msg.format(u" from %s", func);
         }
-        if (stream != nullptr && reinterpret_cast<::z_stream*>(stream)->msg != nullptr) {
-            msg.format(u", %s", reinterpret_cast<::z_stream*>(stream)->msg);
+        if (strm != nullptr && strm->msg != nullptr) {
+            msg.format(u", %s", strm->msg);
         }
         report.error(msg);
         return false;
     }
+
 #endif
+
     return true;
 }
 
@@ -200,6 +207,9 @@ bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, in
     constexpr uint32_t canary = 0xDEADBEEF;
     PutUInt32(out.data() + initial_out_size + max_out, canary);
 
+    // Sdefl has 8 levels of compression instead of 9.
+    level = std::min(level, SDEFL_LVL_MAX);
+
     // Compress in one call.
     InitZero<::sdefl> data;
     const int len = ::zsdeflate(&data.data, out.data() + initial_out_size, in, int(in_size), level);
@@ -227,7 +237,7 @@ bool ts::Zlib::CompressAppend(ByteBlock& out, const void* in, size_t in_size, in
 // Decompress data according to the DEFLATE algorithm.
 //----------------------------------------------------------------------------
 
-bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, Report& report, bool use_sdefl)
+bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, size_t out_size, Report& report, bool use_sdefl)
 {
     [[maybe_unused]] const size_t initial_out_size = out.size();
 
@@ -235,9 +245,9 @@ bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, 
     if (!use_sdefl) {
 
         // Decompress using zlib.
-        // Resize to some arbitrary larger size than input.
+        // If output size is unknown, resize to some arbitrary larger size than input.
         // In any case, we will resize if not large enough.
-        out.resize(initial_out_size + 3 * in_size);
+        out.resize(initial_out_size + (out_size != NPOS ? out_size : 3 * in_size));
 
         ::z_stream strm;
         TS_ZERO(strm);
@@ -258,11 +268,19 @@ bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, 
                 return false;
             }
             if (status != Z_STREAM_END && strm.avail_out == 0) {
-                // No enough space in output buffer, resize it.
-                size_t previous = strm.total_out;
-                out.resize(initial_out_size + previous + 2 * in_size);
-                strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + initial_out_size + previous);
-                strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - initial_out_size - previous);
+                // No enough space in output buffer.
+                if (out_size != NPOS) {
+                    // A specific output size was expected.
+                    report.error(u"decompression overflow, expected %d bytes", out_size);
+                    return false;
+                }
+                else {
+                    // Output size unknown, resize output buffer.
+                    size_t previous = strm.total_out;
+                    out.resize(initial_out_size + previous + 2 * in_size);
+                    strm.next_out = reinterpret_cast<decltype(strm.next_out)>(out.data() + initial_out_size + previous);
+                    strm.avail_out = static_cast<decltype(strm.avail_out)>(out.size() - initial_out_size - previous);
+                }
             }
         } while (status != Z_STREAM_END);
 
@@ -276,14 +294,14 @@ bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, 
 
 #if !defined(TS_NO_SDEFL)
     // Fallback to sdefl library.
-    // There is no way to know the decompressed size and there is also no way to continue
-    // decompressing if the buffer is too small. We adopt the following strategy: start with
+    // With sdefl, there is no way to continue decompressing if the output buffer is too small.
+    // If the expected output size is unknown, we adopt the following strategy: start with
     // some probable max size, then retry several times, doubling the buffer size each time.
     // It is hard to guess where to stop. Some very redundant data can be highly compressed.
-    out.resize(initial_out_size + 512 + in_size * 5);
+    out.resize(initial_out_size + (out_size != NPOS ? out_size : 512 + in_size * 5));
     int len = 0;
     for (int count = 0; count < 20; count++) {
-        len = ::zsinflate(out.data() + initial_out_size, int(out.size()), in, int(in_size));
+        len = ::zsinflate(out.data() + initial_out_size, int(out.size() - initial_out_size), in, int(in_size));
         if (len >= 0) {
             // Success, final size of output.
             out.resize(initial_out_size + size_t(len));
@@ -291,11 +309,17 @@ bool ts::Zlib::DecompressAppend(ByteBlock& out, const void* in, size_t in_size, 
         }
         if (len == -2) {
             // Output buffer is too small.
+            if (out_size != NPOS) {
+                // A specific output size was expected.
+                report.error(u"decompression overflow, expected %d bytes", out_size);
+                return false;
+            }
             if (out.size() > initial_out_size + in_size + 1'000'000'000) {
                 // We are probably going crazy, stop here.
                 break;
             }
-            out.resize(2 * out.size());
+            // Output size unknown, resize output buffer.
+            out.resize(initial_out_size + 2 * (out.size() - initial_out_size));
         }
         else {
             // Invalid compressed data.

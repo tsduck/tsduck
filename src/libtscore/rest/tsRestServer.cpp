@@ -44,9 +44,14 @@ bool ts::RestServer::getLine(TCPConnection& conn, UString& line)
     // Read bytes one by one until end of line.
     // This is very inefficient but we must not read beyond the end of line.
     ByteBlock bb;
-    bb.reserve(2048);
+    bb.reserve(_args.max_line_size);
     uint8_t byte = 0;
     while (conn.readStream(&byte, 1, nullptr)) {
+        // Limit the received line size to avoid attacks using endless lines.
+        if (bb.size() >= _args.max_line_size) {
+            _report.error(u"header line too long in REST request, max: %d characters", _args.max_line_size);
+            return false;
+        }
         bb.append(byte);
         if (byte == LINE_FEED) {
             break;
@@ -138,6 +143,12 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
         if (line.empty()) {
             break;
         }
+        // Limit the received line size to avoid attacks using endless headers.
+        if (_request_headers.size() >= _args.max_header_count) {
+            _report.error(u"too many header lines in REST request, max: %d", _args.max_header_count);
+            return false;
+        }
+        // Decode the header line.
         const size_t colon = line.find(':');
         if (colon == NPOS) {
             _request_headers.insert(std::make_pair(line.toTrimmed(), u""));
@@ -162,7 +173,7 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
     if (authorized && !_args.auth_token.empty() && _request_token != _args.auth_token) {
         // Vade retro Satanas !
         authorized = false;
-        conn.report().error(u"invalid authorization token '%s' from client at %s", _request_token, client_address);
+        conn.report().error(u"invalid authorization token from client at %s", client_address);
     }
 
     // Reject unauthorized client.
@@ -191,12 +202,18 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
         // Now read the request content.
         size_t ret_size = 0;
         for (bool ok = true; ok && (unbounded || _post_data.size() < data_length); ) {
+            // Receive a chunk of data.
             constexpr size_t default_chunk = 2048;
             const size_t previous = _post_data.size();
             const size_t chunk = unbounded ? default_chunk : std::min(default_chunk, data_length - _post_data.size());
             _post_data.resize(previous + chunk);
             ok = conn.readStream(&_post_data[previous], chunk, ret_size, nullptr);
             _post_data.resize(previous + ret_size);
+            // Limit the received POST data size to avoid attacks using endless data.
+            if (_post_data.size() > _args.max_post_size) {
+                _report.error(u"POST data too large in REST request, max: %d", _args.max_post_size);
+                return false;
+            }
         }
     }
 
