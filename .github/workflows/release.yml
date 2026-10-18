@@ -44,7 +44,7 @@ on:
         type: boolean
         required: false
         default: true
-      build_riscv:
+      build_riscv64:
         description: 'Build RISC-V packages'
         type: boolean
         required: false
