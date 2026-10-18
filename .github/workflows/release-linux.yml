@@ -27,7 +27,7 @@ on:
         required: false
         default: ''
       arch:
-        description: 'One of x64, arm64'
+        description: 'One of x64, arm64, riscv64'
         type: string
         required: true
       distro:
@@ -35,7 +35,7 @@ on:
         type: string
         required: true
       runner:
-        description: 'GitHub runner, typically ubuntu on x64 or arm64'
+        description: 'GitHub runner, typically ubuntu on x64, arm64, or riscv64'
         type: string
         required: true
       image:

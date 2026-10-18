@@ -6,11 +6,14 @@
 #
 #  GitHub Actions configuration file : Create a release.
 #
-#  Generate binaries for Ubuntu, Debian, Fedora, Red Hat, and Windows
-#  on Intel x64 and Arm64. The Linux binaries are built on Docker
+#  Generate binaries for Ubuntu, Debian, Fedora, Red Hat, and Windows on
+#  Intel x64, Arm64, and RISC-V. The Linux binaries are built on Docker
 #  containers running a Ubunty GitHub runner host. All binaries are
 #  published as artifacts of the workflow. These binaries can be used
 #  to create a new release or update the latest one.
+#
+#  RISC-V runners are provided by Scaleway via the RISE project.
+#  See https://riscv-runners.riseproject.dev/
 #
 #-----------------------------------------------------------------------------
 
@@ -41,6 +44,11 @@ on:
         type: boolean
         required: false
         default: true
+      build_riscv:
+        description: 'Build RISC-V packages'
+        type: boolean
+        required: false
+        default: false
       build_docs:
         description: 'Build documentation'
         type: boolean
@@ -67,6 +75,7 @@ on:
         - debian:latest
         - debian:13
       fedora_image:
+        # No docker image for riscv64.
         description: 'Fedora docker image'
         type: choice
         required: false
@@ -77,6 +86,7 @@ on:
         - fedora:44
         - fedora:43
       redhat_image:
+        # No docker image for riscv64 on rockylinux or oraclelinux, almalinux only.
         description: 'Red Hat docker image'
         type: choice
         required: false
@@ -90,6 +100,7 @@ on:
         - oraclelinux:10
         - oraclelinux:9
       windows_runner:
+        # No support for riscv64.
         description: 'Windows runner'
         type: choice
         required: false
@@ -171,7 +182,7 @@ jobs:
       fail-fast: false
       matrix:
         distro: [ubuntu, debian, fedora, redhat]
-        arch: [x64, arm64]
+        arch: [x64, arm64, riscv64]
         include:
         - arch: x64
           build_arch: ${{ inputs.build_x64 }}
@@ -179,6 +190,9 @@ jobs:
         - arch: arm64
           build_arch: ${{ inputs.build_arm64 }}
           runner: ubuntu-26.04-arm
+        - arch: riscv64
+          build_arch: ${{ inputs.build_riscv64 }}
+          runner: ubuntu-24.04-riscv
         - distro: ubuntu
           build_distro: ${{ inputs.ubuntu_image != 'none' }}
           image: ${{ inputs.ubuntu_image }}
@@ -199,6 +213,9 @@ jobs:
           image: ${{ inputs.redhat_image }}
           setup_command: dnf update -y; dnf install -y sudo git
           package_options: --allowerasing
+        exclude:
+        - distro: fedora
+          arch: riscv64
     name: Build on ${{ matrix.distro }} for ${{ matrix.arch }}
     # Warning: "matrix" is not accepted in "jobs.job.if". However, it is in "jobs.job.with".
     # Therefore "if: matrix.build_arch && matrix.build_distro" is not allowed here.
@@ -219,7 +236,7 @@ jobs:
   # The runner can be a x64 or arm64 system. Even though one single runner can build the two packages,
   # there is only one package which can be tested, the one with the same architecture as the runner.
   # If only one package is built, it is recommended to select a runner of the same architecture.
-  # Otherwise, the package won't be tested after build.
+  # Otherwise, the package won't be tested after build. There is no riscv64 support for Windows.
   windows:
     name: Build on Windows
     needs: [init]
@@ -274,7 +291,7 @@ jobs:
       run: |
         # Each artifact has been downloaded as a directory containing the actual file.
         cd pkg/installers
-        for f in $(ls -d tsduck-*-x64 tsduck-*-arm64 2>/dev/null || true); do
+        for f in $(ls -d tsduck-*-x64 tsduck-*-arm64 tsduck-*-riscv64 2>/dev/null || true); do
             if [[ -d $f ]]; then
                 mv $f/* .
                 rmdir $f
