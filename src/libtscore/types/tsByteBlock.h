@@ -521,53 +521,53 @@ namespace ts {
 
         //!
         //! Read a byte block from a binary file.
-        //! @param [in] fileName Input file name.
-        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @param [in] file_name Input file name.
+        //! @param [in] max_size Maximum size to read. By default, read up to end of file or error.
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        TSCOREDLL bool loadFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
+        TSCOREDLL bool loadFromFile(const UString& file_name, size_t max_size = std::numeric_limits<size_t>::max(), Report* report = nullptr);
 
         //!
         //! Read a byte block from a binary file and append to existing content.
-        //! @param [in] fileName Input file name.
-        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @param [in] file_name Input file name.
+        //! @param [in] max_size Maximum size to read. By default, read up to end of file or error.
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        TSCOREDLL bool appendFromFile(const UString& fileName, size_t maxSize = std::numeric_limits<size_t>::max(), Report* report = nullptr);
+        TSCOREDLL bool appendFromFile(const UString& file_name, size_t max_size = std::numeric_limits<size_t>::max(), Report* report = nullptr);
 
         //!
         //! Save a byte block to a binary file.
-        //! @param [in] fileName Output file name.
+        //! @param [in] file_name Output file name.
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        TSCOREDLL bool saveToFile(const UString& fileName, Report* report = nullptr) const;
+        TSCOREDLL bool saveToFile(const UString& file_name, Report* report = nullptr) const;
 
         //!
         //! Save a byte block to a binary file, append to existing file content.
-        //! @param [in] fileName Output file name.
+        //! @param [in] file_name Output file name.
         //! @param [in,out] report If not null, where to report errors.
         //! @return True on success, false on error.
         //!
-        TSCOREDLL bool appendToFile(const UString& fileName, Report* report = nullptr) const;
+        TSCOREDLL bool appendToFile(const UString& file_name, Report* report = nullptr) const;
 
         //!
         //! Read a byte block from standard streams (binary mode).
         //! @param [in,out] strm A standard stream in input mode.
-        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @param [in] max_size Maximum size to read. By default, read up to end of file or error.
         //! @return A reference to the @a strm object.
         //!
-        TSCOREDLL std::istream& read(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
+        TSCOREDLL std::istream& read(std::istream& strm, size_t max_size = std::numeric_limits<size_t>::max());
 
         //!
         //! Read a byte block from standard streams and append to existing content (binary mode).
         //! @param [in,out] strm A standard stream in input mode.
-        //! @param [in] maxSize Maximum size to read. By default, read up to end of file or error.
+        //! @param [in] max_size Maximum size to read. By default, read up to end of file or error.
         //! @return A reference to the @a strm object.
         //!
-        TSCOREDLL std::istream& append(std::istream& strm, size_t maxSize = std::numeric_limits<size_t>::max());
+        TSCOREDLL std::istream& append(std::istream& strm, size_t max_size = std::numeric_limits<size_t>::max());
 
         //!
         //! Write a byte to standard streams (binary mode).
@@ -578,7 +578,7 @@ namespace ts {
 
     private:
         // Common code for saveToFile and appendToFile.
-        bool writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const;
+        bool writeToFile(const UString& file_name, std::ios::openmode mode, Report* report) const;
     };
 
 #if !defined(DOXYGEN)

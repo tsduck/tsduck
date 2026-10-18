@@ -2207,25 +2207,25 @@ namespace ts {
             result.formatHelper(fmt.c_str(), args);
             return result;
         }
-        TS_DEPRECATED bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+        TS_DEPRECATED bool scan(size_t& extracted_count, size_type& end_index, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
         {
-            return scanHelper(extractedCount, endIndex, fmt, args);
+            return scanHelper(extracted_count, end_index, fmt, args);
         }
-        TS_DEPRECATED bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, std::initializer_list<ArgMixOut> args) const
+        TS_DEPRECATED bool scan(size_t& extracted_count, size_type& end_index, const UString& fmt, std::initializer_list<ArgMixOut> args) const
         {
-            return scanHelper(extractedCount, endIndex, fmt.c_str(), args);
+            return scanHelper(extracted_count, end_index, fmt.c_str(), args);
         }
         TS_DEPRECATED bool scan(const UChar* fmt, std::initializer_list<ArgMixOut> args) const
         {
-            size_t extractedCount;
-            size_type endIndex;
-            return scanHelper(extractedCount, endIndex, fmt, args);
+            size_t extracted_count;
+            size_type end_index;
+            return scanHelper(extracted_count, end_index, fmt, args);
         }
         TS_DEPRECATED bool scan(const UString& fmt, std::initializer_list<ArgMixOut> args) const
         {
-            size_t extractedCount;
-            size_type endIndex;
-            return scanHelper(extractedCount, endIndex, fmt.c_str(), args);
+            size_t extracted_count;
+            size_type end_index;
+            return scanHelper(extracted_count, end_index, fmt.c_str(), args);
         }
         //! @endcond
 
@@ -2391,8 +2391,8 @@ namespace ts {
         //! The allowed options, between the '\%' and the letter are, in this order:
         //! - @c ' : For decimal integer conversions, ignore separator for groups of thousands.
         //!
-        //! @param [out] extractedCount The number of successfully extracted values.
-        //! @param [out] endIndex The index in this string after the last extracted value.
+        //! @param [out] extracted_count The number of successfully extracted values.
+        //! @param [out] end_index The index in this string after the last extracted value.
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of output arguments to receive extracted values.
         //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
@@ -2402,15 +2402,15 @@ namespace ts {
         //! @see Format(const UChar*, std::initializer_list<ArgMixIn>)
         //!
         template <class... Args>
-        bool scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, Args&&... args) const
+        bool scan(size_t& extracted_count, size_type& end_index, const UChar* fmt, Args&&... args) const
         {
-            return scanHelper(extractedCount, endIndex, fmt, {std::forward<ArgMixOut>(args)...});
+            return scanHelper(extracted_count, end_index, fmt, {std::forward<ArgMixOut>(args)...});
         }
 
         //!
         //! Scan this string for integer or character values using a template and arguments.
-        //! @param [out] extractedCount The number of successfully extracted values.
-        //! @param [out] endIndex The index in this string after the last extracted value.
+        //! @param [out] extracted_count The number of successfully extracted values.
+        //! @param [out] end_index The index in this string after the last extracted value.
         //! @param [in] fmt Format string with embedded '\%' sequences.
         //! @param [in] args List of output arguments to receive extracted values.
         //! The @a args list is built from pointers to integer data of any size, signed or unsigned.
@@ -2420,9 +2420,9 @@ namespace ts {
         //! @see scan()
         //!
         template <class... Args>
-        bool scan(size_t& extractedCount, size_type& endIndex, const UString& fmt, Args&&... args) const
+        bool scan(size_t& extracted_count, size_type& end_index, const UString& fmt, Args&&... args) const
         {
-            return scanHelper(extractedCount, endIndex, fmt.c_str(), {std::forward<ArgMixOut>(args)...});
+            return scanHelper(extracted_count, end_index, fmt.c_str(), {std::forward<ArgMixOut>(args)...});
         }
 
         //!
@@ -2438,9 +2438,9 @@ namespace ts {
         template <class... Args>
         bool scan(const UChar* fmt, Args&&... args) const
         {
-            size_t extractedCount;
-            size_type endIndex;
-            return scanHelper(extractedCount, endIndex, fmt, {std::forward<ArgMixOut>(args)...});
+            size_t extracted_count;
+            size_type end_index;
+            return scanHelper(extracted_count, end_index, fmt, {std::forward<ArgMixOut>(args)...});
         }
 
         //!
@@ -2456,9 +2456,9 @@ namespace ts {
         template <class... Args>
         bool scan(const UString& fmt, Args&&... args) const
         {
-            size_t extractedCount;
-            size_type endIndex;
-            return scanHelper(extractedCount, endIndex, fmt.c_str(), {std::forward<ArgMixOut>(args)...});
+            size_t extracted_count;
+            size_type end_index;
+            return scanHelper(extracted_count, end_index, fmt.c_str(), {std::forward<ArgMixOut>(args)...});
         }
 
         //--------------------------------------------------------------------
@@ -2792,7 +2792,7 @@ namespace ts {
 
         // Internal helpers for string formatting.
         void formatHelper(const UChar* fmt, std::initializer_list<ArgMixIn> args);
-        bool scanHelper(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
+        bool scanHelper(size_t& extracted_count, size_type& end_index, const UChar* fmt, std::initializer_list<ArgMixOut> args) const;
 
         //!
         //! Analysis context of a Format or Scan string, base class.
@@ -2878,12 +2878,12 @@ namespace ts {
         public:
             //!
             //! Constructor, parse the string and extract values.
-            //! @param [out] extractedCount The number of successfully extracted values.
+            //! @param [out] extracted_count The number of successfully extracted values.
             //! @param [in,out] input Input string to parse. Updated after the last extracted sequence.
             //! @param [in,out] fmt Format string with embedded '\%' sequences. Updated after the last matched sequence.
             //! @param [in] args List of output arguments to receive extracted values.
             //!
-            ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, std::initializer_list<ArgMixOut> args);
+            ArgMixOutContext(size_t& extracted_count, const UChar*& input, const UChar*& fmt, std::initializer_list<ArgMixOut> args);
 
         private:
             using ArgIterator = std::initializer_list<ts::ArgMixOut>::const_iterator;

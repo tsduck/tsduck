@@ -2160,14 +2160,14 @@ void ts::UString::formatHelper(const UChar* fmt, std::initializer_list<ArgMixIn>
 // Scan this string for integer or character values.
 //----------------------------------------------------------------------------
 
-bool ts::UString::scanHelper(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
+bool ts::UString::scanHelper(size_t& extracted_count, size_type& end_index, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
 {
     // Process this string instance.
     const UChar* input = data();
-    ArgMixOutContext ctx(extractedCount, input, fmt, args);
+    ArgMixOutContext ctx(extracted_count, input, fmt, args);
 
     // Compute the next index in the input string.
-    endIndex = input - data();
+    end_index = input - data();
 
     // Return true when both the input string and the format have been completely consumed.
     return *input == CHAR_NULL && *fmt == CHAR_NULL;
@@ -2269,23 +2269,23 @@ void ts::UString::ArgMixInContext::processArg()
     //       ! : Short format.
     //       * : Can be used instead of @e digits. The integer value is taken from the argument list.
 
-    bool leftJustified = false;
+    bool left_justified = false;
     bool force_sign = false;
-    bool useSeparator = false;
-    bool reusePrevious = false;
-    bool hasDot = false;
-    bool shortFormat = false;
+    bool use_separator = false;
+    bool reuse_previous = false;
+    bool has_dot = false;
+    bool short_format = false;
     UChar pad = u' ';
-    size_t minWidth = 0;
+    size_t min_width = 0;
     size_t max_width = std::numeric_limits<size_t>::max();
     size_t precision = 0;
 
     if (*_fmt == u'<') {
-        reusePrevious = true;
+        reuse_previous = true;
         _fmt++;
     }
     if (*_fmt == u'-') {
-        leftJustified = true;
+        left_justified = true;
         _fmt++;
     }
     if (*_fmt == u'+') {
@@ -2296,28 +2296,28 @@ void ts::UString::ArgMixInContext::processArg()
         pad = u'0';
         _fmt++;
     }
-    getFormatSize(minWidth);
+    getFormatSize(min_width);
     if (*_fmt == u'.') {
         ++_fmt;
-        hasDot = true;
+        has_dot = true;
         getFormatSize(max_width);
         precision = max_width;
-        if (max_width < minWidth) {
-            max_width = minWidth;
+        if (max_width < min_width) {
+            max_width = min_width;
         }
     }
     if (*_fmt == u'\'') {
-        useSeparator = true;
+        use_separator = true;
         _fmt++;
     }
     if (*_fmt == u'!') {
-        shortFormat = true;
+        short_format = true;
         _fmt++;
     }
 
     // The thousands separator to use.
-    const UString separator(useSeparator ? DEFAULT_THOUSANDS_SEPARATOR : u"");
-    const UChar separatorChar = useSeparator ? COMMA : CHAR_NULL;
+    const UString separator(use_separator ? DEFAULT_THOUSANDS_SEPARATOR : u"");
+    const UChar separatorChar = use_separator ? COMMA : CHAR_NULL;
 
     // The available '%' sequences are:
     // - %s : String.
@@ -2345,7 +2345,7 @@ void ts::UString::ArgMixInContext::processArg()
 
     // Point to actual parameter value.
     ArgIterator argit(_arg);
-    if (reusePrevious) {
+    if (reuse_previous) {
         // Reuse previous argument value, do not advance in argument list.
         argit = _prev;
     }
@@ -2383,9 +2383,9 @@ void ts::UString::ArgMixInContext::processArg()
         else if (argit->isChrono()) {
             const int64_t ivalue = argit->toInt64();
             UString units(1, u' ');
-            units.append(ChronoUnit(argit->num(), argit->den(), shortFormat, std::abs(ivalue) > 1));
+            units.append(ChronoUnit(argit->num(), argit->den(), short_format, std::abs(ivalue) > 1));
             const size_t ulen = units.length();
-            value.assign(Decimal(ivalue, minWidth < ulen ? 0 : minWidth - ulen, !leftJustified, separator, force_sign, pad));
+            value.assign(Decimal(ivalue, min_width < ulen ? 0 : min_width - ulen, !left_justified, separator, force_sign, pad));
             value.append(units);
         }
         else if (cmd == u'n') {
@@ -2397,7 +2397,7 @@ void ts::UString::ArgMixInContext::processArg()
                 u"0x%+X (%<+d)",   // 0b10 -> force_sign
                 u"0x%+'X (%<+'d)"  // 0b11 -> force_sign && useSeparator
             };
-            value.formatHelper(formats[(int(force_sign) << 1) | int(useSeparator)], {*argit});
+            value.formatHelper(formats[(int(force_sign) << 1) | int(use_separator)], {*argit});
         }
         else {
             // Not a string, should not get there.
@@ -2406,21 +2406,21 @@ void ts::UString::ArgMixInContext::processArg()
         // Truncate the string.
         size_t wid = value.width();
         if (max_width < wid) {
-            value.truncateWidth(max_width, leftJustified ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
+            value.truncateWidth(max_width, left_justified ? LEFT_TO_RIGHT : RIGHT_TO_LEFT);
             wid = max_width;
         }
         // Insert the string with optional padding.
-        if (minWidth > wid && !leftJustified) {
-            _result.append(minWidth - wid, pad);
+        if (min_width > wid && !left_justified) {
+            _result.append(min_width - wid, pad);
         }
         _result.append(value);
-        if (minWidth > wid && leftJustified) {
-            _result.append(minWidth - wid, pad);
+        if (min_width > wid && left_justified) {
+            _result.append(min_width - wid, pad);
         }
     }
     else if (argit->isAbstractNumber() && cmd == u's') {
         // An AbstractNumber using the most general string format.
-        _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, force_sign, precision > 0 ? precision : NPOS, false, FULL_STOP, pad));
+        _result.append(argit->toAbstractNumber().toString(min_width, !left_justified, separatorChar, force_sign, precision > 0 ? precision : NPOS, false, FULL_STOP, pad));
     }
     else if (cmd == u'c') {
         // Use an integer value as an Unicode code point.
@@ -2438,21 +2438,21 @@ void ts::UString::ArgMixInContext::processArg()
         // Format the hexa string.
         const bool upper = cmd == u'X';
         if (argit->isAbstractNumber()) {
-            _result.append(HexaMin(argit->toInteger<uint64_t>(), minWidth, separator, false, upper));
+            _result.append(HexaMin(argit->toInteger<uint64_t>(), min_width, separator, false, upper));
         }
         else {
             switch (argit->size()) {
                 case 1:
-                    _result.append(HexaMin(argit->toInteger<uint8_t>(), minWidth, separator, false, upper));
+                    _result.append(HexaMin(argit->toInteger<uint8_t>(), min_width, separator, false, upper));
                     break;
                 case 2:
-                    _result.append(HexaMin(argit->toInteger<uint16_t>(), minWidth, separator, false, upper));
+                    _result.append(HexaMin(argit->toInteger<uint16_t>(), min_width, separator, false, upper));
                     break;
                 case 4:
-                    _result.append(HexaMin(argit->toInteger<uint32_t>(), minWidth, separator, false, upper));
+                    _result.append(HexaMin(argit->toInteger<uint32_t>(), min_width, separator, false, upper));
                     break;
                 default:
-                    _result.append(HexaMin(argit->toInteger<uint64_t>(), minWidth, separator, false, upper));
+                    _result.append(HexaMin(argit->toInteger<uint64_t>(), min_width, separator, false, upper));
                     break;
             }
         }
@@ -2463,11 +2463,11 @@ void ts::UString::ArgMixInContext::processArg()
             debug(u"type mismatch, not a double or fixed-point", cmd);
         }
         if (argit->isAbstractNumber()) {
-            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, force_sign, precision > 0 ? precision : NPOS, hasDot, FULL_STOP, pad));
+            _result.append(argit->toAbstractNumber().toString(min_width, !left_justified, separatorChar, force_sign, precision > 0 ? precision : NPOS, has_dot, FULL_STOP, pad));
         }
         else {
             // Get a float or convert an integer to a float. Default to 6 decimal digits.
-            _result.append(Float(argit->toDouble(), minWidth, precision > 0 ? precision : 6, force_sign));
+            _result.append(Float(argit->toDouble(), min_width, precision > 0 ? precision : 6, force_sign));
         }
     }
     else {
@@ -2477,24 +2477,24 @@ void ts::UString::ArgMixInContext::processArg()
         }
         if (argit->isAbstractNumber()) {
             // Format AbstractNumber without decimals.
-            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, force_sign, 0, true, FULL_STOP, pad));
+            _result.append(argit->toAbstractNumber().toString(min_width, !left_justified, separatorChar, force_sign, 0, true, FULL_STOP, pad));
         }
         else if (argit->size() > 4) {
             // Stored as 64-bit integer.
             if (argit->isSigned()) {
-                _result.append(Decimal(argit->toInt64(), minWidth, !leftJustified, separator, force_sign, pad));
+                _result.append(Decimal(argit->toInt64(), min_width, !left_justified, separator, force_sign, pad));
             }
             else {
-                _result.append(Decimal(argit->toUInt64(), minWidth, !leftJustified, separator, force_sign, pad));
+                _result.append(Decimal(argit->toUInt64(), min_width, !left_justified, separator, force_sign, pad));
             }
         }
         else {
             // Stored as 32-bit integer.
             if (argit->isSigned()) {
-                _result.append(Decimal(argit->toInt32(), minWidth, !leftJustified, separator, force_sign, pad));
+                _result.append(Decimal(argit->toInt32(), min_width, !left_justified, separator, force_sign, pad));
             }
             else {
-                _result.append(Decimal(argit->toUInt32(), minWidth, !leftJustified, separator, force_sign, pad));
+                _result.append(Decimal(argit->toUInt32(), min_width, !left_justified, separator, force_sign, pad));
             }
         }
     }
@@ -2528,14 +2528,14 @@ void ts::UString::ArgMixInContext::getFormatSize(size_t& size)
 // Analysis context of a scan string.
 //----------------------------------------------------------------------------
 
-ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, std::initializer_list<ArgMixOut> args) :
+ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extracted_count, const UChar*& input, const UChar*& fmt, std::initializer_list<ArgMixOut> args) :
     ArgMixContext(fmt, false),
     _input(input),
     _arg(args.begin()),
     _end(args.end())
 {
     // Initialize output fields.
-    extractedCount = 0;
+    extracted_count = 0;
 
     // Process all fields until end of any string or mismatch.
     do {
@@ -2545,7 +2545,7 @@ ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extractedCount, const UC
     } while (*_input != CHAR_NULL && *_fmt != CHAR_NULL && processField());
 
     // Return updated pointers.
-    extractedCount = _arg - args.begin();
+    extracted_count = _arg - args.begin();
     input = _input;
     fmt = _fmt;
 

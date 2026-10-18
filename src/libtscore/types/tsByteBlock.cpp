@@ -174,62 +174,62 @@ void ts::ByteBlock::erase(size_type first, size_type size)
 // Read byte blocks from binary files.
 //----------------------------------------------------------------------------
 
-bool ts::ByteBlock::loadFromFile(const UString& fileName, size_t maxSize, Report* report)
+bool ts::ByteBlock::loadFromFile(const UString& file_name, size_t max_size, Report* report)
 {
     clear();
-    return appendFromFile(fileName, maxSize, report);
+    return appendFromFile(file_name, max_size, report);
 }
 
-bool ts::ByteBlock::appendFromFile(const UString& fileName, size_t maxSize, Report* report)
+bool ts::ByteBlock::appendFromFile(const UString& file_name, size_t max_size, Report* report)
 {
     // Open the input file.
-    std::ifstream strm(fileName.toUTF8().c_str(), std::ios::in | std::ios::binary);
+    std::ifstream strm(file_name.toUTF8().c_str(), std::ios::in | std::ios::binary);
     if (!strm.is_open()) {
         if (report != nullptr) {
-            report->error(u"cannot open %s", fileName);
+            report->error(u"cannot open %s", file_name);
         }
         return false;
     }
 
     // Load the file content.
-    append(strm, maxSize);
+    append(strm, max_size);
 
     // Success if no error or reached EOF without error
     const bool success = !strm.fail() || strm.eof();
     strm.close();
     if (!success && report != nullptr) {
-        report->error(u"error reading %s", fileName);
+        report->error(u"error reading %s", file_name);
     }
     return success;
 }
 
-std::istream& ts::ByteBlock::read(std::istream& strm, size_t maxSize)
+std::istream& ts::ByteBlock::read(std::istream& strm, size_t max_size)
 {
     clear();
-    return append(strm, maxSize);
+    return append(strm, max_size);
 }
 
-std::istream& ts::ByteBlock::append(std::istream& strm, size_t maxSize)
+std::istream& ts::ByteBlock::append(std::istream& strm, size_t max_size)
 {
     // Read by chunks of this size:
-    constexpr size_t chunkSize = 32 * 1024;
+    constexpr size_t chunk_size = 32 * 1024;
 
-    while (!strm.fail() && !strm.eof() && maxSize > 0) {
+    while (!strm.fail() && !strm.eof() && max_size > 0) {
 
         // Size of the next chunk to read.
-        size_t readSize = std::min(maxSize, chunkSize);
+        size_t read_size = std::min(max_size, chunk_size);
 
         // Make more space in byte block for reading a chunk.
-        const size_t previousSize = size();
-        resize(previousSize + readSize);
+        const size_t previous_size = size();
+        resize(previous_size + read_size);
 
         // Read a chunk of data.
-        strm.read(reinterpret_cast<char*>(data() + previousSize), std::streamsize(readSize));
+        strm.read(reinterpret_cast<char*>(data() + previous_size), std::streamsize(read_size));
         const std::streamsize gc = strm.gcount();
-        readSize = gc < 0 ? 0 : std::min(size_t(gc), readSize);
+        read_size = gc < 0 ? 0 : std::min(size_t(gc), read_size);
 
         // Adjust buffer size.
-        resize(previousSize + readSize);
+        resize(previous_size + read_size);
     }
 
     return strm;
@@ -239,14 +239,14 @@ std::istream& ts::ByteBlock::append(std::istream& strm, size_t maxSize)
 // Save byte blocks to binary files.
 //----------------------------------------------------------------------------
 
-bool ts::ByteBlock::saveToFile(const UString& fileName, Report* report) const
+bool ts::ByteBlock::saveToFile(const UString& file_name, Report* report) const
 {
-    return writeToFile(fileName, std::ios::out | std::ios::binary, report);
+    return writeToFile(file_name, std::ios::out | std::ios::binary, report);
 }
 
-bool ts::ByteBlock::appendToFile(const UString& fileName, Report* report) const
+bool ts::ByteBlock::appendToFile(const UString& file_name, Report* report) const
 {
-    return writeToFile(fileName, std::ios::out | std::ios::app | std::ios::binary, report);
+    return writeToFile(file_name, std::ios::out | std::ios::app | std::ios::binary, report);
 }
 
 std::ostream& ts::ByteBlock::write(std::ostream& strm) const
@@ -254,13 +254,13 @@ std::ostream& ts::ByteBlock::write(std::ostream& strm) const
     return strm.write(reinterpret_cast<const char*>(data()), std::streamsize(size()));
 }
 
-bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode, Report* report) const
+bool ts::ByteBlock::writeToFile(const UString& file_name, std::ios::openmode mode, Report* report) const
 {
     // Create the file
-    std::ofstream strm(fileName.toUTF8().c_str(), mode);
+    std::ofstream strm(file_name.toUTF8().c_str(), mode);
     if (!strm.is_open()) {
         if (report != nullptr) {
-            report->error(u"cannot create %s", fileName);
+            report->error(u"cannot create %s", file_name);
         }
         return false;
     }
@@ -270,7 +270,7 @@ bool ts::ByteBlock::writeToFile(const UString& fileName, std::ios::openmode mode
     const bool success = !strm.fail();
     strm.close();
     if (!success && report != nullptr) {
-        report->error(u"error writing %s", fileName);
+        report->error(u"error writing %s", file_name);
     }
     return success;
 }
