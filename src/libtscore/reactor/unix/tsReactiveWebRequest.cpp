@@ -192,8 +192,9 @@ private:
     size_t              _retries = 0;                   // Remaining retry count, if _can_retry.
     cn::milliseconds    _retry_interval {};             // Interval between two retries.
     EventId             _retry_timer {};                // Reactor timer for next retry.
-    std::set<EventId>   _curl_timers {};                // Set of timers for curl.
+    EventId             _curl_timer {};                 // Timer for curl. Only one timer.
     ByteBlockPtr        _received_data {};              // Received data, filled by CurlWriteCallback(), emptied by receive callback.
+    uint64_t            _total_size = 0;                // Total transfered size.
     int                 _running_handles = 0;           // Number of active handles inside curl. 0 means all completed.
     char                _error[CURL_ERROR_SIZE] {0};    // Error message buffer for libcurl (CURLOPT_ERRORBUFFER).
 
@@ -252,11 +253,6 @@ void ts::ReactiveWebRequest::Guts::reset(bool full)
 {
     _request.report().debug(u"closing reactive web request (full = %s)", full);
 
-    for (const auto& id : _curl_timers) {
-        _request.reactor().cancelTimer(id);
-    }
-    _curl_timers.clear();
-
     if (_headers != nullptr) {
         ::curl_slist_free_all(_headers);
         _headers = nullptr;
@@ -286,10 +282,16 @@ void ts::ReactiveWebRequest::Guts::reset(bool full)
         _retry_timer.invalidate();
     }
 
+    if (_curl_timer.isValid()) {
+        _request.reactor().cancelTimer(_curl_timer, true);
+        _curl_timer.invalidate();
+    }
+
     _buffer_size = 0;
     _push_transfer = _open_done = _open_called = _completed = false;
     _completion_code = SYS_SUCCESS;
     _received_data.reset();
+    _total_size = 0;
     _running_handles = 0;
     _error[0] = 0;
 
@@ -613,7 +615,7 @@ bool ts::ReactiveWebRequest::Guts::curlGetInfo(int severity, const UChar* name, 
 
 bool ts::ReactiveWebRequest::Guts::continueTransfer(int fd, int event_mask)
 {
-    _request.reactor().trace(u"continue curl transfer, fd = %d, event_mask = 0x%02X", fd, event_mask);
+    _request.reactor().trace(u"[curl] continue transfer, fd = %d, event_mask = 0x%02X", fd, event_mask);
 
     // Severity of error is just debug in case of possible retry.
     const int severity = _can_retry ? Severity::Debug : Severity::Error;
@@ -687,7 +689,7 @@ int ts::ReactiveWebRequest::Guts::CurlSocketCallback(::CURL* easy, ::curl_socket
     else {
         // Only INOUT enables read & write notification. If only IN or OUT is specified, the other one should be disabled.
         // Because we may disable a notification which was not set, we ignore errors on disabled.
-        guts->_request.reactor().trace(u"curl socket callback, fd = %d, what = %d", fd, what);
+        guts->_request.reactor().trace(u"[curl] socket callback, fd = %d, what = %d", fd, what);
         bool success = true;
         Reactor& reactor(guts->_request.reactor());
         switch (what) {
@@ -726,30 +728,30 @@ int ts::ReactiveWebRequest::Guts::CurlTimerCallback(::CURLM* multi, long timeout
         return -1; // error
     }
     else if (timeout_ms < 0) {
-        // Disarm curl's timer. Usually, curl uses only one at a time, but we support more. So, disarm all.
-        guts->_request.reactor().trace(u"curl disarms timer");
-        for (const auto& id : guts->_curl_timers) {
-            guts->_request.reactor().cancelTimer(id);
+        // Disarm curl's timer.
+        guts->_request.reactor().trace(u"[curl] disarm timer");
+        if (guts->_curl_timer.isValid()) {
+            guts->_request.reactor().cancelTimer(guts->_curl_timer);
+            guts->_curl_timer.invalidate();
         }
-        guts->_curl_timers.clear();
         return 0; // success
     }
     else if (timeout_ms == 0) {
         // Just call curl again later.
+        guts->_request.reactor().trace(u"[curl] timer with zero ms");
         guts->_push_transfer = true;
         return 0; // success
     }
     else {
-        // Set a timer, usually only one at a time.
-        guts->_request.reactor().trace(u"curl arms %d ms timer", timeout_ms);
-        EventId id = guts->_request.reactor().newTimer(guts, cn::milliseconds(timeout_ms), false);
-        if (id.isValid()) {
-            guts->_curl_timers.insert(id);
-            return 0; // success
+        // Set a timer, curl uses only one timer at a time.
+        guts->_request.reactor().trace(u"[curl] arm %d ms timer", timeout_ms);
+        // Disarm previous timer if set.
+        if (guts->_curl_timer.isValid()) {
+            guts->_request.reactor().cancelTimer(guts->_curl_timer);
         }
-        else {
-            return -1; // error
-        }
+        // Arm new timer.
+        guts->_curl_timer = guts->_request.reactor().newTimer(guts, cn::milliseconds(timeout_ms), false);
+        return guts->_curl_timer.isValid() ? 0 /* success */ : -1 /* error */;
     }
 }
 
@@ -765,7 +767,9 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
         return CURL_WRITEFUNC_ERROR;
     }
     else {
-        guts->_request.reactor().trace(u"curl write callback, size: %d, nmemb: %d", size, nmemb);
+        const size_t chunk_size = size * nmemb;
+        guts->_total_size += chunk_size;
+        guts->_request.reactor().trace(u"[curl] write callback, size: %d, nmemb: %d, total: %'d", size, nmemb, guts->_total_size);
 
         // After receiving some data, it is no longer possible to retry the connection.
         guts->_can_retry = false;
@@ -781,7 +785,6 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
 
         // Store response data in the SystemGuts buffer only if a callback was specified.
         assert(guts->_received_data != nullptr);
-        const size_t chunk_size = size * nmemb;
         if (guts->_handler != nullptr) {
             guts->_received_data->append(ptr, chunk_size);
             guts->_request.reactor().signalEvent(guts->_event);
@@ -803,7 +806,7 @@ size_t ts::ReactiveWebRequest::Guts::CurlHeaderCallback(char* buffer, size_t siz
         return 0; // error
     }
     else {
-        guts->_request.reactor().trace(u"curl header callback, size: %d, nitems: %d", size, nitems);
+        guts->_request.reactor().trace(u"[curl] header callback, size: %d, nitems: %d", size, nitems);
         // Store the headers in the request status.
         const size_t total_size = size * nitems;
         guts->_request._status.processReponseHeaders(UString::FromUTF8(buffer, total_size), guts->_request.report());
@@ -829,9 +832,10 @@ void ts::ReactiveWebRequest::Guts::handleTimer(Reactor& reactor, EventId id)
             reset(true);
         }
     }
-    else if (_curl_timers.contains(id)) {
+    else if (id == _curl_timer) {
         // This is a time we set for curl (in CurlTimerCallback).
-        _curl_timers.erase(id);
+        _request.reactor().trace(u"[curl] timer expired");
+        _curl_timer.invalidate();
 
         // Inform curl that a timeout may have elapsed and continue processing.
         if (!continueTransfer(CURL_SOCKET_TIMEOUT, 0)) {

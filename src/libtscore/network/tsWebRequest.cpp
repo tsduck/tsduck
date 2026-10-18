@@ -175,7 +175,7 @@ void ts::WebRequest::Guts::handleWebReceive(ReactiveWebRequest& req, const ByteB
     if (data != nullptr && out_file.is_open()) {
         // Save data to a file.
         data->write(out_file);
-        // Report file error.
+        // Report file error, but don't overwrite recv_status if it already contains an error.
         if (!out_file && SysSuccess(recv_status)) {
             recv_status = SYS_ERROR;
         }
@@ -190,8 +190,9 @@ void ts::WebRequest::Guts::handleWebReceive(ReactiveWebRequest& req, const ByteB
         recv_data->append(*data);
     }
 
-    // Exit event loop error (including EOF), so that WebRequest::receive() can get control back.
-    if (!SysSuccess(error_code)) {
+    // Exit event loop on error (including EOF) or if there is a receive() waiting for data.
+    // When receiving on a file, without error, continue waiting for more data.
+    if (!SysSuccess(recv_status) || (!out_file.is_open() && hasData())) {
         reactor.exitEventLoop();
     }
 }
@@ -222,8 +223,9 @@ bool ts::WebRequest::receive(void* buffer, size_t max_size, size_t& ret_size)
         MemCopy(buffer, _guts->recv_data->data() + _guts->recv_start, ret_size);
         _guts->recv_start += ret_size;
         if (_guts->recv_start >= _guts->recv_data->size()) {
-            // All buffer is used, drop it.
+            // All buffer now used, drop it.
             _guts->recv_data.reset();
+            _guts->recv_start = 0;
         }
         return true;
     }
