@@ -187,4 +187,4 @@ namespace ts {
         void bootstrapFromDSI(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
         void recordDSIGroups(const DSMCCUserToNetworkMessage::DownloadServerInitiate& dsi);
     };
-}  // namespace ts
+}

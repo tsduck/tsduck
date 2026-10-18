@@ -1753,6 +1753,17 @@ namespace ts {
         template <class CONTAINER>
         typename CONTAINER::const_iterator findSimilar(const CONTAINER& container, size_t this_pos = 0) const;
 
+        //!
+        //! Compare two strings in constant time.
+        //! This method is useful to compare a public string (this string, typically an entered password or
+        //! authentication token) to a secret string (typically the secret password or token). The execution
+        //! time of this method only depends on the content of this object, not the content of @a secret.
+        //! This method is slower than a direct comparison but it executes in constant time.
+        //! @param [in] secret A secret string to compare.
+        //! @return -1, 0, or 1, if this string is respectively before, equal to, or after @a secret.
+        //!
+        int constantTimeCompare(const UString& secret) const;
+
         //--------------------------------------------------------------------
         // Operations on text files
         //--------------------------------------------------------------------

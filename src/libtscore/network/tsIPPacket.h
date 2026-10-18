@@ -130,7 +130,7 @@ namespace ts {
         //! Get the size in bytes of the sub-protocol payload data (TCP data, UDP data, etc).
         //! @return The size in bytes of the sub-protocol payload data.
         //!
-        size_t protocolDataSize() const { return _valid ? _data.size() - _ip_header_size - _proto_header_size : 0; }
+        size_t protocolDataSize() const;
 
         //!
         //! Check if the IP packet is fragmented.

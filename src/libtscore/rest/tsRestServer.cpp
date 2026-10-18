@@ -170,7 +170,9 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
     bool authorized = _args.isAllowed(client_address);
 
     // If the server requires an autorization content, check it or reject the client.
-    if (authorized && !_args.auth_token.empty() && _request_token != _args.auth_token) {
+    // The comparison of the token in constant time is pedantic security, the string comparison
+    // time is probably negligible compared to the cryptographic time of the TLS session.
+    if (authorized && !_args.auth_token.empty() && _request_token.constantTimeCompare(_args.auth_token) != 0) {
         // Vade retro Satanas !
         authorized = false;
         conn.report().error(u"invalid authorization token from client at %s", client_address);

@@ -71,4 +71,4 @@ namespace ts {
         //!
         bool fromXML(DuckContext& duck, const xml::Element* element);
     };
-}  // namespace ts
+}

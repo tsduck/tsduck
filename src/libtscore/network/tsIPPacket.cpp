@@ -89,9 +89,10 @@ bool ts::IPPacket::reset(const void* data, size_t size)
             if (size < _ip_header_size + UDP_HEADER_SIZE) {
                 return false; // packet too short
             }
+            // The UDP length field is in bytes and includes the UDP header.
             const size_t udp_length = GetUInt16BE(ip + _ip_header_size + UDP_LENGTH_OFFSET);
-            if (size < _ip_header_size + udp_length) {
-                return false; // packet too short
+            if (udp_length < UDP_HEADER_SIZE || size < _ip_header_size + udp_length) {
+                return false; // invalid UDP length or packet too short
             }
             else if (size > _ip_header_size + udp_length) {
                 // Suspect packet, data after UDP payload, should we consider it as invalid?
@@ -110,6 +111,16 @@ bool ts::IPPacket::reset(const void* data, size_t size)
     // Packet is valid.
     _data.copy(data, size);
     return _valid = true;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the size in bytes of the sub-protocol payload data.
+//----------------------------------------------------------------------------
+
+size_t ts::IPPacket::protocolDataSize() const
+{
+    return _valid ? _data.size() - std::min(_ip_header_size + _proto_header_size, _data.size()) : 0;
 }
 
 
@@ -181,9 +192,9 @@ size_t ts::IPPacket::IPHeaderSize(const void* data, size_t size, uint8_t* protoc
             uint8_t next = ip[IPv6_NEXTHEAD_OFFSET];
             // Skip a few known extension headers. There may be additional headers,
             // in which case the next one will be interpreted as "next protocol layer".
-            while (hsize + IPv6_EXT_HEADER_SIZE >= size && (next == IP_SUBPROTO_HOPxHOP || next == IP_SUBPROTO_ROUTING || next == IP_SUBPROTO_FRAGMENT)) {
+            while (hsize + IPv6_EXT_HEADER_SIZE <= size && (next == IP_SUBPROTO_HOPxHOP || next == IP_SUBPROTO_ROUTING || next == IP_SUBPROTO_FRAGMENT)) {
                 // Size in bytes of extended header.
-                const size_t ext_size = 8 + 8 * ip[hsize + 1];
+                const size_t ext_size = IPv6_EXT_HEADER_SIZE + 8 * ip[hsize + 1];
                 if (hsize + ext_size > size) {
                     // Invalid packet, extended header does not fit.
                     hsize = 0;

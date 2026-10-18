@@ -50,4 +50,4 @@ namespace ts {
         //!
         bool loadArgs(Args& args);
     };
-}  // namespace ts
+}

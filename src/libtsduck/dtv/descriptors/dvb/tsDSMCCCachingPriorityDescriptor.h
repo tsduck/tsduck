@@ -52,4 +52,4 @@ namespace ts {
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
-}  // namespace ts
+}

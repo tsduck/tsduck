@@ -149,7 +149,7 @@ namespace ts {
         constexpr char STREAM[] = "str";           //!< Stream object kind (4 bytes with null terminator).
         constexpr char STREAM_EVENT[] = "ste";     //!< Stream Event object kind (4 bytes with null terminator).
         constexpr size_t SIZE = 4;                 //!< Fixed size of object kind field.
-    }  // namespace BIOPObjectKind
+    }
 
 
     //!
@@ -427,4 +427,4 @@ namespace ts {
         virtual void toXMLBody(DuckContext& duck, xml::Element* msg_element) const override;
         virtual bool fromXMLBody(DuckContext& duck, const xml::Element* msg_element) override;
     };
-}  // namespace ts
+}

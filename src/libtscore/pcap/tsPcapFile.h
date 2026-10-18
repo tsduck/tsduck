@@ -164,6 +164,13 @@ namespace ts {
         //!
         virtual void close();
 
+        //!
+        //! Maximum credible size of a pcap packet, in bytes.
+        //! Pcap packets have a 32-bit length field but a pcap packet cannot be 4 GB long.
+        //! Use this constant to avoid silly memory allocations when the pcap file is corrupted.
+        //!
+        static constexpr size_t MAX_SANE_PCAP_PACKET_SIZE = 128 * 1024;
+
     private:
         // Descriptioon of one capture interface.
         // Pcap files have only one interface, pcap-ng files may have more.

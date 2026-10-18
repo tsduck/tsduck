@@ -208,4 +208,4 @@ namespace ts {
     private:
         static constexpr size_t MESSAGE_HEADER_SIZE = 12;  //!< DSM-CC Message Header size w/o adaptation header.
     };
-}  // namespace ts
+}

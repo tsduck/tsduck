@@ -263,7 +263,7 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body)
     // Interpret the packet size. The packet size include 12 additional bytes
     // for the block type and the two block length fields.
     const size_t size = get32(lenfield);
-    if (size % 4 != 0 || size < 12 + body.size()) {
+    if (size > MAX_SANE_PCAP_PACKET_SIZE || size % 4 != 0 || size < 12 + body.size()) {
         body.clear();
         return error(u"invalid pcap-ng block length %d in %s", size, _name);
     }
@@ -400,6 +400,11 @@ bool ts::PcapFile::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds
             const uint32_t sub_tstamp = get32(header + 4);
             cap_size = get32(header + 8);
             orig_size = get32(header + 12);
+
+            if (cap_size > MAX_SANE_PCAP_PACKET_SIZE || orig_size > MAX_SANE_PCAP_PACKET_SIZE) {
+                // Lose synchronization in the pcap file.
+                return error(u"invalid pcap block length %d/%d in %s", cap_size, orig_size, _name);
+            }
 
             // Compute time stamp. Time units should never be null in pcap format.
             timestamp = _if[0].time_units < 0 ?

@@ -1647,6 +1647,33 @@ bool ts::UString::similarAfterLast(const void* addr, size_type size, UChar separ
 
 
 //----------------------------------------------------------------------------
+// Compare two strings in constant time.
+//----------------------------------------------------------------------------
+
+int ts::UString::constantTimeCompare(const UString& secret) const
+{
+    // Take care before modifying this. We don't care about performance, we care about constant time.
+    int result = 0;
+    const UChar* const this_end = data() + size();
+    const UChar* const secret_end = secret.data() + secret.size();
+    const UChar* sp = secret.data();
+    // The execution time of this loop only depends on the size of this string, which is the public one.
+    for (const UChar* tp = data(); tp < this_end; tp++) {
+        // Next secret character to compare with *tp.
+        const bool in_secret = sp < secret_end;
+        const UChar secret_char = in_secret ? *sp : 0;
+        sp += int(in_secret);
+        // Update result only if previously equal to 0, remains unchanged if equal to -1 or +1.
+        const UChar this_char = *tp;
+        result = (result * std::abs(result)) + (1 - std::abs(result)) * (int(this_char > secret_char) - int(this_char < secret_char));
+    }
+    // Condition "result == 0 && sp < secret_end" in constant time,
+    // i.e. this object matches the beginning of secret, but not the whole string.
+    return int(result == 0) + int(sp < secret_end) == 2 ? -1 : result;
+}
+
+
+//----------------------------------------------------------------------------
 // Save this string into a file, in UTF-8 format.
 //----------------------------------------------------------------------------
 

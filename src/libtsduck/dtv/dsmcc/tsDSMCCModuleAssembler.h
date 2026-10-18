@@ -185,4 +185,4 @@ namespace ts {
         // Apply any buffered DDB whose version matches the freshly registered module.
         void replayOrphans(ModuleContext& ctx);
     };
-}  // namespace ts
+}

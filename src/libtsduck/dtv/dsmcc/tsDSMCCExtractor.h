@@ -112,13 +112,12 @@ namespace ts {
         UString moduleFilename(uint32_t download_id, uint16_t module_id) const;
 
         // Compute the on-disk (directory, leaf-name) pair for a completed module.
-        std::pair<std::filesystem::path, UString> computeOutputPath(uint32_t download_id, uint16_t module_id) const;
+        std::pair<fs::path, UString> computeOutputPath(uint32_t download_id, uint16_t module_id) const;
 
-        // Resolve a BIOP object path into the corresponding on-disk path under
-        // out_dir/files.
-        std::optional<std::filesystem::path> safeOutputPath(const UString& name) const;
+        // Resolve a BIOP object path into the corresponding on-disk path under out_dir/files.
+        std::optional<fs::path> safeOutputPath(const UString& name) const;
 
         // Create directory (recursively); report and return false on error.
-        bool ensureDir(const std::filesystem::path& dir);
+        bool ensureDir(const fs::path& dir);
     };
-}  // namespace ts
+}

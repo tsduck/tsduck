@@ -108,4 +108,4 @@ namespace ts {
         std::set<NameKey> _roots {};
         std::vector<PendingEmit> _pending {};
     };
-}  // namespace ts
+}

@@ -37,7 +37,7 @@ namespace {
     constexpr auto FILES_SUBDIR = "files";
     constexpr auto MODULES_SUBDIR = "modules";
 
-    ts::UString pathToUString(const std::filesystem::path& p)
+    ts::UString pathToUString(const fs::path& p)
     {
         return ts::UString::FromUTF8(p.string());
     }
@@ -183,9 +183,8 @@ void ts::DSMCCExtractor::onModuleCompleted(uint32_t download_id, uint16_t module
 }
 
 
-std::pair<std::filesystem::path, ts::UString> ts::DSMCCExtractor::computeOutputPath(uint32_t download_id, uint16_t module_id) const
+std::pair<fs::path, ts::UString> ts::DSMCCExtractor::computeOutputPath(uint32_t download_id, uint16_t module_id) const
 {
-    namespace fs = std::filesystem;
     const fs::path out = fs::path(_options.out_dir.toUTF8());
     const std::string dl_dir = UString::Format(u"%08X", download_id).toUTF8();
 
@@ -199,10 +198,10 @@ std::pair<std::filesystem::path, ts::UString> ts::DSMCCExtractor::computeOutputP
 }
 
 
-bool ts::DSMCCExtractor::ensureDir(const std::filesystem::path& dir)
+bool ts::DSMCCExtractor::ensureDir(const fs::path& dir)
 {
     std::error_code ec;
-    std::filesystem::create_directories(dir, ec);
+    fs::create_directories(dir, ec);
     if (ec) {
         _duck.report().error(u"Cannot create directory %s: %s",
                              pathToUString(dir),
@@ -263,23 +262,23 @@ void ts::DSMCCExtractor::extractFile(const UString& name, const BIOPFileMessage&
 }
 
 
-std::optional<std::filesystem::path> ts::DSMCCExtractor::safeOutputPath(const UString& name) const
+std::optional<fs::path> ts::DSMCCExtractor::safeOutputPath(const UString& name) const
 {
-    namespace fs = std::filesystem;
-
     // The resolver returns paths starting with '/'. Split into segments and
     // reject path-traversal / current-directory tokens so a crafted carousel
     // can't escape the output directory.
     UStringVector parts;
-    name.split(parts, u'/', true, true);
+    name.toSubstituted(u'\\', u'/').split(parts, u'/', true, true);
 
     fs::path rel;
     for (const auto& seg : parts) {
-        if (seg == u".." || seg == u".") {
+        if (seg == u"..") {
             _duck.report().warning(u"Refusing unsafe path: %s", name);
             return std::nullopt;
         }
-        rel /= seg.toUTF8();
+        else if (seg != u".") {
+            rel /= seg.toUTF8();
+        }
     }
     if (rel.empty()) {
         return std::nullopt;

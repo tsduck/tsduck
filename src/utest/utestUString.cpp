@@ -84,6 +84,7 @@ class UStringTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Indent);
     TSUNIT_DECLARE_TEST(ToFloat);
     TSUNIT_DECLARE_TEST(SuperCompare);
+    TSUNIT_DECLARE_TEST(ConstantTime);
     TSUNIT_DECLARE_TEST(ChronoUnit);
     TSUNIT_DECLARE_TEST(Chrono);
     TSUNIT_DECLARE_TEST(Duration);
@@ -2447,6 +2448,19 @@ TSUNIT_DEFINE_TEST(SuperCompare)
     TSUNIT_EQUAL(0, ts::UString::SuperCompare(u"a bC", u" aBc", ts::SCOMP_IGNORE_BLANKS | ts::SCOMP_CASE_INSENSITIVE));
     TSUNIT_EQUAL(-1, ts::UString::SuperCompare(u"version 8.12.3", u"VERSION 8.4.21", ts::SCOMP_IGNORE_BLANKS | ts::SCOMP_CASE_INSENSITIVE));
     TSUNIT_EQUAL(1, ts::UString::SuperCompare(u"version 8.12.3", u"VERSION 8.4.21", ts::SCOMP_IGNORE_BLANKS | ts::SCOMP_NUMERIC | ts::SCOMP_CASE_INSENSITIVE));
+}
+
+TSUNIT_DEFINE_TEST(ConstantTime)
+{
+    // We cannot test the time, just the correct result
+    TSUNIT_EQUAL(0, ts::UString(u"").constantTimeCompare(u""));
+    TSUNIT_EQUAL(-1, ts::UString(u"").constantTimeCompare(u"x"));
+    TSUNIT_EQUAL(1, ts::UString(u"a").constantTimeCompare(u""));
+    TSUNIT_EQUAL(0, ts::UString(u"abc").constantTimeCompare(u"abc"));
+    TSUNIT_EQUAL(-1, ts::UString(u"abc").constantTimeCompare(u"abcdef"));
+    TSUNIT_EQUAL(1, ts::UString(u"abcdef").constantTimeCompare(u"abc"));
+    TSUNIT_EQUAL(-1, ts::UString(u"abcd").constantTimeCompare(u"x"));
+    TSUNIT_EQUAL(1, ts::UString(u"xyz").constantTimeCompare(u"a"));
 }
 
 TSUNIT_DEFINE_TEST(ChronoUnit)
