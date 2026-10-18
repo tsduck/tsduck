@@ -203,6 +203,10 @@ namespace ts::xml {
             // Constructors are inaccessible, only through ConstElementSet begin() and end().
             ConstElementIterator() = delete;
             ConstElementIterator(const ConstElementSet& set, const SuperClass& up) : SuperClass(up), _set(&set) {}
+            ConstElementIterator(ConstElementIterator&&) = default;
+            ConstElementIterator(const ConstElementIterator&) = default;
+            ConstElementIterator& operator=(ConstElementIterator&&) = default;
+            ConstElementIterator& operator=(const ConstElementIterator&) = default;
             friend class ConstElementSet;
         public:
             // Standard iterator's operations, no need to document them.

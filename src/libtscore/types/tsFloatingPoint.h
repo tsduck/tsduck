@@ -299,7 +299,10 @@ ts::UString ts::FloatingPoint<FLOAT_T,PREC>::toString(size_t min_width,
 
     // Format the floating point number in a slightly oversized UTF-8 buffer.
     std::string str8(std::numeric_limits<float_t>::max_digits10 + decimals + 10, '\0');
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(used-but-marked-unused)
     std::snprintf(&str8[0], str8.length() - 1, "%.*lf", int(decimals), double(_value));
+    TS_POP_WARNING()
 
     // Work on UString from now on.
     UString str;

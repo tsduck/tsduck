@@ -562,12 +562,13 @@ if [[ -z $CXXFLAGS_SECURITY ]]; then
     else
         CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST"
         if [[ -n $USE_GCC ]]; then
-            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fhardened"
+            # -Wno-hardened avoids warnings when included options are already specified.
+            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fhardened -Wno-hardened"
         elif [[ -n $USE_LLVM ]]; then
             CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -ftrivial-auto-var-init=zero -fstack-protector-strong"
         fi
         if [[ -z $MACOS && -n $USE_LLVM ]]; then
-            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fPIE -pie -Wl,-z,relro,-z,now -fstack-clash-protection"
+            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fPIE -fstack-clash-protection"
         fi
         if [[ $LOCAL_ARCH == x86_64 || $LOCAL_ARCH == amd64 ]]; then
             CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fcf-protection=full"

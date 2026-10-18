@@ -119,6 +119,7 @@ namespace ts {
         //!
         class Position
         {
+            TS_DEFAULT_COPY_MOVE(Position);
         private:
             // Constructors.
             Position() = delete;
@@ -136,9 +137,9 @@ namespace ts {
 
         //!
         //! Save the position in the document.
-        //! @return The current position in the document.
+        //! @return A constant reference to the current position in the document.
         //!
-        Position position() const { return _pos; }
+        const Position& position() const { return _pos; }
 
         //!
         //! Restore a previous position in the document.

@@ -57,6 +57,8 @@
 #pragma clang diagnostic ignored "-Wunsafe-buffer-usage"    // "unsafe pointer arithmetic" (new with clang 16)
 #pragma clang diagnostic ignored "-Wweak-vtables"           // Test classes may have no explicit virtual method
 #pragma clang diagnostic ignored "-Wmissing-noreturn"       // Test cases with expected exception may be detected as [[noreturn]]
+#pragma clang diagnostic ignored "-Wused-but-marked-unused" // 'snprintf' was marked unused but was used (with _FORTIFY_SOURCE)
+
 #endif
 
 #include <limits>
