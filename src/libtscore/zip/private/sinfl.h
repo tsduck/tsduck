@@ -142,6 +142,18 @@ extern int zsinflate(void *out, int cap, const void *in, int size);
 #include <string.h> /* memcpy, memset */
 #include <assert.h> /* assert */
 
+#if defined(__has_attribute)
+#if __has_attribute(no_sanitize_address)
+#define SINFL_NO_ASAN __attribute__((no_sanitize_address, noinline))
+#endif
+#endif
+#if !defined(SINFL_NO_ASAN) && defined(_MSC_VER) && defined(__SANITIZE_ADDRESS__)
+#define SINFL_NO_ASAN __declspec(no_sanitize_address) __declspec(noinline)
+#endif
+#if !defined(SINFL_NO_ASAN)
+#define SINFL_NO_ASAN
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -173,7 +185,7 @@ extern "C" {
 #endif
 
 static int
-sinfl_bsr(unsigned n) {
+sinfl_bsr(unsigned long n) {
 #ifdef _MSC_VER
   unsigned long r = 0;
   _BitScanReverse(&r, n);
@@ -182,6 +194,7 @@ sinfl_bsr(unsigned n) {
   return 31 - __builtin_clz(n);
 #endif
 }
+SINFL_NO_ASAN /* some of the 64 bits may overflow the user's buffer */
 static unsigned long long
 sinfl_read64(const void *p) {
   unsigned long long n;

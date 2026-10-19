@@ -854,7 +854,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! @endcode
 //!
 #if defined(DOXYGEN)
-    #define TS_NO_OPTIMIZE platform_specific
+    #define TS_NO_OPTIMIZE
 #elif defined(TS_MSC)
     #define TS_NO_OPTIMIZE
 #elif defined(TS_LLVM)
@@ -863,6 +863,26 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
     #define TS_NO_OPTIMIZE __attribute__((optimize("-O0")))
 #else
     #error "New unknown compiler, please update TS_NO_OPTIMIZE in tsPlatform.h"
+#endif
+
+//!
+//! Attribute to explicitly disable UBSan on integer overflow in a function.
+//! @ingroup cpp
+//!
+//! Example:
+//! @code
+//! TS_NO_SANITIZE_SIGNED_OVERFLOW void f();
+//! template<...> TS_NO_SANITIZE_SIGNED_OVERFLOW void g();
+//! @endcode
+//!
+#if defined(DOXYGEN)
+#define TS_NO_SANITIZE_SIGNED_OVERFLOW
+#elif defined(TS_MSC)
+#define TS_NO_SANITIZE_SIGNED_OVERFLOW
+#elif defined(TS_LLVM) || defined(TS_GCC)
+#define TS_NO_SANITIZE_SIGNED_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
+#else
+#error "New unknown compiler, please update TS_NO_SANITIZE_SIGNED_OVERFLOW in tsPlatform.h"
 #endif
 
 //!

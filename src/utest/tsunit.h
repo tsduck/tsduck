@@ -266,6 +266,19 @@ namespace tsunit {
     void _TestClass::test##name()
 
 //!
+//! Define a test method to the test suite outside the test class, with a specific function attribute.
+//! @hideinitializer
+//! @param name Simple name of the test method, as used in TSUNIT_DECLARE_TEST().
+//! @param attrib Function attribute for the test method.
+//! @see TSUNIT_DECLARE_TEST
+//!
+#define TSUNIT_DEFINE_TEST_WITH_ATTRIBUTE(name, attrib)                   \
+    static const tsunit::TestRepository::Register TSUNIT_NAME(_Registrar) \
+        (std::type_index(typeid(_TestClass)),                             \
+         new tsunit::TestCaseWrapper<_TestClass>(#name, &_TestClass::test##name, tsunit::TestRepository::instance()->getTest<_TestClass>(std::type_index(typeid(_TestClass))))); \
+    attrib void _TestClass::test##name()
+
+//!
 //! Define a test method which should raise an exception to the test suite outside the test class.
 //! @hideinitializer
 //! @param name Simple name of the test method, as used in TSUNIT_DECLARE_TEST().

@@ -396,6 +396,8 @@ namespace ts {
 
     //!
     //! Check if an integer multiplication generates an overflow.
+    //! Note: This function intentionally generates an overflow.
+    //! Code analyzers and sanitizers may report a false positive here.
     //! @ingroup cpp
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
@@ -403,7 +405,7 @@ namespace ts {
     //! @return True if @a a * @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    bool mul_overflow(INT a, INT b) TS_NO_OPTIMIZE;
+    TS_NO_SANITIZE_SIGNED_OVERFLOW bool mul_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
     //! Throw an exception if an integer addition generates an overflow.

@@ -114,6 +114,7 @@ JAVAC_FLAGS                  # Java compilation flags.
 CXXFLAGS_JAVA                # C++ compilation options for JNI.
 
 # Partial C++ compilation flags (included in CXXFLAGS):
+CXXFLAGS_ASAN                # For address sanitizer.
 CXXFLAGS_CROSS               # For cross-compilation.
 CXXFLAGS_DEBUG               # For debug mode.
 CXXFLAGS_FPIC                # For position-independent code.
@@ -122,16 +123,18 @@ CXXFLAGS_GCOV                # For code coverage using gcov.
 CXXFLAGS_GPROF               # For code profiling using gprof.
 CXXFLAGS_INCLUDES            # Preprocessing options (includes and macros).
 CXXFLAGS_M32                 # For 32-bit cross-compilation.
+CXXFLAGS_NO_WARNINGS         # Excluded warnings.
 CXXFLAGS_OPTIMIZE            # For standard code optimization.
 CXXFLAGS_OPTSIZE             # For code size optimization.
 CXXFLAGS_PTHREAD             # Pthread options.
 CXXFLAGS_SECURITY            # Security-oriented options.
 CXXFLAGS_STANDARD            # Specifies the standard level of C++ language.
 CXXFLAGS_TARGET              # Specify target CPU.
+CXXFLAGS_UBSAN               # For undefined behavior sanitizer.
 CXXFLAGS_WARNINGS            # Specify warnings.
-CXXFLAGS_NO_WARNINGS         # Excluded warnings.
 
 # Partial linker flags (included in LDFLAGS):
+LDFLAGS_ASAN                 # For address sanitizer.
 LDFLAGS_CROSS                # For cross-compilation.
 LDFLAGS_DEBUG                # For debug mode.
 LDFLAGS_GCOV                 # For code coverage using gcov.
@@ -139,6 +142,7 @@ LDFLAGS_GPROF                # For code profiling using gprof.
 LDFLAGS_M32                  # For 32-bit cross-compilation.
 LDFLAGS_PTHREAD              # Pthread options.
 LDFLAGS_LINKER               # System linker specific options.
+LDFLAGS_UBSAN                # For undefined behavior sanitizer.
 LDLIBS                       # Specify external libraries.
 LDLIBS_PCSC                  # Libraries for PCSC.
 

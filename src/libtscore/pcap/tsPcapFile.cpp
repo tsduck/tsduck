@@ -212,7 +212,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size)
                 // This is a negative power of 10, e.g. 6 means micro-second.
                 ifd.time_units = Power10(data[0]);
             }
-            else if ((data[0] & 0x7F) < 8 * sizeof(ifd.time_units)) {
+            else if (size_t(data[0] & 0x7F) < size_t(8 * sizeof(ifd.time_units))) {
                 // This is a negative power of 2, e.g. 6 means unit of 1/64 second.
                 ifd.time_units = 1LL << (data[0] & 0x7F);
             }

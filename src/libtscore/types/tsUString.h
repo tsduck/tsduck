@@ -1762,7 +1762,7 @@ namespace ts {
         //! @param [in] secret A secret string to compare.
         //! @return -1, 0, or 1, if this string is respectively before, equal to, or after @a secret.
         //!
-        int constantTimeCompare(const UString& secret) const;
+        int constantTimeCompare(const UString& secret) const TS_NO_OPTIMIZE;
 
         //--------------------------------------------------------------------
         // Operations on text files
