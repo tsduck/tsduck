@@ -13,11 +13,11 @@
     <!-- By default, disable SRT -->
     <SrtProps>$(NoSrtProps)</SrtProps>
     <!-- If original Haivision libsrt exists, override -->
-    <SrtProps Condition="Exists('$(LibSrtProps)')">$(LibSrtProps)</SrtProps>
+    <SrtProps Condition="Exists('$(LibSrtProps)') AND '$(Configuration)' != 'ASan'">$(LibSrtProps)</SrtProps>
     <!-- If SRT library with OpenSSL backend exists, override -->
-    <SrtProps Condition="Exists('$(OpenSslSrtProps)')">$(OpenSslSrtProps)</SrtProps>
+    <SrtProps Condition="Exists('$(OpenSslSrtProps)') AND '$(Configuration)' != 'ASan'">$(OpenSslSrtProps)</SrtProps>
     <!-- If SRT library with BCrypt backend exists, override -->
-    <SrtProps Condition="Exists('$(BCryptSrtProps)')">$(BCryptSrtProps)</SrtProps>
+    <SrtProps Condition="Exists('$(BCryptSrtProps)') AND '$(Configuration)' != 'ASan'">$(BCryptSrtProps)</SrtProps>
     <!-- If SRT is disabled anyway, always override -->
     <SrtProps Condition="'$(TS_NO_SRT)' != ''">$(NoSrtProps)</SrtProps>
   </PropertyGroup>
