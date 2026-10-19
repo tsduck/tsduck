@@ -206,6 +206,13 @@ bool ts::HTTPOutputPlugin::startSession()
                 request = header;
             }
         }
+
+        // Filter long header lines, possibly infinite stream without EOL to crash the application.
+        if (data.size() > _max_header_line_length) {
+            error(u"HTTP header line too long: %d bytes", data.size());
+            return false;
+        }
+
     } while (!header.empty());
 
     // Expected request: "GET / HTTP/1.1"

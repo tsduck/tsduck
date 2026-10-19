@@ -308,7 +308,14 @@ bool ts::TLSContext::initClient(const TLSConnectionBase& params)
 
         // Set DNS names for verification of the server's certificate.
         bool names_ok = true;
-        if (params.verifyPeer() && !params.serverName().empty()) {
+        if (!params.verifyPeer()) {
+            // Don't verify server name.
+        }
+        else if (params.serverName().empty()) {
+            report().error(u"TLS client wants to verify peer certificate but no server name was specified");
+            break;
+        }
+        else {
             // SSL_set1_host() and SSL_add1_host() are deprecated since OpenSSL 4.0.
             // They were wrappers around these calls on the verification parameters.
             X509_VERIFY_PARAM* const vparam = SSL_get0_param(_guts->ssl);

@@ -38,6 +38,7 @@ namespace ts {
         bool            _multiple_clients = false;
         bool            _ignore_bad_request = false;
         size_t          _tcp_buffer_size = 0;
+        size_t          _max_header_line_length = 8192; // hardcoded for now, no command line option
 
         // Working data:
         TCPServer     _server {this};

@@ -209,10 +209,15 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size)
         }
         else if (tag == PCAPNG_IF_TSRESOL && len == 1) {
             if ((data[0] & 0x80) == 0) {
+                // This is a negative power of 10, e.g. 6 means micro-second.
                 ifd.time_units = Power10(data[0]);
             }
-            else {
+            else if ((data[0] & 0x7F) < 8 * sizeof(ifd.time_units)) {
+                // This is a negative power of 2, e.g. 6 means unit of 1/64 second.
                 ifd.time_units = 1LL << (data[0] & 0x7F);
+            }
+            else {
+                return error(u"invalid timestamp resolution 0x%X in pcap-ng file", data[0]);
             }
         }
 
