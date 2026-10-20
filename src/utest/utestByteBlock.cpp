@@ -26,6 +26,9 @@ class ByteBlockTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Find);
     TSUNIT_DECLARE_TEST(Append);
     TSUNIT_DECLARE_TEST(File);
+    TSUNIT_DECLARE_TEST(Overlap);
+    TSUNIT_DECLARE_TEST(InvalidOverlap1);
+    TSUNIT_DECLARE_TEST(InvalidOverlap2);
 
 public:
     virtual void beforeTest() override;
@@ -210,6 +213,41 @@ TSUNIT_DEFINE_TEST(Append)
     TSUNIT_ASSERT(v[idx++] == 0x43);
     TSUNIT_ASSERT(v[idx++] == 0x65);
     TSUNIT_ASSERT(v[idx++] == 0x87);
+}
+
+TSUNIT_DEFINE_TEST(Overlap)
+{
+    ts::ByteBlock bb {1, 2, 3, 4, 5, 6};
+    bb.append(bb);
+    TSUNIT_EQUAL(u"01 02 03 04 05 06 01 02 03 04 05 06", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
+
+    bb = {1, 2, 3, 4, 5, 6};
+    bb.append(bb, 3, 2);
+    TSUNIT_EQUAL(u"01 02 03 04 05 06 04 05", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
+
+    bb = {1, 2, 3, 4, 5, 6};
+    bb.append(bb.data() + 1, 3);
+    TSUNIT_EQUAL(u"01 02 03 04 05 06 02 03 04", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
+
+    bb = {1, 2, 3, 4, 5, 6};
+    bb.copy(bb, 2, 3);
+    TSUNIT_EQUAL(u"03 04 05", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
+
+    bb = {1, 2, 3, 4, 5, 6};
+    bb.copy(bb.data() + 3, 3);
+    TSUNIT_EQUAL(u"04 05 06", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
+}
+
+TSUNIT_DEFINE_TEST_EXCEPTION(InvalidOverlap1, std::out_of_range)
+{
+    ts::ByteBlock bb {1, 2, 3, 4, 5, 6};
+    bb.copy(bb.data(), 12);
+}
+
+TSUNIT_DEFINE_TEST_EXCEPTION(InvalidOverlap2, std::out_of_range)
+{
+    ts::ByteBlock bb {1, 2, 3, 4, 5, 6};
+    bb.copy(bb.data() - 5, 8);
 }
 
 TSUNIT_DEFINE_TEST(File)

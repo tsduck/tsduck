@@ -116,10 +116,26 @@ ts::ByteBlock::size_type ts::ByteBlock::find(uint8_t value, size_type start, siz
 // Replace the content of a byte block.
 //----------------------------------------------------------------------------
 
-void ts::ByteBlock::copy(const void* data_, size_type size_)
+void ts::ByteBlock::copy(const void* addr, size_type length)
 {
-    resize(data_ == nullptr ? 0 : size_);
-    MemCopy(data(), data_, size());
+    if (insideThis(addr, length)) {
+        // Partial self-copy, don't copy, erase/resize content.
+        const size_type offset = reinterpret_cast<const uint8_t*>(addr) - data();
+        assert(offset < size());
+        if (offset + length < size()) {
+            // Truncate end.
+            resize(offset + length);
+        }
+        if (offset > 0) {
+            // Truncate start.
+            erase(0, offset);
+        }
+    }
+    else {
+        // Standard copy of a memory area outside of this object.
+        resize(addr == nullptr ? 0 : length);
+        MemCopy(data(), addr, size());
+    }
 }
 
 void ts::ByteBlock::copy(const ByteBlock& bb, size_type start, size_type count)
