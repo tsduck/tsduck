@@ -156,12 +156,7 @@ namespace ts {
         //! @param [in] data Address of the new area to append.
         //! @param [in] size Size of the area to append.
         //!
-        void append(const void* data, size_type size)
-        {
-            if (size > 0 && data != nullptr) {
-                MemCopy(enlarge(size), data, size);
-            }
-        }
+        TSCOREDLL void append(const void* data, size_type size);
 
         //!
         //! Append a slice of a byte block to a byte block.
@@ -579,6 +574,10 @@ namespace ts {
     private:
         // Common code for saveToFile and appendToFile.
         bool writeToFile(const UString& file_name, std::ios::openmode mode, Report* report) const;
+
+        // Check if a memory range is inside this object. Used to avoid use-after-free when copying part of this into this.
+        // Throw std::out_of_range is the memory range overlaps the content of this, without being fully included in this.
+        bool insideThis(const void* addr, size_type size) const;
     };
 
 #if !defined(DOXYGEN)

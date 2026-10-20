@@ -71,6 +71,33 @@ const ts::ByteBlock& ts::ByteBlock::EMPTY()
 }
 
 //----------------------------------------------------------------------------
+// Check if a memory range is inside this object.
+//----------------------------------------------------------------------------
+
+bool ts::ByteBlock::insideThis(const void* addr, size_type length) const
+{
+    if (addr == nullptr || length == 0) {
+        // If addr is inside this but length is zero, consider it's irrelevant or harmless.
+        return false;
+    }
+
+    const auto p_start = reinterpret_cast<const uint8_t*>(addr);
+    const auto p_end = p_start + length;
+    const auto this_start = data();
+    const auto this_end = this_start + size();
+
+    if (p_start >= this_start && p_end <= this_end) {
+        return true;
+    }
+    else if (p_end <= this_start || p_start >= this_end) {
+        return false;
+    }
+    else {
+        throw std::out_of_range("ByteBlock partial overlap");
+    }
+}
+
+//----------------------------------------------------------------------------
 // Find the first occurrence of a byte value in a byte block.
 //----------------------------------------------------------------------------
 
@@ -103,8 +130,20 @@ void ts::ByteBlock::copy(const ByteBlock& bb, size_type start, size_type count)
 }
 
 //----------------------------------------------------------------------------
-// Append a slice of a byte block to a byte block.
+// Append data to a byte block.
 //----------------------------------------------------------------------------
+
+void ts::ByteBlock::append(const void* data, size_type size)
+{
+    if (insideThis(data, size)) {
+        // Partial self-copy, use an intermediate buffer.
+        const ByteBlock bb(data, size);
+        MemCopy(enlarge(size), bb.data(), size);
+    }
+    else if (size > 0 && data != nullptr) {
+        MemCopy(enlarge(size), data, size);
+    }
+}
 
 void ts::ByteBlock::append(const ByteBlock& bb, size_type start, size_type count)
 {
