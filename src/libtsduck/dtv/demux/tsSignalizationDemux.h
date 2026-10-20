@@ -587,7 +587,7 @@ namespace ts {
         //! @param [in] pid The PID to check.
         //! @param [out] services The set of services in which @a pid was found.
         //!
-        void getServiceIds(PID pid, std::set<uint16_t> services) const;
+        void getServiceIds(PID pid, std::set<uint16_t>& services) const;
 
     private:
         // Description of a synchronization point in a PID.
