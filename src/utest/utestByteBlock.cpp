@@ -238,13 +238,13 @@ TSUNIT_DEFINE_TEST(Overlap)
     TSUNIT_EQUAL(u"04 05 06", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
 }
 
-TSUNIT_DEFINE_TEST_EXCEPTION(InvalidOverlap1, std::out_of_range)
+TSUNIT_DEFINE_TEST_EXCEPTION(InvalidOverlap1, ts::ByteBlock::Overlap)
 {
     ts::ByteBlock bb {1, 2, 3, 4, 5, 6};
     bb.copy(bb.data(), 12);
 }
 
-TSUNIT_DEFINE_TEST_EXCEPTION(InvalidOverlap2, std::out_of_range)
+TSUNIT_DEFINE_TEST_EXCEPTION(InvalidOverlap2, ts::ByteBlock::Overlap)
 {
     ts::ByteBlock bb {1, 2, 3, 4, 5, 6};
     bb.copy(bb.data() - 5, 8);

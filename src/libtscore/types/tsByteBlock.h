@@ -42,6 +42,16 @@ namespace ts {
         // expands to nothing.
 
         //!
+        //! Fatal low-level error: copying overlapping byte blocks.
+        //!
+        class TSCOREDLL Overlap: public std::exception
+        {
+            TS_RULE_OF_FIVE(Overlap, noexcept override);
+        public:
+            Overlap() = default;  //!< Constructor.
+        };
+
+        //!
         //! Explicit name of superclass, @c std::vector on @c uint8_t.
         //!
         using ByteVector = std::vector<uint8_t>;
@@ -576,7 +586,7 @@ namespace ts {
         bool writeToFile(const UString& file_name, std::ios::openmode mode, Report* report) const;
 
         // Check if a memory range is inside this object. Used to avoid use-after-free when copying part of this into this.
-        // Throw std::out_of_range is the memory range overlaps the content of this, without being fully included in this.
+        // Throw ts::ByteBlock::Overlap is the memory range overlaps the content of this, without being fully included in this.
         bool insideThis(const void* addr, size_type size) const;
     };
 

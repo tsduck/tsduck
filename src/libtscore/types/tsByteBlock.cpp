@@ -60,6 +60,10 @@ ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
 {
 }
 
+ts::ByteBlock::ByteBlock::Overlap::~Overlap() noexcept
+{
+}
+
 //----------------------------------------------------------------------------
 // Get a reference to an empty ByteBlock.
 //----------------------------------------------------------------------------
@@ -93,7 +97,7 @@ bool ts::ByteBlock::insideThis(const void* addr, size_type length) const
         return false;
     }
     else {
-        throw std::out_of_range("ByteBlock partial overlap");
+        throw Overlap();
     }
 }
 
