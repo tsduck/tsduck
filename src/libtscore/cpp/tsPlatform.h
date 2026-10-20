@@ -169,6 +169,34 @@
     #endif
 #endif
 
+// GCC < 14 and MSVC lack __has_feature.
+#if !defined(__has_feature) && !defined(DOXYGEN)
+    #define __has_feature(x) 0
+#endif
+
+#if defined(DOXYGEN)
+    //!
+    //! Defined when the code is compiled for ASAN, the Address Sanitizer.
+    //! @ingroup cpp
+    //!
+    #define TS_ASAN
+#elif (defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)) && !defined(TS_ASAN)
+    #define TS_ASAN 1
+#endif
+
+#if defined(DOXYGEN)
+    //!
+    //! Defined when the code is compiled for UBSAN, the Undefined Behaviour Sanitizer.
+    //! Notes:
+    //! - GCC cannot always reliably detect UBSAN, only LLVM/clang can do that.
+    //! - MSVC does not support UBSAN.
+    //! @ingroup cpp
+    //!
+    #define TS_UBSAN
+#elif (__has_feature(undefined_behavior_sanitizer) || defined(__SANITIZE_UNDEFINED__)) && !defined(TS_UBSAN)
+    #define TS_UBSAN 1
+#endif
+
 
 //----------------------------------------------------------------------------
 // Unified O/S naming: TS_LINUX, TS_WINDOWS, etc

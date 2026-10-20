@@ -495,13 +495,15 @@ fi
 # Possibly used in scripts we will call.
 export GCC_VERSION GCC_MAJOR LLVM_VERSION LLVM_MAJOR
 
+# Always use the same compiler for preprocessor.
+CPP='$(CXX) -E'
+
 # Forced usage of LLVM (clang). FreeBSD and OpenBSD have switched to clang by default.
 if [[ -n $LLVM$FREEBSD$OPENBSD ]]; then
     USE_GCC=
     USE_LLVM=1
     CXX=clang++
     CC=clang
-    CPP="clang -E"
     # On some systems (e.g. Ubuntu 22.04), clang-14 is the default but is
     # incompatible with the installed gcc header files in C++20 mode.
     # If clang-15 is installed, use it instead of clang-14.
