@@ -26,11 +26,11 @@ ts::ByteBlock::ByteBlock(size_type size, uint8_t value) :
 {
 }
 
-ts::ByteBlock::ByteBlock(const void* data, size_type size) :
-    ByteVector(size)
+ts::ByteBlock::ByteBlock(const void* addr, size_type length) :
+    ByteVector(length)
 {
-    if (size > 0 && data != nullptr) {
-        MemCopy(&(*this)[0], data, size);
+    if (length > 0 && addr != nullptr) {
+        MemCopy(data(), addr, length);
     }
 }
 
@@ -38,7 +38,7 @@ ts::ByteBlock::ByteBlock(const ByteBlock& bb, size_type start, size_type count) 
     ByteVector(std::min(count, bb.size() - std::min(start, bb.size())))
 {
     if (size() > 0) {
-        MemCopy(&(*this)[0], &bb[start], size());
+        MemCopy(data(), bb.data() + start, size());
     }
 }
 
@@ -146,7 +146,7 @@ void ts::ByteBlock::copy(const ByteBlock& bb, size_type start, size_type count)
 {
     start = std::min(start, bb.size());
     count = std::min(count, bb.size() - start);
-    copy(&bb[start], count);
+    copy(bb.data() + start, count);
 }
 
 //----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ void ts::ByteBlock::append(const ByteBlock& bb, size_type start, size_type count
 {
     start = std::min(start, bb.size());
     count = std::min(bb.size() - start, count);
-    append(&bb[start], count);
+    append(bb.data() + start, count);
 }
 
 //----------------------------------------------------------------------------

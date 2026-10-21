@@ -23,8 +23,7 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(Exception, noexcept override);
     private:
-        UString _what;
-        mutable std::string _utf8;
+        std::string _what;
     public:
         //!
         //! Constructor.

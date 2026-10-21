@@ -245,7 +245,6 @@ namespace ts {
         //!
         void rwAppend(const void* data, size_t dsize);
 
-
     private:
         // Inaccessible default copy constructor, require a ShareMode parameter.
         DataBlock(const DataBlock&) = delete;
@@ -298,7 +297,7 @@ _TEMPLATE ts::_CLASSNAME::DataBlock(const ByteBlock& content)
 // Constructor from full binary content.
 _TEMPLATE ts::_CLASSNAME::DataBlock(const ByteBlockPtr& content_ptr, ShareMode mode)
 {
-    if (ValidateLengthField(content_ptr->data(), content_ptr->size(), false)) {
+    if (content_ptr != nullptr && ValidateLengthField(content_ptr->data(), content_ptr->size(), false)) {
         if (mode == ShareMode::SHARE) {
             _data = content_ptr;
         }

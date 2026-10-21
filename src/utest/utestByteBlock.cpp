@@ -25,6 +25,7 @@ class ByteBlockTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Constructors);
     TSUNIT_DECLARE_TEST(Find);
     TSUNIT_DECLARE_TEST(Append);
+    TSUNIT_DECLARE_TEST(AppendEnd);
     TSUNIT_DECLARE_TEST(File);
     TSUNIT_DECLARE_TEST(Overlap);
     TSUNIT_DECLARE_TEST(InvalidOverlap1);
@@ -213,6 +214,16 @@ TSUNIT_DEFINE_TEST(Append)
     TSUNIT_ASSERT(v[idx++] == 0x43);
     TSUNIT_ASSERT(v[idx++] == 0x65);
     TSUNIT_ASSERT(v[idx++] == 0x87);
+}
+
+TSUNIT_DEFINE_TEST(AppendEnd)
+{
+    ts::ByteBlock bb {1, 2, 3};
+    ts::ByteBlock cc {4, 5, 6};
+
+    // B01-09 with UBSAN
+    bb.append(cc, cc.size());
+    TSUNIT_EQUAL(u"01 02 03", ts::UString::Dump(bb, ts::UString::SINGLE_LINE));
 }
 
 TSUNIT_DEFINE_TEST(Overlap)

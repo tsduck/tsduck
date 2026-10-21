@@ -1200,14 +1200,14 @@ namespace ts {
         //! @param [in] force_split If true, longer lines without separators
         //! are split at the maximum width (by default, longer lines without
         //! separators are not split, resulting in lines longer than @a max_width).
-        //! @param [in] lineSeparator The sequence of characters for line feed.
+        //! @param [in] line_separator The sequence of characters for line feed.
         //! @return The splitted string with embedded line separators.
         //!
         UString toSplitLines(size_type max_width,
                              const UString& other_separators = UString(),
                              const UString& next_margin = UString(),
                              bool force_split = false,
-                             const UString lineSeparator = UString(1, LINE_FEED)) const;
+                             const UString& line_separator = UString(1, LINE_FEED)) const;
 
         //!
         //! Join a part of a container of strings into one big string.

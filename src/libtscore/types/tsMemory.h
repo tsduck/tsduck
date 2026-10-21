@@ -1747,16 +1747,16 @@ template <typename INT> requires std::integral<INT>
 void ts::GetIntBE(const void* p, INT& i)
 {
     if constexpr (sizeof(INT) == 1) {
-        i = static_cast<INT>(GetUInt8(p)); break;
+        i = static_cast<INT>(GetUInt8(p));
     }
     else if constexpr (sizeof(INT) == 2) {
-        i = static_cast<INT>(GetUInt16BE(p)); break;
+        i = static_cast<INT>(GetUInt16BE(p));
     }
     else if constexpr (sizeof(INT) == 4) {
-        i = static_cast<INT>(GetUInt32BE(p)); break;
+        i = static_cast<INT>(GetUInt32BE(p));
     }
     else if constexpr (sizeof(INT) == 8) {
-        i = static_cast<INT>(GetUInt64BE(p)); break;
+        i = static_cast<INT>(GetUInt64BE(p));
     }
     else {
         static_assert(dependent_false<INT>, "invalid integer size");
@@ -1767,16 +1767,16 @@ template <typename INT> requires std::integral<INT>
 void ts::GetIntLE(const void* p, INT& i)
 {
     if constexpr (sizeof(INT) == 1) {
-        i = static_cast<INT>(GetUInt8(p)); break;
+        i = static_cast<INT>(GetUInt8(p));
     }
     else if constexpr (sizeof(INT) == 2) {
-        i = static_cast<INT>(GetUInt16LE(p)); break;
+        i = static_cast<INT>(GetUInt16LE(p));
     }
     else if constexpr (sizeof(INT) == 4) {
-        i = static_cast<INT>(GetUInt32LE(p)); break;
+        i = static_cast<INT>(GetUInt32LE(p));
     }
     else if constexpr (sizeof(INT) == 8) {
-        i = static_cast<INT>(GetUInt64LE(p)); break;
+        i = static_cast<INT>(GetUInt64LE(p));
     }
     else {
         static_assert(dependent_false<INT>, "invalid integer size");
@@ -1787,16 +1787,16 @@ template <typename INT> requires std::integral<INT>
 void ts::PutIntBE(void* p, INT i)
 {
     if constexpr (sizeof(INT) == 1) {
-        PutUInt8(p, static_cast<uint8_t>(i)); break;
+        PutUInt8(p, static_cast<uint8_t>(i));
     }
     else if constexpr (sizeof(INT) == 2) {
-        PutUInt16BE(p, static_cast<uint16_t>(i)); break;
+        PutUInt16BE(p, static_cast<uint16_t>(i));
     }
     else if constexpr (sizeof(INT) == 4) {
-        PutUInt32BE(p, static_cast<uint32_t>(i)); break;
+        PutUInt32BE(p, static_cast<uint32_t>(i));
     }
     else if constexpr (sizeof(INT) == 8) {
-        PutUInt64BE(p, static_cast<uint64_t>(i)); break;
+        PutUInt64BE(p, static_cast<uint64_t>(i));
     }
     else {
         static_assert(dependent_false<INT>, "invalid integer size");
@@ -1807,16 +1807,16 @@ template <typename INT> requires std::integral<INT>
 void ts::PutIntLE(void* p, INT i)
 {
     if constexpr (sizeof(INT) == 1) {
-        PutUInt8(p, static_cast<uint8_t>(i)); break;
+        PutUInt8(p, static_cast<uint8_t>(i));
     }
     else if constexpr (sizeof(INT) == 2) {
-        PutUInt16LE(p, static_cast<uint16_t>(i)); break;
+        PutUInt16LE(p, static_cast<uint16_t>(i));
     }
     else if constexpr (sizeof(INT) == 4) {
-        PutUInt32LE(p, static_cast<uint32_t>(i)); break;
+        PutUInt32LE(p, static_cast<uint32_t>(i));
     }
     else if constexpr (sizeof(INT) == 8) {
-        PutUInt64LE(p, static_cast<uint64_t>(i)); break;
+        PutUInt64LE(p, static_cast<uint64_t>(i));
     }
     else {
         static_assert(dependent_false<INT>, "invalid integer size");

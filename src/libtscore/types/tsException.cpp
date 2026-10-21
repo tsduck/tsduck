@@ -11,10 +11,9 @@
 #include "tsSysUtils.h"
 
 ts::Exception::Exception(const UString& w) :
-    _what(w),
-    _utf8()
+    _what(w.toUTF8())
 {
-    CERR.log(Severity::Debug, u"Exception: " + _what);
+    CERR.log(Severity::Debug, u"Exception: %s", w);
 }
 
 ts::Exception::Exception(const UString& w, int error) :
@@ -28,8 +27,5 @@ ts::Exception::~Exception() noexcept
 
 const char* ts::Exception::what() const noexcept
 {
-    if (_utf8.empty() && !_what.empty()) {
-        _utf8 = _what.toUTF8();
-    }
-    return _utf8.c_str();
+    return _what.c_str();
 }

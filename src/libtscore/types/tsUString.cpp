@@ -1053,11 +1053,11 @@ size_t ts::UString::commonSuffixSize(const UString &str, CaseSensitivity cs) con
 // Split a string into multiple lines which are not longer than a specified maximum width.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::toSplitLines(size_type max_width, const UString& other_separators, const UString& next_margin, bool force_split, const UString lineSeparator) const
+ts::UString ts::UString::toSplitLines(size_type max_width, const UString& other_separators, const UString& next_margin, bool force_split, const UString& line_separator) const
 {
     UStringList lines;
     splitLines(lines, max_width, other_separators, next_margin, force_split);
-    return lineSeparator.join(lines);
+    return line_separator.join(lines);
 }
 
 
