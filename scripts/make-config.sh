@@ -570,13 +570,17 @@ if [[ -z $CXXFLAGS_SECURITY ]]; then
         elif [[ -n $USE_LLVM ]]; then
             CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -ftrivial-auto-var-init=zero -fstack-protector-strong"
         fi
-        if [[ -z $MACOS && -n $USE_LLVM ]]; then
-            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fPIE -fstack-clash-protection"
-        fi
-        if [[ $LOCAL_ARCH == x86_64 || $LOCAL_ARCH == amd64 ]]; then
-            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fcf-protection=full"
-        elif [[ $LOCAL_ARCH == aarch64 || $LOCAL_ARCH == arm64 ]]; then
-            CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -mbranch-protection=standard"
+        if [[ -z $MACOS ]]; then
+            # These protections are not used on macOS which uses a specific target "arm64e".
+            # The mode "arm64e" is not used yet in TSDuck.
+            if [[ -n $USE_LLVM ]]; then
+                CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fPIE -fstack-clash-protection"
+            fi
+            if [[ $LOCAL_ARCH == x86_64 || $LOCAL_ARCH == amd64 ]]; then
+                CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -fcf-protection=full"
+            elif [[ $LOCAL_ARCH == aarch64 || $LOCAL_ARCH == arm64 ]]; then
+                CXXFLAGS_SECURITY="$CXXFLAGS_SECURITY -mbranch-protection=standard"
+            fi
         fi
     fi
 fi
