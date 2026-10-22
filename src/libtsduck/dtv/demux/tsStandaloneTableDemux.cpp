@@ -21,17 +21,6 @@ ts::StandaloneTableDemux::StandaloneTableDemux(DuckContext& duck, const PIDSet& 
 
 
 //----------------------------------------------------------------------------
-// Get a pointer to a demuxed table.
-//----------------------------------------------------------------------------
-
-const ts::BinaryTablePtr& ts::StandaloneTableDemux::tableAt(size_t index) const
-{
-    assert(index < _tables.size());
-    return _tables[index];
-}
-
-
-//----------------------------------------------------------------------------
 // Reset the analysis context (partially built sections and tables).
 // Inherited from SectionDemux
 //----------------------------------------------------------------------------
@@ -59,11 +48,12 @@ void ts::StandaloneTableDemux::resetPID(PID pid)
     // Removed demuxed tables for this PID
     size_t index = 0;
     for (size_t i = 0; i < _tables.size(); ++i) {
-        if (_tables[i]->sourcePID() != pid) {
-            _tables[index++] = _tables[i];
+        if (_tables[i]->sourcePID() != pid && i != index) {
+            _tables[index] = _tables[i];
         }
+        index++;
     }
-    _tables.resize (index);
+    _tables.resize(index);
 }
 
 

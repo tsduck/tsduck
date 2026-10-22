@@ -259,7 +259,7 @@ namespace ts {
         //!
         size_t getAFSize() const
         {
-            return hasAF() ? size_t(b[4]) + 1 : 0;
+            return hasAF() ? std::min(size_t(b[4]), PKT_MAX_AF_SIZE) + 1 : 0;
         }
 
         //!
@@ -275,7 +275,7 @@ namespace ts {
         //!
         size_t getHeaderSize() const
         {
-            return std::min(4 + (hasAF() ? (size_t(b[4]) + 1) : 0), PKT_SIZE);
+            return PKT_HEADER_SIZE + getAFSize();
         }
 
         //!

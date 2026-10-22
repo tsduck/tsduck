@@ -115,7 +115,7 @@ bool ts::TSFile::endOfStream()
 
 bool ts::TSFile::seekPacket(PacketCounter packet_index)
 {
-    return seekByte(packet_index * (packetHeaderSize() + PKT_SIZE));
+    return seekByte(packet_index * (packetHeaderSize() + PKT_SIZE + packetTrailerSize()));
 }
 
 

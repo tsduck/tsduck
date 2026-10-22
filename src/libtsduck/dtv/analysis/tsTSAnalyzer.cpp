@@ -977,28 +977,32 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_MPEG_REGISTRATION: {
-                if (ps != nullptr) {
-                    const RegistrationDescriptor desc(_duck, bindesc);
-                    switch (desc.format_identifier) {
-                        case REGID_BSSD: {
+                const RegistrationDescriptor desc(_duck, bindesc);
+                switch (desc.format_identifier) {
+                    case REGID_BSSD: {
+                        if (ps != nullptr) {
                             // The presence of this registration id indicates an AES3 PCM audio track (SMPTE 302M).
                             ps->description = u"AES3 PCM Audio";
                             ps->carry_audio = true;
-                            break;
                         }
-                        case REGID_VC1: {
+                        break;
+                    }
+                    case REGID_VC1: {
+                        if (ps != nullptr) {
                             ps->description = u"VC-1 Video";
                             ps->carry_video = true;
-                            break;
                         }
-                        case REGID_VC4: {
+                        break;
+                    }
+                    case REGID_VC4: {
+                        if (ps != nullptr) {
                             ps->description = u"VC-4 Video";
                             ps->carry_video = true;
-                            break;
                         }
-                        default: {
-                            break;
-                        }
+                        break;
+                    }
+                    default: {
+                        break;
                     }
                 }
                 break;
@@ -1008,9 +1012,11 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 if (size >= 1) {
                     switch (data[0]) {
                         case XDID_MPEG_LCEVC_VIDEO: {
-                            // The presence of this descriptor indicates an LCEVC video track.
-                            ps->description = u"LCEVC Video";
-                            ps->carry_video = true;
+                            if (ps != nullptr) {
+                                // The presence of this descriptor indicates an LCEVC video track.
+                                ps->description = u"LCEVC Video";
+                                ps->carry_video = true;
+                            }
                             break;
                         }
                         default: {
@@ -1025,21 +1031,27 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 if (size >= 1) {
                     switch (data[0]) {
                         case XDID_DVB_AC4: {
-                            // The presence of this descriptor indicates an AC-4 audio track.
-                            ps->description = u"AC-4 Audio";
-                            ps->carry_audio = true;
+                            if (ps != nullptr) {
+                                // The presence of this descriptor indicates an AC-4 audio track.
+                                ps->description = u"AC-4 Audio";
+                                ps->carry_audio = true;
+                            }
                             break;
                         }
                         case XDID_DVB_DTS_HD_AUDIO: {
-                            // The presence of this descriptor indicates an DTS-HD audio track.
-                            ps->description = u"DTS-HD Audio";
-                            ps->carry_audio = true;
+                            if (ps != nullptr) {
+                                // The presence of this descriptor indicates an DTS-HD audio track.
+                                ps->description = u"DTS-HD Audio";
+                                ps->carry_audio = true;
+                            }
                             break;
                         }
                         case XDID_DVB_DTS_NEURAL: {
-                            // The presence of this descriptor indicates an DTS-Neural audio track.
-                            ps->description = u"DTS Neural Surround Audio";
-                            ps->carry_audio = true;
+                            if (ps != nullptr) {
+                                // The presence of this descriptor indicates an DTS-Neural audio track.
+                                ps->description = u"DTS Neural Surround Audio";
+                                ps->carry_audio = true;
+                            }
                             break;
                         }
                         default: {

@@ -483,7 +483,7 @@ size_t ts::TSPacket::spliceCountdownOffset() const
 }
 
 //----------------------------------------------------------------------------
-// Check presence and compute offset of private data in AF.
+// Check presence and compute offset in TS of private data from AF.
 //----------------------------------------------------------------------------
 
 size_t ts::TSPacket::privateDataOffset() const
@@ -501,8 +501,8 @@ size_t ts::TSPacket::privateDataOffset() const
         (((b[5] & 0x04) != 0) ? 1 : 0);            // skip splicing countdown
 
     // Check that private data fit inside the AF.
-    const size_t endAF = 4 + af;
-    return offset < endAF && offset + 1 + b[offset] <= endAF ? offset : 0;
+    const size_t end_af = 4 + af;
+    return offset < end_af && offset + 1 + b[offset] <= end_af ? offset : 0;
 }
 
 //----------------------------------------------------------------------------

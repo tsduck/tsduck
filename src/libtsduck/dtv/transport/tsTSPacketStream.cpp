@@ -79,6 +79,9 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
         _reporter.report().error(u"internal error, cannot read TS packets from this stream");
         return 0;
     }
+    if (max_packets == 0) {
+        return 0;
+    }
 
     // Number of read packets.
     size_t read_packets = 0;
@@ -161,7 +164,6 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
         // Now we have read the first packet.
         read_packets++;
         buffer++;
-        max_packets--;
         if (metadata != nullptr) {
             *metadata++ = mdata;
         }
@@ -172,7 +174,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
     // Repeat reading packets until the buffer is full or error.
     // Rewind on end of file if repeating is set.
     bool success = true;
-    while (success && max_packets > 0 && !_stream->endOfStream()) {
+    while (success && read_packets < max_packets && !_stream->endOfStream()) {
 
         switch (_format) {
             case TSPacketFormat::AUTODETECT: {
@@ -188,7 +190,7 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
                 size_t read_size = _trail_size;
                 _trail_size = 0;
                 // Fill the buffer as much as we can.
-                const size_t max_size = max_packets * PKT_SIZE;
+                const size_t max_size = (max_packets - read_packets) * PKT_SIZE;
                 while (success && read_size < max_size) {
                     size_t insize = 0;
                     success = _stream->readStream(cbuffer + read_size, max_size - read_size, insize);
@@ -196,10 +198,8 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
                 }
                 // Count packets. Truncate incomplete packets at end of file.
                 const size_t count = read_size / PKT_SIZE;
-                assert(count <= max_packets);
                 read_packets += count;
                 buffer += count;
-                max_packets -= count;
                 if (metadata != nullptr) {
                     TSPacketMetadata::Reset(metadata, count);
                     metadata += count;
@@ -221,7 +221,6 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
                         // Move to next packet.
                         read_packets++;
                         buffer++;
-                        max_packets--;
                         if (metadata != nullptr) {
                             metadata->reset();
                             metadata->setAuxData(_trail, RS_SIZE);
@@ -240,7 +239,6 @@ size_t ts::TSPacketStream::readPackets(TSPacket* buffer, TSPacketMetadata* metad
                     if (success) {
                         read_packets++;
                         buffer++;
-                        max_packets--;
                         if (metadata != nullptr) {
                             if (_format == TSPacketFormat::M2TS) {
                                 // M2TS timestamps are in PCR units.

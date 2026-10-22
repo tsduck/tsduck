@@ -920,7 +920,7 @@ void ts::SignalizationDemux::handleCAT(const CAT& cat, PID pid)
     }
 
     // Look for EMM PID's in the CAT.
-    handleDescriptors(cat.descs, pid);
+    handleCADescriptors(cat.descs);
 }
 
 
@@ -962,7 +962,7 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
     }
 
     // Look for ECM PID's at service level.
-    handleDescriptors(pmt.descs, pid);
+    handleCADescriptors(pmt.descs);
 
     // Loop on all components.
     for (const auto& it : pmt.streams) {
@@ -975,7 +975,7 @@ void ts::SignalizationDemux::handlePMT(const PMT& pmt, PID pid)
         ctx1.services.insert(pmt.service_id);
 
         // Look for ECM PID's at component level.
-        handleDescriptors(pmt.descs, pid);
+        handleCADescriptors(it.second.descs);
 
         // Collect tables on PID's carrying sections.
         // In practice, this is required only for Astra SGT which contains LCN (stream type 0x05).
@@ -1157,29 +1157,26 @@ void ts::SignalizationDemux::processLCN(const LogicalChannelNumbers& lcn)
 
 
 //----------------------------------------------------------------------------
-// Process a descriptor list, looking for useful information.
+// Process a descriptor list, looking for CAS information.
 //----------------------------------------------------------------------------
 
-void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID pid)
+void ts::SignalizationDemux::handleCADescriptors(const DescriptorList& dlist)
 {
-    // Loop on all descriptors
-    for (size_t index = 0; index < dlist.size(); ++index) {
-        const Descriptor& bindesc(dlist[index]);
-        if (bindesc.isValid()) {
-            const DID did = bindesc.tag();
-
-            // Extract descriptor-dependent information.
-            if (did == DID_MPEG_CA) {
-                const CADescriptor desc(_duck, bindesc);
-                if (desc.isValid()) {
-                    getPIDContext(desc.ca_pid).setCAS(dlist.table(), desc.cas_id);
-                }
+    // Loop on all descriptors.
+    for (const auto& bindesc : dlist) {
+        const DID did = bindesc.tag();
+        if (did == DID_MPEG_CA) {
+            // Standard MPEG CA descriptor.
+            const CADescriptor desc(_duck, bindesc);
+            if (desc.isValid()) {
+                getPIDContext(desc.ca_pid).setCAS(dlist.table(), desc.cas_id);
             }
-            else if (bool(_duck.standards() & Standards::ISDB) && did == DID_ISDB_CA) {
-                const ISDBAccessControlDescriptor desc(_duck, bindesc);
-                if (desc.isValid()) {
-                    getPIDContext(desc.pid).setCAS(dlist.table(), desc.CA_system_id);
-                }
+        }
+        else if (bool(_duck.standards() & Standards::ISDB) && did == DID_ISDB_CA) {
+            // ISDB CA descriptor.
+            const ISDBAccessControlDescriptor desc(_duck, bindesc);
+            if (desc.isValid()) {
+                getPIDContext(desc.pid).setCAS(dlist.table(), desc.CA_system_id);
             }
         }
     }

@@ -35,7 +35,7 @@ class PacketizerTest: public tsunit::Test
 
 private:
     // Demux one table from a list of packets
-    static void DemuxTable(ts::BinaryTablePtr& binTable, const char* name, const uint8_t* packets, size_t packets_size);
+    static void DemuxTable(ts::BinaryTablePtr& bin_table, const char* name, const uint8_t* packets, size_t packets_size);
 };
 
 TSUNIT_REGISTER(PacketizerTest);
@@ -46,9 +46,9 @@ TSUNIT_REGISTER(PacketizerTest);
 //----------------------------------------------------------------------------
 
 // Demux one table from a list of packets
-void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, const uint8_t* packets, size_t packets_size)
+void PacketizerTest::DemuxTable(ts::BinaryTablePtr& bin_table, const char* name, const uint8_t* packets, size_t packets_size)
 {
-    binTable.reset();
+    bin_table.reset();
 
     debug() << "PacketizerTest: DemuxTable: Rebuilding " << name << std::endl;
     TSUNIT_EQUAL(0, packets_size % ts::PKT_SIZE);
@@ -61,9 +61,9 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& binTable, const char* name, 
     }
     TSUNIT_EQUAL(1, demux.tableCount());
 
-    binTable = demux.tableAt(0);
-    TSUNIT_ASSERT(binTable != nullptr);
-    TSUNIT_ASSERT(binTable->isValid());
+    bin_table = demux.tables().front();
+    TSUNIT_ASSERT(bin_table != nullptr);
+    TSUNIT_ASSERT(bin_table->isValid());
 }
 
 TSUNIT_DEFINE_TEST(Packetizer)

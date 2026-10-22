@@ -439,7 +439,7 @@ void ts::tr101290::Analyzer::handleSection(SectionDemux& demux, const Section& s
         // [[3.1/1]] NIT_error: Section with table_id other than 0x40 or 0x41 or 0x72 (i. e. not an NIT or ST) found on PID 0x0010.
         addErrorOnce(u"3.1/1", NIT_error, pid);
         // [[3.1.a/1]] NIT_actual_error: Section with table_id other than 0x40 or 0x41 or 0x72 (i.e. not an NIT or ST) found on PID 0x0010.
-        addErrorOnce(u"[3.1.a/1", NIT_actual_error, pid);
+        addErrorOnce(u"3.1.a/1", NIT_actual_error, pid);
     }
     else if (pid == PID_SDT && tid != TID_SDT_ACT && tid != TID_SDT_OTH && tid != TID_BAT && tid != TID_ST) {
         // [[3.5/2]] SDT_error: Sections with table_ids other than 0x42, 0x46, 0x4A or 0x72 found on PID 0x0011.
@@ -513,7 +513,7 @@ void ts::tr101290::Analyzer::handleSection(SectionDemux& demux, const Section& s
         }
         else if (ctx.invMax(_current_timestamp, _max_tdt_interval)) {
             // [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
-            addErrorOnce(u"[3.8/1", TDT_error, pid);
+            addErrorOnce(u"3.8/1", TDT_error, pid);
         }
         if (pid == PID_TDT) {
             ctx.last_timestamp = _current_timestamp;
@@ -674,12 +674,12 @@ void ts::tr101290::Analyzer::handleSection(SectionDemux& demux, const Section& s
             if (tid == TID_EIT_PF_ACT && ctx.last_time_01[secnum] >= PCR::zero() && (_current_timestamp - ctx.last_time_01[secnum]) > _max_eitpf_actual_interval) {
                 // [[3.6.a/1]] EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s.
                 // [[3.6.a/2]] EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s.
-                addErrorOnce(secnum == 0 ? u"3.6.a/1]]" : u"3.6.a/2", EIT_actual_error, pid);
+                addErrorOnce(secnum == 0 ? u"3.6.a/1" : u"3.6.a/2", EIT_actual_error, pid);
             }
             if (tid == TID_EIT_PF_OTH && ctx.last_time_01[secnum] >= PCR::zero() && (_current_timestamp - ctx.last_time_01[secnum]) > _max_eitpf_other_interval) {
                 // [[3.6.b/1]] EIT_other_error: Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
                 // [[3.6.b/2]] EIT_other_error: Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-                addErrorOnce(secnum == 0 ? u"3.6.b/1]]" : u"3.6.b/2", EIT_other_error, pid);
+                addErrorOnce(secnum == 0 ? u"3.6.b/1" : u"3.6.b/2", EIT_other_error, pid);
             }
             ctx.last_time_01[secnum] = ctx.last_timestamp = _current_timestamp;
         }
@@ -823,7 +823,7 @@ void ts::tr101290::Analyzer::getCountersImpl(Counters& global, CountersByPID& by
             }
             else if (tid == TID_TDT && it.second.invMax(_last_timestamp, _max_tdt_interval)) {
                 // [[3.8/1]] TDT_error: Sections with table_id = 0x70 (TDT) not present on PID 0x0014 for more than 30 s.
-                addError(global, by_pid, u"[3.8/1", TDT_error, pid, u"TDT");
+                addError(global, by_pid, u"3.8/1", TDT_error, pid, u"TDT");
             }
             else if (tid == TID_TOT && it.second.invMax(_last_timestamp, _max_tot_interval)) {
                 // [[3.2/1]] SI_repetition_error: Repetition rate of SI tables outside of specified limits.
@@ -860,7 +860,7 @@ void ts::tr101290::Analyzer::getCountersImpl(Counters& global, CountersByPID& by
                 }
                 if (it.second.last_time_01[0] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[0]) > _max_eitpf_actual_interval) {
                     // [[3.6.a/1]] EIT_actual_error: Section '0' with table_id = 0x4E (EIT-P, actual TS) not present on PID 0x0012 for more than 2 s.
-                    addError(global, by_pid, u"3.6.a/1]]", EIT_actual_error, pid, it.first.toString());
+                    addError(global, by_pid, u"3.6.a/1", EIT_actual_error, pid, it.first.toString());
                 }
                 if (it.second.last_time_01[1] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[1]) > _max_eitpf_actual_interval) {
                     // [[3.6.a/2]] EIT_actual_error: Section '1' with table_id = 0x4E (EIT-F, actual TS) not present on PID 0x0012 for more than 2 s.
@@ -870,7 +870,7 @@ void ts::tr101290::Analyzer::getCountersImpl(Counters& global, CountersByPID& by
             else if (tid == TID_EIT_PF_OTH) {
                 if (it.second.last_time_01[0] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[0]) > _max_eitpf_other_interval) {
                     // [[3.6.b/1]] EIT_other_error: Interval between sections '0' with table_id = 0x4F (EIT-P, other TS) on PID 0x0012 longer than a specified value (10 s or higher).
-                    addError(global, by_pid, u"3.6.b/1]]", EIT_other_error, pid, it.first.toString());
+                    addError(global, by_pid, u"3.6.b/1", EIT_other_error, pid, it.first.toString());
                 }
                 if (it.second.last_time_01[1] >= PCR::zero() && (_last_timestamp - it.second.last_time_01[1]) > _max_eitpf_other_interval) {
                     // [[3.6.b/2]] EIT_other_error: Interval between sections '1' with table_id = 0x4F (EIT-F, other TS) on PID 0x0012 longer than a specified value (10 s or higher).

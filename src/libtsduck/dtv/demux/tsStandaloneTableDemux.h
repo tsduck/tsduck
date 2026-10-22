@@ -17,6 +17,7 @@
 namespace ts {
     //!
     //! A SectionDemux which extracts MPEG tables without external handler.
+    //! All demuxed tables are accumulated inside the demux, until clear or reset.
     //! @ingroup libtsduck mpeg
     //!
     class TSDUCKDLL StandaloneTableDemux: public SectionDemux, private TableHandlerInterface
@@ -37,24 +38,26 @@ namespace ts {
         size_t tableCount() const { return _tables.size(); }
 
         //!
-        //! Get a pointer to a demuxed table.
-        //! @param [in] index Index of a demuxed table, from 0 to tableCount()-1.
-        //! @return A safe pointer to the corresponding table.
+        //! Get shared pointers to all demuxed tables.
+        //! @return A constant reference to a vector of safe pointers to the received tables.
         //!
-        const BinaryTablePtr& tableAt(size_t index) const;
+        const BinaryTablePtrVector& tables() const { return _tables; }
 
-        //! @copydoc SectionDemux::reset()
+        //!
+        //! Clear the received tables without resetting the demux.
+        //! This can be useful to forget received tables (and free memory) without resetting the reception.
+        //!
+        void clearTables() { _tables.clear(); }
+
+        // Inherited methods.
         virtual void reset() override;
-
-        //! @copydoc SectionDemux::resetPID()
         virtual void resetPID(PID pid) override;
 
     private:
         // Private members
         BinaryTablePtrVector _tables {};
 
-        // Inherited from TableHandlerInterface
-        // This hook is invoked when a complete table is available.
+        // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Make these methods inaccessible

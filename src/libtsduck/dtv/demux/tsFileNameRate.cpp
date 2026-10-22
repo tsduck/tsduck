@@ -37,7 +37,7 @@ bool ts::FileNameRate::operator==(const FileNameRate& other) const
 
 bool ts::FileNameRate::operator<(const FileNameRate& other) const
 {
-    return file_name < other.file_name || file_date < other.file_date || repetition < other.repetition;
+    return std::tie(file_name, file_date, repetition) < std::tie(other.file_name, other.file_date, other.repetition);
 }
 
 

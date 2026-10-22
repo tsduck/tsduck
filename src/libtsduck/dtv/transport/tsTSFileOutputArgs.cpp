@@ -269,6 +269,15 @@ bool ts::TSFileOutputArgs::closeAndCleanup(bool silent)
 
 bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, AbortInterface* abort)
 {
+    if (packet_count == 0) {
+        // Zero packets is a successful empty operation.
+        return true;
+    }
+    if (pkt_data == nullptr) {
+        // Null pointer with non-zero count is an error.
+        return false;
+    }
+
     // Total number of retries.
     size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
     bool done_once = false;
@@ -287,7 +296,7 @@ bool ts::TSFileOutputArgs::write(const TSPacket* buffer, const TSPacketMetadata*
         const PacketCounter where = _file.writePacketsCount();
         const bool success = _file.writePackets(buffer, pkt_data, packet_count);
         const size_t written = std::min(size_t(_file.writePacketsCount() - where), packet_count);
-        _current_size += written * PKT_SIZE;
+        _current_size += written * (_file.packetHeaderSize() + PKT_SIZE + _file.packetTrailerSize());
 
         // In case of success or no retry, return now.
         if (success || !_reopen || (abort != nullptr && abort->aborting())) {

@@ -103,8 +103,8 @@ namespace {
                 pkt.copyFrom(&response.ECM_datagram[index]);
                 demux.feedPacket(pkt);
             }
-            for (size_t i = 0; i < demux.tableCount(); ++i) {
-                ecmFile.add(demux.tableAt(i));
+            for (const auto& table : demux.tables()) {
+                ecmFile.add(table);
             }
         }
         else {

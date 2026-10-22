@@ -187,7 +187,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
 
     // Compare contents of reference sections and demuxed sections.
 
-    const ts::BinaryTable& table1(*demux.tableAt(0));
+    const ts::BinaryTable& table1(*demux.tables().front());
     debug() << "DemuxTest: " << ts::UString::Format(u"  PID %n", table1.sourcePID()) << std::endl;
     TSUNIT_ASSERT(checkSections(name, "demuxed table", table1, ref_sections, ref_sections_size));
 
@@ -365,7 +365,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     }
     TSUNIT_EQUAL(1, demux2.tableCount());
 
-    const ts::BinaryTable& table3(*demux2.tableAt(0));
+    const ts::BinaryTable& table3(*demux2.tables().front());
     if (table2 != table3) {
         debug() << "DemuxTest: " << name << ": rebuilt tables differ" << std::endl;
         debug() << "DemuxTest:   Re-serialized table: " << ts::TIDName(duck, table2.tableId())

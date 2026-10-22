@@ -49,6 +49,12 @@ namespace ts {
     constexpr size_t PKT_MAX_PAYLOAD_SIZE = PKT_SIZE - PKT_HEADER_SIZE;
 
     //!
+    //! MPEG TS packet maximum adaptation field size in bytes.
+    //! This size does not include the length field of the adaptation field.
+    //!
+    constexpr size_t PKT_MAX_AF_SIZE = PKT_SIZE - PKT_HEADER_SIZE - 1;
+
+    //!
     //! Size in bytes of a Reed-Solomon outer FEC.
     //!
     constexpr size_t RS_SIZE = 16;

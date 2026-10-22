@@ -730,8 +730,8 @@ namespace ts {
         template<class XVCT> requires std::derived_from<XVCT, ts::VCT>
         void handleVCT(const XVCT&, PID, void (SignalizationHandlerInterface::*)(const XVCT&, PID));
 
-        // Process a descriptor list, looking for useful information.
-        void handleDescriptors(const DescriptorList&, PID);
+        // Process a descriptor list, looking for CAS information.
+        void handleCADescriptors(const DescriptorList&);
 
         // Extract a field of a PIDContext.
         template<typename T>
