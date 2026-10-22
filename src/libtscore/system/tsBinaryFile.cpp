@@ -316,7 +316,7 @@ bool ts::BinaryFile::openInternal(bool reopen)
 #else
 
     // UNIX implementation.
-    int uflags = O_LARGEFILE;
+    int uflags = O_CLOEXEC | O_LARGEFILE;
     const mode_t mode = 0666;  // -rw-rw-rw (minus umask)
 
     if (read_only) {

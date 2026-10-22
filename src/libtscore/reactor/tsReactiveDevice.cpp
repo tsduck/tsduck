@@ -140,7 +140,7 @@ bool ts::ReactiveDevice::activateAsynchronousIO()
             }
             if (wr != SYS_SOCKET_INVALID && wr != rd) {
                 _write_async_io_id = reactor().newAsynchronousIO(this, wr);
-                ok = ok && _read_async_io_id.isValid();
+                ok = ok && _write_async_io_id.isValid();
             }
             return ok;
         }

@@ -1834,10 +1834,11 @@ namespace ts {
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
         //! @param [in] file_name The name of the text file from where to load the strings.
+        //! @param [in] max_lines Maximum number of lines to read. Unlimited by default.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, const fs::path& file_name);
+        static bool Load(CONTAINER& container, const fs::path& file_name, size_t max_lines = NPOS);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
@@ -1845,30 +1846,33 @@ namespace ts {
         //! @param [in,out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
         //! @param [in] file_name The name of the text file from where to load the strings.
         //! Each line of the text file is inserted as a separate string.
+        //! @param [in] max_lines Maximum number of lines to read. Unlimited by default.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, const fs::path& file_name);
+        static bool LoadAppend(CONTAINER& container, const fs::path& file_name, size_t max_lines = NPOS);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's into a container.
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
         //! @param [in,out] strm A standard text stream in input mode. Each line of the text file is inserted as a separate string.
+        //! @param [in] max_lines Maximum number of lines to read. Unlimited by default.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool Load(CONTAINER& container, std::istream& strm);
+        static bool Load(CONTAINER& container, std::istream& strm, size_t max_lines = NPOS);
 
         //!
         //! Load all lines of a text file in UTF-8 format as UString's and append them in a container.
         //! @tparam CONTAINER A container class of UString as defined by the C++ Standard Template Library (STL).
         //! @param [in,out] container A container of UString receiving all lines of the file. Each line of the text file is a separate string.
         //! @param [in,out] strm A standard text stream in input mode. Each line of the text file is inserted as a separate string.
+        //! @param [in] max_lines Maximum number of lines to read. Unlimited by default.
         //! @return True on success, false on error (mostly file errors).
         //!
         template <class CONTAINER>
-        static bool LoadAppend(CONTAINER& container, std::istream& strm);
+        static bool LoadAppend(CONTAINER& container, std::istream& strm, size_t max_lines = NPOS);
 
         //!
         //! Read one UTF-8 line from a text file and load it into this object.
@@ -3455,10 +3459,11 @@ bool ts::UString::Save(const CONTAINER& container, const fs::path& file_name, bo
 //----------------------------------------------------------------------------
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, std::istream& strm)
+bool ts::UString::LoadAppend(CONTAINER& container, std::istream& strm, size_t max_lines)
 {
     UString line;
-    while (line.getLine(strm)) {
+    while (max_lines > 0 && line.getLine(strm)) {
+        max_lines--;
         container.push_back(line);
         // Weird behaviour (bug?) with gcc 4.8.5: When we read 2 consecutive lines
         // with the same length, the storage of the previous string *in the container*
@@ -3471,24 +3476,24 @@ bool ts::UString::LoadAppend(CONTAINER& container, std::istream& strm)
 }
 
 template <class CONTAINER>
-bool ts::UString::Load(CONTAINER& container, std::istream& strm)
+bool ts::UString::Load(CONTAINER& container, std::istream& strm, size_t max_lines)
 {
     container.clear();
-    return LoadAppend(container, strm);
+    return LoadAppend(container, strm, max_lines);
 }
 
 template <class CONTAINER>
-bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& file_name)
+bool ts::UString::LoadAppend(CONTAINER& container, const fs::path& file_name, size_t max_lines)
 {
     std::ifstream file(file_name);
-    return LoadAppend(container, file);
+    return LoadAppend(container, file, max_lines);
 }
 
 template <class CONTAINER>
-bool ts::UString::Load(CONTAINER& container, const fs::path& file_name)
+bool ts::UString::Load(CONTAINER& container, const fs::path& file_name, size_t max_lines)
 {
     container.clear();
-    return LoadAppend(container, file_name);
+    return LoadAppend(container, file_name, max_lines);
 }
 
 

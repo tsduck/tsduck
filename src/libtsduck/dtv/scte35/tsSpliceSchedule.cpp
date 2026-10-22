@@ -93,19 +93,23 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
     clear();
 
     const uint8_t* const start = data;
+
+    // Number of splice events
     if (size < 1) {
         invalidate();
         return -1; // too short
     }
-
-    // Numbere of splice events
-    uint8_t spliceCount = data[0];
+    uint8_t splice_count = data[0];
     data += 1; size -= 1;
 
-    while (spliceCount > 0) {
+    while (splice_count > 0) {
         // Decode one event.
         Event ev;
 
+        if (size < 5) {
+            invalidate();
+            return -1; // too short
+        }
         ev.event_id = GetUInt32(data);
         ev.canceled = (data[4] & 0x80) != 0;
         data += 5; size -= 5;
@@ -115,7 +119,6 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
                 invalidate();
                 return -1; // too short
             }
-
             ev.splice_out = (data[0] & 0x80) != 0;
             const bool program_splice = (data[0] & 0x40) != 0;
             ev.use_duration = (data[0] & 0x20) != 0;
@@ -168,7 +171,7 @@ int ts::SpliceSchedule::deserialize(const uint8_t* data, size_t size)
 
         // Finally add the deserialized event in the list.
         events.push_back(ev);
-        spliceCount--;
+        splice_count--;
     }
 
     return int(data - start);

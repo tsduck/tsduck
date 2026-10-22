@@ -222,7 +222,7 @@ int ts::Device::genericSystemWrite(const void* addr, size_t size, size_t& writte
                 // Normal case, some data were written
                 assert(outsize <= remain);
                 data += outsize;
-                remain -= std::max(remain, outsize);
+                remain -= std::min(remain, outsize);
                 written_size += size_t(outsize);
             }
             else {
@@ -244,7 +244,7 @@ int ts::Device::genericSystemWrite(const void* addr, size_t size, size_t& writte
             // Normal case, some data were written
             assert(size_t(outsize) <= remain);
             data += outsize;
-            remain -= std::max(remain, size_t(outsize));
+            remain -= std::min(remain, size_t(outsize));
             written_size += size_t(outsize);
             err_code = SYS_SUCCESS;
         }

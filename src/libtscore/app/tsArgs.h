@@ -1312,15 +1312,21 @@ namespace ts {
         void exitOnError(bool force = false);
 
         //!
+        //! Default maximum number of lines to read across all argument redirections using @c '\@'.
+        //!
+        static constexpr size_t DEFAULT_MAX_REDIRECTED_LINES = 16384;
+
+        //!
         //! Process argument redirection using @c '\@' on a vector of strings.
         //!
         //! @param [in,out] args A vector of strings. All lines of the form @c '\@filename' are
         //! replaced by the content of the given file. A double @c '\@\@' at the beginning of a line
         //! is replaced by a single @c '\@' without reading a file.
+        //! @param [in] max_lines Maximum number of lines to read across all redirections.
         //! @return True on success, false on error (non existent file for instance). Errors are
         //! reported though this object.
         //!
-        bool processArgsRedirection(UStringVector& args);
+        bool processArgsRedirection(UStringVector& args, size_t max_lines = DEFAULT_MAX_REDIRECTED_LINES);
 
     protected:
         // Display an error message, as if it was produced during command line analysis.

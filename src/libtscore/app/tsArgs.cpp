@@ -1583,9 +1583,10 @@ void ts::Args::processVersion()
 // Process argument redirection using @c '\@' on a vector of strings.
 //----------------------------------------------------------------------------
 
-bool ts::Args::processArgsRedirection(UStringVector& args)
+bool ts::Args::processArgsRedirection(UStringVector& args, size_t max_lines)
 {
     bool result = true;
+    size_t redirected_lines = 0;
 
     for (auto it = args.begin(); it != args.end(); ) {
         if (it->starts_with(u"@@")) {
@@ -1595,24 +1596,32 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
         }
         else if (it->starts_with(u"@")) {
             // Replace the line with the content of a file.
-
-            // Get the file name.
+            // Get the file name after the '@'.
             const UString file_name(it->substr(1));
+            try {
+                // Remove the line from the argument array.
+                it = args.erase(it);
 
-            // Remove the line from the argument array.
-            it = args.erase(it);
-
-            // Load the text file.
-            UStringVector lines;
-            if (UString::Load(lines, file_name)) {
-                // Insert the loaded lines. Then, make "it" point to the first inserted element.
-                // This means that the loaded content will now be processed, allowing nested '@' directives.
-                it = args.insert(it, lines.begin(), lines.end());
+                // Load the text file. Read one more line that the max to detect overflow.
+                UStringVector lines;
+                if (!UString::Load(lines, file_name, ts::bounded_add<size_t>(max_lines, 1) - redirected_lines)) {
+                    result = false;
+                    error(u"error reading command line arguments from file \"%s\"", file_name);
+                }
+                else if (redirected_lines + lines.size() > max_lines) {
+                    result = false;
+                    error(u"too many redirected command line arguments from file \"%s\"", file_name);
+                }
+                else {
+                    // Insert the loaded lines. Then, make "it" point to the first inserted element.
+                    // This means that the loaded content will now be processed, allowing nested '@' directives.
+                    redirected_lines += lines.size();
+                    it = args.insert(it, lines.begin(), lines.end());
+                }
             }
-            else {
-                // Error loading file.
+            catch (fs::filesystem_error&) {
                 result = false;
-                error(u"error reading command line arguments from file \"%s\"", file_name);
+                error(u"invalid file name\"%s\"", file_name);
             }
         }
         else {

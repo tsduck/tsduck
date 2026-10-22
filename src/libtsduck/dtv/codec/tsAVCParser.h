@@ -270,7 +270,7 @@ bool ts::AVCParser::expColomb(INT& val)
         return false;
     }
     if (leading_zero_bits < int(8 * sizeof(INT))) {
-        val += (INT(1) << leading_zero_bits) - 1;
+        val += INT((std::make_unsigned_t<INT>(1) << leading_zero_bits) - 1);
     }
     return true;
 }

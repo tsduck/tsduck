@@ -62,7 +62,7 @@ void ts::DSMCCIOR::deserialize(PSIBuffer& buf)
 
     const uint32_t tagged_profiles_count = buf.getUInt32();
 
-    for (size_t i = 0; i < tagged_profiles_count; i++) {
+    for (size_t i = 0; i < tagged_profiles_count && buf.canRead(); i++) {
         tagged_profiles.emplace_back().deserialize(buf);
     }
 }
@@ -79,7 +79,7 @@ void ts::DSMCCIOR::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& m
 
     const uint32_t tagged_profiles_count = buf.getUInt32();
 
-    for (size_t i = 0; i < tagged_profiles_count; i++) {
+    for (size_t i = 0; i < tagged_profiles_count && buf.canRead(); i++) {
         DSMCCTaggedProfile::Display(disp, buf, margin);
     }
 }

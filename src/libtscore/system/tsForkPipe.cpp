@@ -128,12 +128,15 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
     // Create the communicaton pipes when necessary. We will extract the required file descriptors
     // from the SysPipe objects and let others be closed by the SysPipe destructors.
+    // On UNIX, we set CLOEXEC flag, which seems counter-intuitive, because we don't want the
+    // file descriptors to be inherited if another thread creates a process. CLOEXEC will be
+    // cleared lated in the child process.
     SysPipe read_pipe(this);
     SysPipe write_pipe(this);
     const bool async = isNonBlocking();
 
     if (_in_pipe) {
-        SysPipe::Flags flags = SysPipe::READ_INHERIT;
+        SysPipe::Flags flags = SysPipe::READ_INHERIT | SysPipe::READ_CLOEXEC | SysPipe::WRITE_CLOEXEC;
         if (async) {
             flags |= SysPipe::WRITE_ASYNC;
         }
@@ -142,7 +145,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         }
     }
     if (_out_pipe) {
-        SysPipe::Flags flags = SysPipe::WRITE_INHERIT;
+        SysPipe::Flags flags = SysPipe::WRITE_INHERIT | SysPipe::READ_CLOEXEC | SysPipe::WRITE_CLOEXEC;
         if (async) {
             flags |= SysPipe::READ_ASYNC;
         }
@@ -284,9 +287,12 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
     // pid. We create a pipe where the child process will write the pid of the grand-child process so that
     // the parent process can read the pid of its grand-child process.
     SysPipe pid_pipe(this);
-    if (_wait_mode == ASYNCHRONOUS && !pid_pipe.create()) {
+    if (_wait_mode == ASYNCHRONOUS && !pid_pipe.create(SysPipe::READ_CLOEXEC | SysPipe::WRITE_CLOEXEC)) {
         return false;
     }
+
+    // Prepare UTF-8 version of the string before fork to avoid using string allocator between for() and exec().
+    const std::string command8(command.toUTF8());
 
     // Create the forked process. In the child process, fork() returns zero.
     if (_wait_mode == EXIT_PROCESS) {
@@ -324,7 +330,8 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             if (sub_pid != 0) {
                 // In the intermediate process, send the grand-child pid to the parent.
                 if (::write(pid_pipe.peekWrite(), &sub_pid, sizeof(sub_pid)) != sizeof(sub_pid)) {
-                    report().error(u"error writing final forked pid to pipe: %s", SysErrorCodeMessage());
+                    // Cannot use report(), we are in a forked process.
+                    ::perror("error writing final forked pid to pipe");
                 }
                 // Exit intermediate process and let grand-child execute the command.
                 std::exit(EXIT_SUCCESS);
@@ -380,6 +387,8 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                     error = errno;
                     message = "error redirecting stdin in forked process";
                 }
+                // Now clear CLOEXEC on the dup'ed file descriptor. Ignore errors.
+                ::fcntl(STDIN_FILENO, F_SETFD, ::fcntl(STDIN_FILENO, F_GETFD) & ~FD_CLOEXEC);
                 break;
             }
             case STDIN_PARENT:
@@ -414,10 +423,16 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                     error = errno;
                     message = "error redirecting stdout to pipe";
                 }
+                // Now clear CLOEXEC on the dup'ed file descriptor. Ignore errors.
+                ::fcntl(STDOUT_FILENO, F_SETFD, ::fcntl(STDOUT_FILENO, F_GETFD) & ~FD_CLOEXEC);
                 // Same for stderr if requested.
-                if (out_mode == STDOUTERR_PIPE && ::dup2(read_pipe.peekWrite(), STDERR_FILENO) < 0) {
-                    error = errno;
-                    message = "error redirecting stderr to pipe";
+                if (out_mode == STDOUTERR_PIPE) {
+                    if (::dup2(read_pipe.peekWrite(), STDERR_FILENO) < 0) {
+                        error = errno;
+                        message = "error redirecting stderr to pipe";
+                    }
+                    // Now clear CLOEXEC on the dup'ed file descriptor. Ignore errors.
+                    ::fcntl(STDERR_FILENO, F_SETFD, ::fcntl(STDERR_FILENO, F_GETFD) & ~FD_CLOEXEC);
                 }
                 break;
             }
@@ -436,7 +451,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         // Execute the command if there was no prior error.
         if (message == nullptr) {
             // Flawfinder: ignore: we create a process on purpose.
-            ::execl(TS_SHELL_STRING, TS_SHELL_STRING, "-c", command.toUTF8().c_str(), nullptr);
+            ::execl(TS_SHELL_STRING, TS_SHELL_STRING, "-c", command8.c_str(), nullptr);
             // Should not return, so this is an error if we get there.
             error = errno;
             message = "exec error";
