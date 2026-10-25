@@ -505,7 +505,7 @@ namespace ts {
         //! Check end of read stream.
         //! @return True if the end of read stream is reached.
         //!
-        bool endOfRead() const { return _state.rbyte == _state.wbyte && _state.rbit == _state.wbit; }
+        bool endOfRead() const { return currentReadBitOffset() >= currentWriteBitOffset(); }
 
         //!
         //! Check end of write stream.

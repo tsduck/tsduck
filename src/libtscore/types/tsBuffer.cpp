@@ -337,6 +337,9 @@ size_t ts::Buffer::pushReadSize(size_t size)
 
     // Adjust the new write pointer and make the buffer read-only.
     _state.wbyte = std::max(_state.rbyte, std::min(size, _state.wbyte));
+    if (_state.rbyte == _state.wbyte && _state.rbit > _state.wbit) {
+        _state.wbit = _state.rbit;
+    }
     _state.read_only = true;
 
     return _saved_states.size() - 1;
@@ -420,7 +423,9 @@ bool ts::Buffer::popState(size_t level)
                 // Restore write pointer and read-only indicator.
                 assert(_state.wbyte <= saved.wbyte);
                 _state.rbyte = _state.wbyte;
+                _state.rbit = _state.wbit;
                 _state.wbyte = saved.wbyte;
+                _state.wbit = saved.wbit;
                 _state.read_only = saved.read_only;
                 break;
             }
@@ -766,8 +771,7 @@ size_t ts::Buffer::remainingReadBits() const
 {
     const size_t wpos = currentWriteBitOffset();
     const size_t rpos = currentReadBitOffset();
-    assert(wpos >= rpos);
-    return wpos - rpos;
+    return wpos >= rpos ? wpos - rpos : 0;
 }
 
 size_t ts::Buffer::remainingWriteBytes() const
