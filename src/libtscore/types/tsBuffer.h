@@ -1700,22 +1700,27 @@ INT ts::Buffer::getBCD(size_t bcd_count)
 template <typename INT> requires std::integral<INT>
 bool ts::Buffer::getBCD(INT& value, size_t bcd_count)
 {
-    using UNSINT = typename std::make_unsigned<INT>::type;
+    using UNSINT = typename std::make_unsigned_t<INT>;
     UNSINT uvalue = 0;
+    value = 0;
 
     if (_read_error || currentReadBitOffset() + 4 * bcd_count > currentWriteBitOffset()) {
         _read_error = true;
-        value = 0;
         return false;
     }
     else {
         while (bcd_count-- > 0) {
             UNSINT nibble = getBits<UNSINT>(4);
-            if (nibble > 9) {
+            if (nibble > 9 || mul_overflow<UNSINT>(10, uvalue)) {
                 _read_error = true;
-                nibble = 0;
+                return false;
             }
-            uvalue = 10 * uvalue + nibble;
+            uvalue *= 10;
+            if (add_overflow(uvalue, nibble)) {
+                _read_error = true;
+                return false;
+            }
+            uvalue += nibble;
         }
         value = static_cast<INT>(uvalue);
         return true;
@@ -1732,15 +1737,24 @@ bool ts::Buffer::putBCD(INT value, size_t bcd_count)
         return false;
     }
 
-    if (bcd_count > 0) {
-        using UNSINT = typename std::make_unsigned<INT>::type;
-        UNSINT uvalue = static_cast<UNSINT>(value);
-        UNSINT factor = static_cast<UNSINT>(Power10(bcd_count));
-        while (bcd_count-- > 0) {
-            uvalue %= factor;
-            factor /= 10;
-            putBits(uvalue / factor, 4);
-        }
+    using UNSINT = typename std::make_unsigned_t<INT>;
+    UNSINT uvalue = static_cast<UNSINT>(value);
+    uint64_t factor = Power10(bcd_count);
+
+    if (factor > 0 && uvalue >= factor) {
+        // Value too large for number of BCD digits.
+        _write_error = true;
+        return false;
     }
+
+    while (bcd_count-- > 0) {
+        if (factor != 0) {
+            uvalue %= factor;
+        }
+        factor = Power10(bcd_count);
+        // When factor is 0, we are at the beginning of a large BCD field, larger than what uint64_t needs.
+        putBits(factor == 0 ? 0 : uvalue / factor, 4);
+    }
+
     return true;
 }

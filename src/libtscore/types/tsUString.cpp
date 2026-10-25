@@ -1859,6 +1859,134 @@ bool ts::UString::toTristate(Tristate& value) const
 
 
 //----------------------------------------------------------------------------
+// Internal helpers for toInteger(), signed version.
+//----------------------------------------------------------------------------
+
+bool ts::UString::ToIntegerSigned(const UChar* start, const UChar* end, intmax_t& value, const UString& thousand_separators,
+                                  size_type decimals, const UString& decimal_separators, intmax_t min_value, intmax_t max_value)
+{
+    // Skip optional minus sign.
+    bool negative = false;
+    if (start < end && *start == '-') {
+        ++start;
+        negative = true;
+    }
+
+    static constexpr uintmax_t umin = std::numeric_limits<uintmax_t>::min();
+    static constexpr uintmax_t umax = std::numeric_limits<uintmax_t>::max();
+    static constexpr uintmax_t smax = uintmax_t(std::numeric_limits<intmax_t>::max());
+
+    // Decode the string as an unsigned integer. The absolute value of the result always fit in the unsigned type.
+    // We don't try to bound min and max values during the conversion because they can be negative.
+    uintmax_t uvalue = 0;
+    bool ok = ToIntegerUnsigned(start, end, uvalue, thousand_separators, decimals, decimal_separators, umin, umax);
+
+    // Convert the unsigned integer as signed integer with the appropriate sign.
+    if (negative) {
+        if (uvalue > smax) {
+            // Cop value to int min value.
+            value = std::numeric_limits<intmax_t>::min();
+            ok = ok && uvalue == smax + 1;
+        }
+        else {
+            // Note: std::abs(intmax_t) is of type intmax_t, not uintmax_t. Therefore it doesn't
+            // exist for intmax_t min. That's why it is included in opposite "if" branch.
+            value = -(intmax_t(uvalue));
+        }
+    }
+    else {
+        if (uvalue > smax) {
+            // Cop value to int max value.
+            value = std::numeric_limits<intmax_t>::max();
+            ok = false;
+        }
+        else {
+            value = intmax_t(uvalue);
+        }
+    }
+
+    // Finally check bounds.
+    return ok && value >= min_value && value <= max_value;
+}
+
+
+//----------------------------------------------------------------------------
+// Internal helpers for toInteger(), unsigned version.
+//----------------------------------------------------------------------------
+
+bool ts::UString::ToIntegerUnsigned(const UChar* start, const UChar* end, uintmax_t& value, const UString& thousand_separators,
+                                    size_type decimals, const UString& decimal_separators, uintmax_t min_value, uintmax_t max_value)
+{
+    // Initial value, up to decode error.
+    value = 0;
+
+    // Look for hexadecimal prefix.
+    int base = 10;
+    if (start + 1 < end && start[0] == u'0' && (start[1] == u'x' || start[1] == u'X')) {
+        start += 2;
+        base = 16;
+    }
+
+    // Filter empty string.
+    if (start >= end) {
+        return false;
+    }
+
+    // Decimal digits handling.
+    bool dec_found = false;   // a decimal point was found
+    size_type dec_count = 0;  // number of decimal digits found
+
+    // Decode the string.
+    while (start < end) {
+        const int digit = ToDigit(*start, base);
+        if (digit >= 0) {
+            // Character is a valid digit. Ignore extraneous decimal digits.
+            if (!dec_found || dec_count < decimals) {
+                if (mul_overflow<uintmax_t>(value, base)) {
+                    return false;
+                }
+                value *= base;
+                if (add_overflow<uintmax_t>(value, digit)) {
+                    return false;
+                }
+                value += uintmax_t(digit);
+            }
+            // Count decimal digits, after the decimal point.
+            if (dec_found) {
+                ++dec_count;
+            }
+        }
+        else if (decimal_separators.contains(*start)) {
+            // Found a decimal point. Only one is allowed.
+            // A decimal point is allowed only in base 10.
+            // By default (decimal == 0), no decimal point is allowed.
+            if (dec_found || base != 10 || decimals == 0) {
+                return false;
+            }
+            dec_found = true;
+        }
+        else if (!thousand_separators.contains(*start)) {
+            // Character is not a possible thousands separator to ignore.
+            return false;
+        }
+        ++start;
+    }
+
+    // If decimals are missing, adjust the value.
+    while (dec_count < decimals) {
+        if (mul_overflow<uintmax_t>(value, 10)) {
+            return false;
+        }
+        value *= 10;
+        ++dec_count;
+    }
+
+    // Valid integer, check boundaries.
+    return value >= min_value && value <= max_value;
+}
+
+
+//----------------------------------------------------------------------------
 // Internal helper for Duration().
 //----------------------------------------------------------------------------
 

@@ -1901,7 +1901,7 @@ uint32_t ts::UCharacteristics(UChar c)
 // Character conversions.
 //----------------------------------------------------------------------------
 
-int ts::ToDigit(UChar c, int base, int defaultValue)
+int ts::ToDigit(UChar c, int base, int default_value)
 {
     int digit = -1;
     if (c >= UChar('0') && c <= UChar('9')) {
@@ -1913,7 +1913,7 @@ int ts::ToDigit(UChar c, int base, int defaultValue)
     else if (c >= UChar('A') && c <= UChar('Z')) {
         digit = 10 + c - UChar('A');
     }
-    return digit >= 0 && digit < base ? digit : defaultValue;
+    return digit >= 0 && digit < base ? digit : default_value;
 }
 
 bool ts::IsLower(UChar c)

@@ -375,7 +375,7 @@ bool ts::PcapFile::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds
                     else if (units < std::micro::den && std::micro::den % units == 0) {
                         timestamp = cn::microseconds(tstamp * (std::micro::den / units));
                     }
-                    else if (mul_overflow(tstamp, std::micro::den, tstamp * std::micro::den)) {
+                    else if (mul_overflow(tstamp, std::micro::den)) {
                         timestamp = cn::microseconds(cn::microseconds::rep((double(tstamp) * double(std::micro::den)) / double(units)));
                     }
                     else {

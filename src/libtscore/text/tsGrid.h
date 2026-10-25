@@ -117,10 +117,10 @@ namespace ts {
         //! Write a line with two fields, possibly on two lines.
         //! @param [in] left Left-side content.
         //! @param [in] right Right-side content.
-        //! @param [in] oneLine If true, force the packing on one line.
+        //! @param [in] one_line If true, force the packing on one line.
         //! If false, allow two lines, one for each text, in case of overflow.
         //!
-        void putLine(const UString& left, const UString& right, bool oneLine = true);
+        void putLine(const UString& left, const UString& right, bool one_line = true);
 
         //!
         //! Define the layout of one column.

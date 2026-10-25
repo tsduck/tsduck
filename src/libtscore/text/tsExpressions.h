@@ -92,6 +92,19 @@ namespace ts {
         static bool IsValidSymbolName(const UString& symbol);
 
         //!
+        //! Default maximum number of nested levels of parentheses in an expression.
+        //! @see setMaxNested()
+        //!
+        static constexpr size_t DEFAULT_MAX_NESTED = 256;
+
+        //!
+        //! Set the maximum number of nested levels of parentheses in an expression.
+        //! @param [in] max Maximum number of nested levels of parentheses in an expression.
+        //! @see DEFAULT_MAX_NESTED
+        //!
+        void setMaxNested(size_t max) { _max_nested = max; }
+
+        //!
         //! Evaluate a boolean expression using symbols.
         //! @param [in] expression The expression to evaluate.
         //! @param [in] context Optional context of the symbol, for error message only.
@@ -120,6 +133,7 @@ namespace ts {
         Report&   _report;
         int       _debug = Severity::Debug;
         UString   _prefix {};
+        size_t    _max_nested = DEFAULT_MAX_NESTED;
         bool      _error = false;
         SymbolSet _symbols {};
 
@@ -149,14 +163,14 @@ namespace ts {
             }
             // Evaluate a sequence of '||' or '&&' operators.
             // 'ecp' = expect closing parenthesis at end of sequence to evaluate.
-            bool evaluateSequence(bool ecp);
+            bool evaluateSequence(bool ecp, size_t max_nested);
         private:
             // Binary logical operator in a sequence. They must be all identical.
             enum SeqOp {NONE, AND, OR};
             // Get and skip the next operator, if any is found.
             SeqOp getOperator();
             // Evaluate a single element: '!*symbol' or '!*(expression)'.
-            bool evaluateSingle();
+            bool evaluateSingle(size_t max_nested);
             // Skip all spaces at current point.
             void skipSpaces();
             // Report an error.

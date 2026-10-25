@@ -381,19 +381,19 @@ typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator+(const Fraction& x) c
 {
     Fraction res;
     if (_den == x._den) {
+        debug_throw_add_overflow(_num, x._num);
         res._num = _num + x._num;
         res._den = _den;
-        debug_throw_add_overflow(_num, x._num, res._num);
     }
     else {
+        debug_throw_mul_overflow(_num, x._den);
         const int_t num1 = _num * x._den;
+        debug_throw_mul_overflow(x._num, _den);
         const int_t num2 = x._num * _den;
+        debug_throw_add_overflow(num1, num2);
         res._num = num1 + num2;
+        debug_throw_mul_overflow(_den, x._den);
         res._den = _den * x._den;
-        debug_throw_mul_overflow(_num, x._den, num1);
-        debug_throw_mul_overflow(x._num, _den, num2);
-        debug_throw_add_overflow(num1, num2, res._num);
-        debug_throw_mul_overflow(_den, x._den, res._den);
     }
     res.reduce();
     return res;
@@ -404,19 +404,19 @@ typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator-(const Fraction& x) c
 {
     Fraction res;
     if (_den == x._den) {
+        debug_throw_sub_overflow(_num, x._num);
         res._num = _num - x._num;
         res._den = _den;
-        debug_throw_sub_overflow(_num, x._num, res._num);
     }
     else {
+        debug_throw_mul_overflow(_num, x._den);
         const int_t num1 = _num * x._den;
+        debug_throw_mul_overflow(x._num, _den);
         const int_t num2 = x._num * _den;
+        debug_throw_sub_overflow(num1, num2);
         res._num = num1 - num2;
+        debug_throw_mul_overflow(_den, x._den);
         res._den = _den * x._den;
-        debug_throw_mul_overflow(_num, x._den, num1);
-        debug_throw_mul_overflow(x._num, _den, num2);
-        debug_throw_sub_overflow(num1, num2, res._num);
-        debug_throw_mul_overflow(_den, x._den, res._den);
     }
     res.reduce();
     return res;
@@ -434,12 +434,12 @@ typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator*(const Fraction& x) c
     const int_t den2 = _den / gcd;
     // There is no need to reduce the result again since the original fractions were reduced.
     // Just do zero and sign cleanup.
+    debug_throw_mul_overflow(num1, num2);
     int_t num = num1 * num2;
-    debug_throw_mul_overflow(num1, num2, num);
     int_t den = 1;
     if (num != 0) {
+        debug_throw_mul_overflow(den1, den2);
         den = den1 * den2;
-        debug_throw_mul_overflow(den1, den2, den);
     }
     sign_reduce(num, den);
     return Fraction(num, den, true);
@@ -475,11 +475,11 @@ template <typename INT_T> requires std::integral<INT_T>
 template <typename INT1> requires std::integral<INT1>
 typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator+(INT1 x) const
 {
-    const int_t num1 = int_t(x) * _den;
-    Fraction res(_num + num1, _den, true);
     debug_throw_bound_check<int_t>(x);
-    debug_throw_mul_overflow(int_t(x), _den, num1);
-    debug_throw_add_overflow(_num, num1, res._num);
+    debug_throw_mul_overflow(int_t(x), _den);
+    const int_t num1 = int_t(x) * _den;
+    debug_throw_add_overflow(_num, num1);
+    Fraction res(_num + num1, _den, true);
     res.reduce();
     return res;
 }
@@ -488,11 +488,11 @@ template <typename INT_T> requires std::integral<INT_T>
 template <typename INT1> requires std::integral<INT1>
 typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator-(INT1 x) const
 {
-    const int_t num1 = int_t(x) * _den;
-    Fraction res(_num - num1, _den, true);
     debug_throw_bound_check<int_t>(x);
-    debug_throw_mul_overflow(int_t(x), _den, num1);
-    debug_throw_sub_overflow(_num, num1, res._num);
+    debug_throw_mul_overflow(int_t(x), _den);
+    const int_t num1 = int_t(x) * _den;
+    debug_throw_sub_overflow(_num, num1);
+    Fraction res(_num - num1, _den, true);
     res.reduce();
     return res;
 }
@@ -501,9 +501,9 @@ template <typename INT_T> requires std::integral<INT_T>
 template <typename INT1> requires std::integral<INT1>
 typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator*(INT1 x) const
 {
-    Fraction res(_num * int_t(x), _den, true);
     debug_throw_bound_check<int_t>(x);
-    debug_throw_mul_overflow(_num, int_t(x), res._num);
+    debug_throw_mul_overflow(_num, int_t(x));
+    Fraction res(_num * int_t(x), _den, true);
     res.reduce();
     return res;
 }
@@ -519,10 +519,10 @@ template <typename INT_T> requires std::integral<INT_T>
 template <typename INT1> requires std::integral<INT1>
 typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator/(INT1 x) const
 {
-    Fraction res(_num, _den * int_t(x), true);
     debug_throw_div_zero(x);
     debug_throw_bound_check<int_t>(x);
-    debug_throw_mul_overflow(_den, int_t(x), res._den);
+    debug_throw_mul_overflow(_den, int_t(x));
+    Fraction res(_num, _den * int_t(x), true);
     res.reduce();
     return res;
 }
@@ -531,17 +531,17 @@ typename ts::Fraction<INT_T> ts::Fraction<INT_T>::operator/(INT1 x) const
 #define _TS_FRACTION_COMPARE(op)                                   \
     template <typename INT_T> requires std::integral<INT_T>        \
     bool ts::Fraction<INT_T>::operator op(const Fraction& x) const \
-    {                                                  \
-        if (_den == x._den) {                          \
-            return _num op x._num;                     \
-        }                                              \
-        else {                                         \
-            const int_t a = _num * x._den;             \
-            const int_t b = x._num * _den;             \
-            debug_throw_mul_overflow(_num, x._den, a); \
-            debug_throw_mul_overflow(x._num, _den, b); \
-            return a op b;                             \
-        }                                              \
+    {                                               \
+        if (_den == x._den) {                       \
+            return _num op x._num;                  \
+        }                                           \
+        else {                                      \
+            debug_throw_mul_overflow(_num, x._den); \
+            const int_t a = _num * x._den;          \
+            debug_throw_mul_overflow(x._num, _den); \
+            const int_t b = x._num * _den;          \
+            return a op b;                          \
+        }                                           \
     }
 
 _TS_FRACTION_COMPARE(<=)
@@ -557,8 +557,8 @@ _TS_FRACTION_COMPARE(>)
     bool ts::Fraction<INT_T>::operator op(INT1 x) const     \
     {                                                       \
         debug_throw_bound_check<int_t>(x);                  \
+        debug_throw_mul_overflow(int_t(x), _den);           \
         const int_t num1 = int_t(x) * _den;                 \
-        debug_throw_mul_overflow(int_t(x), _den, num1);     \
         return _num op num1;                                \
     }
 

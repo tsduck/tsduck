@@ -25,6 +25,7 @@ class ExpressionsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Expression);
     TSUNIT_DECLARE_TEST(Error);
     TSUNIT_DECLARE_TEST(Debug);
+    TSUNIT_DECLARE_TEST(Nested);
 };
 
 TSUNIT_REGISTER(ExpressionsTest);
@@ -155,4 +156,19 @@ TSUNIT_DEFINE_TEST(Debug)
     TSUNIT_ASSERT(e.define(u"SYM1"));
     TSUNIT_ASSERT(!e.error());
     TSUNIT_EQUAL(u"Debug: symbol 'SYM1' defined", log.messages());
+}
+
+
+TSUNIT_DEFINE_TEST(Nested)
+{
+    ts::ReportBuffer<> log;
+    ts::Expressions e(log);
+
+    e.setMaxNested(5);
+    TSUNIT_ASSERT(!e.error());
+    TSUNIT_ASSERT(e.define(u"SYM1"));
+    TSUNIT_ASSERT(e.evaluate(u"(((((SYM1)))))"));
+    TSUNIT_ASSERT(!e.evaluate(u"((((((SYM1))))))"));
+    TSUNIT_ASSERT(e.error());
+    TSUNIT_EQUAL(u"Error: too many nested parentheses in expression at character 6 in '((((((SYM1))))))'", log.messages());
 }

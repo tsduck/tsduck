@@ -1075,7 +1075,7 @@ TSUNIT_DEFINE_TEST(GetBitsSigned)
 
 TSUNIT_DEFINE_TEST(PutBCD)
 {
-    uint8_t mem[10];
+    uint8_t mem[100];
     ts::MemSet(mem, 0xFF, sizeof(mem));
     ts::Buffer b(mem, sizeof(mem));
     TSUNIT_ASSERT(!b.readOnly());
@@ -1101,6 +1101,50 @@ TSUNIT_DEFINE_TEST(PutBCD)
     TSUNIT_ASSERT(!b.writeError());
     TSUNIT_EQUAL(5, b.currentWriteByteOffset());
     TSUNIT_EQUAL(40, b.currentWriteBitOffset());
+
+    TSUNIT_ASSERT(!b.putBCD(358, 2));
+    TSUNIT_ASSERT(b.writeError());
+
+    // Larget BCD value is 20 nibbles (10 bytes) for larget 64-bit integer.
+    ts::MemSet(mem, 0xFF, sizeof(mem));
+    b.reset(mem, sizeof(mem));
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putBCD(12, 24));
+    TSUNIT_EQUAL(0x00, mem[0]);
+    TSUNIT_EQUAL(0x00, mem[1]);
+    TSUNIT_EQUAL(0x00, mem[2]);
+    TSUNIT_EQUAL(0x00, mem[3]);
+    TSUNIT_EQUAL(0x00, mem[4]);
+    TSUNIT_EQUAL(0x00, mem[5]);
+    TSUNIT_EQUAL(0x00, mem[6]);
+    TSUNIT_EQUAL(0x00, mem[7]);
+    TSUNIT_EQUAL(0x00, mem[8]);
+    TSUNIT_EQUAL(0x00, mem[9]);
+    TSUNIT_EQUAL(0x00, mem[10]);
+    TSUNIT_EQUAL(0x12, mem[11]);
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(12, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(96, b.currentWriteBitOffset());
+
+    TSUNIT_ASSERT(b.putBCD(12'345'678'901'234'567'890ull, 24));
+    TSUNIT_EQUAL(0x00, mem[12]);
+    TSUNIT_EQUAL(0x00, mem[13]);
+    TSUNIT_EQUAL(0x12, mem[14]);
+    TSUNIT_EQUAL(0x34, mem[15]);
+    TSUNIT_EQUAL(0x56, mem[16]);
+    TSUNIT_EQUAL(0x78, mem[17]);
+    TSUNIT_EQUAL(0x90, mem[18]);
+    TSUNIT_EQUAL(0x12, mem[19]);
+    TSUNIT_EQUAL(0x34, mem[20]);
+    TSUNIT_EQUAL(0x56, mem[21]);
+    TSUNIT_EQUAL(0x78, mem[22]);
+    TSUNIT_EQUAL(0x90, mem[23]);
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_EQUAL(24, b.currentWriteByteOffset());
+    TSUNIT_EQUAL(192, b.currentWriteBitOffset());
 }
 
 TSUNIT_DEFINE_TEST(GetBCD)
@@ -1124,10 +1168,9 @@ TSUNIT_DEFINE_TEST(GetBCD)
     TSUNIT_EQUAL(4, b.currentReadByteOffset());
     TSUNIT_EQUAL(32, b.currentReadBitOffset());
 
-    TSUNIT_EQUAL(292000, b.getBCD<uint32_t>(6));
+    // 29 2A 2B => A is invalid
+    TSUNIT_EQUAL(0, b.getBCD<uint32_t>(6));
     TSUNIT_ASSERT(b.readError());
-    TSUNIT_EQUAL(6, b.currentReadByteOffset());
-    TSUNIT_EQUAL(48, b.currentReadBitOffset());
 }
 
 TSUNIT_DEFINE_TEST(TryGetASCII)

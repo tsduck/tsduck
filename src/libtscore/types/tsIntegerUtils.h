@@ -100,7 +100,7 @@ namespace ts {
     //!
     template <typename INT> requires std::integral<INT>
     struct int_max {
-        //! The integer type with the same signedness and largest width.
+        //! The integer type with the same signedness as INT and largest width.
         //! In practice, it is either @c std::uintmax_t or @c std::intmax_t.
         using type = typename int_max_impl<std::signed_integral<INT>>::type;
     };
@@ -159,7 +159,7 @@ namespace ts {
     //! @return True if the value of @a x is within the limits of type @a INT1.
     //!
     template <typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
-    inline constexpr bool bound_check(INT2 x)
+    inline constexpr bool bound_check(INT2 x) noexcept
     {
         // Actual implementations of bound_check, depending on type profiles.
         if constexpr (std::signed_integral<INT1> && std::unsigned_integral<INT2> && sizeof(INT1) <= sizeof(INT2)) {
@@ -287,42 +287,24 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a + @a b.
     //! @return True if @a a + @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline constexpr bool add_overflow(INT a, INT b, INT res)
+    inline constexpr bool add_overflow(INT a, INT b) noexcept
     {
+#if defined(TS_GCC) || defined(TS_LLVM)
+        INT res = 0;
+        return __builtin_add_overflow(a, b, &res);
+#else
+        using nl = std::numeric_limits<INT>;
         if constexpr (std::unsigned_integral<INT>) {
-            return a > res;
-        }
-        else if constexpr (std::signed_integral<INT>) {
-            // A mask with sign bit set for the INT type.
-            TS_PUSH_WARNING()
-            TS_GCC_NOWARNING(shift-negative-value)
-            TS_LLVM_NOWARNING(shift-sign-overflow)
-            constexpr INT sign_bit = static_cast<INT>(1) << (8 * sizeof(INT) - 1);
-            TS_POP_WARNING()
-            // MSB of (x ^ y) is set when x and y have distinct signs.
-            // If a and b have distinct signs, never overflow.
-            // If a and b have same sign, overflow when the result has a different sign.
-            return ((~(a ^ b)) & (a ^ res) & sign_bit) != 0;
+            return a > nl::max() - b;
         }
         else {
-            static_assert(dependent_false<INT>, "invalid integer type");
+            return b > 0 ? a > nl::max() - b : a < nl::min() - b;
         }
+#endif
     }
-
-    //!
-    //! Check if an integer addition generates an overflow.
-    //! @ingroup cpp
-    //! @tparam INT An integer type, any size, signed or unsigned.
-    //! @param [in] a First integer.
-    //! @param [in] b Second integer.
-    //! @return True if @a a + @a b generated an overflow.
-    //!
-    template <typename INT> requires std::integral<INT>
-    bool add_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
     //! Check if an integer substraction generates an overflow.
@@ -330,33 +312,24 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a - @a b.
     //! @return True if @a a - @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline bool sub_overflow(INT a, INT b, INT res)
+    inline constexpr bool sub_overflow(INT a, INT b) noexcept
     {
+#if defined(TS_GCC) || defined(TS_LLVM)
+        INT res = 0;
+        return __builtin_sub_overflow(a, b, &res);
+#else
+        using nl = std::numeric_limits<INT>;
         if constexpr (std::unsigned_integral<INT>) {
             return a < b;
         }
-        else if constexpr (std::signed_integral<INT>) {
-            return add_overflow(a, -b, res);
-        }
         else {
-            static_assert(dependent_false<INT>, "invalid integer type");
+            return b < 0 ? a > nl::max() + b : a < nl::min() + b;
         }
+#endif
     }
-
-    //!
-    //! Check if an integer substraction generates an overflow.
-    //! @ingroup cpp
-    //! @tparam INT An integer type, any size, signed or unsigned.
-    //! @param [in] a First integer.
-    //! @param [in] b Second integer.
-    //! @return True if @a a - @a b generated an overflow.
-    //!
-    template <typename INT> requires std::integral<INT>
-    bool sub_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
     //! Check if the negation (opposite sign) of an integer generates an overflow.
@@ -366,17 +339,14 @@ namespace ts {
     //! @return True if @a -a generates an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline bool neg_overflow(INT a)
+    inline constexpr bool neg_overflow(INT a) noexcept
     {
         if constexpr (std::unsigned_integral<INT>) {
             return a != 0;
         }
-        else if constexpr (std::signed_integral<INT>) {
+        else {
             return a == std::numeric_limits<INT>::min();
         }
-        else {
-            static_assert(dependent_false<INT>, "invalid integer type");
-        }
     }
 
     //!
@@ -385,27 +355,32 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a * @a b.
     //! @return True if @a a * @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline constexpr bool mul_overflow(INT a, INT b, INT res)
+    inline constexpr bool mul_overflow(INT a, INT b) noexcept
     {
-        return a != 0 && res / a != b;
+#if defined(TS_GCC) || defined(TS_LLVM)
+        INT res = 0;
+        return __builtin_mul_overflow(a, b, &res);
+#else
+        using nl = std::numeric_limits<INT>;
+        if (a == 0 || b == 0) {
+            return false;
+        }
+        if constexpr (std::unsigned_integral<INT>) {
+            return a > nl::max() / b;
+        }
+        else {
+            if (a > 0) {
+                return b > 0 ? a > nl::max() / b : b < nl::min() / a;
+            }
+            else {
+                return b > 0 ? a < nl::min() / b : a < nl::max() / b;
+            }
+        }
+#endif
     }
-
-    //!
-    //! Check if an integer multiplication generates an overflow.
-    //! Note: This function intentionally generates an overflow.
-    //! Code analyzers and sanitizers may report a false positive here.
-    //! @ingroup cpp
-    //! @tparam INT An integer type, any size, signed or unsigned.
-    //! @param [in] a First integer.
-    //! @param [in] b Second integer.
-    //! @return True if @a a * @a b generated an overflow.
-    //!
-    template <typename INT> requires std::integral<INT>
-    TS_NO_SANITIZE_SIGNED_OVERFLOW bool mul_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
     //! Throw an exception if an integer addition generates an overflow.
@@ -413,13 +388,12 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a + @a b.
     //! @throw std::overflow_error When @a a + @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void throw_add_overflow(INT a, INT b, INT res)
+    inline void throw_add_overflow(INT a, INT b)
     {
-        if (add_overflow(a, b, res)) {
+        if (add_overflow(a, b)) {
             throw std::overflow_error("addition overflow");
         }
     }
@@ -430,13 +404,12 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a - @a b.
     //! @throw std::overflow_error When @a a - @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void throw_sub_overflow(INT a, INT b, INT res)
+    inline void throw_sub_overflow(INT a, INT b)
     {
-        if (sub_overflow(a, b, res)) {
+        if (sub_overflow(a, b)) {
             throw std::overflow_error("substraction overflow");
         }
     }
@@ -462,13 +435,12 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a * @a b.
     //! @throw std::overflow_error When @a a * @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void throw_mul_overflow(INT a, INT b, INT res)
+    inline void throw_mul_overflow(INT a, INT b)
     {
-        if (mul_overflow(a, b, res)) {
+        if (mul_overflow(a, b)) {
             throw std::overflow_error("multiplication overflow");
         }
     }
@@ -495,14 +467,13 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a + @a b.
     //! @throw std::overflow_error When @a a + @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void debug_throw_add_overflow(INT a, INT b, INT res)
+    inline void debug_throw_add_overflow(INT a, INT b)
     {
 #if defined(DEBUG)
-        throw_add_overflow(a, b, res);
+        throw_add_overflow(a, b);
 #endif
     }
 
@@ -513,14 +484,13 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a - @a b.
     //! @throw std::overflow_error When @a a - @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void debug_throw_sub_overflow(INT a, INT b, INT res)
+    inline void debug_throw_sub_overflow(INT a, INT b)
     {
 #if defined(DEBUG)
-        throw_sub_overflow(a, b, res);
+        throw_sub_overflow(a, b);
 #endif
     }
 
@@ -547,14 +517,13 @@ namespace ts {
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
     //! @param [in] b Second integer.
-    //! @param [in] res The result of @a a * @a b.
     //! @throw std::overflow_error When @a a * @a b generated an overflow.
     //!
     template <typename INT> requires std::integral<INT>
-    inline void debug_throw_mul_overflow(INT a, INT b, INT res)
+    inline void debug_throw_mul_overflow(INT a, INT b)
     {
 #if defined(DEBUG)
-        throw_mul_overflow(a, b, res);
+        throw_mul_overflow(a, b);
 #endif
     }
 
@@ -588,11 +557,8 @@ namespace ts {
         if constexpr (std::unsigned_integral<INT>) {
             return (a + b/2) / b;
         }
-        else if constexpr (std::signed_integral<INT>) {
-            return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b);
-        }
         else {
-            static_assert(dependent_false<INT>, "invalid integer type");
+            return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b);
         }
     }
 
@@ -658,14 +624,11 @@ namespace ts {
         if constexpr (std::unsigned_integral<INT>) {
             // no sign
         }
-        else if constexpr (std::signed_integral<INT>) {
+        else {
             if (den < 0) {
                 num = static_cast<INT>(-num);
                 den = static_cast<INT>(-den);
             }
-        }
-        else {
-            static_assert(dependent_false<INT>, "invalid integer type");
         }
     }
 
@@ -732,11 +695,8 @@ namespace ts {
         if constexpr (std::unsigned_integral<INT>) {
             return u"unsigned";
         }
-        else if constexpr (std::signed_integral<INT>) {
-            return u"signed";
-        }
         else {
-            static_assert(dependent_false<INT>, "invalid integer type");
+            return u"signed";
         }
     }
 
@@ -836,33 +796,6 @@ namespace ts {
 
 
 //----------------------------------------------------------------------------
-// Template definitions.
-//----------------------------------------------------------------------------
-
-// Not inlined to avoid optimization which breaks the code.
-template <typename INT> requires std::integral<INT>
-bool ts::add_overflow(INT a, INT b)
-{
-    INT res = a + b;
-    return add_overflow<INT>(a, b, res);
-}
-
-template <typename INT> requires std::integral<INT>
-bool ts::sub_overflow(INT a, INT b)
-{
-    INT res = a - b;
-    return sub_overflow<INT>(a, b, res);
-}
-
-template <typename INT> requires std::integral<INT>
-bool ts::mul_overflow(INT a, INT b)
-{
-    INT res = a * b;
-    return mul_overflow<INT>(a, b, res);
-}
-
-
-//----------------------------------------------------------------------------
 // Perform a bounded addition without overflow.
 //----------------------------------------------------------------------------
 
@@ -917,7 +850,7 @@ INT ts::bounded_sub(INT a, INT b)
             return a - b;
         }
     }
-    else if constexpr (std::signed_integral<INT>) {
+    else {
         // Signed subtraction.
         const INT c = a - b;
         if (a > 0 && b < 0 && c <= 0) {
@@ -932,9 +865,6 @@ INT ts::bounded_sub(INT a, INT b)
             return c;
         }
     }
-    else {
-        static_assert(dependent_false<INT>, "invalid integer type");
-    }
 }
 
 
@@ -948,12 +878,9 @@ INT ts::round_down(INT x, INT f)
     if constexpr (std::unsigned_integral<INT>) {
         return f == 0 ? x : x - x % f;
     }
-    else if constexpr (std::signed_integral<INT>) {
+    else {
         f = INT(std::abs(f));
         return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
-    }
-    else {
-        static_assert(dependent_false<INT>, "invalid integer type");
     }
 }
 
@@ -963,12 +890,9 @@ INT ts::round_up(INT x, INT f)
     if constexpr (std::unsigned_integral<INT>) {
         return f == 0 ? x : x + (f - x % f) % f;
     }
-    else if constexpr (std::signed_integral<INT>) {
+    else {
         f = INT(std::abs(f));
         return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);
-    }
-    else {
-        static_assert(dependent_false<INT>, "invalid integer type");
     }
 }
 
@@ -1017,12 +941,9 @@ size_t ts::BitSize(INT x)
         }
         return size;
     }
-    else if constexpr (std::signed_integral<INT>) {
+    else {
         using UNS_INT = typename std::make_unsigned<INT>::type;
         return BitSize<UNS_INT>(UNS_INT(x));
-    }
-    else {
-        static_assert(dependent_false<INT>, "invalid integer type");
     }
 }
 
@@ -1058,7 +979,7 @@ INT ts::GCD(INT x, INT y)
             y = z;
         }
     }
-    else if constexpr (std::signed_integral<INT>) {
+    else {
         INT z;
         if (x < 0) {
             x = static_cast<INT>(-x);
@@ -1071,9 +992,6 @@ INT ts::GCD(INT x, INT y)
             x = y;
             y = z;
         }
-    }
-    else {
-        static_assert(dependent_false<INT>, "invalid integer type");
     }
     return x;
 }

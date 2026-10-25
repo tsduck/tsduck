@@ -1969,7 +1969,7 @@ namespace ts {
         //! separators and are ignored. <i>Any character</i> from the @a thousand_separators string
         //! is interpreted as a separator. Note that this implies that the optional thousands separators
         //! may have one character only.
-        //! @param [in] listSeparators A string of characters which are interpreted as list separators.
+        //! @param [in] list_separators A string of characters which are interpreted as list separators.
         //! Distinct integer values must be separated by one or more of these separators.
         //! <i>Any character</i> from the @a listSeparators string is interpreted as a separator.
         //! Note that this implies that the list separators may have one character only.
@@ -1986,7 +1986,7 @@ namespace ts {
         template <class CONTAINER> requires std::integral<typename CONTAINER::value_type>
         bool toIntegers(CONTAINER& container,
                         const UString& thousand_separators = UString(),
-                        const UString& listSeparators = UString(u",; "),
+                        const UString& list_separators = UString(u",; "),
                         size_type decimals = 0,
                         const UString& decimal_separators = UString(u"."),
                         typename CONTAINER::value_type min_value = std::numeric_limits<typename CONTAINER::value_type>::min(),
@@ -2779,12 +2779,10 @@ namespace ts {
         void assignFromWCharHelper(const wchar_t* wstr, size_type count);
 
         // Internal helpers for toInteger(), signed and unsigned versions.
-        // Work on trimmed strings, with leading '+' skipped.
-        template<typename INT> requires std::unsigned_integral<INT>
-        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators);
-
-        template<typename INT> requires std::signed_integral<INT>
-        static bool ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators);
+        static bool ToIntegerSigned(const UChar* start, const UChar* end, intmax_t& value, const UString& thousand_separators,
+                                    size_type decimals, const UString& decimal_separators, intmax_t min_value, intmax_t max_value);
+        static bool ToIntegerUnsigned(const UChar* start, const UChar* end, uintmax_t& value, const UString& thousand_separators,
+                                      size_type decimals, const UString& decimal_separators, uintmax_t min_value, uintmax_t max_value);
 
         // Internal helpers for Decimal(), signed and unsigned versions.
         // Produce unpadded strings.
@@ -3515,100 +3513,18 @@ bool ts::UString::toInteger(INT& value, const UString& thousand_separators, size
     }
 
     // Decode the value. Use unsigned or signed version.
-    return ToIntegerHelper(start, end, value, thousand_separators, decimals, decimal_separators) && value >= min_value && value <= max_value;
-}
-
-
-//----------------------------------------------------------------------------
-// Internal helper for toInteger, unsigned version.
-//----------------------------------------------------------------------------
-
-template<typename INT> requires std::unsigned_integral<INT>
-bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators)
-{
-    // Initial value, up to decode error.
-    value = static_cast<INT>(0);
-
-    // Look for hexadecimal prefix.
-    int base = 10;
-    if (start + 1 < end && start[0] == u'0' && (start[1] == u'x' || start[1] == u'X')) {
-        start += 2;
-        base = 16;
+    if constexpr (std::unsigned_integral<INT>) {
+        uintmax_t val = 0;
+        const bool ok = ToIntegerUnsigned(start, end, val, thousand_separators, decimals, decimal_separators, uintmax_t(min_value), uintmax_t(max_value));
+        value = static_cast<INT>(val);
+        return ok;
     }
-
-    // Filter empty string.
-    if (start >= end) {
-        return false;
+    else {
+        intmax_t val = 0;
+        const bool ok = ToIntegerSigned(start, end, val, thousand_separators, decimals, decimal_separators, intmax_t(min_value), intmax_t(max_value));
+        value = static_cast<INT>(val);
+        return ok;
     }
-
-    // Decimal digits handling.
-    bool dec_found = false;   // a decimal point was found
-    size_type dec_count = 0;  // number of decimal digits found
-
-    // Decode the string.
-    while (start < end) {
-        const int digit = ToDigit(*start, base);
-        if (digit >= 0) {
-            // Character is a valid digit. Ignore extraneous decimal digits.
-            if (!dec_found || dec_count < decimals) {
-                value = value * static_cast<INT>(base) + static_cast<INT>(digit);
-            }
-            // Count decimal digits, after the decimal point.
-            if (dec_found) {
-                ++dec_count;
-            }
-        }
-        else if (decimal_separators.contains(*start)) {
-            // Found a decimal point. Only one is allowed.
-            // A decimal point is allowed only in base 10.
-            // By default (decimal == 0), no decimal point is allowed.
-            if (dec_found || base != 10 || decimals == 0) {
-                return false;
-            }
-            dec_found = true;
-        }
-        else if (!thousand_separators.contains(*start)) {
-            // Character is not a possible thousands separator to ignore.
-            return false;
-        }
-        ++start;
-    }
-
-    // If decimals are missing, adjust the value.
-    while (dec_count < decimals) {
-        value = 10 * value;
-        ++dec_count;
-    }
-
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Internal helper for toInteger, signed version.
-//----------------------------------------------------------------------------
-
-template<typename INT> requires std::signed_integral<INT>
-bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& value, const UString& thousand_separators, size_type decimals, const UString& decimal_separators)
-{
-    // Skip optional minus sign.
-    bool negative = false;
-    if (start < end && *start == '-') {
-        ++start;
-        negative = true;
-    }
-
-    // Decode the string as an unsigned integer.
-    typename std::make_unsigned<INT>::type uvalue = 0;
-    const bool ok = ToIntegerHelper(start, end, uvalue, thousand_separators, decimals, decimal_separators);
-
-    // Convert the unsigned integer as signed integer with the appropriate sign.
-    value = static_cast<INT>(uvalue);
-    if (negative) {
-        value = static_cast<INT>(-value);
-    }
-
-    return ok;
 }
 
 
@@ -3619,7 +3535,7 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 template <class CONTAINER> requires std::integral<typename CONTAINER::value_type>
 bool ts::UString::toIntegers(CONTAINER& container,
                              const UString& thousand_separators,
-                             const UString& listSeparators,
+                             const UString& list_separators,
                              size_type decimals,
                              const UString& decimal_separators,
                              typename CONTAINER::value_type min_value,
@@ -3634,21 +3550,21 @@ bool ts::UString::toIntegers(CONTAINER& container,
 
     // Locate segments in the string
     size_type start = 0;
-    size_type farEnd = length();
+    size_type far_end = length();
 
     // Loop on segments
-    while (start < farEnd) {
+    while (start < far_end) {
         // Skip spaces and list separators
-        while (start < farEnd && (IsSpace((*this)[start]) || listSeparators.find((*this)[start]) != NPOS)) {
+        while (start < far_end && (IsSpace((*this)[start]) || list_separators.find((*this)[start]) != NPOS)) {
             ++start;
         }
         // Locate end of segment
         size_type end = start;
-        while (end < farEnd && listSeparators.find((*this)[end]) == NPOS) {
+        while (end < far_end && list_separators.find((*this)[end]) == NPOS) {
             ++end;
         }
         // Exit at end of string
-        if (start >= farEnd) {
+        if (start >= far_end) {
             break;
         }
         // Decode segment

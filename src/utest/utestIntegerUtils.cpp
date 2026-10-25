@@ -81,15 +81,25 @@ TSUNIT_DEFINE_TEST(int_max)
 {
     TSUNIT_ASSERT(std::signed_integral<ts::int_max<int>::type>);
     TSUNIT_ASSERT(std::signed_integral<ts::int_max<int8_t>::type>);
+    TSUNIT_ASSERT(std::signed_integral<ts::int_max<int16_t>::type>);
     TSUNIT_ASSERT(std::signed_integral<ts::int_max<int32_t>::type>);
+    TSUNIT_ASSERT(std::signed_integral<ts::int_max<int64_t>::type>);
     TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<unsigned int>::type>);
+    TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<uint8_t>::type>);
     TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<uint16_t>::type>);
+    TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<uint32_t>::type>);
+    TSUNIT_ASSERT(std::unsigned_integral<ts::int_max<uint64_t>::type>);
 
     TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int>::type));
     TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int8_t>::type));
+    TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int16_t>::type));
     TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int32_t>::type));
+    TSUNIT_EQUAL(sizeof(std::intmax_t), sizeof(ts::int_max<int64_t>::type));
     TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<unsigned int>::type));
+    TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<uint8_t>::type));
     TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<uint16_t>::type));
+    TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<uint32_t>::type));
+    TSUNIT_EQUAL(sizeof(std::uintmax_t), sizeof(ts::int_max<uint64_t>::type));
 }
 
 TSUNIT_DEFINE_TEST(abs)
@@ -230,7 +240,12 @@ TSUNIT_DEFINE_TEST(Power10)
     TSUNIT_EQUAL(10, ts::Power10(1));
     TSUNIT_EQUAL(100, ts::Power10(2));
     TSUNIT_EQUAL(1000000, ts::Power10(6));
-    TSUNIT_EQUAL(1000000000000000, ts::Power10(15));
+    TSUNIT_EQUAL(1000000000000000ull, ts::Power10(15));
+    TSUNIT_EQUAL(10000000000000000ull, ts::Power10(16));
+    TSUNIT_EQUAL(100000000000000000ull, ts::Power10(17));
+    TSUNIT_EQUAL(1000000000000000000ull, ts::Power10(18));
+    TSUNIT_EQUAL(10000000000000000000ull, ts::Power10(19));
+    TSUNIT_EQUAL(0, ts::Power10(20)); // above 64 bits
 
     TSUNIT_EQUAL(1, (ts::static_power10<uint8_t, 0>::value));
     TSUNIT_EQUAL(1, (ts::static_power10<int, 0>::value));
@@ -290,14 +305,38 @@ TSUNIT_DEFINE_TEST(GCD)
     TSUNIT_EQUAL(14, ts::GCD<uint32_t>(7 * 3 * 2, 7 * 5 * 2));
 }
 
-TSUNIT_DEFINE_TEST_WITH_ATTRIBUTE(Overflow, TS_NO_SANITIZE_SIGNED_OVERFLOW)
+TSUNIT_DEFINE_TEST(Overflow)
 {
-    int64_t a = 292021270;
-    int64_t b = 31590000000;
-    int64_t res = a * b;
-    TSUNIT_ASSERT(res < 0);
-    TSUNIT_ASSERT(ts::mul_overflow(a, b, res));
-    TSUNIT_ASSERT(ts::mul_overflow(a, b));
+    // The multiplication -1 * MIN gives MAX + 1
+    TSUNIT_ASSERT(ts::mul_overflow<int8_t>(-1, std::numeric_limits<int8_t>::min()));
+    TSUNIT_ASSERT(ts::mul_overflow<int16_t>(-1, std::numeric_limits<int16_t>::min()));
+    TSUNIT_ASSERT(ts::mul_overflow<int32_t>(-1, std::numeric_limits<int32_t>::min()));
+    TSUNIT_ASSERT(ts::mul_overflow<int64_t>(-1, std::numeric_limits<int64_t>::min()));
+
+    TSUNIT_ASSERT(ts::mul_overflow<int8_t>(std::numeric_limits<int8_t>::min(), -1));
+    TSUNIT_ASSERT(ts::mul_overflow<int16_t>(std::numeric_limits<int16_t>::min(), -1));
+    TSUNIT_ASSERT(ts::mul_overflow<int32_t>(std::numeric_limits<int32_t>::min(), -1));
+    TSUNIT_ASSERT(ts::mul_overflow<int64_t>(std::numeric_limits<int64_t>::min(), -1));
+
+    TSUNIT_ASSERT(!ts::mul_overflow<int8_t>(-1, std::numeric_limits<int8_t>::min() + 1));
+    TSUNIT_ASSERT(!ts::mul_overflow<int16_t>(-1, std::numeric_limits<int16_t>::min() + 1));
+    TSUNIT_ASSERT(!ts::mul_overflow<int32_t>(-1, std::numeric_limits<int32_t>::min() + 1));
+    TSUNIT_ASSERT(!ts::mul_overflow<int64_t>(-1, std::numeric_limits<int64_t>::min() + 1));
+
+    TSUNIT_ASSERT(!ts::mul_overflow<int8_t>(std::numeric_limits<int8_t>::min() + 1, -1));
+    TSUNIT_ASSERT(!ts::mul_overflow<int16_t>(std::numeric_limits<int16_t>::min() + 1, -1));
+    TSUNIT_ASSERT(!ts::mul_overflow<int32_t>(std::numeric_limits<int32_t>::min() + 1, -1));
+    TSUNIT_ASSERT(!ts::mul_overflow<int64_t>(std::numeric_limits<int64_t>::min() + 1, -1));
+
+    TSUNIT_ASSERT(ts::mul_overflow<int64_t>(292021270, 31590000000));
+
+    TSUNIT_ASSERT(ts::add_overflow<int8_t>(1, std::numeric_limits<int8_t>::max()));
+    TSUNIT_ASSERT(ts::add_overflow<int8_t>(std::numeric_limits<int8_t>::max(), 1));
+    TSUNIT_ASSERT(ts::add_overflow<int8_t>(-1, std::numeric_limits<int8_t>::min()));
+    TSUNIT_ASSERT(ts::add_overflow<int8_t>(std::numeric_limits<int8_t>::min(), -1));
+
+    TSUNIT_ASSERT(ts::sub_overflow<int8_t>(std::numeric_limits<int8_t>::min(), 1));
+    TSUNIT_ASSERT(ts::sub_overflow<int8_t>(std::numeric_limits<int8_t>::max(), -1));
 }
 
 TSUNIT_DEFINE_TEST(SmallerUnsigned)

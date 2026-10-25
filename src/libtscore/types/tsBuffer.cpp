@@ -1349,7 +1349,7 @@ size_t ts::Buffer::putUTFInternal(const UString& str, size_t start, size_t count
     const State saved(_state);
 
     // Serialize as many characters as possible.
-    const UChar* const in_start = &str[start];
+    const UChar* const in_start = str.data() + start;
     const UChar* in = in_start;
     const UChar* const in_end = in + count;
     char* const cbuffer = reinterpret_cast<char*>(_buffer);
@@ -1438,7 +1438,7 @@ size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, si
     assert(_state.wbit == 0);
 
     // Now we can attempt the conversion.
-    const UChar* const in_start = &str[start];
+    const UChar* const in_start = str.data() + start;
     const UChar* in = in_start;
     const UChar* const in_end = in + count;
     char* const cbuffer = reinterpret_cast<char*>(_buffer);

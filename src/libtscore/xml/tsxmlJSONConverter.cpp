@@ -40,27 +40,27 @@ ts::xml::JSONConverter::~JSONConverter()
 
 ts::json::ValuePtr ts::xml::JSONConverter::convertToJSON(const Document& source, bool force_root) const
 {
-    const xml::Element* docRoot = source.rootElement();
+    const xml::Element* doc_root = source.rootElement();
 
-    if (docRoot == nullptr) {
+    if (doc_root == nullptr) {
         report().error(u"invalid XML document, no root element");
         return std::make_shared<json::Null>();
     }
     else {
         // Ignore the model if the model root has a different name from the source root.
-        const Element* modelRoot = rootElement();
-        if (modelRoot != nullptr && !modelRoot->nameMatch(docRoot)) {
-            modelRoot = nullptr;
+        const Element* model_root = rootElement();
+        if (model_root != nullptr && !model_root->nameMatch(doc_root)) {
+            model_root = nullptr;
         }
 
         // Convert the source. Use no model if not the same as source.
         if (tweaks().x2jIncludeRoot || force_root) {
             // Return a JSON object containing the root.
-            return convertElementToJSON(modelRoot, docRoot, tweaks());
+            return convertElementToJSON(model_root, doc_root, tweaks());
         }
         else {
             // Return a JSON array of all top-level elements in the root.
-            return convertChildrenToJSON(modelRoot, docRoot, tweaks());
+            return convertChildrenToJSON(model_root, doc_root, tweaks());
         }
     }
 }
@@ -85,44 +85,42 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
 
         // JSON value of the attribute.
         json::ValuePtr jvalue;
-        int64_t intValue = 0;
-        bool boolValue = false;
+        int64_t int_value = 0;
+        uint64_t uint_value = 0;
+        bool bool_value = false;
 
         // Get description of this attribute in the model.
         UString description;
-        bool intModel = false;
-        bool boolModel = false;
+        bool int_model = false;
+        bool bool_model = false;
         if (model != nullptr) {
             // Get description, empty string without error if not found.
             model->getAttribute(description, it.first, false);
             description.trim(true, false, false);
-            intModel = description.starts_with(u"uint", CASE_INSENSITIVE) || description.starts_with(u"int", CASE_INSENSITIVE);
-            boolModel = description.starts_with(u"bool", CASE_INSENSITIVE);
+            int_model = description.starts_with(u"uint", CASE_INSENSITIVE) || description.starts_with(u"int", CASE_INSENSITIVE);
+            bool_model = description.starts_with(u"bool", CASE_INSENSITIVE);
         }
 
         // Try to convert as an integer or boolean if defined as such by the model.
-        if (intModel) {
+        if (int_model) {
             // Should be an integer according to the model.
-            if (it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-                if (intValue < -0xFFFFFFFFLL) {
-                    // This is a "very negative" value. This is typically a large unsigned hexadecimal value
-                    // which will not be handled correctly when reading back the JSON file. We cannot use
-                    // hexadecimal literals in JSON (new in JSON 5), so we leave it as a string.
-                    jvalue = std::make_shared<json::String>(it.second);
-                }
-                else {
-                    // Acceptable integer.
-                    jvalue = std::make_shared<json::Number>(intValue);
-                }
+            if (it.second.toInteger(int_value, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+                // Acceptable 64-bit signed integer.
+                jvalue = std::make_shared<json::Number>(int_value);
+            }
+            else if (it.second.toInteger(uint_value, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+                // This is a valid large unsigned integer which cannot be represented as a signed value.
+                // Because JSON numbers are int64, we leave it as a string.
+                jvalue = std::make_shared<json::String>(it.second);
             }
             else {
                 source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be an integer", it.first, source->name(), source->lineNumber(), it.second);
             }
         }
-        else if (boolModel) {
+        else if (bool_model) {
             // Should be a boolean according to the model.
-            if (it.second.toBool(boolValue)) {
-                jvalue = json::Bool(boolValue);
+            if (it.second.toBool(bool_value)) {
+                jvalue = json::Bool(bool_value);
             }
             else {
                 source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be a boolean", it.first, source->name(), source->lineNumber(), it.second);
@@ -130,11 +128,11 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
         }
 
         // Try to enforce integer of boolean value if specified on command line.
-        if (jvalue == nullptr && xml_tweaks.x2jEnforceInteger && !intModel && it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-            jvalue = std::make_shared<json::Number>(intValue);
+        if (jvalue == nullptr && xml_tweaks.x2jEnforceInteger && !int_model && it.second.toInteger(int_value, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+            jvalue = std::make_shared<json::Number>(int_value);
         }
-        if (jvalue == nullptr && xml_tweaks.x2jEnforceBoolean && !boolModel && it.second.toBool(boolValue)) {
-            jvalue = json::Bool(boolValue);
+        if (jvalue == nullptr && xml_tweaks.x2jEnforceBoolean && !bool_model && it.second.toBool(bool_value)) {
+            jvalue = json::Bool(bool_value);
         }
 
         // Use a string value by default.
@@ -168,14 +166,14 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildrenToJSON(const Element* 
     json::ValuePtr jchildren = std::make_shared<json::Array>();
 
     // Content of the text children in the model.
-    UString textModel;
-    bool getTextModel = model != nullptr;
-    bool hexaModel = false;
+    UString text_model;
+    bool get_text_model = model != nullptr;
+    bool hexa_model = false;
 
     // Loop on all children nodes.
-    bool lastNode = false;
-    for (const Node* child = parent->firstChild(); child != nullptr && !lastNode; child = child->nextSibling()) {
-        lastNode = child == parent->lastChild();
+    bool last_node = false;
+    for (const Node* child = parent->firstChild(); child != nullptr && !last_node; child = child->nextSibling()) {
+        last_node = child == parent->lastChild();
 
         // Interpret the child either as an Element or a Text node.
         // Other types of nodes are ignored.
@@ -190,13 +188,13 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertChildrenToJSON(const Element* 
             // Convert a text.
             UString content(text->value());
             // Get the model description once only.
-            if (getTextModel) {
-                getTextModel = false;
-                model->getText(textModel, true);
-                hexaModel = textModel.starts_with(u"hexa", CASE_INSENSITIVE);
+            if (get_text_model) {
+                get_text_model = false;
+                model->getText(text_model, true);
+                hexa_model = text_model.starts_with(u"hexa", CASE_INSENSITIVE);
             }
             // Trim the text content according to model and command line options.
-            content.trim(hexaModel || xml_tweaks.x2jTrimText, hexaModel || xml_tweaks.x2jTrimText, hexaModel || xml_tweaks.x2jCollapseText);
+            content.trim(hexa_model || xml_tweaks.x2jTrimText, hexa_model || xml_tweaks.x2jTrimText, hexa_model || xml_tweaks.x2jCollapseText);
             // Add a JSON string for the text node in the array of JSON children.
             jchildren->set(content);
         }

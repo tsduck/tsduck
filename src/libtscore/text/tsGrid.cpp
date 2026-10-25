@@ -119,30 +119,30 @@ void ts::Grid::putMultiLine(const UString& text)
 //! Write a line with two fields, possibly on two lines.
 //----------------------------------------------------------------------------
 
-void ts::Grid::putLine(const UString& left, const UString& right, bool oneLine)
+void ts::Grid::putLine(const UString& left, const UString& right, bool one_line)
 {
-    const size_t leftWidth = left.width();
-    const size_t rightWidth = right.width();
+    const size_t left_width = left.width();
+    const size_t right_width = right.width();
 
-    if (leftWidth + _margin_width + rightWidth <= _content_width) {
+    if (left_width + _margin_width + right_width <= _content_width) {
         // Display on one line, no truncation.
         _out << _left_margin
              << left
-             << std::string(_content_width - leftWidth - rightWidth, ' ')
+             << std::string(_content_width - left_width - right_width, ' ')
              << right
              << _right_margin
              << std::endl;
         _line_count++;
     }
-    else if (oneLine) {
+    else if (one_line) {
         // Truncate and pack on one line.
-        const size_t excess = leftWidth + _margin_width + rightWidth - _content_width;
-        const size_t leftExcess = excess / 2;
-        const size_t rightExcess = excess - leftExcess;
+        const size_t excess = left_width + _margin_width + right_width - _content_width;
+        const size_t leftExcess = std::min(excess / 2, left_width);
+        const size_t rightExcess = std::min(excess - leftExcess, right_width);
         _out << _left_margin
-             << left.toJustifiedLeft(leftWidth - leftExcess, SPACE, true)
+             << left.toJustifiedLeft(left_width - leftExcess, SPACE, true)
              << std::string(_margin_width, ' ')
-             << right.toJustifiedRight(rightWidth - rightExcess, SPACE, true)
+             << right.toJustifiedRight(right_width - rightExcess, SPACE, true)
              << _right_margin
              << std::endl;
         _line_count++;
@@ -229,84 +229,84 @@ void ts::Grid::adjustLayout()
     _layout = _requested_layout;
 
     // Number of columns containing text (ie. not a border).
-    size_t textColCount = 0;
+    size_t text_col_count = 0;
 
     // Compute total width.
-    size_t allWidth = 0;
+    size_t all_width = 0;
     for (auto& it : _layout) {
         if (!it.isBorder()) {
-            textColCount++;
+            text_col_count++;
         }
-        allWidth += _margin_width + it._width;
+        all_width += _margin_width + it._width;
     }
 
     // If there is nothing to display, done.
-    if (textColCount == 0) {
+    if (text_col_count == 0) {
         return;
     }
 
     // Revert one extra margin.
-    assert(allWidth >= _margin_width);
-    allWidth -= _margin_width;
+    assert(all_width >= _margin_width);
+    all_width -= _margin_width;
 
     // Now adjust the width of columns.
-    if (allWidth > _content_width) {
+    if (all_width > _content_width) {
         // Reduce the width of text columns.
         // Try to reduce the size of each text column, but not less than 2 (plus margins).
-        const size_t minSize = 2;
-        size_t lessPerCol = std::max<size_t>(1, (allWidth - _content_width) / textColCount);
-        bool canDoMore = false;
+        const size_t min_size = 2;
+        size_t less_per_col = std::max<size_t>(1, (all_width - _content_width) / text_col_count);
+        bool can_do_more = false;
         do {
-            canDoMore = false;
-            for (auto it = _layout.begin(); it != _layout.end() && allWidth > _content_width; ++it) {
-                if (!it->isBorder() && it->_width > minSize) {
-                    const size_t less = std::min<size_t>(it->_width - minSize, lessPerCol);
+            can_do_more = false;
+            for (auto it = _layout.begin(); it != _layout.end() && all_width > _content_width; ++it) {
+                if (!it->isBorder() && it->_width > min_size) {
+                    const size_t less = std::min<size_t>(it->_width - min_size, less_per_col);
                     it->_width -= less;
-                    allWidth -= less;
-                    canDoMore = canDoMore || it->_width > minSize;
+                    all_width -= less;
+                    can_do_more = can_do_more || it->_width > min_size;
                 }
             }
-        } while (canDoMore && allWidth > _content_width);
+        } while (can_do_more && all_width > _content_width);
         // At this point, all columns are shrunk to the minimum.
         // Try deleting borders, starting by the end.
         // We should use a reverse_iterator but erase() only accepts an iterator.
-        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _content_width; ) {
+        for (auto it = _layout.end(); it != _layout.begin() && all_width > _content_width; ) {
             --it;
             if (it->isBorder()) {
-                assert(allWidth >= it->_width + _margin_width);
-                allWidth -= it->_width + _margin_width;
+                assert(all_width >= it->_width + _margin_width);
+                all_width -= it->_width + _margin_width;
                 it = _layout.erase(it);
             }
         }
         // As a last chance, remove text columns, starting by the end.
-        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _content_width; ) {
+        for (auto it = _layout.end(); it != _layout.begin() && all_width > _content_width; ) {
             --it;
             assert(!it->isBorder());
-            assert(allWidth >= it->_width + _margin_width);
-            allWidth -= it->_width + _margin_width;
+            assert(all_width >= it->_width + _margin_width);
+            all_width -= it->_width + _margin_width;
             it = _layout.erase(it);
-            textColCount--;
+            text_col_count--;
         }
     }
 
     // We fall-through here even if we already reduced the column sizes because if
     // we decided to remove borders, we may have reduced the width a bit too much.
-    if (allWidth < _content_width && textColCount > 0) {
+    if (all_width < _content_width && text_col_count > 0) {
         // Distribute more space on all text columns.
         // The value "more" may be insufficient because of rounding.
         // We allocate one more space is the last columns to compensate rounding.
-        const size_t more = (_content_width - allWidth) / textColCount;
-        const size_t evenMore = (_content_width - allWidth) % textColCount;
+        const size_t more = (_content_width - all_width) / text_col_count;
+        const size_t evenMore = (_content_width - all_width) % text_col_count;
         for (auto& it : _layout) {
             if (!it.isBorder()) {
-                const size_t adjust = textColCount <= evenMore ? 1 : 0;
+                const size_t adjust = text_col_count <= evenMore ? 1 : 0;
                 it._width += more + adjust;
-                allWidth += more + adjust;
-                textColCount--;
+                all_width += more + adjust;
+                text_col_count--;
             }
         }
-        assert(textColCount == 0);
-        assert(allWidth == _content_width);
+        assert(text_col_count == 0);
+        assert(all_width == _content_width);
     }
 }
 
@@ -325,22 +325,22 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
 
     // Iterator through text to display
     auto iText = text.begin();
-    size_t currentWidth = 0;
+    size_t current_width = 0;
     const ColumnText empty;
 
     // Loop on all declare columns.
-    for (const auto& iLayout : _layout) {
+    for (const auto& ilayout : _layout) {
 
         // Left margin between columns (except for first column).
-        if (currentWidth > 0) {
+        if (current_width > 0) {
             _out << margin;
-            currentWidth += _margin_width;
+            current_width += _margin_width;
         }
-        currentWidth += iLayout._width;
+        current_width += ilayout._width;
 
-        if (iLayout.isBorder()) {
+        if (ilayout.isBorder()) {
             // Simply display the border character.
-            _out << iLayout._pad;
+            _out << ilayout._pad;
         }
         else {
             // Text to display. The argument list may be shorter than the layout.
@@ -355,70 +355,70 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
             const UString& text1(txt->_texts[0]);
             const UString& text2(txt->_texts[1]);
 
-            if (text1.empty() && (iLayout._justif != ColumnLayout::BOTH || text2.empty())) {
+            if (text1.empty() && (ilayout._justif != ColumnLayout::BOTH || text2.empty())) {
                 // Totally empty field, use spaces.
-                _out << std::string(iLayout._width, ' ');
+                _out << std::string(ilayout._width, ' ');
             }
-            else if (iLayout._justif == ColumnLayout::LEFT) {
+            else if (ilayout._justif == ColumnLayout::LEFT) {
                 // Only one text, left-justifed.
-                _out << text1.toJustifiedLeft(iLayout._width, iLayout._pad, true, 1);
+                _out << text1.toJustifiedLeft(ilayout._width, ilayout._pad, true, 1);
             }
-            else if (iLayout._justif == ColumnLayout::RIGHT) {
+            else if (ilayout._justif == ColumnLayout::RIGHT) {
                 // Only one text, right-justifed.
-                _out << text1.toJustifiedRight(iLayout._width, iLayout._pad, true, 1);
+                _out << text1.toJustifiedRight(ilayout._width, ilayout._pad, true, 1);
             }
             else {
                 // Two text, a left-justified one and a right-justified one.
                 // The layout is:  text1 one-space pad-characters one-space text2.
-                assert(iLayout._justif == ColumnLayout::BOTH);
-                size_t leftWidth = text1.width();
-                size_t rightWidth = text2.width();
+                assert(ilayout._justif == ColumnLayout::BOTH);
+                size_t left_width = text1.width();
+                size_t right_width = text2.width();
                 // Check if both texts fit in the line (the 2 spaces are never removed).
-                const bool fits = leftWidth + 2 + rightWidth <= iLayout._width;
+                const bool fits = left_width + 2 + right_width <= ilayout._width;
                 if (!fits) {
                     // Strings are too large, truncate one of them or both.
-                    const size_t excess = leftWidth + 2 + rightWidth - iLayout._width;
-                    if (iLayout._truncation == ColumnLayout::LEFT) {
+                    const size_t excess = left_width + 2 + right_width - ilayout._width;
+                    if (ilayout._truncation == ColumnLayout::LEFT) {
                         // Truncate left one first.
-                        const size_t leftExcess = std::min(leftWidth, excess);
-                        leftWidth -= leftExcess;
-                        rightWidth -= excess - leftExcess;
+                        const size_t left_excess = std::min(left_width, excess);
+                        left_width -= left_excess;
+                        right_width -= excess - left_excess;
                     }
-                    else if (iLayout._truncation == ColumnLayout::RIGHT) {
+                    else if (ilayout._truncation == ColumnLayout::RIGHT) {
                         // Truncate right one first.
-                        const size_t rightExcess = std::min(rightWidth, excess);
-                        rightWidth -= rightExcess;
-                        leftWidth -= excess - rightExcess;
+                        const size_t right_excess = std::min(right_width, excess);
+                        right_width -= right_excess;
+                        left_width -= excess - right_excess;
                     }
                     else {
                         // Truncate both, try to balance the truncation.
-                        const size_t leftExcess = std::min(leftWidth, excess / 2);
-                        leftWidth -= leftExcess;
-                        const size_t rightExcess = excess - leftExcess;
-                        if (rightExcess <= rightWidth) {
-                            rightWidth -= rightExcess;
+                        const size_t left_excess = std::min(left_width, excess / 2);
+                        left_width -= left_excess;
+                        const size_t right_excess = excess - left_excess;
+                        if (right_excess <= right_width) {
+                            right_width -= right_excess;
                         }
                         else {
                             // Must reduce left even more.
-                            assert(leftWidth >= rightExcess - rightWidth);
-                            leftWidth -= (rightExcess - rightWidth);
-                            rightWidth = 0;
+                            assert(left_width >= right_excess - right_width);
+                            left_width -= (right_excess - right_width);
+                            right_width = 0;
                         }
                     }
                 }
                 // Now, we have adjusted leftWidth and rightWidth to make sure the 2 texts fit on the line.
-                assert(leftWidth + 2 + rightWidth <= iLayout._width);
-                _out << (fits ? text1 : text1.toTruncatedWidth(leftWidth, LEFT_TO_RIGHT))
-                     << (text1.empty() ? iLayout._pad : SPACE)
-                     << UString(iLayout._width - leftWidth - 2 - rightWidth, iLayout._pad)
-                     << (text2.empty() ? iLayout._pad : SPACE)
-                     << (fits ? text2 : text2.toTruncatedWidth(rightWidth, RIGHT_TO_LEFT));
+                assert(left_width + 2 + right_width <= ilayout._width);
+                _out << (fits ? text1 : text1.toTruncatedWidth(left_width, LEFT_TO_RIGHT))
+                     << (text1.empty() ? ilayout._pad : SPACE)
+                     << UString(ilayout._width - left_width - 2 - right_width, ilayout._pad)
+                     << (text2.empty() ? ilayout._pad : SPACE)
+                     << (fits ? text2 : text2.toTruncatedWidth(right_width, RIGHT_TO_LEFT));
             }
         }
     }
 
     // End of line.
-    assert(currentWidth <= _content_width);
-    _out << std::string(_content_width - currentWidth, ' ') << _right_margin << std::endl;
+    assert(current_width <= _content_width);
+    _out << std::string(_content_width - current_width, ' ') << _right_margin << std::endl;
     _line_count++;
 }

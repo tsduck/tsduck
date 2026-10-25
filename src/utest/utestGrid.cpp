@@ -23,6 +23,7 @@ class GridTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Narrow);
     TSUNIT_DECLARE_TEST(Default);
     TSUNIT_DECLARE_TEST(Layout);
+    TSUNIT_DECLARE_TEST(B01_04);
 
 private:
     static void cleanupEndLines(std::string& text);
@@ -209,5 +210,39 @@ TSUNIT_DEFINE_TEST(Layout)
     cleanupEndLines(buffer);
 
     debug() << "GridTest::testLayout: " << std::endl << buffer << std::endl;
+    TSUNIT_EQUAL(reference, buffer);
+}
+
+
+TSUNIT_DEFINE_TEST(B01_04)
+{
+    std::ostringstream out;
+    ts::Grid grid(out);
+
+    ts::UString right(200, u'*');
+    right.insert(0, 1, u'<');
+    right.push_back(u'>');
+
+    grid.setLineWidth(79, 2);
+    grid.openTable();
+    grid.putLine(u"TRANSPORT STREAM ANALYSIS REPORT", right, true);
+    grid.putLine(u"left", u"right", true);
+    grid.putLine(u"TRANSPORT STREAM ANALYSIS REPORT", right, false);
+    grid.closeTable();
+
+    static const char reference[] =
+        "\n"
+        "===============================================================================\n"
+        "|    **********************************************************************>  |\n"
+        "|  left                                                                right  |\n"
+        "|  TRANSPORT STREAM ANALYSIS REPORT                                           |\n"
+        "|  ************************************************************************>  |\n"
+        "===============================================================================\n"
+        "\n";
+
+    std::string buffer(out.str());
+    cleanupEndLines(buffer);
+
+    debug() << "GridTest::testB01_04: " << std::endl << buffer << std::endl;
     TSUNIT_EQUAL(reference, buffer);
 }

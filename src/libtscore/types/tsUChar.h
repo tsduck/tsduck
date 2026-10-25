@@ -137,10 +137,10 @@ namespace ts {
     //! @ingroup cpp
     //! @param [in] c A character to convert.
     //! @param [in] base The base of the integer representation, must be in the range 2 to 36.
-    //! @param [in] defaultValue The value to return on invalid character.
+    //! @param [in] default_value The value to return on invalid character.
     //! @return The corresponding integer value or the default value in case of error.
     //!
-    TSCOREDLL int ToDigit(UChar c, int base = 10, int defaultValue = -1);
+    TSCOREDLL int ToDigit(UChar c, int base = 10, int default_value = -1);
 
     //!
     //! Check if a character is a lower case letter.

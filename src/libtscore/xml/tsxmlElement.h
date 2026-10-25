@@ -1343,7 +1343,7 @@ bool ts::xml::Element::getIntAttribute(INT& value, const UString& name, bool req
     using INTMAX = typename ts::int_max<INT>::type;
     UString str(attr.value());
     INTMAX val = 0;
-    if (!str.toInteger(val, u",")) {
+    if (!str.toInteger(val, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
         report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", str, name, this->name(), lineNumber());
         return false;
     }
@@ -1371,7 +1371,7 @@ bool ts::xml::Element::getIntChild(INT& value, const UString& name, bool require
     // Child text found, get its value.
     using INTMAX = typename ts::int_max<INT>::type;
     INTMAX val = 0;
-    if (!str.toInteger(val, u",")) {
+    if (!str.toInteger(val, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
         report().error(u"'%s' is not a valid integer value in <%s><%s>, line %d", str, this->name(), name, lineNumber());
         return false;
     }

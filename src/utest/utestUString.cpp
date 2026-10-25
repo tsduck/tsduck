@@ -1048,10 +1048,14 @@ TSUNIT_DEFINE_TEST(ToDigit)
 TSUNIT_DEFINE_TEST(ToInteger)
 {
     int      i;
+    uint8_t  ui8;
+    uint16_t ui16;
     uint32_t ui32;
     uint64_t ui64;
-    int64_t  i64;
+    int8_t   i8;
     int16_t  i16;
+    int32_t  i32;
+    int64_t  i64;
 
     TSUNIT_ASSERT(ts::UString(u"1").toInteger(i));
     TSUNIT_EQUAL(1, i);
@@ -1069,22 +1073,45 @@ TSUNIT_DEFINE_TEST(ToInteger)
     TSUNIT_EQUAL(123, ui32);
 
     TSUNIT_ASSERT(!ts::UString(u"-123").toInteger(ui32));
-    TSUNIT_EQUAL(0, ui32);
+    TSUNIT_ASSERT(!ts::UString(u"256").toInteger(ui8));
+    TSUNIT_ASSERT(!ts::UString(u"128").toInteger(i8));
+    TSUNIT_ASSERT(!ts::UString(u"-129").toInteger(i8));
+
+    TSUNIT_ASSERT(ts::UString(u"-128").toInteger(i8));
+    TSUNIT_EQUAL(-128, i8);
+
+    TSUNIT_ASSERT(ts::UString(u"+127").toInteger(i8));
+    TSUNIT_EQUAL(127, i8);
+
+    TSUNIT_ASSERT(ts::UString(u"256").toInteger(ui16));
+    TSUNIT_EQUAL(256, ui16);
+
+    TSUNIT_ASSERT(!ts::UString(u"0x12000").toInteger(ui16));
+
+    TSUNIT_ASSERT(ts::UString(u"-2147483648").toInteger(i32));
+    TSUNIT_EQUAL(-2147483648, i32);
+
+    TSUNIT_ASSERT(!ts::UString(u"18446744073709551617").toInteger(ui32));
+    TSUNIT_ASSERT(!ts::UString(u"18446744073709551617").toInteger(ui64));
 
     TSUNIT_ASSERT(ts::UString(u"0").toInteger(ui64));
     TSUNIT_EQUAL(0, ui64);
 
     TSUNIT_ASSERT(ts::UString(u"0xffffffffFFFFFFFF").toInteger(ui64));
-    TSUNIT_EQUAL(0XFFFFFFFFFFFFFFFF, ui64);
+    TSUNIT_EQUAL(0xFFFFFFFFFFFFFFFF, ui64);
 
     TSUNIT_ASSERT(ts::UString(u"0x7fffffffFFFFFFFF").toInteger(ui64));
-    TSUNIT_EQUAL(0X7FFFFFFFFFFFFFFF, ui64);
+    TSUNIT_EQUAL(0x7FFFFFFFFFFFFFFF, ui64);
+
+    TSUNIT_ASSERT(!ts::UString(u"0xFEDCBA9876543210").toInteger(i64));
+    TSUNIT_ASSERT(ts::UString(u"0xFEDCBA9876543210").toInteger(ui64));
+    TSUNIT_EQUAL(0xFEDCBA9876543210, ui64);
 
     TSUNIT_ASSERT(ts::UString(u"0").toInteger(i64));
     TSUNIT_EQUAL(0, i64);
 
     TSUNIT_ASSERT(ts::UString(u"0x7fffffffFFFFFFFF").toInteger(i64));
-    TSUNIT_EQUAL(0X7FFFFFFFFFFFFFFF, i64);
+    TSUNIT_EQUAL(0x7FFFFFFFFFFFFFFF, i64);
 
     TSUNIT_ASSERT(ts::UString(u" 12,345").toInteger(i, u",."));
     TSUNIT_EQUAL(12345, i);

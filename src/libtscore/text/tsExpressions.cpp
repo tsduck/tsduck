@@ -77,7 +77,7 @@ size_t ts::Expressions::EndOfSymbol(const UString& str, size_t first)
 bool ts::Expressions::evaluate(const UString& expression, const UString& context)
 {
     Evaluator eval(this, expression, context);
-    const bool cond = eval.evaluateSequence(false);
+    const bool cond = eval.evaluateSequence(false, _max_nested);
      _report.log(_debug, u"%scondition '%s' is %s%s%s", _prefix, expression, cond, context.empty() ? u"" : u" in ", context);
     return cond;
 }
@@ -88,10 +88,10 @@ bool ts::Expressions::evaluate(const UString& expression, const UString& context
 //----------------------------------------------------------------------------
 
 // Evaluate a sequence of '||' or '&&' operators.
-bool ts::Expressions::Evaluator::evaluateSequence(bool ecp)
+bool ts::Expressions::Evaluator::evaluateSequence(bool ecp, size_t max_nested)
 {
     // Get first element in the sequence.
-    bool result = evaluateSingle();
+    bool result = evaluateSingle(max_nested);
 
     // Loop on all elements, all preceded by the same operator.
     SeqOp seq = NONE;
@@ -110,11 +110,11 @@ bool ts::Expressions::Evaluator::evaluateSequence(bool ecp)
             error(u"not the same logical operator");
         }
         if (op == AND) {
-            result = evaluateSingle() && result;
+            result = evaluateSingle(max_nested) && result;
         }
         else {
             assert(op == OR);
-            result = evaluateSingle() || result;
+            result = evaluateSingle(max_nested) || result;
         }
     }
 
@@ -139,7 +139,7 @@ bool ts::Expressions::Evaluator::evaluateSequence(bool ecp)
 }
 
 // Evaluate a single element: '!*symbol' or '!*(expression)'.
-bool ts::Expressions::Evaluator::evaluateSingle()
+bool ts::Expressions::Evaluator::evaluateSingle(size_t max_nested)
 {
     // Evaluate all '!' leading negation operators.
     bool result = false;
@@ -157,8 +157,13 @@ bool ts::Expressions::Evaluator::evaluateSingle()
     }
     else if (_expr[_current] == u'(') {
         // Evaluate an expression between parenthesis.
-        ++_current;
-        result = evaluateSequence(true);
+        if (max_nested == 0) {
+            error(u"too many nested parentheses in expression");
+        }
+        else {
+            ++_current;
+            result = evaluateSequence(true, max_nested - 1);
+        }
     }
     else if (IsAlpha(_expr[_current])) {
         // Start of a symbol name.
