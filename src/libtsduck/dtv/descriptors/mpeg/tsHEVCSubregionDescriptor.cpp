@@ -102,11 +102,10 @@ void ts::HEVCSubregionDescriptor::deserializePayload(PSIBuffer& buf)
         buf.skipBits(1);
         uint8_t PatternCount = buf.getBits<uint8_t>(7);
         for (uint8_t j = 0; j < PatternCount; j++) {
-            pattern_type newPattern;
-            for (uint8_t k = 0; k <= SubstreamCountMinus1; k++) {
+            auto& newPattern(newSubregionLayout.Patterns.emplace_back());
+            for (size_t k = 0; k <= SubstreamCountMinus1 && buf.canRead(); k++) {
                 newPattern.SubstreamOffset.push_back(buf.getInt8());
             }
-            newSubregionLayout.Patterns.push_back(newPattern);
         }
         SubregionLayouts.push_back(newSubregionLayout);
     }

@@ -375,7 +375,12 @@ void ts::RCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 bool ts::RCT::DVBBinaryLocator::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, uint16_t year_offset)
 {
+    if (int(year_offset) < Time::FirstSafeSystemYear) {
+        disp << margin << "Unsafe year offset " << year_offset << ", all displayed dates will start in " << Time::FirstSafeSystemYear << std::endl;
+        year_offset = uint16_t(Time::FirstSafeSystemYear);
+    }
     const Time start(year_offset, 1, 1, 0, 0);
+
     bool ok = buf.canReadBytes(2);
     if (ok) {
         const uint8_t identifier_type = buf.getBits<uint8_t>(2);

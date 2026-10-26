@@ -60,7 +60,7 @@ void ts::QualityExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 {
     field_size_bytes = buf.getUInt8();
     uint8_t metric_count = buf.getUInt8();
-    for (uint8_t i = 1; i <= metric_count; i++) {
+    for (size_t i = 1; i <= metric_count && buf.canRead(); i++) {
         metric_codes.push_back(buf.getUInt32());
     }
 }
@@ -75,7 +75,7 @@ void ts::QualityExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
     if (buf.canReadBytes(2)) {
         disp << margin << "Field size bytes: " << int(buf.getUInt8()) << std::endl;
         const uint8_t metric_count = buf.getUInt8();
-        for (uint8_t i = 1; i <= metric_count; i++) {
+        for (size_t i = 1; i <= metric_count && buf.canRead(); i++) {
             disp << margin << "Metric code [" << int(i) << "]: " << DataName(MY_XML_NAME, u"metric_code", buf.getUInt32(), NamesFlags::HEX_VALUE_NAME) << std::endl;
          }
     }

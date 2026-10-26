@@ -573,6 +573,11 @@ namespace ts {
         static const Time Apocalypse;
 
         //!
+        //! First year which is safe to use on all operating systems.
+        //!
+        static constexpr int FirstSafeSystemYear = 1970;
+
+        //!
         //! Constant representing the offset of the Julian Epoch from the
         //! time Epoch of the operating system (Julian epoch - Time epoch)
         //! in milliseconds.

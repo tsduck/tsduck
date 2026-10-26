@@ -352,7 +352,9 @@ bool ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
         const bool short_crc = section.isShortSection() && useTrailingCRC32();
         if (short_crc) {
             // This is a short section which needs a CRC32.
-            if (section.size() < 4 || CRC32(section.content(), section.size() - 4) != GetUInt32(section.content() + section.size() - 4)) {
+            if (section.payloadSize() < SECTION_CRC32_SIZE ||
+                CRC32(section.content(), section.size() - SECTION_CRC32_SIZE) != GetUInt32(section.content() + section.size() - SECTION_CRC32_SIZE))
+            {
                 // Invalid CRC32, not a valid section.
                 clear();
                 invalidate();
@@ -362,7 +364,7 @@ bool ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
 
         // Map a deserialization read-only buffer over the payload part.
         // Remove CRC32 from payload in short sections that have one.
-        PSIBuffer buf(duck, section.payload(), section.payloadSize() - (short_crc ? 4 : 0));
+        PSIBuffer buf(duck, section.payload(), section.payloadSize() - (short_crc ? SECTION_CRC32_SIZE : 0));
 
         // Let the subclass deserialize the payload in the buffer.
         // We call it through a wrapper virtual method to let intermediate classes
