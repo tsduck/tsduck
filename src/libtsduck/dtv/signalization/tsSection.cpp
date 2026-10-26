@@ -207,19 +207,19 @@ void ts::Section::reload(TID tid,
 
 
 //----------------------------------------------------------------------------
-// Static method to compute a section size. Return zero on error.
+// Static methods to compute a section size.
 //----------------------------------------------------------------------------
+
+size_t ts::Section::UncheckedSectionSize(const void* content, size_t content_size)
+{
+    const uint8_t* data = reinterpret_cast<const uint8_t*>(content);
+    return content == nullptr || content_size < MIN_SHORT_SECTION_SIZE ? 0 : 3 + (GetUInt16(data + 1) & 0x0FFF);
+}
 
 size_t ts::Section::SectionSize(const void* content, size_t content_size)
 {
-    if (content == nullptr || content_size < MIN_SHORT_SECTION_SIZE || content_size > MAX_PRIVATE_SECTION_SIZE) {
-        return 0;
-    }
-    else {
-        const uint8_t* data = reinterpret_cast<const uint8_t*>(content);
-        size_t length = 3 + (GetUInt16(data + 1) & 0x0FFF);
-        return length < content_size ? 0 : length;
-    }
+    const size_t length = UncheckedSectionSize(content, content_size);
+    return length > content_size ? 0 : length;
 }
 
 

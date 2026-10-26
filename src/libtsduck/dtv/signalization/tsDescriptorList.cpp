@@ -231,8 +231,13 @@ void ts::DescriptorList::merge(DuckContext& duck, const DescriptorList& other)
                 // The descriptor from the other list must be deserialized to be merged.
                 DescriptorContext context(duck, other, index);
                 const AbstractDescriptorPtr dp(bindesc->deserialize(duck, context));
-                if (dp == nullptr || dp->duplicationMode() == DescriptorDuplication::ADD_ALWAYS) {
-                    // Cannot be deserialized or simply add the descriptor.
+                if (dp == nullptr) {
+                    // Cannot be deserialized, unknown descriptor, just add the binary descriptor.
+                    add(bindesc);
+                }
+                else if (dp->duplicationMode() == DescriptorDuplication::ADD_ALWAYS) {
+                    // Always add the descriptor, don't check for duplication, but still need to add
+                    // a registration_descriptor or a private_data_specifier_descriptor if necessary.
                     addPrivateIdentifier(dp->edid());
                     add(bindesc);
                 }

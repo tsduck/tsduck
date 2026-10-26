@@ -527,12 +527,21 @@ namespace ts {
         std::ostream& dump(std::ostream& strm, int indent = 0, CASID cas = CASID_NULL, bool no_header = false) const;
 
         //!
-        //! Static method to compute a section size.
+        //! Static method to compute and validate a section size.
         //! @param [in] content Address of the binary section data.
         //! @param [in] content_size Size in bytes of the buffer containing the section and possibly trailing additional data.
         //! @return The total size in bytes of the section starting at @a content or zero on error.
         //!
         static size_t SectionSize(const void* content, size_t content_size);
+
+        //!
+        //! Static method to compute a section size, without validation.
+        //! @param [in] content Address of the binary section data.
+        //! @param [in] content_size Size in bytes of the buffer containing at least the beginning of a section.
+        //! @return The total size in bytes of the section starting at @a content or zero when the size cannot
+        //! be evaluated (null pointer or not enough data to find a length).
+        //!
+        static size_t UncheckedSectionSize(const void* content, size_t content_size);
 
         //!
         //! Static method to compute a section size.

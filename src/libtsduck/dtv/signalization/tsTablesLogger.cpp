@@ -856,7 +856,7 @@ void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedDa
     // Build a reason message for the invalid section.
     UString reason;
     if (status == Section::INV_SIZE) {
-        reason.format(u"invalid section size: %d, data size: %d", Section::SectionSize(data, size), size);
+        reason.format(u"invalid section size: %d, data size: %d", Section::UncheckedSectionSize(data, size), size);
     }
     else if (status == Section::INV_SEC_NUM && size > 7) {
         reason.format(u"invalid section number: %d, last section: %d", data[6], data[7]);
