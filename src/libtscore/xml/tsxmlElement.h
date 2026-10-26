@@ -14,6 +14,7 @@
 #pragma once
 #include "tsxmlNode.h"
 #include "tsxmlAttribute.h"
+#include "tsxmlText.h"
 #include "tsByteBlock.h"
 #include "tsIPAddress.h"
 #include "tsMACAddress.h"
@@ -21,9 +22,6 @@
 #include "tsIntegerUtils.h"
 
 namespace ts::xml {
-
-    class Text;
-
     //!
     //! Structured element in an XML document.
     //! @ingroup libtscore xml
@@ -325,11 +323,9 @@ namespace ts::xml {
         //! Check if an attribute exists in the element and has the specified value.
         //! @param [in] attribute_name Attribute name.
         //! @param [in] value Expected value.
-        //! @param [in] similar If true, the comparison between the actual and expected
-        //! values is performed case-insensitive and ignoring blanks. Additionally,
-        //! if the values are integers, the integer values are compared (otherwise,
-        //! identical values in decimal and hexadecimal wouldn't match).
-        //! If @a similar is false, a strict comparison is performed.
+        //! @param [in] similar If true, the comparison between the actual and expected values is performed case-insensitive
+        //! and ignoring blanks. Additionally, if the values are integers, the integer values are compared (otherwise, identical
+        //! values in decimal and hexadecimal wouldn't match). If @a similar is false, a strict comparison is performed.
         //! @return True if the attribute exists and has the expected value.
         //!
         bool hasAttribute(const UString& attribute_name, const UString& value, bool similar = false) const;
@@ -1309,7 +1305,7 @@ namespace ts::xml {
         virtual bool parseNode(TextParser& parser, const Node* parent, size_t max_nested) override;
 
     private:
-        // Attributes are stored indexed by name.
+        // Attributes are stored indexed by lowercase name. The actual name is stored in the attribute.
         using AttributeMap = std::map<UString, Attribute>;
         AttributeMap _attributes {};
 

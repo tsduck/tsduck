@@ -494,20 +494,12 @@ ts::xml::Text* ts::xml::Element::addHexaTextChild(const UString& name, const Byt
 
 ts::xml::Element::AttributeMap::const_iterator ts::xml::Element::findAttribute(const UString& attribute_name) const
 {
-    AttributeMap::const_iterator it = _attributes.begin();
-    while (it != _attributes.end() && !it->second.nameMatch(attribute_name)) {
-        ++it;
-    }
-    return it;
+    return _attributes.find(attribute_name.toLower());
 }
 
 ts::xml::Element::AttributeMap::iterator ts::xml::Element::findAttribute(const UString& attribute_name)
 {
-    AttributeMap::iterator it = _attributes.begin();
-    while (it != _attributes.end() && !it->second.nameMatch(attribute_name)) {
-        ++it;
-    }
-    return it;
+    return _attributes.find(attribute_name.toLower());
 }
 
 void ts::xml::Element::setAttribute(const UString& name, const UString& value, bool only_if_not_empty)
@@ -515,7 +507,7 @@ void ts::xml::Element::setAttribute(const UString& name, const UString& value, b
     if (!only_if_not_empty || !value.empty()) {
         const auto it = findAttribute(name);
         if (it == _attributes.end()) {
-            _attributes[name] = Attribute(name, value);
+            _attributes[name.toLower()] = Attribute(name, value);
         }
         else {
             it->second.setString(value);
@@ -539,7 +531,7 @@ bool ts::xml::Element::hasAttribute(const UString& name) const
 ts::xml::Attribute& ts::xml::Element::refAttribute(const UString& name)
 {
     const auto it = findAttribute(name);
-    return it == _attributes.end() ? (_attributes[name] = Attribute(name, u"")) : it->second;
+    return it == _attributes.end() ? (_attributes[name.toLower()] = Attribute(name, u"")) : it->second;
 }
 
 
@@ -568,23 +560,24 @@ const ts::xml::Attribute& ts::xml::Element::attribute(const UString& attribute_n
 
 bool ts::xml::Element::hasAttribute(const UString& name, const UString& value, bool similar) const
 {
-    const Attribute& attr(attribute(name));
     std::intmax_t a = 0, b = 0;
-    if (!attr.isValid()) {
+
+    const auto it = findAttribute(name);
+    if (it == _attributes.end()) {
         // Attribute not present.
         return false;
     }
     else if (!similar) {
         // Strict comparison.
-        return value == attr.value();
+        return value == it->second.value();
     }
-    else if (value.toInteger(a, UString::DEFAULT_THOUSANDS_SEPARATOR) && attr.value().toInteger(b, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+    else if (value.toInteger(a, UString::DEFAULT_THOUSANDS_SEPARATOR) && it->second.value().toInteger(b, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
         // The two values are integer, compare the decoded integer values, not their string representation.
         return a == b;
     }
     else {
         // Lousy string comparison.
-        return value.similar(attr.value());
+        return value.similar(it->second.value());
     }
 }
 
@@ -620,7 +613,7 @@ bool ts::xml::Element::getAttribute(UString& value,
             return false;
         }
         else {
-            report().error(u"oncorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
+            report().error(u"incorrect value for attribute '%s' in <%s>, line %d, contains %d characters, allowed %d to %d",
                            name, this->name(), attr.lineNumber(), value.length(), min_size, max_size);
             return false;
         }
@@ -1304,7 +1297,7 @@ bool ts::xml::Element::parseNode(TextParser& parser, const Node* parent, size_t 
                 ok = false;
             }
             else {
-                _attributes[attr_name] = Attribute(attr_name, attr_value, line);
+                _attributes[attr_name.toLower()] = Attribute(attr_name, attr_value, line);
                 // When attribute is xml:space="preserve", spaces shall be preserved in that hierarchy.
                 if (attr_name == u"xml:space" && attr_value == u"preserve") {
                     setPreserveSpace(true);
