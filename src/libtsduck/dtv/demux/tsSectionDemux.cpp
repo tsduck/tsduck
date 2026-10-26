@@ -406,14 +406,26 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         uint8_t section_number = 0;
         uint8_t last_section_number = 0;
 
+        // Perform some early checks for long sections.
         if (section_ok && long_header) {
-            xtid = XTID (xtid.tid(), GetUInt16(ts_start + 3));
+            xtid = XTID(xtid.tid(), GetUInt16(ts_start + 3));
             version = (ts_start[5] >> 1) & 0x1F;
             is_next = (ts_start[5] & 0x01) == 0;
             section_number = ts_start[6];
             last_section_number = ts_start[7];
-            // Check that the section number fits in the range
-            if (section_number > last_section_number) {
+
+            // Check CRC32 for early exclusion of corrupted sections, without creating XTIDContext.
+            if (CRC32(ts_start, section_length - SECTION_CRC32_SIZE) != GetUInt32(ts_start + section_length - SECTION_CRC32_SIZE)) {
+                _duck.report().log(_ts_error_level, u"invalid section CRC, PID %n, TID %n, section %d, version %d, packet index %'d", pid, tid, section_number, version, _packet_count);
+                _status.wrong_crc++;
+                section_ok = false;
+                if (notifyInvalid(pid, Section::INV_CRC32, ts_start, section_length)) {
+                    return; // demux was reset
+                }
+            }
+
+            // Check that the section number fits in the range.
+            if (section_ok && section_number > last_section_number) {
                 _duck.report().log(_ts_error_level, u"invalid section index: %d/%d, PID %n, TID %n, packet index %'d", section_number, last_section_number, pid, tid, _packet_count);
                 _status.inv_sect_index++;
                 section_ok = false;
@@ -494,12 +506,14 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             SectionPtr sect_ptr;
 
             if (section_ok && (_section_handler != nullptr || (tc != nullptr && tc->sects[section_number] == nullptr))) {
-                sect_ptr = std::make_shared<Section>(ts_start, section_length, pid, CRC32::CHECK);
+                // No need to check the CRC32 when creating the Section object, we already did it.
+                sect_ptr = std::make_shared<Section>(ts_start, section_length, pid, CRC32::IGNORE);
                 sect_ptr->setFirstTSPacketIndex(pusi_pkt_index);
                 sect_ptr->setLastTSPacketIndex(_packet_count);
                 if (!sect_ptr->isValid()) {
-                    _duck.report().log(_ts_error_level, u"invalid section CRC, PID %n, TID %n, section %d, version %d, packet index %'d", pid, tid, section_number, version, _packet_count);
-                    _status.wrong_crc++;  // only possible error (hum?)
+                    // At this point, there should be no error because all checks were previously performed,
+                    // before creating the Section object. Log any error with "unexpected" status.
+                    _duck.report().log(_ts_error_level, u"invalid section, unexpected error, PID %n, TID %n, section %d, version %d, packet index %'d", pid, tid, section_number, version, _packet_count);
                     section_ok = false;
                     if (notifyInvalid(pid, sect_ptr->status(), ts_start, section_length)) {
                         return; // demux was reset
