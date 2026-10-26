@@ -249,6 +249,14 @@ bool ts::PcapStream::readStreams(size_t& source)
             source = pkt_source;
             return true;
         }
+
+        // If we couldn't get data from one direction of the TCP connection, check if data are
+        // accumulated on the other direction. This could happen if the application reads only
+        // one direction and never the other. The application should read both when necessary.
+        if (_streams[pkt_source ^ 1].packets.size() > 10 * TCP_MAX_FUTURE) {
+            report().error(u"too many TCP packets are accumulated from pcap file, in one direction, while the application only reads the other: %s <-> %s", src, dst);
+            return false;
+        }
     }
 }
 
