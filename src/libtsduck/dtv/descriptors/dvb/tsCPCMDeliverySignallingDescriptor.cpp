@@ -230,7 +230,7 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
             bool view_period_activated = buf.getBool();
             bool simultaneous_view_count_activated = buf.getBool();
             disp << margin << "Move local: " << UString::TrueFalse(buf.getBool());
-            disp << ", copy local: " << UString::TrueFalse(buf.getBool()) << std::endl;
+            disp << ", view local: " << UString::TrueFalse(buf.getBool()) << std::endl;
             disp << margin << "Move and copy propagation: " << DataName(MY_XML_NAME, u"move_copy_propagation", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
             disp << margin << "View propagation: " << DataName(MY_XML_NAME, u"view_propagation", buf.getBits<uint8_t>(2), NamesFlags::NAME_VALUE | NamesFlags::DECIMAL) << std::endl;
             bool remote_access_delay_flag = buf.getBool();
@@ -293,6 +293,7 @@ void ts::CPCMDeliverySignallingDescriptor::buildXML(DuckContext& duck, xml::Elem
         v1->setBoolAttribute(u"do_not_cpcm_scramble", cpcm_v1_delivery_signalling.do_not_cpcm_scramble);
         v1->setBoolAttribute(u"viewable", cpcm_v1_delivery_signalling.viewable);
         v1->setBoolAttribute(u"move_local", cpcm_v1_delivery_signalling.move_local);
+        v1->setBoolAttribute(u"view_local", cpcm_v1_delivery_signalling.view_local);
         v1->setIntAttribute(u"move_and_copy_propagation_information", cpcm_v1_delivery_signalling.move_and_copy_propagation_information);
         v1->setIntAttribute(u"view_propagation_information", cpcm_v1_delivery_signalling.view_propagation_information);
         v1->setBoolAttribute(u"remote_access_record_flag", cpcm_v1_delivery_signalling.remote_access_record_flag);
@@ -334,9 +335,10 @@ bool ts::CPCMDeliverySignallingDescriptor::analyzeXML(DuckContext& duck, const x
     if (cpcm_version == 0x01) {
         for (auto& child : element->children(u"cpcm_v1_delivery_signalling", &ok, 0, 1)) {
             ok = child.getIntAttribute(cpcm_v1_delivery_signalling.copy_control, u"copy_control", true, 0, 0, 7) &&
-                 child.getBoolAttribute(cpcm_v1_delivery_signalling.do_not_cpcm_scramble, u"do_not_cpcm_scramble", true) &&
-                 child.getBoolAttribute(cpcm_v1_delivery_signalling.viewable, u"viewable", true) &&
-                 child.getBoolAttribute(cpcm_v1_delivery_signalling.move_local, u"move_local", true) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.do_not_cpcm_scramble, u"do_not_cpcm_scramble", false, false) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.viewable, u"viewable", false, false) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.move_local, u"move_local", false, false) &&
+                 child.getBoolAttribute(cpcm_v1_delivery_signalling.view_local, u"view_local", false, false) &&
                  child.getIntAttribute(cpcm_v1_delivery_signalling.move_and_copy_propagation_information, u"move_and_copy_propagation_information", true, 0, 0, 3) &&
                  child.getIntAttribute(cpcm_v1_delivery_signalling.view_propagation_information, u"view_propagation_information", true, 0, 0, 3) &&
                  child.getBoolAttribute(cpcm_v1_delivery_signalling.remote_access_record_flag, u"remote_access_record_flag", true) &&

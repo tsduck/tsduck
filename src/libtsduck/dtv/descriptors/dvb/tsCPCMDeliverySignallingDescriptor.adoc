@@ -8,9 +8,10 @@ Defined by DVB in <<ETSI-102-825-4>> and <<ETSI-102-825-9>>.
 
   <cpcm_v1_delivery_signalling
       copy_control="uint3, required"
-      do_not_cpcm_scramble="bool, required"
-      viewable="bool, required"
-      move_local="bool, required"
+      do_not_cpcm_scramble="bool, default=false"
+      viewable="bool, default=false"
+      move_local="bool, default=false"
+      view_local="bool, default=false"
       move_and_copy_propagation_information="uint2, required"
       view_propagation_information="uint2, required"
       remote_access_record_flag="bool, required"

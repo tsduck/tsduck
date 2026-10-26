@@ -75,9 +75,7 @@ void ts::TTMLSubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
         }
     }
     buf.putStringWithByteLength(service_name);
-    for (size_t i = 0; i < reserved_zero_future_use_bytes; i++) {
-        buf.putUInt8(0x00);
-    }
+    buf.putBytes(ByteBlock(std::min(MAX_DESCRIPTOR_SIZE, reserved_zero_future_use_bytes), 0));
 }
 
 
@@ -258,7 +256,7 @@ bool ts::TTMLSubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
               element->getIntAttribute(TTS_suitability, u"TTS_suitability", true, 0x00, 0x00, 0x02) &&
               element->getOptionalIntAttribute(qualifier, u"qualifier") &&
               element->getAttribute(service_name, u"service_name") &&
-              element->getIntAttribute(reserved_zero_future_use_bytes, u"reserved_zero_future_count");
+              element->getIntAttribute(reserved_zero_future_use_bytes, u"reserved_zero_future_count", false, 0, 0, MAX_DESCRIPTOR_SIZE - 9);
 
     if (ok && ((subtitle_purpose >= 0x03 && subtitle_purpose <= 0x0F) || (subtitle_purpose >= 0x13 && subtitle_purpose <= 0x2F) || (subtitle_purpose >= 0x32))) {
         element->report().error(u"value 0x%X in <%s>, line %d, is reserved.", subtitle_purpose, element->name(), element->lineNumber());
