@@ -74,16 +74,28 @@ bool ts::TSFile::wrapOpen(bool open_status, TSPacketFormat format)
 // Open file in different flavors.
 //----------------------------------------------------------------------------
 
-// Open file for read in a rewindable mode.
+// Open file for read in a rewindable mode. TSFile version with explicit format.
 bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format)
 {
     return wrapOpen(BinaryFile::openRead(filename, start_offset), format);
 }
 
-// Open file for read with optional repetition.
+// Open file for read in a rewindable mode. Inherited version from BinaryFile, format is AUTODETECT.
+bool ts::TSFile::openRead(const fs::path& filename, uint64_t start_offset)
+{
+    return wrapOpen(BinaryFile::openRead(filename, start_offset), TSPacketFormat::AUTODETECT);
+}
+
+// Open file for read with optional repetition. TSFile version with explicit format.
 bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format)
 {
     return wrapOpen(BinaryFile::openRead(filename, repeat_count, start_offset), format);
+}
+
+// Open file for read with optional repetition. Inherited version from BinaryFile, format is AUTODETECT.
+bool ts::TSFile::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset)
+{
+    return wrapOpen(BinaryFile::openRead(filename, repeat_count, start_offset), TSPacketFormat::AUTODETECT);
 }
 
 // Open file, generic form. TSFile version with explicit format.

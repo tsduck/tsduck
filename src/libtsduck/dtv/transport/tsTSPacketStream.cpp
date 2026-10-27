@@ -70,6 +70,21 @@ size_t ts::TSPacketStream::PacketTrailerSize(TSPacketFormat format)
 
 
 //----------------------------------------------------------------------------
+// Get the number of read/written packets.
+//----------------------------------------------------------------------------
+
+ts::PacketCounter ts::TSPacketStream::readPacketsCount() const
+{
+    return _total_read;
+}
+
+ts::PacketCounter ts::TSPacketStream::writePacketsCount() const
+{
+    return _total_write;
+}
+
+
+//----------------------------------------------------------------------------
 // Read TS packets. Return the actual number of read packets.
 //----------------------------------------------------------------------------
 

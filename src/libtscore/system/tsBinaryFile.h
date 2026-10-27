@@ -59,7 +59,7 @@ namespace ts {
         //! where to start reading data at each iteration.
         //! @return True on success, false on error.
         //!
-        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset);
+        virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset);
 
         //!
         //! Open the file for read in rewindable mode.
@@ -71,7 +71,7 @@ namespace ts {
         //! @see rewind()
         //! @see seekByte()
         //!
-        bool openRead(const fs::path& filename, uint64_t start_offset);
+        virtual bool openRead(const fs::path& filename, uint64_t start_offset);
 
         //!
         //! Flags for open().
@@ -135,7 +135,7 @@ namespace ts {
         //! Abort any currenly read/write operation in progress.
         //! The file is left in a broken state and can be only closed.
         //!
-        void abort();
+        virtual void abort();
 
         //!
         //! Rewind the file.

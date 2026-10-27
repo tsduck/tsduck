@@ -72,13 +72,13 @@ namespace ts {
         //! Get the number of read packets.
         //! @return The number of read packets.
         //!
-        PacketCounter readPacketsCount() const { return _total_read; }
+        virtual PacketCounter readPacketsCount() const;
 
         //!
         //! Get the number of written packets.
         //! @return The number of written packets.
         //!
-        PacketCounter writePacketsCount() const { return _total_write; }
+        virtual PacketCounter writePacketsCount() const;
 
         //!
         //! Maximum size in bytes of a packet header for non-TS format.

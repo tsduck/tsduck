@@ -54,6 +54,11 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size)
 // Open file. Override TSFile::openRead().
 //----------------------------------------------------------------------------
 
+bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset)
+{
+    return openRead(filename, repeat_count, start_offset, TSPacketFormat::AUTODETECT);
+}
+
 bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format)
 {
     if (isOpen()) {
@@ -169,7 +174,7 @@ bool ts::TSFileInputBuffered::seekPacketForward(size_t packet_count)
 // Read TS packets. Override TSFile::read().
 //----------------------------------------------------------------------------
 
-size_t ts::TSFileInputBuffered::read(TSPacket* user_buffer, size_t max_packets, TSPacketMetadata* user_metadata)
+size_t ts::TSFileInputBuffered::readPackets(TSPacket* user_buffer, TSPacketMetadata* user_metadata, size_t max_packets)
 {
     if (!isOpen()) {
         report().error(u"file not open");

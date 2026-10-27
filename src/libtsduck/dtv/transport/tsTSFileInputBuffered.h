@@ -80,35 +80,6 @@ namespace ts {
         size_t getBufferedCount() const { return isOpen() ? _total_count : 0; }
 
         //!
-        //! Open the file.
-        //! Override TSFile::openRead(). There is no rewindable version.
-        //! @param [in] filename File name. If empty, use standard input.
-        //! Must be a regular file is @a repeat_count is not 1 or if
-        //! @a start_offset is not zero.
-        //! @param [in] repeat_count Reading packets loops back after end of
-        //! file until all repeat are done. If zero, infinitely repeat.
-        //! @param [in] start_offset Offset in bytes from the beginning of the file
-        //! where to start reading packets at each iteration.
-        //! @param [in] format Expected format of the TS file.
-        //! @return True on success, false on error.
-        //!
-        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format = TSPacketFormat::AUTODETECT);
-
-        //!
-        //! Read TS packets.
-        //! Override TSFile::read().
-        //! If the file file was opened with a @a repeat_count different from 1,
-        //! reading packets transparently loops back at end if file.
-        //! @param [out] buffer Address of reception packet buffer.
-        //! @param [in] max_packets Size of @a buffer in packets.
-        //! @param [in,out] metadata Optional packet metadata. If the file format provides
-        //! time stamps, they are set in the metadata. Ignored if null pointer.
-        //! @return The actual number of read packets. Returning zero means
-        //! error or end of file repetition.
-        //!
-        size_t read(TSPacket* buffer, size_t max_packets, TSPacketMetadata* metadata = nullptr);
-
-        //!
         //! Get the backward seekable distance inside the buffer.
         //! This is the minimum guaranteed seekable distance.
         //! @return The buffer size from the highest previously read packet or
@@ -140,25 +111,18 @@ namespace ts {
         bool seekPacketForward(size_t packet_count);
 
         //!
-        //! Get the number of read packets.
-        //! Override TSFile::readPacketsCount().
-        //! @return The number of read packets.
-        //!
-        PacketCounter readPacketsCount() const;
-
-        //!
         //! Check if we can seek to the specified absolute position.
         //! @param [in] position Absolute packet index in the file.
         //! @return True if the specified @a position is inside the buffer.
         //!
         bool canSeek(PacketCounter position) const;
 
-        //!
-        //! Seek to the specified absolute position, if it is inside the buffer.
-        //! @param [in] position Absolute packet index in the file.
-        //! @return True on success, false on error.
-        //!
-        bool seekPacket(PacketCounter position);
+        // Overriden methods.
+        virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format) override;
+        virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset) override;
+        virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets) override;
+        virtual PacketCounter readPacketsCount() const override;
+        virtual bool seekPacket(PacketCounter position) override;
 
     private:
         TSPacketVector         _buffer;             // Seekable packet circular buffer.

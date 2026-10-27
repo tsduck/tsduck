@@ -62,10 +62,24 @@ bool ts::TSFileOutputResync::open(const fs::path& filename, OpenFlags flags, TSP
 
 
 //----------------------------------------------------------------------------
+// Read-only open method: make them inaccessible.
+//----------------------------------------------------------------------------
+
+#define OPEN_ERROR { report().error(u"internal error, TSFileOutputResync::openRead() invoked, should not get there"); return false; }
+
+bool ts::TSFileOutputResync::openRead(const fs::path&, size_t, uint64_t, TSPacketFormat) OPEN_ERROR
+bool ts::TSFileOutputResync::openRead(const fs::path&, uint64_t, TSPacketFormat format) OPEN_ERROR
+bool ts::TSFileOutputResync::openRead(const fs::path&, size_t, uint64_t start_offset) OPEN_ERROR
+bool ts::TSFileOutputResync::openRead(const fs::path&, uint64_t) OPEN_ERROR
+
+#undef OPEN_ERROR
+
+
+//----------------------------------------------------------------------------
 // Write packets: make the read-only inherited writePackets inaccessible.
 //----------------------------------------------------------------------------
 
-bool ts::TSFileOutputResync::writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count)
+bool ts::TSFileOutputResync::writePackets(const TSPacket*, const TSPacketMetadata*, size_t)
 {
     report().error(u"internal error, read-only TSFileOutputResync::writePackets() invoked, should not get there");
     return false;

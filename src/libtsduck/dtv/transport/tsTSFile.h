@@ -55,7 +55,7 @@ namespace ts {
         //! @param [in] format Expected format of the TS file.
         //! @return True on success, false on error.
         //!
-        bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format);
 
         //!
         //! Open the file for read in rewindable mode.
@@ -69,7 +69,7 @@ namespace ts {
         //! @see rewind()
         //! @see seek()
         //!
-        bool openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format = TSPacketFormat::AUTODETECT);
+        virtual bool openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format);
 
         //!
         //! Open or create the file (generic form).
@@ -81,9 +81,6 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format);
-
-        // Inherited version from BinaryFile, format is AUTODETECT.
-        virtual bool open(const fs::path& filename, OpenFlags flags) override;
 
         //!
         //! Close the file.
@@ -117,10 +114,15 @@ namespace ts {
         //! @param [in] packet_index Seek the file to this specified packet index (plus the specified @a start_offset from open()).
         //! @return True on success, false on error.
         //!
-        bool seekPacket(PacketCounter packet_index);
+        virtual bool seekPacket(PacketCounter packet_index);
 
         // Implementation of StreamInterface
         virtual bool endOfStream() override;
+
+        // Override BinaryFile implementations, format is AUTODETECT.
+        virtual bool open(const fs::path& filename, OpenFlags flags) override;
+        virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset) override;
+        virtual bool openRead(const fs::path& filename, uint64_t start_offset) override;
 
         // Override TSPacketStream implementation
         virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets) override;

@@ -265,7 +265,7 @@ void Stuffer::simpleInterPacketStuffing(uint64_t inter_packet, uint64_t end_pack
     assert(_input.readPacketsCount() < end_packet);
 
     ts::TSPacket pkt;
-    while (_input.readPacketsCount() < end_packet && _input.read(&pkt, 1) == 1) {
+    while (_input.readPacketsCount() < end_packet && _input.readPackets(&pkt, nullptr, 1) == 1) {
         if (!_output.writePackets(&pkt, nullptr, 1)) {
             fatalError();
         }
@@ -290,7 +290,7 @@ void Stuffer::evaluateNextStuffing()
 
     // Read packets until both _tstamp1 and _tstamp2 are set (or end of file)
     ts::TSPacket pkt;
-    while (!_tstamp2 && _input.canSeek(initial_position) && _input.read(&pkt, 1) == 1) {
+    while (!_tstamp2 && _input.canSeek(initial_position) && _input.readPackets(&pkt, nullptr, 1) == 1) {
         uint64_t tstamp = 0;
         if (getTimeStamp(pkt, tstamp)) {
             if (_opt.reference_pid == ts::PID_NULL) {
@@ -426,7 +426,7 @@ void Stuffer::stuff()
 
         // Perform stuffing on current segment, loop on input packets, one by one.
         ts::TSPacket pkt;
-        while (_input.readPacketsCount() < _tstamp2->packet && _input.read(&pkt, 1) == 1) {
+        while (_input.readPacketsCount() < _tstamp2->packet && _input.readPackets(&pkt, nullptr, 1) == 1) {
             // Write the input packet.
             if (!_output.writePackets(&pkt, nullptr, 1)) {
                 fatalError();

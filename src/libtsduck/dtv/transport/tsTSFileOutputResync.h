@@ -78,9 +78,11 @@ namespace ts {
     private:
         ContinuityAnalyzer _cc_fixer {AllPIDs()};
 
-        // Make openRead() and read-only writePackets() inaccessible.
-        bool openRead(const fs::path&, size_t, uint64_t, Report&) = delete;
-        bool openRead(const fs::path&, uint64_t, Report&) = delete;
-        virtual bool writePackets(const TSPacket* buffer, const TSPacketMetadata* metadata, size_t packet_count) override;
+        // Make openRead() and read-only writePackets() directly inaccessible. Return an error if indirectly called.
+        virtual bool openRead(const fs::path&, size_t, uint64_t, TSPacketFormat) override;
+        virtual bool openRead(const fs::path&, uint64_t, TSPacketFormat) override;
+        virtual bool openRead(const fs::path&, size_t, uint64_t) override;
+        virtual bool openRead(const fs::path&, uint64_t) override;
+        virtual bool writePackets(const TSPacket*, const TSPacketMetadata* metadata, size_t packet_count) override;
     };
 }
