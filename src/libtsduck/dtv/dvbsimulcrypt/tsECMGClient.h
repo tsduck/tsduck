@@ -136,7 +136,7 @@ namespace ts {
         static constexpr size_t RECEIVER_STACK_SIZE = 128 * 1024;
 
         // Maximum number of messages in response queue
-        static constexpr size_t RESPONSE_QUEUE_SIZE = 10;
+        static constexpr size_t RESPONSE_QUEUE_SIZE = 16;
 
         // Timeout for responses from ECMG (except ECM generation)
         static constexpr cn::seconds RESPONSE_TIMEOUT = cn::seconds(5);

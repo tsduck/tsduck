@@ -337,12 +337,12 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
 
 void ts::ECMGClient::main()
 {
-    // Main loop
+    // Main loop on new connections.
     for (;;) {
 
         const AbortInterface* abort = nullptr;
 
-        // Wait for a connection to be managed
+        // Wait for a connection to be managed.
         {
             // Lock the mutex, get object state
             std::unique_lock<std::recursive_mutex> lock(_mutex);
@@ -360,10 +360,17 @@ void ts::ECMGClient::main()
             // Automatically release mutex
         }
 
-        // Loop on message reception
+        // Loop on message reception for that connection.
+        // General strategy:
+        // - Expected asynchronous messages (channel or stream test) are directly handled here.
+        // - Asynchronous ECM requests are directly handled here, calling the application handler.
+        // - Synchronous ECM request are enqueued for the application thread. Note that there is at most one pending synchronous request.
+        // - All other messages are queued for the application thread, mostly errors or unexpected messages.
+
         tlv::MessagePtr msg;
         bool ok = true;
         while (ok && _tlv_client.receiveMessage(msg, abort)) {
+            bool enqueue_msg = false;
             switch (msg->tag()) {
                 case ecmgscs::Tags::channel_test: {
                     // Automatic reply to channel_test
@@ -389,24 +396,32 @@ void ts::ECMGClient::main()
                         }
                     }
                     if (handler == nullptr) {
-                        // Not an asynchronous request -> enqueue response for application thread
-                        _response_queue.enqueue(msg);
+                        // Not an asynchronous request -> enqueue response for application thread.
+                        enqueue_msg = true;
                     }
                     else {
-                        // Pending request -> notify application
+                        // Pending asynchronous request -> notify application.
                         handler->handleECM(*resp);
                     }
                     break;
                 }
                 default: {
-                    // Enqueue the message for application thread
-                    _response_queue.enqueue(msg);
+                    // Enqueue the message for application thread.
+                    enqueue_msg = true;
                     break;
                 }
             }
+
+            // Enqueue the message for the application thread.
+            // In nominal cases, either there is a main thread which waits for one synchronous ECM response at a time; or there is no
+            // main thread and nobody will empty the queue but no message is expected there either. In all cases, if the queue grows,
+            // this is the symptom of an error. Therefore, the queue is bounded by RESPONSE_QUEUE_SIZE and enqueueing is non blocking.
+            if (enqueue_msg && !_response_queue.enqueue(msg, cn::milliseconds::zero())) {
+                _logger.report().error(u"ECMG client response queue overflow");
+            }
         }
 
-        // Error while receiving messages, most likely a disconnection
+        // Error while receiving messages, most likely a disconnection.
         {
             std::lock_guard<std::recursive_mutex> lock(_mutex);
             if (_state == DESTRUCTING) {
