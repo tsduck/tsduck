@@ -8,6 +8,7 @@
 
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsFileUtils.h"
+#include "tsCerrReport.h"
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::BetterSystemRandomGenerator);
@@ -34,28 +35,40 @@ namespace {
 //----------------------------------------------------------------------------
 
 ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
-    _state_file(UserHomeDirectory() + fs::path::preferred_separator + u".tsseed"),
-    _index(AES128::BLOCK_SIZE), // at end of block, will need update
-    _pool(AES128::BLOCK_SIZE)
+    _state_directory(UserHomeDirectory()),
+    _state_file(_state_directory + fs::path::preferred_separator + u".tsseed")
 {
-    // Read the previous content of the seed file.
-    if (!_state.loadFromFile(_state_file, AES128::BLOCK_SIZE) || _state.size() != AES128::BLOCK_SIZE) {
-        // Can't read seed file, maybe first access, read random data and writes it once.
-        _state.resize(AES128::BLOCK_SIZE);
-        if (SystemRandomGenerator::read(_state.data(), _state.size())) {
-            // Got new random data, write seed file. Do not check errors here (?)
-            _state.saveToFile(_state_file);
-        }
-        else {
-            // Could not get random data from system PRNG.
-            _ready = false;
-        }
+    // Load initial entropy state. The initial state is an XOR between the .tsseed
+    // file and the system PRNG. Without file, we only use the system PRNG.
+
+    // Read the previous content of the seed file. Don't try to read if home directory is unknown.
+    bool ok = !_state_directory.empty() && _state.loadFromFile(_state_file, STATE_SIZE) && _state.size() == STATE_SIZE;
+
+    // If no .tsseed was loaded, initialize the state with zero (will be xored with system PRNG).
+    if (!ok) {
+        _state.set(0, STATE_SIZE);
+    }
+
+    // Read and xor some data from the system PRNG.
+    ByteBlock sysdata;
+    if (!readSuperRandom(sysdata, STATE_SIZE)) {
+        // Could not get random data from system PRNG, we are dead...
+        _ready = false;
+        return;
+    }
+    _state.binXor(_state, sysdata);
+
+    // If the file was not read, try to save its first version.
+    if (!ok) {
+        saveState(true);
     }
 
     // Initialize the AES engine with our fixed key.
     if (!_aes.setKey(_fixed_key, sizeof(_fixed_key))) {
         _ready = false;
     }
+
+    CERR.debug(u"BetterSystemRandomGenerator initialized, ready: %s, seed loaded: %s", _ready, ok);
 }
 
 
@@ -70,13 +83,50 @@ ts::UString ts::BetterSystemRandomGenerator::name() const
 
 
 //----------------------------------------------------------------------------
+// Read random from the superclass (SystemRandomGenerator).
+//----------------------------------------------------------------------------
+
+bool ts::BetterSystemRandomGenerator::readSuperRandom(ByteBlock& data, size_t size)
+{
+    // Important: use SystemRandomGenerator::read, not SystemRandomGenerator::readByteBlock
+    // because readByteBlock() calls read() and we would loop back on ourselves.
+    data.resize(size);
+    return SystemRandomGenerator::read(data.data(), size);
+}
+
+
+//----------------------------------------------------------------------------
+// Save entropy state when necessary.
+//----------------------------------------------------------------------------
+
+void ts::BetterSystemRandomGenerator::saveState(bool force_perms)
+{
+    // Don't try to save state if the directory does not exist.
+    // Save state only once per cycle.
+    if (!_state_directory.empty() && ++_state_cycle >= STATE_SAVE_CYCLE) {
+        _state_cycle = 0;
+        if (!_state.saveToFile(_state_file)) {
+            // Ignore write errors.
+            CERR.debug(u"BetterSystemRandomGenerator failed to save seed in %s", _state_file);
+        }
+        else if (force_perms) {
+            // When requested, force file permissions to -rw-------. Ignore permission errors.
+            std::error_code e;
+            fs::permissions(_state_file, fs::perms::owner_read | fs::perms::owner_write, fs::perm_options::replace , e);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Check if PRNG is ready. If not ready, must be seeded again.
 //----------------------------------------------------------------------------
 
 bool ts::BetterSystemRandomGenerator::ready() const
 {
+    // If this BetterSystemRandomGenerator is not ready, fallback to SystemRandomGenerator.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    return _ready && SystemRandomGenerator::ready();
+    return _ready || SystemRandomGenerator::ready();
 }
 
 
@@ -86,50 +136,45 @@ bool ts::BetterSystemRandomGenerator::ready() const
 
 bool ts::BetterSystemRandomGenerator::updatePool()
 {
-    uint8_t r1[AES128::BLOCK_SIZE];
-    uint8_t r2[AES128::BLOCK_SIZE];
+    ByteBlock r1(STATE_SIZE);
+    ByteBlock r2(STATE_SIZE);
 
     // R1 = read SystemRandomGenerator
     // R2 = AES[K] R1
-    if (!SystemRandomGenerator::read(r1, sizeof(r1)) || !_aes.encrypt(r1, sizeof(r1), r2, sizeof(r2))) {
+    if (!readSuperRandom(r1, r1.size()) || !_aes.encrypt(r1.data(), r1.size(), r2.data(), r2.size())) {
         return false;
     }
 
     // R1 = R2 xor state
-    for (size_t i = 0; i < AES128::BLOCK_SIZE; ++i) {
-        r1[i] = r2[i] ^ _state[i];
-    }
+    r1.binXor(r2, _state);
 
     // pool = AES[K] R1 ==> output of BetterSystemRandomGenerator
-    assert(_pool.size() == AES128::BLOCK_SIZE);
-    if (!_aes.encrypt(r1, sizeof(r1), _pool.data(), _pool.size())) {
+    _pool.resize(STATE_SIZE);
+    if (!_aes.encrypt(r1.data(), r1.size(), _pool.data(), _pool.size())) {
         return false;
     }
 
     // R1 = read SystemRandomGenerator
-    if (!SystemRandomGenerator::read(r1, sizeof(r1))) {
+    if (!readSuperRandom(r1, r1.size())) {
         return false;
     }
 
     // R2 = R1 xor pool xor state.
-    for (size_t i = 0; i < AES128::BLOCK_SIZE; ++i) {
-        r2[i] = r1[i] ^ _pool[i] ^ _state[i];
-    }
+    r2.binXor(r1, _pool);
+    r2.binXor(r2, _state);
 
     // h = SHA-256 (R2)
-    uint8_t h[SHA256::HASH_SIZE];
-    if (!_sha.hash(r2, sizeof(r2), h, sizeof(h))) {
+    ByteBlock h(SHA256::HASH_SIZE);
+    if (!_sha.hash(r2.data(), r2.size(), h.data(), h.size())) {
         return false;
     }
 
     // state = truncated h
-    assert(_state.size() <= sizeof(h));
-    _state.copy(h, AES128::BLOCK_SIZE);
+    assert(_state.size() <= h.size());
+    _state.copy(h.data(), STATE_SIZE);
 
     // Save state file.
-    if (!_state.saveToFile(_state_file, _report)) {
-        return false;
-    }
+    saveState(false);
 
     // Now _pool is ready with new random data.
     _index = 0;
@@ -146,15 +191,20 @@ bool ts::BetterSystemRandomGenerator::read(void* buffer, size_t size)
     std::lock_guard<std::recursive_mutex> lock(_mutex);
 
     // Filter trivial cases.
-    if (!_ready || buffer == nullptr) {
+    if (buffer == nullptr) {
         return false;
+    }
+
+    // When BetterSystemRandomGenerator could not be used, fall back to SystemRandomGenerator.
+    if (!_ready) {
+        return SystemRandomGenerator::read(buffer, size);
     }
 
     // Cast buffer boundaries.
     uint8_t* data = reinterpret_cast<uint8_t*>(buffer);
     uint8_t* const end = data + size;
 
-    // Fill the buffer with rndom data.
+    // Fill the buffer with random data.
     while (data < end) {
         // Copy as much random data as we can.
         while (_index < _pool.size() && data < end) {

@@ -24,6 +24,8 @@ class ByteBlockTest: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(Constructors);
     TSUNIT_DECLARE_TEST(Find);
+    TSUNIT_DECLARE_TEST(Operators);
+    TSUNIT_DECLARE_TEST(Set);
     TSUNIT_DECLARE_TEST(Append);
     TSUNIT_DECLARE_TEST(AppendEnd);
     TSUNIT_DECLARE_TEST(File);
@@ -140,6 +142,81 @@ TSUNIT_DEFINE_TEST(Find)
     TSUNIT_EQUAL(ts::NPOS, v.find(1));
     TSUNIT_EQUAL(0, v.find(2));
     TSUNIT_EQUAL(3, v.find(9));
+}
+
+TSUNIT_DEFINE_TEST(Operators)
+{
+    ts::ByteBlock v;
+
+    v= {0x01, 0xF3, 0x80};
+    v.binAnd(0xF0);
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(0x00, v[0]);
+    TSUNIT_EQUAL(0xF0, v[1]);
+    TSUNIT_EQUAL(0x80, v[2]);
+
+    v= {0x11, 0xF3, 0x81};
+    v.binAnd(v, {0xF0, 0x80, 0xC3, 0x47});
+    TSUNIT_EQUAL(4, v.size());
+    TSUNIT_EQUAL(0x10, v[0]);
+    TSUNIT_EQUAL(0x80, v[1]);
+    TSUNIT_EQUAL(0x81, v[2]);
+    TSUNIT_EQUAL(0x47, v[3]);
+
+    v= {0x01, 0xF3, 0x84};
+    v.binOr(0xF0);
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(0xF1, v[0]);
+    TSUNIT_EQUAL(0xF3, v[1]);
+    TSUNIT_EQUAL(0xF4, v[2]);
+
+    v= {0x11, 0xF3, 0x81};
+    v.binOr(v, {0xF0, 0x80});
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(0xF1, v[0]);
+    TSUNIT_EQUAL(0xF3, v[1]);
+    TSUNIT_EQUAL(0x81, v[2]);
+
+    v= {0x01, 0xF3, 0x84};
+    v.binXor(0xF0);
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(0xF1, v[0]);
+    TSUNIT_EQUAL(0x03, v[1]);
+    TSUNIT_EQUAL(0x74, v[2]);
+
+    v= {0x11, 0xF3, 0x81};
+    v.binXor(v, {0xF0, 0x80, 0xC3});
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(0xE1, v[0]);
+    TSUNIT_EQUAL(0x73, v[1]);
+    TSUNIT_EQUAL(0x42, v[2]);
+
+    v= {0x11, 0xF3, 0x81};
+    v.binNot();
+    TSUNIT_EQUAL(3, v.size());
+    TSUNIT_EQUAL(0xEE, v[0]);
+    TSUNIT_EQUAL(0x0C, v[1]);
+    TSUNIT_EQUAL(0x7E, v[2]);
+}
+
+TSUNIT_DEFINE_TEST(Set)
+{
+    ts::ByteBlock v;
+
+    v.set(0x45);
+    TSUNIT_EQUAL(0, v.size());
+
+    v.set(0x45, 7);
+    TSUNIT_EQUAL(7, v.size());
+    for (size_t i = 0; i < v.size(); ++i) {
+        TSUNIT_EQUAL(0x45, v[i]);
+    }
+
+    v.set(0xAC);
+    TSUNIT_EQUAL(7, v.size());
+    for (size_t i = 0; i < v.size(); ++i) {
+        TSUNIT_EQUAL(0xAC, v[i]);
+    }
 }
 
 TSUNIT_DEFINE_TEST(Append)

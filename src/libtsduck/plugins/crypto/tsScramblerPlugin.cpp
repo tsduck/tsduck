@@ -243,11 +243,9 @@ bool ts::ScramblerPlugin::start()
             debug(u"crypto-period duration: %'!s, delay start: %'!s", cn::duration_cast<cn::milliseconds>(_ecmg_args.cp_duration), _delay_start);
 
             // Create first and second crypto-periods
-            _cp[0].initCycle(this, 0);
-            if (!_cp[0].initScramblerKey()) {
+            if (!_cp[0].initCycle(this, 0) || !_cp[0].initScramblerKey() || !_cp[1].initNext(_cp[0])) {
                 return false;
             }
-            _cp[1].initNext(_cp[0]);
         }
     }
 
@@ -464,7 +462,9 @@ bool ts::ScramblerPlugin::tryExitDegradedMode()
     // Compute next CW and ECM change.
     if (_delay_start < cn::milliseconds::zero()) {
         // Start broadcasting ECM before beginning of crypto-period, ie. now
-        changeECM();
+        if (!changeECM()) {
+            return false;
+        }
         // Postpone CW change
         _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _delay_start);
     }
@@ -519,14 +519,14 @@ bool ts::ScramblerPlugin::changeCW()
         }
 
         // Generate (or start generating) next ECM when using ECM(N) in cp(N)
-        if (_need_ecm && _current_ecm == _current_cw) {
-            nextCW().initNext(currentCW());
+        if (_need_ecm && _current_ecm == _current_cw && !nextCW().initNext(currentCW())) {
+            return false;
         }
     }
     return true;
 }
 
-void ts::ScramblerPlugin::changeECM()
+bool ts::ScramblerPlugin::changeECM()
 {
     // Allowed to change CW only if not in degraded mode
     if (_need_ecm && _ts_bitrate != 0 && !inDegradedMode()) {
@@ -538,10 +538,11 @@ void ts::ScramblerPlugin::changeECM()
         _pkt_change_ecm = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
 
         // Generate (or start generating) next ECM when using ECM(N) in cp(N)
-        if (_current_ecm == _current_cw) {
-            nextCW().initNext(currentCW());
+        if (_current_ecm == _current_cw && !nextCW().initNext(currentCW())) {
+            return false;
         }
     }
+    return true;
 }
 
 
@@ -602,8 +603,8 @@ ts::PacketProcessStatus ts::ScramblerPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     // Is it time to start broadcasting the next ECM ?
-    if (_need_ecm && _packet_count >= _pkt_change_ecm) {
-        changeECM();
+    if (_need_ecm && _packet_count >= _pkt_change_ecm && !changeECM()) {
+        return TSP_END;
     }
 
     // Insert an ECM packet (replace a null packet) when time to do so
@@ -669,16 +670,18 @@ ts::PacketProcessStatus ts::ScramblerPlugin::processPacket(TSPacket& pkt, TSPack
 // Initialize first crypto period.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, uint16_t cp_number)
+bool ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, uint16_t cp_number)
 {
     _plugin = scrambler;
     _cp_number = cp_number;
 
     if (_plugin->_need_ecm) {
-        generateCW(_cw_current);
-        generateCW(_cw_next);
+        if (!generateCW(_cw_current) || !generateCW(_cw_next)) {
+            return false;
+        }
         generateECM();
     }
+    return true;
 }
 
 
@@ -686,16 +689,19 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, ui
 // Initialize crypto period following specified one.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
+bool ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 {
     _plugin = previous._plugin;
     _cp_number = previous._cp_number + 1;
 
     if (_plugin->_need_ecm) {
         _cw_current = previous._cw_next;
-        generateCW(_cw_next);
+        if (!generateCW(_cw_next)) {
+            return false;
+        }
         generateECM();
     }
+    return true;
 }
 
 
@@ -703,13 +709,17 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 // Generate a new random CW.
 //----------------------------------------------------------------------------
 
-void ts::ScramblerPlugin::CryptoPeriod::generateCW(ByteBlock& cw)
+bool ts::ScramblerPlugin::CryptoPeriod::generateCW(ByteBlock& cw)
 {
-    BetterSystemRandomGenerator::Instance().readByteBlock(cw, _plugin->_scrambling.cwSize());
+    if (!BetterSystemRandomGenerator::Instance().readByteBlock(cw, _plugin->_scrambling.cwSize())) {
+        _plugin->error(u"random generator error, cannot generate control word");
+        return false;
+    }
     if (_plugin->_pre_reduce_cw && _plugin->_scrambling.entropyMode() == DVBCSA2::REDUCE_ENTROPY) {
         assert(cw.size() == DVBCSA2::KEY_SIZE);
         DVBCSA2::ReduceCW(cw.data());
     }
+    return true;
 }
 
 

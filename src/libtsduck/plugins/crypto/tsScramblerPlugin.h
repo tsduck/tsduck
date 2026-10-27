@@ -100,11 +100,11 @@ namespace ts {
             // Initialize first crypto period.
             // Generate two randow CW and corresponding ECM.
             // ECM generation may complete asynchronously.
-            void initCycle(ScramblerPlugin*, uint16_t cp_number);
+            bool initCycle(ScramblerPlugin*, uint16_t cp_number);
 
             // Initialize crypto period following specified one.
             // ECM generation may complete asynchronously.
-            void initNext(const CryptoPeriod&);
+            bool initNext(const CryptoPeriod&);
 
             // Check if ECM generation is complete (useful in asynchronous mode)
             bool ecmReady() const { return _ecm_ok; }
@@ -125,7 +125,7 @@ namespace ts {
             ByteBlock        _cw_next {};
 
             // Generate a new random CW.
-            void generateCW(ByteBlock& cw);
+            bool generateCW(ByteBlock& cw);
 
             // Generate the ECM for a crypto-period.
             // With --synchronous, the ECM is directly generated. Otherwise,
@@ -196,7 +196,7 @@ namespace ts {
 
         // Perform CW and ECM transition
         bool changeCW();
-        void changeECM();
+        bool changeECM();
 
         // Check if we are in degraded mode or if we enter degraded mode
         bool inDegradedMode();

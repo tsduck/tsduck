@@ -114,13 +114,81 @@ namespace ts {
         //! Get a pointer after the last byte in the block.
         //! @return A pointer after the last byte in the block.
         //!
-        const uint8_t* dataEnd() const { return data() + size(); }
+        const uint8_t* dataEnd() const
+        {
+            return data() + size();
+        }
 
         //!
         //! Get a pointer after the last byte in the block.
         //! @return A pointer after the last byte in the block.
         //!
-        uint8_t* dataEnd() { return data() + size(); }
+        uint8_t* dataEnd()
+        {
+            return data() + size();
+        }
+
+        //!
+        //! And operator: binary "and" of all bytes with a given value.
+        //! @param [in] value The value to "and" with all bytes.
+        //!
+        void binAnd(uint8_t value);
+
+        //!
+        //! Binary "and" operator from two other byte blocks.
+        //! The result in this object will have the longest size of @a bb1 and @a bb2.
+        //! @param [in] bb1 First byte block.
+        //! @param [in] bb2 Second byte block.
+        //! @param [in] start1 First index in @a bb1.
+        //! @param [in] count1 Number of bytes to use in @a bb1.
+        //! @param [in] start2 First index in @a bb2.
+        //! @param [in] count2 Number of bytes to use in @a bb2.
+        //! @param [in] pad If @a bb1 and @a bb2 don't have the same size, use this value to "and" the part in excess (default: unchanged).
+        //!
+        void binAnd(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0xFF);
+
+        //!
+        //! Or operator: binary "or" of all bytes with a given value.
+        //! @param [in] value The value to "or" with all bytes.
+        //!
+        void binOr(uint8_t value);
+
+        //!
+        //! Binary "or" operator from two other byte blocks.
+        //! The result in this object will have the longest size of @a bb1 and @a bb2.
+        //! @param [in] bb1 First byte block.
+        //! @param [in] bb2 Second byte block.
+        //! @param [in] start1 First index in @a bb1.
+        //! @param [in] count1 Number of bytes to use in @a bb1.
+        //! @param [in] start2 First index in @a bb2.
+        //! @param [in] count2 Number of bytes to use in @a bb2.
+        //! @param [in] pad If @a bb1 and @a bb2 don't have the same size, use this value to "or" the part in excess (default: unchanged).
+        //!
+        void binOr(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0x00);
+
+        //!
+        //! Xor operator: binary "xor" of all bytes with a given value.
+        //! @param [in] value The value to "xor" with all bytes.
+        //!
+        void binXor(uint8_t value);
+
+        //!
+        //! Binary "xor" operator from two other byte blocks.
+        //! The result in this object will have the longest size of @a bb1 and @a bb2.
+        //! @param [in] bb1 First byte block.
+        //! @param [in] bb2 Second byte block.
+        //! @param [in] start1 First index in @a bb1.
+        //! @param [in] count1 Number of bytes to use in @a bb1.
+        //! @param [in] start2 First index in @a bb2.
+        //! @param [in] count2 Number of bytes to use in @a bb2.
+        //! @param [in] pad If @a bb1 and @a bb2 don't have the same size, use this value to "xor" the part in excess (default: unchanged).
+        //!
+        void binXor(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0x00);
+
+        //!
+        //! Not operator: binary "not" or "complement" of all bytes.
+        //!
+        void binNot();
 
         //!
         //! Find the first occurrence of a byte value in a byte block.
@@ -130,6 +198,26 @@ namespace ts {
         //! @return The index of the first occurrence of @a value in the byte block or @a NPOS if not found.
         //!
         TSCOREDLL size_type find(uint8_t value, size_type start = 0, size_type end = NPOS) const;
+
+        //!
+        //! Set all bytes to a given value, without changing the size.
+        //! @param [in] value The value to set to all bytes.
+        //!
+        void set(uint8_t value)
+        {
+            MemSet(data(), value, size());
+        }
+
+        //!
+        //! Replace the content of a byte block with all bytes set to a given value.
+        //! @param [in] value The value to set to all bytes.
+        //! @param [in] size New size of the byte block.
+        //!
+        TSCOREDLL void set(uint8_t value, size_type size)
+        {
+            resize(size);
+            set(value);
+        }
 
         //!
         //! Replace the content of a byte block.
@@ -588,6 +676,10 @@ namespace ts {
         // Check if a memory range is inside this object. Used to avoid use-after-free when copying part of this into this.
         // Throw ts::ByteBlock::Overlap is the memory range overlaps the content of this, without being fully included in this.
         bool insideThis(const void* addr, size_type size) const;
+
+        // Common implementation of binary operators.
+        template <typename Op> void applyBinOp(uint8_t value);
+        template <typename Op> void applyBinOp(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1, size_type count1, size_type start2, size_type count2, uint8_t pad);
     };
 
 #if !defined(DOXYGEN)

@@ -64,6 +64,7 @@ ts::ByteBlock::ByteBlock::Overlap::~Overlap() noexcept
 {
 }
 
+
 //----------------------------------------------------------------------------
 // Get a reference to an empty ByteBlock.
 //----------------------------------------------------------------------------
@@ -101,6 +102,7 @@ bool ts::ByteBlock::insideThis(const void* addr, size_type length) const
     }
 }
 
+
 //----------------------------------------------------------------------------
 // Find the first occurrence of a byte value in a byte block.
 //----------------------------------------------------------------------------
@@ -115,6 +117,78 @@ ts::ByteBlock::size_type ts::ByteBlock::find(uint8_t value, size_type start, siz
     }
     return NPOS;
 }
+
+
+//----------------------------------------------------------------------------
+// Binary bit operators : common code.
+//----------------------------------------------------------------------------
+
+template <typename Op>
+void ts::ByteBlock::applyBinOp(uint8_t value)
+{
+    const size_type end = size();
+    for (size_type i = 0; i < end; ++i) {
+        (*this)[i] = Op{}((*this)[i], value);
+    }
+}
+
+template <typename Op>
+void ts::ByteBlock::applyBinOp(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1, size_type count1, size_type start2, size_type count2, uint8_t pad)
+{
+    const size_type end1 = bb1.size();
+    const size_type end2 = bb2.size();
+    const size_type end = std::max(end1, end2);
+
+    // If bb1 or bb2 is this object, and we need to enlarge it, the previous part is still accessible through bb1/end1 or bb2/end2.
+    resize(end);
+    for (size_type i = 0; i < end; ++i) {
+        (*this)[i] = Op{}(i < end1 ? bb1[i] : pad, i < end2 ? bb2[i] : pad);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Binary bit operators : instantiations.
+//----------------------------------------------------------------------------
+
+void ts::ByteBlock::binAnd(uint8_t value)
+{
+    applyBinOp<std::bit_and<uint8_t>>(value);
+}
+
+void ts::ByteBlock::binAnd(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1, size_type count1, size_type start2, size_type count2, uint8_t pad)
+{
+    applyBinOp<std::bit_and<uint8_t>>(bb1, bb2, start1, count1, start2, count2, pad);
+}
+
+void ts::ByteBlock::binOr(uint8_t value)
+{
+    applyBinOp<std::bit_or<uint8_t>>(value);
+}
+
+void ts::ByteBlock::binOr(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1, size_type count1, size_type start2, size_type count2, uint8_t pad)
+{
+    applyBinOp<std::bit_or<uint8_t>>(bb1, bb2, start1, count1, start2, count2, pad);
+}
+
+void ts::ByteBlock::binXor(uint8_t value)
+{
+    applyBinOp<std::bit_xor<uint8_t>>(value);
+}
+
+void ts::ByteBlock::binXor(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1, size_type count1, size_type start2, size_type count2, uint8_t pad)
+{
+    applyBinOp<std::bit_xor<uint8_t>>(bb1, bb2, start1, count1, start2, count2, pad);
+}
+
+void ts::ByteBlock::binNot()
+{
+    const size_type end = size();
+    for (size_type i = 0; i < end; ++i) {
+        (*this)[i] = std::bit_not<uint8_t>{}((*this)[i]);
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Replace the content of a byte block.
@@ -149,6 +223,7 @@ void ts::ByteBlock::copy(const ByteBlock& bb, size_type start, size_type count)
     copy(bb.data() + start, count);
 }
 
+
 //----------------------------------------------------------------------------
 // Append data to a byte block.
 //----------------------------------------------------------------------------
@@ -172,6 +247,7 @@ void ts::ByteBlock::append(const ByteBlock& bb, size_type start, size_type count
     append(bb.data() + start, count);
 }
 
+
 //----------------------------------------------------------------------------
 // Increase size by n and return pointer to new n-byte area
 //----------------------------------------------------------------------------
@@ -183,6 +259,7 @@ uint8_t* ts::ByteBlock::enlarge(size_type n)
     return data() + oldsize;
 }
 
+
 //----------------------------------------------------------------------------
 // Append an integer in Binary Coded Decimal (BCD) representation at the end.
 //----------------------------------------------------------------------------
@@ -191,6 +268,7 @@ void ts::ByteBlock::appendBCD(uint32_t value, size_t bcd_count, bool left_justif
 {
     EncodeBCD(enlarge((bcd_count + 1) / 2), bcd_count, value, left_justified, pad_nibble);
 }
+
 
 //----------------------------------------------------------------------------
 // Append a unicode string in UTF-8 representation to a byte block.
@@ -218,6 +296,7 @@ void ts::ByteBlock::appendUTF8WithByteLength(const UString& s)
     }
 }
 
+
 //----------------------------------------------------------------------------
 // Remove 'size' elements at index 'first'.
 // (the STL equivalent uses iterators, not indices).
@@ -228,6 +307,7 @@ void ts::ByteBlock::erase(size_type first, size_type size)
     assert(first + size <= this->size());
     ByteVector::erase(begin() + first, begin() + first + size);
 }
+
 
 //----------------------------------------------------------------------------
 // Read byte blocks from binary files.
@@ -293,6 +373,7 @@ std::istream& ts::ByteBlock::append(std::istream& strm, size_t max_size)
 
     return strm;
 }
+
 
 //----------------------------------------------------------------------------
 // Save byte blocks to binary files.

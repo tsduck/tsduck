@@ -29,8 +29,9 @@ namespace ts {
     //! Implemented as a thread-safe singleton.
     //!
     //! An entropy state is stored in $HOME/.tsseed. The value of a @e state
-    //! is initially loaded from this file. The first time the generator is
-    //! used (no file), the @e state is loaded from the system PRNG.
+    //! is initially loaded from this file and diversified with the system PRNG.
+    //! The first time the generator is used (no file), the @e state is loaded
+    //! from the system PRNG.
     //!
     //! A fixed AES-128 key @e K is used for the post-processing. The size
     //! of the @e state is 16 bytes, the AES block size.
@@ -67,18 +68,29 @@ namespace ts {
         virtual bool read(void*, size_t) override;
 
     private:
+        // Save the state every N random generations.
+        static constexpr size_t STATE_SAVE_CYCLE = 16;
+        static constexpr size_t STATE_SIZE = AES128::BLOCK_SIZE;
+
         mutable std::recursive_mutex _mutex {};
-        Report*   _report = nullptr;  // Where to report errors.
-        bool      _ready = true;      // Fully initialized.
-        UString   _state_file;        // Name of the entropy state file.
-        AES128    _aes {};            // AES engine.
-        SHA256    _sha {};            // SHA-256 engine.
-        size_t    _index;             // Next index in _pool.
-        ByteBlock _state {};          // Entropy state.
-        ByteBlock _pool;              // Random data pool.
+        bool      _ready = true;                   // Fully initialized.
+        UString   _state_directory;                // Directory of the entropy state file.
+        UString   _state_file;                     // Name of the entropy state file.
+        size_t    _state_cycle = STATE_SAVE_CYCLE; // Counter of random generations to save state.
+        ByteBlock _state {};                       // Entropy state.
+        AES128    _aes {};                         // AES engine.
+        SHA256    _sha {};                         // SHA-256 engine.
+        size_t    _index = 0;                      // Next index in _pool. Initial position after end.
+        ByteBlock _pool {};                        // Random data pool.
 
         // Update the content of the random pool with new data.
         bool updatePool();
+
+        // Save entropy state when necessary. Ignore errors (will work without state file).
+        void saveState(bool force_perms);
+
+        // Read random from the superclass (SystemRandomGenerator).
+        bool readSuperRandom(ByteBlock& data, size_t size);
 
 #endif
     };
