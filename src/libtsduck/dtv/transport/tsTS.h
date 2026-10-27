@@ -222,10 +222,7 @@ namespace ts {
     //!
     template <class DURATION = cn::milliseconds>
         requires std::integral<typename DURATION::rep>
-    inline DURATION ByteInterval(const BitRate& bitrate, std::intmax_t distance)
-    {
-        return DURATION(typename DURATION::rep(bitrate == 0 ? 0 : ((distance * 8 * DURATION::period::den) / (DURATION::period::num * bitrate)).toInt()));
-    }
+    DURATION ByteInterval(const BitRate& bitrate, std::intmax_t distance);
 
     //!
     //! Compute the interval, in duration, between two packets.
@@ -253,7 +250,7 @@ namespace ts {
     template <class Rep, class Period>
     inline int64_t BitDistance(size_t bits, const BitRate& bitrate, const cn::duration<Rep, Period>& duration)
     {
-        return int64_t(((bitrate * Period::num * (duration.count() >= 0 ? duration.count() : -duration.count())) / (Period::den * bits)).toInt());
+        return int64_t(((bitrate * Period::num * std::abs(duration.count())) / (Period::den * bits)).toInt());
     }
 
     //!
@@ -704,6 +701,25 @@ namespace ts {
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
+
+// Compute the interval, in duration, between two bytes in the transport stream.
+template <class DURATION> requires std::integral<typename DURATION::rep>
+DURATION ts::ByteInterval(const BitRate& bitrate, std::intmax_t distance)
+{
+    using Rep = typename DURATION::rep;
+    Rep result = 0;
+    if (bitrate > 0) {
+        result = Rep(distance * 8);
+        if (mul_overflow<Rep>(result, DURATION::period::den)) {
+            // Small duration types (with a large den) can overflow. Fallback to floating point intermediate values.
+            result = Rep(double(result) * double(DURATION::period::den) / double((DURATION::period::num * bitrate).toInt()));
+        }
+        else {
+            result = ((result * DURATION::period::den) / (DURATION::period::num * bitrate)).toInt();
+        }
+    }
+    return DURATION(result);
+}
 
 // Compute the time stamp of a packet, based on the equivalent time stamp of a previous packet.
 template <ts::TimeSource T>
