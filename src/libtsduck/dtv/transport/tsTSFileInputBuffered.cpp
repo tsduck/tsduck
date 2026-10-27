@@ -51,32 +51,44 @@ bool ts::TSFileInputBuffered::setBufferSize(size_t buffer_size)
 
 
 //----------------------------------------------------------------------------
-// Open file. Override TSFile::openRead().
+// Initialize class-specific state over open.
 //----------------------------------------------------------------------------
+
+bool ts::TSFileInputBuffered::wrapOpen(bool open_status)
+{
+    // If open was successful.
+    if (open_status) {
+        _first_index = 0;
+        _current_offset = 0;
+        _total_count = 0;
+    }
+    return open_status;
+}
+
+
+//----------------------------------------------------------------------------
+// Open file methods.
+//----------------------------------------------------------------------------
+
+bool ts::TSFileInputBuffered::openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format)
+{
+    return wrapOpen(TSFile::openRead(filename, start_offset, format));
+}
+
+bool ts::TSFileInputBuffered::openRead(const fs::path& filename, uint64_t start_offset)
+{
+    return wrapOpen(TSFile::openRead(filename, start_offset));
+}
 
 bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset)
 {
-    return openRead(filename, repeat_count, start_offset, TSPacketFormat::AUTODETECT);
+    return wrapOpen(TSFile::openRead(filename, repeat_count, start_offset));
 }
 
 bool ts::TSFileInputBuffered::openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format)
 {
-    if (isOpen()) {
-        report().error(u"file %s is already open", getFileName());
-        return false;
-    }
-    else {
-        _first_index = 0;
-        _current_offset = 0;
-        _total_count = 0;
-        return TSFile::openRead(filename, repeat_count, start_offset, format);
-    }
+    return wrapOpen(TSFile::openRead(filename, repeat_count, start_offset, format));
 }
-
-
-//----------------------------------------------------------------------------
-// Make sure that the generic open() returns an error.
-//----------------------------------------------------------------------------
 
 bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags)
 {
@@ -86,7 +98,13 @@ bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags)
 bool ts::TSFileInputBuffered::open(const fs::path& filename, OpenFlags flags, TSPacketFormat format)
 {
     // Accept read-only mode only.
-    return (flags & (READ | WRITE | APPEND)) == READ && openRead(filename, 1, 0, format);
+    if ((flags & (READ | WRITE | APPEND)) != READ) {
+        report().error(u"TSFileInputBuffered is read-only");
+        return false;
+    }
+    else {
+        return openRead(filename, 1, 0, format);
+    }
 }
 
 

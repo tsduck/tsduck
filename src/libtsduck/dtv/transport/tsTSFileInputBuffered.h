@@ -120,6 +120,10 @@ namespace ts {
         // Overriden methods.
         virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset, TSPacketFormat format) override;
         virtual bool openRead(const fs::path& filename, size_t repeat_count, uint64_t start_offset) override;
+        virtual bool openRead(const fs::path& filename, uint64_t start_offset, TSPacketFormat format) override;
+        virtual bool openRead(const fs::path& filename, uint64_t start_offset) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format) override;
+        virtual bool open(const fs::path& filename, OpenFlags flags) override;
         virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets) override;
         virtual PacketCounter readPacketsCount() const override;
         virtual bool seekPacket(PacketCounter position) override;
@@ -131,9 +135,8 @@ namespace ts {
         size_t                 _current_offset = 0; // Offset from _first_index of "current" readable packet
         size_t                 _total_count = 0;    // Total count of valid packets in buffer.
 
-        // Make sure that the generic open() returns an error.
-        virtual bool open(const fs::path& filename, OpenFlags flags, TSPacketFormat format) override;
-        virtual bool open(const fs::path& filename, OpenFlags flags) override;
+        // Initialize class-specific state over open.
+        bool wrapOpen(bool open_status);
 
         // Make rewind inaccessible.
         bool rewind(Report&) = delete;

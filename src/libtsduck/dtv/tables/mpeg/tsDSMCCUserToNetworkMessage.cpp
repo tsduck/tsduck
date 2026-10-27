@@ -21,7 +21,6 @@
 
 TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySection);
 
-
 namespace {
     // Object Carousel DSI's IOR has type_id == "srg".
     // Wire layout: type_id_length(32) | 's' 'r' 'g' | pad. Inspect the next
@@ -58,6 +57,11 @@ ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(const DSMCCUserToNetwor
     compatibility_descriptor(other.compatibility_descriptor),
     body{}
 {
+    // When compiled with GCC and ASAN (address sanitizer), we get a warning.
+    // Not seen in release/debug mode, without ASAN. Probably a false positive.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(maybe-uninitialized)
+
     if (const auto* dii = other.toDII()) {
         auto& new_dii = body.emplace<DownloadInfoIndication>(this);
         new_dii.download_id = dii->download_id;
@@ -67,6 +71,8 @@ ts::DSMCCUserToNetworkMessage::DSMCCUserToNetworkMessage(const DSMCCUserToNetwor
     else if (const auto* dsi = other.toDSI()) {
         body = *dsi;
     }
+
+    TS_POP_WARNING()
 }
 
 ts::DSMCCUserToNetworkMessage& ts::DSMCCUserToNetworkMessage::operator=(const DSMCCUserToNetworkMessage& other)
