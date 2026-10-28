@@ -18,10 +18,6 @@
 #include "tsByteBlock.h"
 #include "tsDSMCCIOR.h"
 #include "tsxmlElement.h"
-#include <memory>
-#include <optional>
-#include <string>
-#include <utility>
 
 namespace ts {
     //!

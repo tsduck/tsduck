@@ -13,11 +13,6 @@
 
 #pragma once
 #include "tsDSMCCBIOPMessage.h"
-#include <functional>
-#include <map>
-#include <set>
-#include <utility>
-#include <vector>
 
 namespace ts {
     //!

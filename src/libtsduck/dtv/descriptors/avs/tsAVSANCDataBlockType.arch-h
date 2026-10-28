@@ -13,8 +13,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include <variant>
-#include "tsPlatform.h"
 #include "tsPSIBuffer.h"
 #include "tsTablesDisplay.h"
 #include "tsxmlElement.h"

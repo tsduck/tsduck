@@ -14,7 +14,6 @@
 #pragma once
 #include "tsUString.h"
 #include "tsIntegerUtils.h"
-#include <cmath>
 
 namespace ts {
     //!

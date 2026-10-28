@@ -8,7 +8,6 @@
 
 #include "tsDSMCCBIOPMessage.h"
 #include "tsxmlElement.h"
-#include <cstring>
 
 
 namespace {

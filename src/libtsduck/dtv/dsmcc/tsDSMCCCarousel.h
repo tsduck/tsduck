@@ -17,7 +17,6 @@
 #include "tsDSMCCBIOPMessage.h"
 #include "tsDSMCCBIOPNameResolver.h"
 #include "tsDSMCCCompatibilityDescriptor.h"
-#include <set>
 
 namespace ts {
 

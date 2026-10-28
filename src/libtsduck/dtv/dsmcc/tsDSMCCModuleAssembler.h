@@ -17,9 +17,6 @@
 #include "tsDSMCCUserToNetworkMessage.h"
 #include "tsDSMCCDownloadDataMessage.h"
 #include "tsDescriptorList.h"
-#include <functional>
-#include <map>
-#include <set>
 
 namespace ts {
 

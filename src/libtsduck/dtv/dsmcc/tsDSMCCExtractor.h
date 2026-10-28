@@ -16,8 +16,6 @@
 #include "tsSectionDemux.h"
 #include "tsSectionHandlerInterface.h"
 #include "tsTSPacket.h"
-#include <filesystem>
-#include <optional>
 
 namespace ts {
 
