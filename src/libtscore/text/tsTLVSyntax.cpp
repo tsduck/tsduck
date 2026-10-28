@@ -16,10 +16,10 @@
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report) :
+ts::TLVSyntax::TLVSyntax(int start, int size, size_t tag_size, size_t length_size, bool msb, Report& report) :
     _msb(msb)
 {
-    set(start, size, tagSize, lengthSize, msb, report);
+    set(start, size, tag_size, length_size, msb, report);
 }
 
 
@@ -27,21 +27,21 @@ ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize,
 // Set the values of a TLVSyntax object.
 //----------------------------------------------------------------------------
 
-bool ts::TLVSyntax::set(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report)
+bool ts::TLVSyntax::set(int start, int size, size_t tag_size, size_t length_size, bool msb, Report& report)
 {
-    if (tagSize != 1 && tagSize != 2 && tagSize != 4) {
-        report.error(u"invalid tag size %d", tagSize);
+    if (tag_size != 1 && tag_size != 2 && tag_size != 4) {
+        report.error(u"invalid tag size %d", tag_size);
         return false;
     }
-    else if (lengthSize != 1 && lengthSize != 2 && lengthSize != 4) {
-        report.error(u"invalid length size %d", lengthSize);
+    else if (length_size != 1 && length_size != 2 && length_size != 4) {
+        report.error(u"invalid length size %d", length_size);
         return false;
     }
     else {
         _start = start;
         _size = size;
-        _tag_size = tagSize;
-        _length_size = lengthSize;
+        _tag_size = tag_size;
+        _length_size = length_size;
         _msb = msb;
         return true;
     }
@@ -114,65 +114,65 @@ size_t ts::TLVSyntax::getTagAndLength(const uint8_t* data, size_t size, uint32_t
 // Locate the "TLV area" inside a data area.
 //----------------------------------------------------------------------------
 
-bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvStart, size_t& tlvSize) const
+bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t data_size, size_t& tlv_start, size_t& tlv_size) const
 {
     // Default values.
-    tlvStart = tlvSize = 0;
+    tlv_start = tlv_size = 0;
 
     if (_start >= 0 && _size >= 0) {
         // Fixed TLV area.
-        if (size_t(_start + _size) > dataSize) {
+        if (size_t(_start + _size) > data_size) {
             return false; // Won't fit
         }
         else {
-            tlvStart = _start;
-            tlvSize = _size;
+            tlv_start = _start;
+            tlv_size = _size;
             return true;
         }
     }
     else if (_start >= 0) {
         // Fixed starting offset, auto size.
-        if (size_t(_start) > dataSize) {
+        if (size_t(_start) > data_size) {
             return false; // Won't fit
         }
         else {
-            tlvStart = _start;
-            tlvSize = longestTLV(data, dataSize, _start);
-            return tlvSize > 0;
+            tlv_start = _start;
+            tlv_size = longestTLV(data, data_size, _start);
+            return tlv_size > 0;
         }
     }
     else {
         // Auto start index, need to find the best matching TLV area.
-        for (size_t index = 0; index < dataSize - tlvSize; index++) {
-            const size_t size = longestTLV(data, dataSize, index);
-            if (size > tlvSize) {
+        for (size_t index = 0; index < data_size - tlv_size; index++) {
+            const size_t size = longestTLV(data, data_size, index);
+            if (size > tlv_size) {
                 // Found a longer match.
-                tlvStart = index;
-                tlvSize = size;
+                tlv_start = index;
+                tlv_size = size;
             }
         }
-        return tlvSize > 0;
+        return tlv_size > 0;
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Compute the size of the longest TLV area starting at tlvStart.
+// Compute the size of the longest TLV area starting at tlv_start.
 //----------------------------------------------------------------------------
 
-size_t ts::TLVSyntax::longestTLV(const uint8_t * data, size_t dataSize, size_t tlvStart) const
+size_t ts::TLVSyntax::longestTLV(const uint8_t * data, size_t data_size, size_t tlv_start) const
 {
     const size_t headerSize = _tag_size + _length_size;
-    size_t index = tlvStart;
-    while (index + headerSize <= dataSize) {
+    size_t index = tlv_start;
+    while (index + headerSize <= data_size) {
         const size_t len = getInt(data + index + _tag_size, _length_size);
         const size_t next = bounded_add(index, bounded_add(headerSize, len));
-        if (next > dataSize) {
+        if (next > data_size) {
             break; // would overflow data area
         }
         index = next;
     }
-    return index - tlvStart;
+    return index - tlv_start;
 }
 
 

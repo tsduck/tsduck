@@ -43,24 +43,24 @@ namespace ts {
         //! Default constructor.
         //! @param [in] start Starting index of the "TLV area" in the "data area". A negative value means "auto".
         //! @param [in] size Size in bytes of the "TLV area". A negative value means "auto".
-        //! @param [in] tagSize Size in bytes of the @e tag field. The valid sizes are 1 (default), 2 and 4.
-        //! @param [in] lengthSize Size in bytes of the @e length field. The valid sizes are 1 (default), 2 and 4.
+        //! @param [in] tag_size Size in bytes of the @e tag field. The valid sizes are 1 (default), 2 and 4.
+        //! @param [in] length_size Size in bytes of the @e length field. The valid sizes are 1 (default), 2 and 4.
         //! @param [in] msb If true, the @e tag and @e length fields are represented in MSB-first.
         //! @param [in,out] report Where to report errors.
         //!
-        TLVSyntax(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, Report& report = CERR);
+        TLVSyntax(int start = -1, int size = -1, size_t tag_size = 1, size_t length_size = 1, bool msb = true, Report& report = CERR);
 
         //!
         //! Set the values of a TLVSyntax object.
         //! @param [in] start Starting index of the "TLV area" in the "data area". A negative value means "auto".
         //! @param [in] size Size in bytes of the "TLV area". A negative value means "auto".
-        //! @param [in] tagSize Size in bytes of the @e tag field. The valid sizes are 1 (default), 2 and 4.
-        //! @param [in] lengthSize Size in bytes of the @e length field. The valid sizes are 1 (default), 2 and 4.
+        //! @param [in] tag_size Size in bytes of the @e tag field. The valid sizes are 1 (default), 2 and 4.
+        //! @param [in] length_size Size in bytes of the @e length field. The valid sizes are 1 (default), 2 and 4.
         //! @param [in] msb If true, the @e tag and @e length fields are represented in MSB-first.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error (invalid sizes).
         //!
-        bool set(int start = -1, int size = -1, size_t tagSize = 1, size_t lengthSize = 1, bool msb = true, Report& report = CERR);
+        bool set(int start = -1, int size = -1, size_t tag_size = 1, size_t length_size = 1, bool msb = true, Report& report = CERR);
 
         //!
         //! Update the TLV syntax to automatically locate the TLV area.
@@ -106,12 +106,12 @@ namespace ts {
         //! Locate the "TLV area" inside a data area.
         //! If the @e start or @e size are set to "auto", return the best match.
         //! @param [in] data Address of the TLV data area.
-        //! @param [in] dataSize Total size in bytes of the data area.
-        //! @param [out] tlvStart Starting offset of the "TLV area" after @a data.
-        //! @param [out] tlvSize Size in bytes of the "TLV area". Zero if no suitable TLV area was found.
+        //! @param [in] data_size Total size in bytes of the data area.
+        //! @param [out] tlv_start Starting offset of the "TLV area" after @a data.
+        //! @param [out] tlv_size Size in bytes of the "TLV area". Zero if no suitable TLV area was found.
         //! @return True if TLV area found, false otherwise.
         //!
-        bool locateTLV(const uint8_t* data, size_t dataSize, size_t& tlvStart, size_t& tlvSize) const;
+        bool locateTLV(const uint8_t* data, size_t data_size, size_t& tlv_start, size_t& tlv_size) const;
 
         //!
         //! Comparison operator, typically used to sort containers of TLVSyntax.
@@ -128,7 +128,7 @@ namespace ts {
         bool   _msb = true;
 
         // Compute the size of the longest TLV area starting at tlvStart.
-        size_t longestTLV(const uint8_t* data, size_t dataSize, size_t tlvStart) const;
+        size_t longestTLV(const uint8_t* data, size_t data_size, size_t tlv_start) const;
 
         // Get an integer in the right byte order.
         uint32_t getInt(const uint8_t* data, size_t size) const;

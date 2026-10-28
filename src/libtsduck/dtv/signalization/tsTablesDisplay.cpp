@@ -471,39 +471,39 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, con
 
     // Section payload.
     const uint8_t* const payload = section.payload();
-    const size_t payloadSize = section.payloadSize();
+    const size_t payload_size = section.payloadSize();
 
     // Current index to display in payload.
     size_t index = 0;
 
     // Loop on all possible TLV syntaxen.
-    for (auto it = _tlv_syntax.begin(); it != _tlv_syntax.end() && index < payloadSize; ++it) {
+    for (auto it = _tlv_syntax.begin(); it != _tlv_syntax.end() && index < payload_size; ++it) {
 
         // Can we locate a TLV area after current index?
-        size_t tlvStart = 0;
-        size_t tlvSize = 0;
-        if (it->locateTLV(payload, payloadSize, tlvStart, tlvSize) && tlvStart >= index && tlvSize > 0) {
+        size_t tlv_start = 0;
+        size_t tlv_size = 0;
+        if (it->locateTLV(payload, payload_size, tlv_start, tlv_size) && tlv_start >= index && tlv_size > 0) {
 
             // Display TLV fields, from index to end of TLV area.
-            const size_t endIndex = index + tlvStart + tlvSize;
+            const size_t end_index = std::min(tlv_start + tlv_size, payload_size);
             displayTLV(payload + index,    // start of area to display
-                       tlvStart - index,   // offset of TLV records in area to display
-                       tlvSize,            // total size of TLV records
+                       tlv_start - index,  // offset of TLV records in area to display
+                       tlv_size,           // total size of TLV records
                        index,              // offset to display for start of area
                        margin.size(),      // left margin
                        0,                  // inner margin
                        *it);               // TLV syntax
-            index = endIndex;
+            index = end_index;
 
             // Display a separator after TLV area.
-            if (index < payloadSize) {
+            if (index < payload_size) {
                 strm << margin << UString::Format(u"%04X:  End of TLV area", index) << std::endl;
             }
         }
     }
 
     // Display remaining binary data.
-    strm << UString::Dump(payload + index, payloadSize - index, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size(), UString::DEFAULT_HEXA_LINE_WIDTH, index);
+    strm << UString::Dump(payload + index, payload_size - index, UString::HEXA | UString::ASCII | UString::OFFSET, margin.size(), UString::DEFAULT_HEXA_LINE_WIDTH, index);
 }
 
 
