@@ -228,8 +228,8 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         const size_t entry_size = 5 + it.second.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
-        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, buf);
+        if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size && !addOneSection(table, buf)) {
+            return;
         }
 
         // Insert service entry

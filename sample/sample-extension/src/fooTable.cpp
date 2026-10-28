@@ -101,7 +101,9 @@ void foo::FooTable::serializePayload(ts::BinaryTable& table, ts::PSIBuffer& buf)
         desc_index = buf.putPartialDescriptorListWithLength(descs, desc_index);
 
         // Add this section. The payload buffer is reset on return.
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
     } while (name_index < name.size() || desc_index < descs.size());
 }
 

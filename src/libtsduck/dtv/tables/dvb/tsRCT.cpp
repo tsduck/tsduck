@@ -226,7 +226,9 @@ void ts::RCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             buf.clearError();
             buf.popState();
             // Close the section, open a new one.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // Reset number of links in buffer for next section.
             link_count = 0;
             buf.pushState();
@@ -263,7 +265,9 @@ void ts::RCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             break;
         }
         else {
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // Reset number of links in buffer for next section.
             link_count = 0;
             buf.pushState();

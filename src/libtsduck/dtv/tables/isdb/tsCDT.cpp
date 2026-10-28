@@ -115,7 +115,9 @@ void ts::CDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     while (table.sectionCount() == 0 || desc_index < descs.size() || data_index < data_module.size()) {
         desc_index = buf.putPartialDescriptorListWithLength(descs, desc_index);
         data_index += buf.putBytes(data_module, data_index, std::min(data_module.size() - data_index, buf.remainingWriteBytes()));
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
     }
 }
 

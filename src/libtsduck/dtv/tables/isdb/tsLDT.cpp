@@ -122,7 +122,9 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // entry fits in the section. If it does not fit, start a new section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
 
         // Serialize the characteristics of the description. When the section is not large enough to hold
@@ -140,7 +142,9 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
             // Not all descriptors were written, the section is full.
             // Open a new one and continue with this entry.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
     }
 }

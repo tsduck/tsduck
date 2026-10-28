@@ -126,7 +126,9 @@ void ts::LIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // event description fits in the section. If it does not fit, start a new section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
 
         // Serialize local event. If descriptor loop is too long, it is truncated.

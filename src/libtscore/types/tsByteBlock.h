@@ -132,7 +132,7 @@ namespace ts {
         //! And operator: binary "and" of all bytes with a given value.
         //! @param [in] value The value to "and" with all bytes.
         //!
-        void binAnd(uint8_t value);
+        TSCOREDLL void binAnd(uint8_t value);
 
         //!
         //! Binary "and" operator from two other byte blocks.
@@ -145,13 +145,13 @@ namespace ts {
         //! @param [in] count2 Number of bytes to use in @a bb2.
         //! @param [in] pad If @a bb1 and @a bb2 don't have the same size, use this value to "and" the part in excess (default: unchanged).
         //!
-        void binAnd(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0xFF);
+        TSCOREDLL void binAnd(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0xFF);
 
         //!
         //! Or operator: binary "or" of all bytes with a given value.
         //! @param [in] value The value to "or" with all bytes.
         //!
-        void binOr(uint8_t value);
+        TSCOREDLL void binOr(uint8_t value);
 
         //!
         //! Binary "or" operator from two other byte blocks.
@@ -164,13 +164,13 @@ namespace ts {
         //! @param [in] count2 Number of bytes to use in @a bb2.
         //! @param [in] pad If @a bb1 and @a bb2 don't have the same size, use this value to "or" the part in excess (default: unchanged).
         //!
-        void binOr(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0x00);
+        TSCOREDLL void binOr(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0x00);
 
         //!
         //! Xor operator: binary "xor" of all bytes with a given value.
         //! @param [in] value The value to "xor" with all bytes.
         //!
-        void binXor(uint8_t value);
+        TSCOREDLL void binXor(uint8_t value);
 
         //!
         //! Binary "xor" operator from two other byte blocks.
@@ -183,12 +183,12 @@ namespace ts {
         //! @param [in] count2 Number of bytes to use in @a bb2.
         //! @param [in] pad If @a bb1 and @a bb2 don't have the same size, use this value to "xor" the part in excess (default: unchanged).
         //!
-        void binXor(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0x00);
+        TSCOREDLL void binXor(const ByteBlock& bb1, const ByteBlock& bb2, size_type start1 = 0, size_type count1 = NPOS, size_type start2 = 0, size_type count2 = NPOS, uint8_t pad = 0x00);
 
         //!
         //! Not operator: binary "not" or "complement" of all bytes.
         //!
-        void binNot();
+        TSCOREDLL void binNot();
 
         //!
         //! Find the first occurrence of a byte value in a byte block.
@@ -213,7 +213,7 @@ namespace ts {
         //! @param [in] value The value to set to all bytes.
         //! @param [in] size New size of the byte block.
         //!
-        TSCOREDLL void set(uint8_t value, size_type size)
+        void set(uint8_t value, size_type size)
         {
             resize(size);
             set(value);

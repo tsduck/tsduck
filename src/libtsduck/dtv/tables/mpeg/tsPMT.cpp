@@ -140,8 +140,8 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         if (buf.error() || start >= descs.size()) {
             break;
         }
-        else {
-            addOneSection(table, buf);
+        else if (!addOneSection(table, buf)) {
+            return;
         }
     }
 
@@ -161,7 +161,9 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             buf.putPartialDescriptorListWithLength(descs, 0, 0);
         }
 

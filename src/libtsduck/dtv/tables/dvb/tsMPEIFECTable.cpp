@@ -118,8 +118,8 @@ void ts::MPEIFECTable::serializePayload(BinaryTable& table, PSIBuffer& buf) cons
     for (size_t i = 0; i < bursts.size(); ++i) {
         bursts[i].rt.serializePayload(buf);
         buf.putBytes(bursts[i].IFEC_data);
-        if (i < bursts.size() - 1) {
-            addOneSection(table, buf);
+        if (i < bursts.size() - 1 && !addOneSection(table, buf)) {
+            return;
         }
     }
 }

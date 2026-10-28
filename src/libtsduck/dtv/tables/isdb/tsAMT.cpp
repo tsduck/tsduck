@@ -124,7 +124,9 @@ void ts::AMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             buf.writeSeek(0);
             buf.putBits(num_of_service_id, 10);
             buf.popState();
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
 
         // Serialize the service entry.

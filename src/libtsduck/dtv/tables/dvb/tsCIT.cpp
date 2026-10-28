@@ -154,7 +154,9 @@ void ts::CIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             retry = true;
             buf.popState(); // return to previous state before current CRID.
             buf.clearError();
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
     }
 }

@@ -143,7 +143,9 @@ void ts::AbstractTransportListTable::addSection(BinaryTable& table, PSIBuffer& p
     payload.popState();
 
     // Add the section and reset buffer.
-    addOneSection(table, payload);
+    if (!addOneSection(table, payload)) {
+        return;
+    }
 
     // Prepare for the next section if necessary.
     if (!last_section) {
@@ -219,7 +221,9 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
             // There are remaining top-level descriptors, flush current section.
             // Add a zero transport_stream_loop_length.
             buf.putUInt16(0xF000);
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
     }
 

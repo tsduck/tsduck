@@ -137,8 +137,8 @@ void ts::ContainerTable::serializePayload(BinaryTable& table, PSIBuffer& buf) co
         buf.putBytes(data, size);
         data += size;
         remain -= size;
-        if (remain > 0) {
-            addOneSection(table, buf);
+        if (remain > 0 && !addOneSection(table, buf)) {
+            return;
         }
     } while (remain > 0);
 }

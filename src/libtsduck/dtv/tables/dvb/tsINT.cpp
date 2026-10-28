@@ -158,7 +158,9 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Need to close the section and open a new one.
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
     }
 
     // Minimum size of a section: fixed part and empty top-level descriptor list.
@@ -175,7 +177,9 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             buf.putPartialDescriptorListWithLength(platform_descs, 0, 0);
         }
 

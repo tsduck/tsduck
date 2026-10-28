@@ -132,7 +132,9 @@ void ts::ATSCEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // event fits in the section. If it does not fit, start a new section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // We are at the position of num_events_in_section in the new section.
             buf.putUInt8(num_events_in_section = 0);
         }

@@ -120,7 +120,9 @@ void ts::NRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             // Finish the section.
             buf.putUInt16(0); // private_data_length
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // We are at the position of resource_descriptor_count_in_section in the new section.
             buf.putUInt8(resource_descriptor_count_in_section = 0);
         }
@@ -140,7 +142,9 @@ void ts::NRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     if (2 + private_data.size() > buf.remainingWriteBytes()) {
         // Complete the section and creates a new one.
         buf.putUInt16(0); // private_data_length
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
         // We are at the position of resource_descriptor_count_in_section in the new section.
         buf.putUInt8(0);  // resource_descriptor_count_in_section
     }

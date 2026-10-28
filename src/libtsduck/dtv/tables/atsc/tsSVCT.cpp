@@ -207,7 +207,9 @@ void ts::SVCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             // Create an empty trailing descriptor list.
             buf.putUInt16(0xFC00);
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // We are at the position of num_channels_in_section in the new section.
             buf.putUInt8(num_channels_in_section = 0);
         }
@@ -259,7 +261,9 @@ void ts::SVCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         start = buf.putPartialDescriptorListWithLength(descs, start, NPOS, 10);
         if (start < descs.size()) {
             // Too many descriptors to fit in this section, flush current section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // We are at the position of num_channels_in_section in the new section.
             // There is no channel entry in this section.
             buf.putUInt8(0);

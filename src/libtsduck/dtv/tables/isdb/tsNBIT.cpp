@@ -124,7 +124,9 @@ void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // of the information loop. In that case, the information will span two sections later.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > 0) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
 
         // Serialize the characteristics of the information set. Since the number of key ids is less
@@ -158,7 +160,9 @@ void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
             // Not all descriptors were written, the section is full.
             // Open a new one and continue with this information entry.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
     }
 }

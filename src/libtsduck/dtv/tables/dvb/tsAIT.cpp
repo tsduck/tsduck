@@ -155,7 +155,9 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             // There are remaining top-level descriptors, flush current section.
             // Add a zero application_loop_length.
             buf.putUInt16(0xF000);
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
     }
 
@@ -199,7 +201,7 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // Add a new section to a table being serialized, while in application loop.
 //----------------------------------------------------------------------------
 
-void ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const
+bool ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const
 {
     // The read/write state was pushed just before application_loop_length.
 
@@ -207,10 +209,10 @@ void ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_secti
     payload.popState();
 
     // Add the section and reset buffer.
-    addOneSection(table, payload);
+    bool ok = addOneSection(table, payload);
 
     // Prepare for the next section if necessary.
-    if (!last_section) {
+    if (ok && !last_section) {
         // Empty (zero-length) top-level descriptor list.
         payload.putUInt16(0xF000);
 
@@ -218,6 +220,7 @@ void ts::AIT::addSection(BinaryTable& table, PSIBuffer& payload, bool last_secti
         payload.putBits(0xFF, 4);
         payload.pushWriteSequenceWithLeadingLength(12);
     }
+    return ok;
 }
 
 

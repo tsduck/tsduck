@@ -92,7 +92,9 @@ void ts::AbstractDescriptorsTable::serializePayload(BinaryTable& table, PSIBuffe
     size_t start = 0;
     while (!buf.error() && start < descs.size()) {
         start = buf.putPartialDescriptorList(descs, start);
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
     }
 }
 

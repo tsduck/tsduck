@@ -97,8 +97,7 @@ void ts::ITT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     size_t start_index = 0;
     do {
         start_index = buf.putPartialDescriptorListWithLength(descs, start_index);
-        addOneSection(table, buf);
-    } while (start_index < descs.count());
+    } while (addOneSection(table, buf) && start_index < descs.count());
 }
 
 

@@ -105,6 +105,6 @@ namespace ts {
 
     private:
         // Add a new section to a table being serialized, while inside transport loop.
-        void addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const;
+        bool addSection(BinaryTable& table, PSIBuffer& payload, bool last_section) const;
     };
 }

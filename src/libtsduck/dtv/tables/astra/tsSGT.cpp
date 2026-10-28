@@ -138,7 +138,9 @@ void ts::SGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             // There are remaining top-level descriptors, flush current section.
             // Add a zero service_loop_length.
             buf.putUInt16(0xF000);
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
         }
     }
 
@@ -159,7 +161,9 @@ void ts::SGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             buf.popState();
 
             // Add the section and reset buffer.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
 
             // Restart a new section with empty top-level descriptor list.
             buf.putReserved(16);

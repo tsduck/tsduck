@@ -242,7 +242,7 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
     }
     else if (table.sectionCount() == 0) {
         // No section were added, add this one, even if empty.
-        addOneSection(table, payload);
+        ok = addOneSection(table, payload);
     }
     else {
         // Some sections were already added. Check if we need to add a last one.
@@ -259,15 +259,14 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
         }
         // Finally, add the section if necessary.
         if (add) {
-            addOneSection(table, payload);
+            ok = addOneSection(table, payload);
         }
-        ok = !payload.error();
     }
 
 
     // Transfer generic attributes.
     table.setAttribute(_attribute);
-    return ok;
+    return ok && !payload.error();
 }
 
 
@@ -275,7 +274,7 @@ bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
 // Helper method for serializePayload(): add a section in a binary table
 //----------------------------------------------------------------------------
 
-void ts::AbstractTable::addOneSection(BinaryTable& table, PSIBuffer& payload) const
+bool ts::AbstractTable::addOneSection(BinaryTable& table, PSIBuffer& payload) const
 {
     // In case of error in the buffer, do not use it, do not reset it.
     if (!payload.error()) {
@@ -295,6 +294,7 @@ void ts::AbstractTable::addOneSection(BinaryTable& table, PSIBuffer& payload) co
             payload.writeSeek(0);
         }
     }
+    return !payload.error();
 }
 
 void ts::AbstractTable::addOneSectionImpl(BinaryTable &table, PSIBuffer &payload) const

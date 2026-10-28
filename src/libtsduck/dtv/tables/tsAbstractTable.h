@@ -491,8 +491,9 @@ namespace ts {
         //!
         //! @param [in,out] table The binary table into which the new section shall be added.
         //! @param [in,out] payload A PSIBuffer containing the section payload between the read and the write pointer.
+        //! @return True on success, false on error, especially when trying to create more sections than allowed.
         //!
-        void addOneSection(BinaryTable& table, PSIBuffer& payload) const;
+        bool addOneSection(BinaryTable& table, PSIBuffer& payload) const;
 
         //!
         //! Actual implementation of adding one section in a binary table.

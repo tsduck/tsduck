@@ -130,7 +130,9 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Need to close the section and open a new one.
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
     }
 
     // Minimal payload size, with an empty top-level descriptor list.
@@ -147,7 +149,9 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // entry fits in the section. If it does not fit, start a new section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // Insert an empty top-level descriptor list.
             buf.putUInt16(broadcast_view_propriety ? 0xF000 : 0xE000);
         }

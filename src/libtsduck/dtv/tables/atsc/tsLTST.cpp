@@ -160,7 +160,9 @@ void ts::LTST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // data source fits in the section. If it does not fit, start a new section.
         if (src_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // We are at the position of num_source_id_in_section in the new section.
             buf.putUInt8(num_source_id_in_section = 0);
         }

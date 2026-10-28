@@ -108,7 +108,9 @@ void ts::DCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         const size_t str_size = 8 + 4 * str.models.size();
         if (str_size > buf.remainingWriteBytes()) {
             // This transport stream entry won't fit in current section. Close it and open another one.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             if (buf.currentWriteByteOffset() == start) {
                 // This is the first entry in this section and it does not fit => too large.
                 buf.setUserError();

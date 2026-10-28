@@ -116,8 +116,8 @@ void ts::MPEFECTable::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     for (size_t i = 0; i < columns.size(); ++i) {
         columns[i].rt.serializePayload(buf);
         buf.putBytes(columns[i].rs_data);
-        if (i < columns.size() - 1) {
-            addOneSection(table, buf);
+        if (i < columns.size() - 1 && !addOneSection(table, buf)) {
+            return;
         }
     }
 }

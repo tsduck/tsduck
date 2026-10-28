@@ -149,7 +149,9 @@ void ts::DSMCCDownloadDataMessage::serializePayload(BinaryTable& table, PSIBuffe
 
         buf.popState();  // message_length
 
-        addOneSection(table, buf);
+        if (!addOneSection(table, buf)) {
+            return;
+        }
 
         cur_block_number++;
     }

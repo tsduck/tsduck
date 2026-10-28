@@ -180,8 +180,8 @@ void ts::UNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         if (buf.error() || start >= descs.size()) {
             break;
         }
-        else {
-            addOneSection(table, buf);
+        else if (!addOneSection(table, buf)) {
+            return;
         }
     }
 
@@ -225,7 +225,9 @@ void ts::UNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             retry = true;
             buf.popState(); // return to previous state before current set of devices
             buf.clearError();
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             buf.putUInt16(0xF000); // empty common_descriptor_loop.
         }
     }

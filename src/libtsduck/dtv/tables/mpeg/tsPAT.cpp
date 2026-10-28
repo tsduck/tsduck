@@ -108,8 +108,8 @@ void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     for (auto& it : pmts) {
 
         // If current section payload is full, close the current section.
-        if (buf.remainingWriteBytes() < 4) {
-            addOneSection(table, buf);
+        if (buf.remainingWriteBytes() < 4 && !addOneSection(table, buf)) {
+            return;
         }
 
         // Add current service entry into the PAT section

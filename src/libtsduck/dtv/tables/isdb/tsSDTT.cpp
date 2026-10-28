@@ -153,7 +153,9 @@ void ts::SDTT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // have an entry which is too large, even in first position, it will be truncated.
         if (entry_size > buf.remainingWriteBytes() && num_of_contents > 0) {
             // Create a new section.
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             // Reset number of contents in buffer for next section.
             num_of_contents = 0;
             buf.pushState();

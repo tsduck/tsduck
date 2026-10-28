@@ -157,9 +157,9 @@ void ts::RNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             // Top-level descriptor list completed.
             break;
         }
-        else {
+        else if (!addOneSection(table, buf)) {
             // There are remaining top-level descriptors, flush current section.
-            addOneSection(table, buf);
+            return;
         }
     }
 
@@ -205,7 +205,9 @@ void ts::RNT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             buf.dropState();    // drop sequence with length field
             buf.popState();     // return to previous state before current provider
             buf.clearError();   // pretend there was no error when back to retry position
-            addOneSection(table, buf);
+            if (!addOneSection(table, buf)) {
+                return;
+            }
             buf.putUInt16(0xF000); // empty top-level descriptor list
         }
     }
