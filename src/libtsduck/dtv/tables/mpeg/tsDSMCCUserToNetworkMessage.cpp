@@ -212,7 +212,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
         const uint16_t number_of_modules = buf.getUInt16();
 
-        for (size_t i = 0; i < number_of_modules; i++) {
+        for (size_t i = 0; !buf.error() && i < number_of_modules; i++) {
             DownloadInfoIndication::Module& module(dii.modules.newEntry());
 
             module.module_id = buf.getUInt16();
@@ -229,7 +229,7 @@ void ts::DSMCCUserToNetworkMessage::deserializePayload(PSIBuffer& buf, const Sec
 
                 const uint8_t taps_count = buf.getUInt8();
 
-                for (size_t j = 0; j < taps_count; j++) {
+                for (size_t j = 0; !buf.error() && j < taps_count; j++) {
                     DSMCCTap& tap(module.taps.emplace_back());
                     tap.deserialize(buf);
                 }
@@ -414,11 +414,11 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
 
         uint16_t number_of_modules = buf.getUInt16();
 
-        for (size_t i = 0; i < number_of_modules; i++) {
+        for (size_t i = 0; buf.canReadBytes(7) && i < number_of_modules; i++) {
 
             uint16_t module_id = buf.getUInt16();
             uint32_t module_size = buf.getUInt32();
-            uint8_t module_version = buf.getUInt8();
+            uint8_t  module_version = buf.getUInt8();
 
             disp << margin << UString::Format(u"Module id: %n", module_id) << std::endl;
             disp << margin << UString::Format(u"Module size: %n", module_size) << std::endl;
@@ -426,12 +426,12 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
 
             buf.pushReadSizeFromLength(8);  // module_info_length
 
-            if (buf.remainingReadBytes() > 0) {
+            if (buf.canReadBytes(13)) {
 
                 uint32_t module_timeout = buf.getUInt32();
                 uint32_t block_timeout = buf.getUInt32();
                 uint32_t min_block_time = buf.getUInt32();
-                uint8_t taps_count = buf.getUInt8();
+                uint8_t  taps_count = buf.getUInt8();
 
                 disp << margin << UString::Format(u"Module timeout: %n", module_timeout) << std::endl;
                 disp << margin << UString::Format(u"Block timeout: %n", block_timeout) << std::endl;
@@ -439,7 +439,7 @@ void ts::DSMCCUserToNetworkMessage::DisplaySection(TablesDisplay& disp, const ts
                 disp << margin << UString::Format(u"Taps count: %n", taps_count) << std::endl;
 
                 bool ok = true;
-                for (size_t k = 0; ok && k < taps_count; k++) {
+                for (size_t k = 0; ok && !buf.error() && k < taps_count; k++) {
                     ok = DSMCCTap::Display(disp, buf, margin);
                 }
 

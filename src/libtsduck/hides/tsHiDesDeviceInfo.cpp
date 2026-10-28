@@ -46,6 +46,7 @@ void ts::HiDesDeviceInfo::clear()
     hw_info.clear();
 }
 
+
 //----------------------------------------------------------------------------
 // Left part of full listing.
 //----------------------------------------------------------------------------
@@ -67,47 +68,47 @@ ts::UString ts::HiDesDeviceInfo::toString(bool full, size_t indent) const
     if (full) {
         // One line per characteristics, when present.
         if (index >= 0) {
-            s += title(index, u"Index") + UString::Format(u"%d\n", index);
+            s += title(indent, u"Index") + UString::Format(u"%d\n", index);
         }
         if (!name.empty()) {
-            s += title(index, u"Name") + UString::Format(u"\"%s\"\n", name);
+            s += title(indent, u"Name") + UString::Format(u"\"%s\"\n", name);
         }
         if (!path.empty() && path != name) {
-            s += title(index, u"Device") + path + u"\n";
+            s += title(indent, u"Device") + path + u"\n";
         }
         if (usb_mode != 0) {
-            s += title(index, u"USB mode") + UString::Format(u"0x%X\n", usb_mode);
+            s += title(indent, u"USB mode") + UString::Format(u"0x%X\n", usb_mode);
         }
         if (vendor_id != 0) {
-            s += title(index, u"Vendor id") + UString::Format(u"0x%X\n", vendor_id);
+            s += title(indent, u"Vendor id") + UString::Format(u"0x%X\n", vendor_id);
         }
         if (product_id != 0) {
-            s += title(index, u"Product id") + UString::Format(u"0x%X\n", product_id);
+            s += title(indent, u"Product id") + UString::Format(u"0x%X\n", product_id);
         }
         if (chip_type != 0) {
-            s += title(index, u"Chip type") + UString::Format(u"0x%X\n", chip_type);
+            s += title(indent, u"Chip type") + UString::Format(u"0x%X\n", chip_type);
         }
         if (device_type >= 0) {
             // TODO: replace by names if possible.
-            s += title(index, u"Device type") + UString::Format(u"%d\n", device_type);
+            s += title(indent, u"Device type") + UString::Format(u"%d\n", device_type);
         }
         if (!driver_version.empty()) {
-            s += title(index, u"Driver version") + driver_version + u"\n";
+            s += title(indent, u"Driver version") + driver_version + u"\n";
         }
         if (!api_version.empty()) {
-            s += title(index, u"API version") + api_version + u"\n";
+            s += title(indent, u"API version") + api_version + u"\n";
         }
         if (!link_fw_version.empty()) {
-            s += title(index, u"Link firmware") + link_fw_version + u"\n";
+            s += title(indent, u"Link firmware") + link_fw_version + u"\n";
         }
         if (!ofdm_fw_version.empty()) {
-            s += title(index, u"OFDM firmware") + ofdm_fw_version + u"\n";
+            s += title(indent, u"OFDM firmware") + ofdm_fw_version + u"\n";
         }
         if (!company.empty()) {
-            s += title(index, u"Company") + company + u"\n";
+            s += title(indent, u"Company") + company + u"\n";
         }
         if (!hw_info.empty()) {
-            s += title(index, u"Hardware info") + hw_info + u"\n";
+            s += title(indent, u"Hardware info") + hw_info + u"\n";
         }
     }
     else {

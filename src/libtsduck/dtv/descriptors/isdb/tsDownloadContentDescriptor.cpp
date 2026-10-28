@@ -104,7 +104,7 @@ void ts::DownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
         compatibility_descriptor.deserialize(buf);
     }
     if (module_info_flag) {
-        for (size_t count = buf.getUInt16(); count > 0; --count) {
+        for (size_t count = buf.getUInt16(); count > 0 && buf.canRead(); --count) {
             module_info.emplace_back();
             module_info.back().deserializePayload(buf);
         }

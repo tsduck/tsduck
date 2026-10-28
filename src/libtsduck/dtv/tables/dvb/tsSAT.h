@@ -685,7 +685,8 @@ namespace ts {
 
             private:
                 bool hasEphemerisAcceleration();
-                bool hasEphemerisAcceleration2() {
+                bool hasEphemerisAcceleration2()
+                {
                     return !ephemeris_data.empty() && ephemeris_data[0].hasAcceleration();
                 }
             };

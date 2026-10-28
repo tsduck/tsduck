@@ -426,10 +426,10 @@ void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
     buf.putBit(last_occurrence);
     if (first_occurrence) {
         buf.putReservedZero(4);
-        buf.putBits(center_latitude.value(), 18);
+        buf.putBits(center_latitude.value_or(0xFFFFFFFF), 18);
         buf.putReservedZero(5);
-        buf.putBits(center_longitude.value(), 19);
-        buf.putBits(max_distance.value(), 24);
+        buf.putBits(center_longitude.value_or(0xFFFFFFFF), 19);
+        buf.putBits(max_distance.value_or(0xFFFFFFFF), 24);
         buf.putReservedZero(6);
     }
     else {
@@ -1201,7 +1201,7 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::deserialize(PS
         metadata = sat_metadata;
     }
     uint16_t ephemeris_data_count = buf.getUInt16();
-    for (auto i = 0; (i < ephemeris_data_count) && buf.canReadBytes(31); i++) {
+    for (auto i = 0; i < ephemeris_data_count && buf.canReadBytes(31); i++) {
         v3_satellite_ephemeris_data_type e(buf, ephemeris_accel_flag);
         ephemeris_data.push_back(e);
     }
@@ -1359,7 +1359,7 @@ void ts::SAT::satellite_position_v3_info_type::display(TablesDisplay& disp, PSIB
             }
         }
         uint16_t ephemeris_data_count = buf.getUInt16();
-        for (uint16_t j = 0; j < ephemeris_data_count; j++) {
+        for (uint16_t j = 0; j < ephemeris_data_count && buf.canReadBytes(31); j++) {
             disp << margin << " Ephemeris data [" << j << "] epoch: ";
             v3_satellite_time::display(disp, buf);
             disp << std::endl;

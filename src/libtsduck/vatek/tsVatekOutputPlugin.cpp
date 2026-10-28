@@ -486,6 +486,17 @@ bool ts::VatekOutputPlugin::stop()
 
 bool ts::VatekOutputPlugin::Guts::stop()
 {
+    // TODO: In the original version from VATek, m_slicebuf is not reset. It is used exclusively
+    // in send() where the buffer survives from send() to send(). So, if m_slicebuf is not reset
+    // here, the next send() in the next session will reuse the one from a previous session. The
+    // question is: should we "free" the resource behind it or will the subsequent close operations
+    // free the buffers? In send(), vatek_ustream_async_commit_buffer() is used before m_slicebuf
+    // is nullified but it is unclear if it frees the buffer or not. And if we call it now, will
+    // it work, will it interfere with the state of the buffer? Without clear documentation, it is
+    // better to simply nullify it. It may cause a memory leak but, if we don't nullify it, there
+    // is a risk of use-after-free, which is worse.
+    m_slicebuf = nullptr;
+
     if (m_husbstream) {
         usbstream_status status = vatek_usbstream_get_status(m_husbstream, nullptr);
         if (status == usbstream_status_running || status == usbstream_status_moredata) {
@@ -530,7 +541,7 @@ bool ts::VatekOutputPlugin::Guts::send(const TSPacket* pkts, const TSPacketMetad
 
         size_t remain = packet_count;
         while (remain > 0) {
-            if (!m_slicebuf) {
+            if (m_slicebuf == nullptr) {
                 nres = vatek_ustream_async_get_buffer(m_husbstream, &m_slicebuf);
             }
             else {

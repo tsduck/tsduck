@@ -39,10 +39,10 @@ namespace ts {
 
         public:
             // DSMCCUserToNetworkMessage public members:
-            uint8_t protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
-            uint8_t dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
-            uint16_t message_id = 0;                                        //!< Indicates type of message which is being passed.
-            uint32_t transaction_id = 0;                                    //!< Used for session integrity and error processing.
+            uint8_t  protocol_discriminator = DSMCC_PROTOCOL_DISCRIMINATOR;  //!< Indicates that the message is MPEG-2 DSM-CC message.
+            uint8_t  dsmcc_type = DSMCC_TYPE_DOWNLOAD_MESSAGE;               //!< Indicates type of MPEG-2 DSM-CC message.
+            uint16_t message_id = 0;                                         //!< Indicates type of message which is being passed.
+            uint32_t transaction_id = 0;                                     //!< Used for session integrity and error processing.
 
             //!
             //! Default constructor.
@@ -62,9 +62,9 @@ namespace ts {
         //! DSM-CC DownloadServerInitiate (DSI) message body.
         //!
         struct TSDUCKDLL DownloadServerInitiate {
-            ByteBlock server_id {};                 //!< Field shall be set to 20 bytes with the value 0xFF.
-            DSMCCIOR ior {};                        //!< IOR structure (object carousel; populated when type_id == "srg").
-            DSMCCGroupInfoIndication group_info {}; //!< GroupInfoIndication (data carousel; populated otherwise).
+            ByteBlock server_id {};                  //!< Field shall be set to 20 bytes with the value 0xFF.
+            DSMCCIOR  ior {};                        //!< IOR structure (object carousel; populated when type_id == "srg").
+            DSMCCGroupInfoIndication group_info {};  //!< GroupInfoIndication (data carousel; populated otherwise).
 
             //!
             //! Reset the DSI body to its default state.
@@ -100,7 +100,7 @@ namespace ts {
             public:
                 uint16_t module_id = 0;       //!< Identifies the module.
                 uint32_t module_size = 0;     //!< Length of the module in bytes.
-                uint8_t module_version = 0;   //!< Identifies the version of the module.
+                uint8_t  module_version = 0;  //!< Identifies the version of the module.
                 uint32_t module_timeout = 0;  //!< Time out value in microseconds that may be used to time out the acquisition of all Blocks of the Module.
                 uint32_t block_timeout = 0;   //!< Time out value in microseconds that may be used to time out the reception of the next Block after a Block has been acquired.
                 uint32_t min_block_time = 0;  //!< Indicates the minimum time period that exists between the delivery of two subsequent Blocks of the Module.
