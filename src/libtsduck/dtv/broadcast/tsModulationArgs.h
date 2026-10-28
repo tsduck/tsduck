@@ -412,6 +412,15 @@ namespace ts {
         //! Default value for inner stream id.
         //!
         static constexpr uint32_t DEFAULT_STREAM_ID = STREAM_ID_DISABLE;
+        //!
+        //! Allow the tuner emulator to run processes using pipes.
+        //! The TSDuck tuner emulator uses XML files to describe transport streams in an emulated network.
+        //! The content of a transport stream can be read from a file or from the output of a piped command.
+        //! By default, running commands through the emulator is disabled for security reasons. This option
+        //! authorizes the creation of processes.
+        //! Applies to: TSDuck tuner emulator.
+        //!
+        bool allow_emulator_pipes = false;
 
         //!
         //! Default constructor.

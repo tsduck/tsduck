@@ -2,7 +2,13 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4847 (October 2026)
+VERSION 3.46-4887 (October 2026)
+
+[INC] Incompatibilities with previous versions:
+
+  * For security reasons, running piped commands from a tuner emulator XML file
+    is  no longer allowed by default.  Use the option --allow-emulator-pipes to
+    indicate that you specifically allow running them.
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -28,6 +34,8 @@ VERSION 3.46-4847 (October 2026)
       plugins "srt".
   * New options in existing commands and plugins:
     - Option --display-url in plugins "srt".
+    - Option --max-encrypted-segment-size in input plugin "hls".
+    - Option --allow-emulator-pipes in "tsscan" and input plugin "dvb".
 
 [BUG] Bug fixes:
 

@@ -55,7 +55,7 @@ void ts::mcast::NIPDemux::addProtocolSession(const TransportProtocol& protocol, 
         addSession(session);
     }
     else {
-        _report.warning(u"ignoring session %s, unsupported protocol %s", protocol.protocol_identifier);
+        _report.warning(u"ignoring session %s, unsupported protocol %s", session, protocol.protocol_identifier);
     }
 }
 

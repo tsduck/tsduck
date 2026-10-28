@@ -40,6 +40,9 @@ namespace ts::hls {
         virtual bool receiveURL(WebRequest&, void*, size_t, size_t&) override;
 
     private:
+        // Maximum size of an encrypted segment (32 MB, equivalent to 32 seconds @8Mb/s).
+        static constexpr size_t DEFAULT_MAX_ENCR_SEG_SIZE = 32 * 1024 * 1024;
+
         // Command line options:
         URL     _url {};
         BitRate _min_rate = 0;
@@ -55,6 +58,7 @@ namespace ts::hls {
         bool    _lowest_res = false;
         bool    _highest_res = false;
         size_t  _max_segment_count = 0;
+        size_t  _max_encrypted_segment_size = DEFAULT_MAX_ENCR_SEG_SIZE;
         bool    _alt_selection = false;
         UString _alt_type {};
         UString _alt_name {};

@@ -72,11 +72,11 @@ void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
         media.file_path = media.url.getPath();
     }
     else if (_original.empty()) {
-        // The playlist has no file name of URL, use the provided URI only (must be fully specified).
+        // The playlist has no file name or URL, use the provided URI only (must be fully specified).
         media.relative_uri = uri;
         media.url.setURL(uri);
         if (media.url.isValid()) {
-            media.file_path.clear();
+            media.file_path = media.url.getPath();
         }
         else {
             media.file_path = uri;

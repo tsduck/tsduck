@@ -8,7 +8,6 @@
 
 #include "tshlsInputPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsFileUtils.h"
 #include "tsAES128.h"
 #include "tsAES256.h"
 
@@ -114,6 +113,11 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
          u"Stop receiving the HLS stream after receiving the specified number of media segments. "
          u"By default, receive the complete content.");
 
+    option(u"max-encrypted-segment-size", 0, POSITIVE);
+    help(u"max-encrypted-segment-size",
+         u"Maximum size in bytes of encrypted segments. "
+         u"The default is " + UString::Decimal(DEFAULT_MAX_ENCR_SEG_SIZE) + u" bytes.");
+
     option(u"live");
     help(u"live",
          u"Specify that the input is a live stream and the playout shall start at the last segment in the playlist.\n"
@@ -157,6 +161,7 @@ bool ts::hls::InputPlugin::getOptions()
     getIntValue(_min_height, u"min-height");
     getIntValue(_max_height, u"max-height");
     getIntValue(_start_segment, u"start-segment");
+    getIntValue(_max_encrypted_segment_size, u"max-encrypted-segment-size", DEFAULT_MAX_ENCR_SEG_SIZE);
     _lowest_rate = present(u"lowest-bitrate");
     _highest_rate = present(u"highest-bitrate");
     _lowest_res = present(u"lowest-resolution");
@@ -224,7 +229,7 @@ bool ts::hls::InputPlugin::start()
     _seg_key.clear();
     _seg_iv.clear();
     _seg_data.clear();
-    _seg_size  = _seg_next = _seg_end = 0;
+    _seg_size = _seg_next = _seg_end = 0;
 
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
@@ -329,7 +334,7 @@ bool ts::hls::InputPlugin::start()
     }
     else if (_start_segment > 0) {
         // Start index from the start of playlist.
-        if (seg_count + 1 < size_t(_start_segment)) {
+        if (seg_count <= size_t(_start_segment)) {
             warning(u"playlist has only %d segments, starting at last one", seg_count);
             seg_count = 1;
         }
@@ -505,8 +510,8 @@ bool ts::hls::InputPlugin::initSegmentDecryption(WebRequest& request, const Medi
     }
     _seg_key = *keyp;
 
-    // The possible segment size is computed from the segment bitrate and duraction, if specified.
-    _seg_size = size_t(ByteDistance(seg.bitrate, seg.duration));
+    // The possible segment size is computed from the segment bitrate and duration, if specified.
+    _seg_size = std::min(size_t(ByteDistance(seg.bitrate, seg.duration)), _max_encrypted_segment_size);
     _seg_next = NPOS;
     _seg_end = 0;
 
@@ -531,9 +536,16 @@ bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t 
     if (_seg_next == NPOS) {
         // Try to preallocate a large enough buffer.
         static constexpr size_t chunk_size = Device::DEFAULT_RECEIVE_BUFFER_SIZE;
-        const size_t size = std::max(chunk_size, std::max(_seg_size, request.status().announcedContentSize())) + 128;
-        if (size > _seg_data.size()) {
-            _seg_data.resize(size);
+        size_t initial_size = request.status().announcedContentSize();
+        if (initial_size  > _max_encrypted_segment_size) {
+            warning(u"announced size of encrypted segment is %'d bytes, more than the max %'d, "
+                    u"will be truncated, use --max-encrypted-segment-size to increase the limit",
+                    initial_size , _max_encrypted_segment_size);
+            initial_size = _max_encrypted_segment_size;
+        }
+        initial_size = std::max(chunk_size, std::max(_seg_size, initial_size)) + 128;
+        if (initial_size > _seg_data.size()) {
+            _seg_data.resize(initial_size);
         }
         _seg_next = _seg_end = 0;
 
@@ -553,6 +565,10 @@ bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t 
 
             // Enlarge the buffer for next chunk. Don't do that too often in case of very short transfers.
             if (_seg_data.size() - _seg_end < chunk_size / 2) {
+                if (_seg_end + chunk_size > _max_encrypted_segment_size) {
+                    warning(u"encrypted segment too larger, use --max-encrypted-segment-size to increase the limit");
+                    break;
+                }
                 _seg_data.resize(_seg_end + chunk_size);
             }
         }

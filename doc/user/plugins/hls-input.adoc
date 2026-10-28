@@ -177,6 +177,12 @@ When the URL is a master playlist, select a content the bitrate of which is lowe
 See xref:bitrates[xrefstyle=short] for more details on the representation of bitrates.
 
 [.opt]
+*--max-encrypted-segment-size* _value_
+
+[.optdoc]
+Maximum size in bytes of encrypted segments. The default is 33,554,432 bytes.
+
+[.opt]
 *--max-height* _value_
 
 [.optdoc]

@@ -58,6 +58,7 @@ class SysUtilsTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(IsAbsoluteFilePath);
     TSUNIT_DECLARE_TEST(AbsoluteFilePath);
     TSUNIT_DECLARE_TEST(CleanupFilePath);
+    TSUNIT_DECLARE_TEST(SafeRelativeFilePath);
     TSUNIT_DECLARE_TEST(RelativeFilePath);
     TSUNIT_DECLARE_TEST(OpenFileName);
 
@@ -793,6 +794,17 @@ TSUNIT_DEFINE_TEST(CleanupFilePath)
     TSUNIT_EQUAL(u"cd/ef", ts::CleanupFilePath(u"ab/../cd/ef"));
     TSUNIT_EQUAL(u"/cd/ef", ts::CleanupFilePath(u"/../cd/ef"));
 #endif
+}
+
+TSUNIT_DEFINE_TEST(SafeRelativeFilePath)
+{
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"c\\ab\\cd\\ef\\gh", ts::SafeRelativeFilePath(u"C:\\ab\\..\\cd\\ef/gh/"));
+#else
+    TSUNIT_EQUAL(u"ab/cd/ef/gh", ts::SafeRelativeFilePath(u"/ab\\..\\cd\\ef/gh/", '/'));
+    TSUNIT_EQUAL(u"a/b/c/d/e", ts::SafeRelativeFilePath(u"///a/b/./c/../../d/e/..", '/'));
+#endif
+
 }
 
 TSUNIT_DEFINE_TEST(RelativeFilePath)

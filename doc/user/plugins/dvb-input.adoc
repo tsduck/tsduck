@@ -142,6 +142,30 @@ By default, first try a direct connection from the tuner filter to the rest of t
 Then, try all receiver filters and concatenate them all.
 
 [.usage]
+Tuner emulator options
+
+[.opt]
+*--allow-emulator-pipes*
+
+[.optdoc]
+When the device name is an XML file describing a tuner emulator, this option
+allows the tuner emulator to run processes using pipes.
+
+[.optdoc]
+The TSDuck tuner emulator uses XML files to describe transport streams in an
+emulated network. The content of a transport stream can be read from a file or
+from the output of a piped command. By default, running commands through the
+emulator is disabled for security reasons. This option authorizes the creation
+of processes.
+
+[.optdoc]
+See xref:tuner-emulator[xrefstyle=short] for more details on tuner emulators.
+
+NOTE: Up to TSDuck version 3.45, the creation of processes from the tuner
+emulator was allowed by default. This is no longer the case, for security
+reasons.
+
+[.usage]
 Status reporting options
 
 Using these options, it is possible to send a status report of the reception at regular interval.

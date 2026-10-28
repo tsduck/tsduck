@@ -1421,9 +1421,13 @@ size_t ts::Buffer::putUTFWithLengthInternal(const UString& str, size_t start, si
     start = std::min(start, str.size());
     count = std::min(count, str.size() - start);
 
-    // The size of the length field must be representable as a size_t.
-    // The write pointer must be byte-aligned after writing the length field.
-    if (_state.read_only || _write_error || length_bits == 0 || length_bits > 8 * sizeof(size_t) || (_state.wbit + length_bits) % 8 != 0) {
+    if (_state.read_only ||
+        _write_error ||
+        length_bits == 0 ||                      // invalid length field size
+        length_bits > 8 * sizeof(size_t) ||      // length field cannot be be represented as a size_t
+        (_state.wbit + length_bits) % 8 != 0 ||  // write pointer not byte-aligned after writing length field
+        remainingWriteBits() < length_bits)      // not enough space to write the length field
+    {
         _write_error = true;
         return 0; // 0 byte with partial, 0 as false otherwise
     }

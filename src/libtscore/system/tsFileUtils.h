@@ -115,6 +115,21 @@ namespace ts {
                                        bool portable_slashes = false);
 
     //!
+    //! Build a safe form of a file path to mitigate file traversal attacks.
+    //! All attempts to move up ('..') are removed. If the path is absolute, the root
+    //! is removed and it becomes a relative path. This means that the final path may
+    //! not be equivalent to the original one but it is safe to use when the path comes
+    //! from some untrusted source.
+    //! Example: "/a/b/c/../d/e" is returned as "a/b/c/d/e".
+    //! @ingroup files
+    //! @param [in] path A file path.
+    //! @param [in] separator The path separator to use on output. By default, this is the preferred
+    //! separator of the system but there are cases where '/' may be preferred (relative URLs for instance)
+    //! @return The safe form of @a path, as arelative path.
+    //!
+    TSCOREDLL UString SafeRelativeFilePath(const UString& path, UChar separator = fs::path::preferred_separator);
+
+    //!
     //! Cleanup a file path.
     //! @ingroup files
     //! @param [in] path A file path.

@@ -65,12 +65,9 @@ void ts::hls::TagAttributes::reload(const UString& params)
             if (pos < end && quoted && params[pos] == u'"') {
                 ++pos;
             }
-            while (pos < end && params[pos] != u',') {
-                ++pos;
-            }
-            while (pos < end && params[pos] == u',') {
-                ++pos;
-            }
+        }
+        while (pos < end && params[pos] == u',') {
+            ++pos;
         }
 
         // Register the attribute.

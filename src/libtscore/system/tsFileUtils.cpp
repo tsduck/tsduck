@@ -146,6 +146,29 @@ ts::UString ts::CleanupFilePath(const UString& path)
 
 
 //----------------------------------------------------------------------------
+// Build a safe form of a file path to mitigate file traversal attacks.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SafeRelativeFilePath(const UString& path, UChar separator)
+{
+    UStringList parts;
+    path.toSubstituted(u'\\', u'/').split(parts, u'/', true, true);
+    for (auto it = parts.begin(); it != parts.end(); ) {
+#if defined(TS_WINDOWS)
+        it->removeSuffix(u":");
+#endif
+        if (it->empty() || *it == u"." || *it == u"..") {
+            it = parts.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+    return UString::Join(parts, separator);
+}
+
+
+//----------------------------------------------------------------------------
 // Build the absolute form af a file path.
 //----------------------------------------------------------------------------
 

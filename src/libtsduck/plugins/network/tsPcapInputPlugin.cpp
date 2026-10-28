@@ -511,7 +511,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
             _data_next = eol + 1;
 
             // Remove trailing spaces (cr/lf)
-            while (!header.empty() && std::isspace(header.back())) {
+            while (!header.empty() && std::isspace((unsigned char)(header.back()))) {
                 header.pop_back();
             }
 

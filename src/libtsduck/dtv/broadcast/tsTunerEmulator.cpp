@@ -293,6 +293,12 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
         }
     }
 
+    // Verify that creating processes is allowed, if the source of the channel is a piped command.
+    if (!params.allow_emulator_pipes && !chan.pipe.empty()) {
+        _duck.report().error(u"this channel uses a piped command, use option --allow-emulator-pipes to authorize that");
+        return false;
+    }
+
     // Found a valid entry for the frequency.
     _tune_index = index;
     _tune_frequency = freq;

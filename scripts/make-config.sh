@@ -957,7 +957,7 @@ fi
 if [[ -z $ALL_INCLUDES ]]; then
     [[ -z $NODTAPI ]] && others="$LIBTSDEKTECDIR" || others=
     for dir in $(find $LIBTSCOREDIR $LIBTSDUCKDIR $others -type d); do
-        if [[ " $OTHER_OS " != *" $(fbasename $dir) "* && -n $(exist-wildcard $dir/*.h) ]]; then
+        if [[ " $OTHER_OS " != *\ $(fbasename $dir)\ * && -n $(exist-wildcard $dir/*.h) ]]; then
             # This is a directory containing headers, not specific to another operating system.
             ALL_INCLUDES="$ALL_INCLUDES $dir"
         fi
@@ -1019,18 +1019,16 @@ NO_TSTOOLS=
 [[ -n $NOPCSC ]] && NO_TSTOOLS="$NO_TSTOOLS tssmartcard"
 
 # List of plugins and tools to build.
-if [[ -z $TSPLUGINS ]]; then
-    for file in $TSPLUGINSDIR/tsplugin_*.cpp; do
-        name=$(fbasename $file .cpp)
-        [[ " $NO_TSPLUGINS " != *" ${name/tsplugin_/} "* ]] && TSPLUGINS="$TSPLUGINS $name"
-    done
-fi
-if [[ -z $TSTOOLS ]]; then
-    for file in $TSTOOLSDIR/ts*.cpp; do
-        name=$(fbasename $file .cpp)
-        [[ " $NO_TSTOOLS " != *" $name "* ]] && TSTOOLS="$TSTOOLS $name"
-    done
-fi
+TSPLUGINS=
+TSTOOLS=
+for file in $TSPLUGINSDIR/tsplugin_*.cpp; do
+    name=$(fbasename $file .cpp)
+    [[ " $NO_TSPLUGINS " != *\ ${name/tsplugin_/}\ * ]] && TSPLUGINS="$TSPLUGINS $name"
+done
+for file in $TSTOOLSDIR/ts*.cpp; do
+    name=$(fbasename $file .cpp)
+    [[ " $NO_TSTOOLS " != *\ $name\ * ]] && TSTOOLS="$TSTOOLS $name"
+done
 
 #-----------------------------------------------------------------------------
 # Final output generation.
