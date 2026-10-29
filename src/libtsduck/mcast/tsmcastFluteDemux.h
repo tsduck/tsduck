@@ -131,10 +131,12 @@ namespace ts::mcast {
             cn::microseconds last_time {};           // Timestamp of last received data for the file.
 
             // Chunks of the file being received.
-            // First level of index: Source Block Number (SBN).
-            // Second level of index: Encoding Symbol ID in source block.
+            // - First level of index: Source Block Number (SBN).
+            // - Second level of index: Encoding Symbol ID (ESID) in source block.
+            // They are nested sparse maps indexed by SBN and ESID instead of dense vectors
+            // to avoid saturating the memory when reading random high values of SBN or ESID.
             // Erased when the file is processed to save storage.
-            std::vector<std::vector<ByteBlockPtr>> chunks {};
+            std::map<size_t,std::map<size_t,ByteBlockPtr>> chunks {};
 
             // Reset the content.
             void clear();

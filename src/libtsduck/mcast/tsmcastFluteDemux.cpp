@@ -183,25 +183,30 @@ void ts::mcast::FluteDemux::feedPacketImpl(const cn::microseconds& timestamp, co
     }
 
     // Store the file chunk if not already there.
-    if (lct.fpi.source_block_number >= file.chunks.size()) {
-        file.chunks.resize(lct.fpi.source_block_number + 1);
-    }
     auto& syms(file.chunks[lct.fpi.source_block_number]);
     const size_t sym_index = lct.fpi.encoding_symbol_id;
-    if (sym_index >= syms.size()) {
-        syms.resize(sym_index + 1);
-    }
-    if (syms[sym_index] == nullptr) {
-        // New chunk.
-        syms[sym_index] = std::make_shared<ByteBlock>(udp, udp_size);
+    auto& sym_ptr(syms[sym_index]);
+    if (sym_ptr == nullptr) {
+        // This is new chunk. Update current file size.
         file.current_length += udp_size;
+        // Check that the file size doesn't exceed the limit.
+        // This can happen if the file size wasn't announced or was underestimated.
+        if (_args.max_file_size > 0 && file.current_length > _args.max_file_size) {
+            _report.verbose(u"ignoring file from %s, TOI: %d, too large: %'d bytes and more to come", sid, lct.toi, file.current_length);
+            // Mark the file as processed (ignored in the future). Deallocate everything.
+            file.processed = true;
+            file.chunks.clear();
+            return;
+        }
+        // Store the content of the chunk.
+        sym_ptr = std::make_shared<ByteBlock>(udp, udp_size);
     }
-    else if (udp_size != syms[sym_index]->size()) {
+    else if (udp_size != sym_ptr->size()) {
         // Chunk already there with a different size.
         // Tolerate new size = 0 in non-strict mode.
         if (udp_size > 0 || _args.strict) {
             _report.error(u"size of file chunk #%n changed in the middle of transmission, was %'d, now %'d, TOI %d, %s",
-                          sym_index, syms[sym_index]->size(), udp_size, lct.toi, sid);
+                          sym_index, sym_ptr->size(), udp_size, lct.toi, sid);
         }
         return;
     }
@@ -253,15 +258,15 @@ void ts::mcast::FluteDemux::processCompleteFile(const FluteSessionId& sid, Sessi
     ByteBlockPtr data(std::make_shared<ByteBlock>(file.transfer_length));
     size_t next_index = 0;
     for (auto& src : file.chunks) {
-        for (auto& sym : src) {
-            if (sym != nullptr) {
-                if (next_index + sym->size() > data->size()) {
+        for (auto& sym : src.second) {
+            if (sym.second != nullptr) {
+                if (next_index + sym.second->size() > data->size()) {
                     // Should not happen, but let's be conservative.
-                    _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, %s", data->size(), next_index + sym->size(), toi, sid);
-                    data->resize(next_index + sym->size());
+                    _report.debug(u"need to increase size of file buffer, was %'d, now %'d, TOI %d, %s", data->size(), next_index + sym.second->size(), toi, sid);
+                    data->resize(next_index + sym.second->size());
                 }
-                MemCopy(data->data() + next_index, sym->data(), sym->size());
-                next_index += sym->size();
+                MemCopy(data->data() + next_index, sym.second->data(), sym.second->size());
+                next_index += sym.second->size();
             }
         }
     }
