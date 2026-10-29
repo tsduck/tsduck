@@ -12,28 +12,41 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsReporterBase.h"
+#include "tsStringifyInterface.h"
 #include "tshls.h"
 #include "tshlsMediaPlayList.h"
 #include "tshlsAltPlayList.h"
 #include "tshlsMediaSegment.h"
 #include "tsURL.h"
 #include "tsTime.h"
-#include "tsCerrReport.h"
 #include "tsWebRequestArgs.h"
-#include "tsStringifyInterface.h"
 
 namespace ts::hls {
     //!
     //! Playlist for HTTP Live Streaming (HLS).
     //! @ingroup libtsduck hls
     //!
-    class TSDUCKDLL PlayList: public StringifyInterface
+    class TSDUCKDLL PlayList: public ReporterBase, public StringifyInterface
     {
     public:
         //!
         //! Constructor.
+        //! @param [in] report Where to report errors. The @a report object must remain valid as long as this object
+        //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //!
-        PlayList() = default;
+        explicit PlayList(Report* report) : ReporterBase(report) {}
+
+        //!
+        //! Constructor.
+        //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
+        //!
+        explicit PlayList(ReporterBase* delegate) : ReporterBase(delegate) {}
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~PlayList() override;
 
         //!
         //! Clear the content of the playlist.
@@ -57,10 +70,9 @@ namespace ts::hls {
         //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
         //! @param [in] args Web request arguments from command line.
         //! @param [in] type Expected playlist type, unknown by default.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadURL(const UString& url, bool strict = false, const WebRequestArgs& args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
+        bool loadURL(const UString& url, bool strict = false, const WebRequestArgs& args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN);
 
         //!
         //! Load the playlist from a URL.
@@ -68,50 +80,51 @@ namespace ts::hls {
         //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
         //! @param [in] args Web request arguments from command line.
         //! @param [in] type Expected playlist type, unknown by default.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadURL(const URL& url, bool strict = false, const WebRequestArgs& args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
+        bool loadURL(const URL& url, bool strict = false, const WebRequestArgs& args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN);
 
         //!
         //! Load the playlist from a text file.
         //! @param [in] filename File from which to load the playlist.
         //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
         //! @param [in] type Expected playlist type, unknown by default.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadFile(const UString& filename, bool strict = false, PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
+        bool loadFile(const UString& filename, bool strict = false, PlayListType type = PlayListType::UNKNOWN);
 
         //!
         //! Load the playlist from its text content.
         //! @param [in] text Text of the playlist (multi-lines).
         //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
         //! @param [in] type Expected playlist type, unknown by default.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool loadText(const UString& text, bool strict = false, PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
+        bool loadText(const UString& text, bool strict = false, PlayListType type = PlayListType::UNKNOWN);
 
         //!
         //! Update the URL of the playlist.
         //! @param [in] url URL from which to load the playlist.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on invalid URL string.
+        //! @param [in] silent When true, do not report an error message in case of error.
+        //! @return True on success, false on invalid URL string or incompatible embedded URLs.
         //!
-        bool setURL(const UString& url, Report& report = CERR);
+        bool setURL(const UString& url, bool silent = false);
 
         //!
         //! Update the URL of the playlist.
         //! @param [in] url URL from which to load the playlist.
+        //! @param [in] silent When true, do not report an error message in case of error.
+        //! @return True on success, false on invalid URL string or incompatible embedded URLs.
         //!
-        void setURL(const URL& url);
+        bool setURL(const URL& url, bool silent = false);
 
         //!
         //! Update the file name of the playlist.
         //! @param [in] filename File from which to load the playlist.
+        //! @param [in] silent When true, do not report an error message in case of error.
+        //! @return True on success, false on invalid URL string or incompatible embedded URLs.
         //!
-        void setFile(const UString& filename);
+        bool setFile(const UString& filename, bool silent = false);
 
         //!
         //! Reload a media playlist with updated content.
@@ -120,10 +133,9 @@ namespace ts::hls {
         //! New segments are added. If a segment hole is found, all previous content is replaced.
         //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
         //! @param [in] args Web request arguments from command line.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool reload(bool strict = false, const WebRequestArgs& args = WebRequestArgs(), Report& report = CERR);
+        bool reload(bool strict = false, const WebRequestArgs& args = WebRequestArgs());
 
         //!
         //! Reload a media playlist with updated text content.
@@ -131,13 +143,13 @@ namespace ts::hls {
         //! New segments are added. If a segment hole is found, all previous content is replaced.
         //! @param [in] text Text of the playlist (multi-lines).
         //! @param [in] strict If true, perform strict conformance checking. By default, relaxed as long as we can understand the content.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool reloadText(const UString& text, bool strict = false, Report& report = CERR);
+        bool reloadText(const UString& text, bool strict = false);
 
         //!
         //! Set a directory name where all loaded files or URL are automatically saved.
+        //! This property is preserved when the playlist is cleared or reloaded.
         //! @param [in] dir A directory name.
         //!
         void setAutoSaveDirectory(const UString& dir) { _auto_save_dir = dir; }
@@ -151,17 +163,15 @@ namespace ts::hls {
         //!
         //! Save the playlist to a text file.
         //! @param [in] filename File where to save the playlist. By default, use the same file from loadFile() or reset().
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool saveFile(const UString& filename = UString(), Report& report = CERR) const;
+        bool saveFile(const UString& filename = UString()) const;
 
         //!
         //! Build the text content of the playlist.
-        //! @param [in,out] report Where to report errors.
         //! @return The text content on success, an empty string on error.
         //!
-        UString textContent(Report& report = CERR) const;
+        UString textContent() const;
 
         //!
         //! Get the original loaded text content of the playlist.
@@ -181,8 +191,10 @@ namespace ts::hls {
         //! Build an URL for a media segment or sub-playlist.
         //! @param [out] media A media element with all fields filled in.
         //! @param [in] uri An URI, typically extracted from the playlist.
+        //! @param [in] silent When true, do not report an error message in case of error.
+        //! @return True on success, false on invalid URL string or incompatible embedded URLs.
         //!
-        void buildURL(MediaElement& media, const UString& uri) const;
+        bool buildURL(MediaElement& media, const UString& uri, bool silent = false) const;
 
         //!
         //! Get the playlist type.
@@ -193,24 +205,32 @@ namespace ts::hls {
         //!
         //! Set the playlist type.
         //! @param [in] type The playlist type.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] forced When true, unconditionally set the playlist type.
         //! When false (the default), check that the playlist type does not change in an inconsistent way.
         //! Allowed changes are UNKNOWN to anything and LIVE to VOD or EVENT. The latter case is a playlist
         //! which is known to be a media playlist but for which no EXT-X-PLAYLIST-TYPE tag was found so far.
         //! @return True on success, false on error.
         //!
-        bool setType(PlayListType type, Report& report = CERR, bool forced = false);
+        bool setType(PlayListType type, bool forced = false);
 
         //!
         //! Set the playlist type as media playlist.
         //! If the type is already known and already a media playlist, do nothing.
         //! If the type is unknown, set it as LIVE which is a media playlist type without EXT-X-PLAYLIST-TYPE
         //! tag and which can be later turned into a VOD or EVENT playlist.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setTypeMedia(Report& report = CERR);
+        bool setTypeMedia();
+
+        //!
+        //! Allow permissive URL resolution.
+        //! By default, for security reasons, http: and https: playlist can only contain segments
+        //! or media playlists with http: or https: URLs. If an http: or https: contains a segment
+        //! file a file: URL, for instance, an error is generated. Use this method to relax this rule.
+        //! This property is preserved when the playlist is cleared or reloaded.
+        //! @param [in] permissive When true, the playlist allows permissive URL resolution.
+        //!
+        void setPermissiveURL(bool permissive) { _permissive_url = permissive; }
 
         //!
         //! Add a custom tag in the playlist.
@@ -258,10 +278,9 @@ namespace ts::hls {
         //!
         //! Set the segment target duration in a media playlist.
         //! @param [in] duration The segment target duration in seconds.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setTargetDuration(cn::seconds duration, Report& report = CERR);
+        bool setTargetDuration(cn::seconds duration);
 
         //!
         //! Get the sequence number of first segment (in media playlist).
@@ -272,10 +291,9 @@ namespace ts::hls {
         //!
         //! Set the sequence number of first segment in a media playlist.
         //! @param [in] seq The sequence number of first segment.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setMediaSequence(size_t seq, Report& report = CERR);
+        bool setMediaSequence(size_t seq);
 
         //!
         //! Get the end of list indicator (in media playlist).
@@ -287,10 +305,9 @@ namespace ts::hls {
         //!
         //! Set the end of list indicator in a media playlist.
         //! @param [in] end The end of list indicator.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool setEndList(bool end, Report& report = CERR);
+        bool setEndList(bool end);
 
         //!
         //! Get the number of media segments (in media playlist).
@@ -320,24 +337,25 @@ namespace ts::hls {
         //!
         //! Remove the first media segment (in media playlist).
         //! @param [out] seg Characteristics of the first segment.
-        //! @return True of a segment was successfully removed, false otherwise.
+        //! @param [in] silent When true, do not report an error message in case of error.
+        //! @return True if a segment was successfully removed, false otherwise.
         //!
-        bool popFirstSegment(MediaSegment& seg);
+        bool popFirstSegment(MediaSegment& seg, bool silent = false);
 
         //!
         //! Remove the first media segment and do not even return it (in media playlist).
+        //! @param [in] silent When true, do not report an error message in case of error.
         //! @return True of a segment was successfully removed, false otherwise.
         //!
-        bool popFirstSegment();
+        bool popFirstSegment(bool silent = false);
 
         //!
         //! Add a segment in a media playlist.
         //! @param [in] seg The new media segment to append. If the playlist's URI is a file
         //! name, the URI of the segment is transformed into a relative URI from the playlist's path.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool addSegment(const MediaSegment& seg, Report& report = CERR);
+        bool addSegment(const MediaSegment& seg);
 
         //!
         //! Get the download UTC time of the playlist.
@@ -367,13 +385,11 @@ namespace ts::hls {
 
         //!
         //! Add a media playlist in a master playlist.
-        //! @param [in] pl The new media playlist to append. If the master playlist's URI is a file
-        //! name, the URI of the media playlist is transformed into a relative URI from the master
-        //! playlist's path.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] pl The new media playlist to append. If the master playlist's URI is a file name,
+        //! the URI of the media playlist is transformed into a relative URI from the master playlist's path.
         //! @return True on success, false on error.
         //!
-        bool addPlayList(const MediaPlayList& pl, Report& report = CERR);
+        bool addPlayList(const MediaPlayList& pl);
 
         //!
         //! Select the first media playlist with specific constraints.
@@ -435,10 +451,9 @@ namespace ts::hls {
         //! @param [in] pl The new alternative rendition playlist to append. If the master playlist's URI is a file
         //! name, the URI of the media playlist is transformed into a relative URI from the master
         //! playlist's path.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool addAltPlayList(const AltPlayList& pl, Report& report = CERR);
+        bool addAltPlayList(const AltPlayList& pl);
 
         //!
         //! Select the first alternative rendition playlist with specific criteria.
@@ -463,24 +478,25 @@ namespace ts::hls {
         using MediaPlayListQueue = std::deque<MediaPlayList>;
         using AltPlayListQueue = std::deque<AltPlayList>;
 
-        bool               _valid = false;       // Content loaded and valid.
-        int                _version = 1;         // Playlist format version.
+        bool               _valid = false;          // Content loaded and valid.
+        bool               _permissive_url = false; // Allow incompatible URLs.
+        int                _version = 1;            // Playlist format version.
         PlayListType       _type = PlayListType::UNKNOWN; // Playlist type.
-        UString            _original {};         // Original URL or file name.
-        UString            _file_base {};        // Base file path to resolve relative URI's (when original is a file name).
-        bool               _is_url = false;      // The base is an URL, not a directory name.
-        URL                _url {};              // Original URL.
-        cn::seconds        _target_duration {};  // Segment target duration (media playlist).
-        size_t             _media_sequence = 0;  // Sequence number of first segment (media playlist).
-        bool               _end_list = false;    // End of list indicator (media playlist).
-        Time               _utc_download {};     // UTC time of download.
-        Time               _utc_termination {};  // UTC time of termination (download + all segment durations).
-        MediaSegmentQueue  _segments {};         // List of media segments (media playlist).
-        MediaPlayListQueue _playlists {};        // List of media playlists (master playlist).
-        AltPlayListQueue   _alt_playlists {};    // List of alternative rendition media playlists (master playlist).
-        UStringList        _loaded_content {};   // Loaded text content (can be different from current content).
-        UString            _auto_save_dir {};    // If not empty, automatically save loaded playlist to this directory.
-        UStringList        _extra_tags {};       // Additional tags which were manually added by the application.
+        UString            _original {};            // Original URL or file name.
+        UString            _file_base {};           // Base file path to resolve relative URI's (when original is a file name).
+        bool               _is_url = false;         // The base is an URL, not a directory name.
+        URL                _url {};                 // Original URL.
+        cn::seconds        _target_duration {};     // Segment target duration (media playlist).
+        size_t             _media_sequence = 0;     // Sequence number of first segment (media playlist).
+        bool               _end_list = false;       // End of list indicator (media playlist).
+        Time               _utc_download {};        // UTC time of download.
+        Time               _utc_termination {};     // UTC time of termination (download + all segment durations).
+        MediaSegmentQueue  _segments {};            // List of media segments (media playlist).
+        MediaPlayListQueue _playlists {};           // List of media playlists (master playlist).
+        AltPlayListQueue   _alt_playlists {};       // List of alternative rendition media playlists (master playlist).
+        UStringList        _loaded_content {};      // Loaded text content (can be different from current content).
+        UString            _auto_save_dir {};       // If not empty, automatically save loaded playlist to this directory.
+        UStringList        _extra_tags {};          // Additional tags which were manually added by the application.
 
         // Empty data to return.
         static const MediaSegment& EmptySegment();
@@ -488,20 +504,20 @@ namespace ts::hls {
         static const AltPlayList& EmptyAltPlayList();
 
         // Load from the text content.
-        bool parse(const UString& text, bool strict, Report& report);
-        bool parse(bool strict, Report& report);
+        bool parse(const UString& text, bool strict);
+        bool parse(bool strict);
 
         // Reload common code.
-        void reload(PlayList& new_pl, Report& report);
+        void reload(PlayList& new_pl);
 
         // Update the URL or file paths of all media segments or playlists.
-        void updateReferences();
+        bool updateReferences(bool silent);
 
         // Check if the line contains a valid tag or URI.
-        bool getTag(const UString& line, Tag& tag, UString& params, bool strict, Report& report);
-        bool isURI(const UString& line, bool strict, Report& report);
+        bool getTag(const UString& line, Tag& tag, UString& params, bool strict);
+        bool isURI(const UString& line, bool strict);
 
         // Perform automatic save of the loaded playlist.
-        bool autoSave(Report& report);
+        bool autoSave();
     };
 }

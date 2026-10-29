@@ -2,13 +2,20 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4887 (October 2026)
+VERSION 3.46-4890 (October 2026)
 
 [INC] Incompatibilities with previous versions:
 
   * For security reasons, running piped commands from a tuner emulator XML file
     is  no longer allowed by default.  Use the option --allow-emulator-pipes to
     indicate that you specifically allow running them.
+  * For security reasons,  the command "tsswitch" uses the same behavior as the
+    command  "tsp" regarding remote control commands.  Without --remote-tls and
+    --remote-token,  only  the  local host is allowed to connect.  Other remote
+    sources must be explicitly allowed using option --allow.
+  * For security reasons,  an http: or https: HLS playlist may  only  reference
+    http: or https: sub-playlists or segments.  As an example,  it is no longer
+    possible to reference a file: segment in an http: playlist.
 
 [IMP] Improvements on existing commands and plugins:
 

@@ -67,7 +67,7 @@ namespace ts::hls {
 
         // Working data:
         size_t    _segment_count = 0;
-        PlayList  _playlist {};
+        PlayList  _playlist {this};
 
         // Working data for encrypted segment:
         ByteBlock _seg_key {};    // Segment decryption key, size 0 = clear, 16 = AES-128-CBC, 32 = AES-256-GCM.

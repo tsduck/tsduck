@@ -72,7 +72,7 @@ namespace ts::hls {
         bool               _seg_close_pending = false;    // Close the current segment when possible.
         TSFile             _segment_file {this};          // Output segment file.
         UStringList        _live_segment_files {};        // List of current segments in a live stream.
-        hls::PlayList      _playlist {};                  // Generated playlist.
+        hls::PlayList      _playlist {this};              // Generated playlist.
         PCRAnalyzer        _pcr_analyzer {1, 4};          // PCR analyzer to compute bitrates. Minimum required: 1 PID, 4 PCR.
         BitRate            _previous_bitrate = 0;         // Bitrate of previous segment.
         ContinuityAnalyzer _cc_fixer;                     // To fix continuity counters in PAT and PMT PID's.

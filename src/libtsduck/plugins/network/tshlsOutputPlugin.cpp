@@ -226,8 +226,8 @@ bool ts::hls::OutputPlugin::start()
     }
     if (!_playlist_file.empty()) {
         _playlist.reset(_playlist_type, _playlist_file);
-        _playlist.setTargetDuration(_target_duration, *this);
-        _playlist.setMediaSequence(_initial_media_seq, *this);
+        _playlist.setTargetDuration(_target_duration);
+        _playlist.setMediaSequence(_initial_media_seq);
     }
     return true;
 }
@@ -309,11 +309,13 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
     if (!_playlist_file.empty()) {
 
         // Set end of stream indicator in the playlist.
-        _playlist.setEndList(endOfStream, *this);
+        _playlist.setEndList(endOfStream);
 
         // Declare a new segment.
         hls::MediaSegment seg;
-        _playlist.buildURL(seg, seg_name);
+        if (!_playlist.buildURL(seg, seg_name)) {
+            return false;
+        }
 
         // Estimate duration and bitrate of the segment. We use PCR's from the
         // segment to compute the average bitrate. Then we compute the duration
@@ -334,7 +336,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
             seg.duration = cn::duration_cast<cn::milliseconds>(_target_duration);
             seg.bitrate = _use_bitrate_tag ? PacketBitRate(seg_packets, seg.duration) : 0;
         }
-        _playlist.addSegment(seg, *this);
+        _playlist.addSegment(seg);
 
         // With live playlists, remove obsolete segments from the playlist.
         while (_live_depth > 0 && _playlist.segmentCount() > _live_depth) {
@@ -353,7 +355,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         }
 
         // Write the playlist file.
-        if (!_playlist.saveFile(UString(), *this)) {
+        if (!_playlist.saveFile(UString())) {
             return false;
         }
 

@@ -233,7 +233,7 @@ bool ts::hls::InputPlugin::start()
 
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url.toString(), false, web_args, hls::PlayListType::UNKNOWN, *this)) {
+    if (!_playlist.loadURL(_url.toString(), false, web_args, hls::PlayListType::UNKNOWN)) {
         return false;
     }
 
@@ -269,7 +269,7 @@ bool ts::hls::InputPlugin::start()
             else {
                 assert(index < master.altPlayListCount());
                 verbose(u"selected playlist: %s", master.altPlayList(index));
-                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, web_args, hls::PlayListType::UNKNOWN, *this)) {
+                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, web_args, hls::PlayListType::UNKNOWN)) {
                     return false;
                 }
             }
@@ -304,7 +304,7 @@ bool ts::hls::InputPlugin::start()
 
                 // Download selected media playlist.
                 _playlist.clear();
-                if (_playlist.loadURL(nextURL, false, web_args, hls::PlayListType::UNKNOWN, *this)) {
+                if (_playlist.loadURL(nextURL, false, web_args, hls::PlayListType::UNKNOWN)) {
                     break; // media playlist loaded
                 }
                 else if (master.playListCount() == 1) {
@@ -400,7 +400,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     if (!completed && _playlist.segmentCount() < 2 && _playlist.isUpdatable()) {
 
         // Reload the playlist, ignore errors, continue to play next segments.
-        _playlist.reload(false, web_args, *this);
+        _playlist.reload(false, web_args);
 
         // If the playlist is still empty, this means that we have read all segments before the server
         // could produce new segments. For live streams, this is possible because new segments
@@ -411,7 +411,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
             // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
             std::this_thread::sleep_for(std::max(cn::seconds(2), _playlist.targetDuration() / 2));
             // This time, we stop on reload error.
-            if (!_playlist.reload(false, web_args, *this)) {
+            if (!_playlist.reload(false, web_args)) {
                 break;
             }
         }
@@ -427,7 +427,9 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
 
     // Remove first segment from the playlist.
     MediaSegment seg;
-    _playlist.popFirstSegment(seg);
+    if (!_playlist.popFirstSegment(seg)) {
+        return false;
+    }
     _segment_count++;
 
     // Prepare decryption in case of encrypted HLS.

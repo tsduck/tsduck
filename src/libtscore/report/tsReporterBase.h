@@ -22,7 +22,9 @@ namespace ts {
     //!
     class TSCOREDLL ReporterBase: public Object, public ReporterInterface
     {
-        TS_NOBUILD_NOCOPY(ReporterBase);
+        TS_DEFAULT_COPY_MOVE(ReporterBase);
+    private:
+        ReporterBase() = delete;
     public:
         //!
         //! Constructor.

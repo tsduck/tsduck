@@ -190,13 +190,13 @@ void ts::mcast::NIPExtractPlugin::processPlayList(const FluteFile& file)
     // Load or reload the playlist.
     debug(u"%sload playlist %s", _playlist.isValid() ? u"re" : u"", file.name());
     bool success = _playlist.isValid() ?
-                       _playlist.reloadText(file.toText(), false, *this) :
-                       _playlist.loadText(file.toText(), false, hls::PlayListType::UNKNOWN, *this);
+                       _playlist.reloadText(file.toText(), false) :
+                       _playlist.loadText(file.toText(), false, hls::PlayListType::UNKNOWN);
     if (!success) {
         error(u"error reloading service playlist");
         return;
     }
-    _playlist.setURL(_playlist_url, *this);
+    _playlist.setURL(_playlist_url);
     debug(u"loaded a %s playlist", hls::PlayListTypeNames().name(_playlist.type()));
 
     if (_playlist.isMaster()) {

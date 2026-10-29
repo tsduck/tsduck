@@ -40,7 +40,7 @@ namespace ts::mcast {
         // Plugin private fields.
         NIPDemux       _demux {duck, this};
         UString        _playlist_url {};       // Playlist of the service.
-        hls::PlayList  _playlist {};           // Playlist content.
+        hls::PlayList  _playlist {this};       // Playlist content.
         FluteSessionId _service_session {};    // Session id of the service content.
         size_t         _output_next = 0;       // Byte index of next TS packet to output in _output.front().
         std::list<ByteBlockPtr> _output {};    // List of contents of segment files to output.

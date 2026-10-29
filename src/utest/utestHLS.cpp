@@ -11,6 +11,7 @@
 //----------------------------------------------------------------------------
 
 #include "tshlsPlayList.h"
+#include "tsCerrReport.h"
 #include "tsunit.h"
 
 
@@ -68,14 +69,14 @@ TSUNIT_DEFINE_TEST(MasterPlaylist)
     // Copied from Apple test file at
     // https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8
 
-    ts::hls::PlayList pl;
+    ts::hls::PlayList pl(&CERR);
     TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/master.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
     TSUNIT_EQUAL(6, pl.version());
     TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/master.m3u8", pl.url());
     ts::hls::MediaElement media;
-    pl.buildURL(media, u"foo.bar");
+    TSUNIT_ASSERT(pl.buildURL(media, u"foo.bar"));
     TSUNIT_EQUAL(u"foo.bar", media.relative_uri);
     TSUNIT_EQUAL(u"/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.file_path);
     TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.url.toString());
@@ -130,7 +131,7 @@ TSUNIT_DEFINE_TEST(MasterPlaylistWithAlternate)
 {
     // Test file downloaded from TSDuck web site.
 
-    ts::hls::PlayList pl;
+    ts::hls::PlayList pl(&CERR);
     TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/teststreams/hls/alternative/index_hd.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
@@ -193,14 +194,14 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     // Copied from Apple test file at
     // https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/v5/prog_index.m3u8
 
-    ts::hls::PlayList pl;
+    ts::hls::PlayList pl(&CERR);
     TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::VOD, pl.type());
     TSUNIT_EQUAL(3, pl.version());
     TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", pl.url());
     ts::hls::MediaElement media;
-    pl.buildURL(media, u"foo.bar");
+    TSUNIT_ASSERT(pl.buildURL(media, u"foo.bar"));
     TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/v5/foo.bar", media.urlString());
     TSUNIT_EQUAL(100, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
@@ -267,7 +268,7 @@ TSUNIT_DEFINE_TEST(MediaPlaylistWithEncryption)
         u"#EXTINF:5.000,\n"
         u"https://foo.net/seg4.ts\n";
 
-    ts::hls::PlayList pl;
+    ts::hls::PlayList pl(&CERR);
     TSUNIT_ASSERT(pl.loadText(in_content));
     TSUNIT_ASSERT(pl.isValid());
     TSUNIT_EQUAL(ts::hls::PlayListType::LIVE, pl.type());
@@ -318,7 +319,7 @@ TSUNIT_DEFINE_TEST(MediaPlaylistWithEncryption)
 
 TSUNIT_DEFINE_TEST(BuildMasterPlaylist)
 {
-    ts::hls::PlayList pl;
+    ts::hls::PlayList pl(&CERR);
     pl.reset(ts::hls::PlayListType::MASTER, u"/c/test/path/master/test.m3u8");
 
     TSUNIT_ASSERT(pl.isValid());
@@ -369,7 +370,7 @@ TSUNIT_DEFINE_TEST(BuildMasterPlaylist)
 
 TSUNIT_DEFINE_TEST(BuildMediaPlaylist)
 {
-    ts::hls::PlayList pl;
+    ts::hls::PlayList pl(&CERR);
     pl.reset(ts::hls::PlayListType::LIVE, u"/c/test/path/master/test.m3u8");
 
     TSUNIT_ASSERT(pl.isValid());
