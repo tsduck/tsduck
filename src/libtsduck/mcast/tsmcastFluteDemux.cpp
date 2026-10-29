@@ -509,7 +509,8 @@ void ts::mcast::FluteDemux::garbageCollector(const cn::microseconds& current_tim
     size_t kept = 0;
     for (auto& sess : _sessions) {
         for (auto file = sess.second.files_by_toi.begin(); file != sess.second.files_by_toi.end(); ) {
-            if (file->second.last_time + _file_max_lifetime >= current_timestamp) {
+            if (file->second.last_time + _file_max_lifetime < current_timestamp) {
+                // Expiration date in the past => delete that file.
                 ++reclaimed;
                 file = sess.second.files_by_toi.erase(file);
             }

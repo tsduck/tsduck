@@ -45,7 +45,8 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
     args.option(u"allow", 'a', Args::IPADDR);
     args.help(u"allow",
               u"Specify an IP address or host name which is allowed to send remote commands. "
-              u"Several --allow options are allowed. By default, all remote commands are accepted.");
+              u"By default, as a security precaution, without --remote-tls and --remote-token, only the local host is allowed to connect. "
+              u"Several --allow options are allowed.");
 
     args.option(u"buffer-packets", 'b', Args::POSITIVE);
     args.help(u"buffer-packets",
@@ -178,6 +179,12 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     bool success =
         remote_control.loadServerArgs(args, u"remote") &&
         remote_control.loadAllowedClients(args, u"allow");
+
+    // By default, without proper authentication, the local host is the only allowed address.
+    if (remote_control.allowed_clients.empty() && (!remote_control.use_tls || remote_control.auth_token.empty())) {
+        remote_control.allowed_clients.insert(IPAddress::LocalHost4);
+        remote_control.allowed_clients.insert(IPAddress::LocalHost6);
+    }
 
     app_name = args.appName();
     fast_switch = args.present(u"fast-switch");

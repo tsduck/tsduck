@@ -70,8 +70,8 @@ namespace ts {
 
         struct InputData
         {
-            std::shared_ptr<tslatencymonitor::InputExecutor> inputExecutor;
-            TimingDataList timingDataList;
+            std::shared_ptr<tslatencymonitor::InputExecutor> input_executor;
+            TimingDataList timing_data_list;
         };
         using InputDataVector = std::vector<InputData>;
 

@@ -127,6 +127,11 @@ void ts::tsswitch::CommandListener::main()
                         rest.sendResponse(_tls_client, 400, true); // 400 = Bad Request
                     }
                 }
+
+                // Defensive measure, in case _tls_client wasn't closed, because we reuse it for next connection.
+                if (_tls_client.isOpen()) {
+                    _tls_client.close(true);
+                }
             }
         }
     }

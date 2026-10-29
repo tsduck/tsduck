@@ -51,7 +51,7 @@ bool ts::LatencyMonitor::start()
 {
     // Get all input plugin options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        if (!_inputs[i].inputExecutor -> plugin()->getOptions()) {
+        if (!_inputs[i].input_executor -> plugin()->getOptions()) {
             return false;
         }
     }
@@ -74,14 +74,14 @@ bool ts::LatencyMonitor::start()
     // Start all input threads
     for (size_t i = 0; i < _inputs.size(); ++i) {
         // Here, start() means start the thread, and start input plugin.
-        bool success = _inputs[i].inputExecutor->start();
+        bool success = _inputs[i].input_executor->start();
         if (!success) {
             return false;
         }
     }
 
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i].inputExecutor->waitForTermination();
+        _inputs[i].input_executor->waitForTermination();
     }
 
     return true;
@@ -95,7 +95,7 @@ bool ts::LatencyMonitor::start()
 void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex)
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
-    TimingDataList& timingDataList = _inputs[pluginIndex].timingDataList;
+    TimingDataList& timing_data_list(_inputs[pluginIndex].timing_data_list);
 
     for (size_t i = 0; i < count; i++) {
         uint64_t pcr = pkt[i].getPCR();
@@ -103,16 +103,16 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
         if (has_pcr) {
             const PCR timestamp = metadata[i].getInputTimeStamp();
             // Checking to see if the buffer time has been reached, and pop back element (oldest element) if the buffer time has been reached
-            while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) >= _args.buffer_time) {
-                timingDataList.pop_back();
+            while (!timing_data_list.empty() && (timestamp - timing_data_list.back().timestamp) >= _args.buffer_time) {
+                timing_data_list.pop_back();
             }
-            timingDataList.push_front(TimingData{pcr, timestamp});
+            timing_data_list.push_front(TimingData{pcr, timestamp});
         }
     }
 
     // Check whether the elapsed time since the last output exceeds the output interval.
-    const cn::milliseconds timeDiff = cn::milliseconds(Time::CurrentUTC() - _last_output_time);
-    if (timeDiff >= _args.output_interval) {
+    const cn::milliseconds time_diff = cn::milliseconds(Time::CurrentUTC() - _last_output_time);
+    if (time_diff >= _args.output_interval) {
         // Set output timer to current time
         _last_output_time = Time::CurrentUTC();
         calculatePCRDelta(_inputs);
@@ -141,45 +141,45 @@ void ts::LatencyMonitor::csvHeader()
 void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
 {
     // Check if both timing data lists not empty
-    if (inputs[0].timingDataList.empty() && inputs[1].timingDataList.empty()) {
+    if (inputs.size() != 2 || inputs[0].timing_data_list.empty() || inputs[1].timing_data_list.empty()) {
         return;
     }
 
-    TimingDataList& timingDataList1 = inputs[0].timingDataList;
-    TimingDataList& timingDataList2 = inputs[1].timingDataList;
+    TimingDataList& timing_data_list1 = inputs[0].timing_data_list;
+    TimingDataList& timing_data_list2 = inputs[1].timing_data_list;
 
-    TimingData timingData1 = timingDataList1.front();
-    TimingData timingData2 = timingDataList2.front();
+    TimingData timing_data1 = timing_data_list1.front();
+    TimingData timing_data2 = timing_data_list2.front();
 
     bool retry = false;
     do {
-        TimingDataList* refTimingDataList = nullptr;
-        TimingDataList* shiftTimingDataList = nullptr;
+        TimingDataList* ref_timing_data_list = nullptr;
+        TimingDataList* shift_timing_data_list = nullptr;
 
         if (!retry) {
             // If not retrying, use the list with the smaller PCR as the reference list and the list with the larger PCR as the shifted list
-            refTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList2 : &timingDataList1;
-            shiftTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList1 : &timingDataList2;
+            ref_timing_data_list = (timing_data1.pcr > timing_data2.pcr) ? &timing_data_list2 : &timing_data_list1;
+            shift_timing_data_list = (timing_data1.pcr > timing_data2.pcr) ? &timing_data_list1 : &timing_data_list2;
         }
         else {
             // If retrying, use the list with the larger PCR as the reference list and the list with the smaller PCR as the shifted list (loop point handling)
-            refTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList1 : &timingDataList2;
-            shiftTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList2 : &timingDataList1;
+            ref_timing_data_list = (timing_data1.pcr > timing_data2.pcr) ? &timing_data_list1 : &timing_data_list2;
+            shift_timing_data_list = (timing_data1.pcr > timing_data2.pcr) ? &timing_data_list2 : &timing_data_list1;
         }
 
         // Find the matching PCR in the shifted list
-        for (auto data = shiftTimingDataList->begin(); data != shiftTimingDataList->end(); ++data) {
-            TimingData refTimingData = refTimingDataList->front();
-            TimingData shiftTimingData = *data;
+        for (auto data = shift_timing_data_list->begin(); data != shift_timing_data_list->end(); ++data) {
+            TimingData ref_timing_data = ref_timing_data_list->front();
+            TimingData shift_iming_data = *data;
 
-            if (refTimingData.pcr == shiftTimingData.pcr) {
+            if (ref_timing_data.pcr == shift_iming_data.pcr) {
                 // Calculate the PCR delta if the PCR matches
-                const PCR::rep pcrDelta = std::abs(refTimingData.timestamp.count() - shiftTimingData.timestamp.count());
+                const PCR::rep pcrDelta = std::abs(ref_timing_data.timestamp.count() - shift_iming_data.timestamp.count());
                 const double latency = double(pcrDelta) / SYSTEM_CLOCK_FREQ * 1000;
                 _max_latency = std::max(_max_latency, latency);
 
-                *_output_file << (refTimingDataList == &timingDataList1 ? refTimingData.pcr : shiftTimingData.pcr) << DEFAULT_CSV_SEPARATOR
-                              << (refTimingDataList == &timingDataList2 ? refTimingData.pcr : shiftTimingData.pcr) << DEFAULT_CSV_SEPARATOR
+                *_output_file << (ref_timing_data_list == &timing_data_list1 ? ref_timing_data.pcr : shift_iming_data.pcr) << DEFAULT_CSV_SEPARATOR
+                              << (ref_timing_data_list == &timing_data_list2 ? ref_timing_data.pcr : shift_iming_data.pcr) << DEFAULT_CSV_SEPARATOR
                               << latency << DEFAULT_CSV_SEPARATOR
                               << _max_latency << std::endl;
 
@@ -199,8 +199,8 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
     } while (retry);
 
     // Output the latest PCR from both list with "LOST" if PCR doesn't exist
-    *_output_file << ((timingDataList1.empty()) ? "LOST" : std::to_string(timingDataList1.front().pcr)) << DEFAULT_CSV_SEPARATOR
-                  << ((timingDataList2.empty()) ? "LOST" : std::to_string(timingDataList2.front().pcr)) << DEFAULT_CSV_SEPARATOR
+    *_output_file << ((timing_data_list1.empty()) ? "LOST" : std::to_string(timing_data_list1.front().pcr)) << DEFAULT_CSV_SEPARATOR
+                  << ((timing_data_list2.empty()) ? "LOST" : std::to_string(timing_data_list2.front().pcr)) << DEFAULT_CSV_SEPARATOR
                   << "N/A" << DEFAULT_CSV_SEPARATOR
                   << "N/A" << std::endl;
 }

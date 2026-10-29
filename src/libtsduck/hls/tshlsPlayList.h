@@ -97,7 +97,7 @@ namespace ts::hls {
         //! Update the URL of the playlist.
         //! @param [in] url URL from which to load the playlist.
         //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on error.
+        //! @return True on success, false on invalid URL string.
         //!
         bool setURL(const UString& url, Report& report = CERR);
 

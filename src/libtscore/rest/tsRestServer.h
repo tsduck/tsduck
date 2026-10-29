@@ -28,9 +28,20 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] args Initial REST operation arguments. This instance will keep a copy of it.
+        //! If no receive timeout is specified for client connection, DEFAULT_SERVER_RECEIVE_TIMEOUT
+        //! is applied.
         //! @param [in,out] report Where to report errors. This instance will keep a reference to it.
         //!
         RestServer(const RestArgs& args, Report& report);
+
+        //!
+        //! Default receive timeout on the server side.
+        //! A rest server reads an HTTP request. All lines of the requests are supposed to
+        //! arrive at once. The server is not expected to wait. On the other hand, a hostile
+        //! client may want to infinitely wait between request lines as part of a DDoS attack
+        //! which paralyze the server. Therefore, we impose a strict timeout on reception.
+        //!
+        static constexpr cn::milliseconds DEFAULT_SERVER_RECEIVE_TIMEOUT = cn::milliseconds(3000);
 
         //!
         //! Cleanup request data, restart from an empty state.

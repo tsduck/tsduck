@@ -162,9 +162,10 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
     // Which log to use.
     Report* log = redirect != nullptr ? redirect : &_report;
 
-    // Look for command name.
+    // Look for command name. A value lookup from Names accepts plain integers as name, in which case it
+    // returns that integer. So, not all integers are valid commands => check if the command id exists.
     const CmdId cmd_id = _cmd_enum.value(name);
-    if (cmd_id == Names::UNKNOWN) {
+    if (cmd_id == Names::UNKNOWN || !_commands.contains(cmd_id)) {
         log->error(_cmd_enum.error(name, true, true, u"command"));
         return CommandStatus::ERROR;
     }

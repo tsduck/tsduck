@@ -19,6 +19,10 @@ ts::RestServer::RestServer(const RestArgs& args, Report& report) :
     _args(args),
     _report(report)
 {
+    // Enforce a receive timeout.
+    if (_args.receive_timeout <= cn::milliseconds::zero()) {
+        _args.receive_timeout = DEFAULT_SERVER_RECEIVE_TIMEOUT;
+    }
 }
 
 void ts::RestServer::reset()
@@ -127,6 +131,13 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
     // Cleanup state from previous requests.
     reset();
 
+    // Set receive timeout on the client connection. It is recommended to set
+    // a positive timeout to prevent a client from blocking the server.
+    if (!conn.setReceiveTimeout(_args.receive_timeout)) {
+        conn.close(true);
+        return false;
+    }
+
     // Read and decode initial request line.
     if (!getRequestLine(conn)) {
         return false;
@@ -145,7 +156,8 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
         }
         // Limit the received line size to avoid attacks using endless headers.
         if (_request_headers.size() >= _args.max_header_count) {
-            _report.error(u"too many header lines in REST request, max: %d", _args.max_header_count);
+            conn.report().error(u"too many header lines in REST request, max: %d", _args.max_header_count);
+            conn.close(true);
             return false;
         }
         // Decode the header line.
@@ -213,7 +225,8 @@ bool ts::RestServer::getRequest(TCPConnection& conn)
             _post_data.resize(previous + ret_size);
             // Limit the received POST data size to avoid attacks using endless data.
             if (_post_data.size() > _args.max_post_size) {
-                _report.error(u"POST data too large in REST request, max: %d", _args.max_post_size);
+                conn.report().error(u"POST data too large in REST request, max: %d", _args.max_post_size);
+                conn.close(true);
                 return false;
             }
         }

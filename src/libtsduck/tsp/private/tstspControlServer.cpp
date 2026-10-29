@@ -8,7 +8,6 @@
 
 #include "tstspControlServer.h"
 #include "tstspPluginExecutor.h"
-#include "tsNullReport.h"
 #include "tsReporterGuard.h"
 #include "tsReportBuffer.h"
 #include "tsTextStream.h"
@@ -193,6 +192,16 @@ void ts::tsp::ControlServer::main()
                         rest.sendResponse(_tls_client, 200, true); // 200 = OK
                     }
                 }
+            }
+            else if (!_terminate && !error_buffer.empty()) {
+                // If termination was requested, accept error is not an error.
+                _log.error(error_buffer.messages());
+                error_buffer.clear();
+            }
+
+            // Defensive measure, in case _tls_client wasn't closed, because we reuse it for next connection.
+            if (_tls_client.isOpen()) {
+                _tls_client.close(true);
             }
         }
     }

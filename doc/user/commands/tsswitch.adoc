@@ -392,14 +392,17 @@ Remote control options
 
 [.optdoc]
 Specify an IP address or host name which is allowed to send remote commands.
-Several `--allow` options can be used to specify several allowed remote control systems.
+Several `--allow` options can be used to specify several allowed remote control
+systems. If at least one `--allow` option is specified, any remote command
+which is not sent by an allowed host is rejected.
 
 [.optdoc]
-By default, all received commands are accepted.
-If at least one `--allow` option is specified, any remote command which is not sent by an allowed host is rejected.
+This is a security feature. It works well with `--remote-tls` but it is not a perfect
+one with UDP remote commands because IP address spoofing is trivial with UDP.
 
 [.optdoc]
-This is a security feature, but not a perfect one since IP address spoofing is trivial with UDP.
+By default, as a security precaution, without both `--remote-tls` and
+`--remote-token`, only the local host is allowed to send control commands.
 
 [.opt]
 *--no-reuse-port*
