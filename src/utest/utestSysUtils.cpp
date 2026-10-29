@@ -799,7 +799,7 @@ TSUNIT_DEFINE_TEST(CleanupFilePath)
 TSUNIT_DEFINE_TEST(SafeRelativeFilePath)
 {
 #if defined(TS_WINDOWS)
-    TSUNIT_EQUAL(u"c\\ab\\cd\\ef\\gh", ts::SafeRelativeFilePath(u"C:\\ab\\..\\cd\\ef/gh/"));
+    TSUNIT_EQUAL(u"C\\ab\\cd\\ef\\gh", ts::SafeRelativeFilePath(u"C:\\ab\\..\\cd\\ef/gh/"));
 #else
     TSUNIT_EQUAL(u"ab/cd/ef/gh", ts::SafeRelativeFilePath(u"/ab\\..\\cd\\ef/gh/", '/'));
     TSUNIT_EQUAL(u"a/b/c/d/e", ts::SafeRelativeFilePath(u"///a/b/./c/../../d/e/..", '/'));

@@ -510,8 +510,8 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
             std::string header(reinterpret_cast<const char*>(_data.data() + _data_next), eol - _data_next);
             _data_next = eol + 1;
 
-            // Remove trailing spaces (cr/lf)
-            while (!header.empty() && std::isspace((unsigned char)(header.back()))) {
+            // Remove trailing spaces (cr/lf). Must enforce positive char value, std::isspace takes an int.
+            while (!header.empty() && std::isspace(uint8_t(header.back()))) {
                 header.pop_back();
             }
 
