@@ -192,6 +192,16 @@ ISDB-T demodulators: indicate the sub-channel number (0 to 41) of the centre seg
 The default is 22.
 
 [.opt]
+*--isi* _value_
+
+[.optdoc]
+DVB-S2 demodulators: select the Input Stream Id (ISI) of the multistream to demodulate, from 0 to 255.
+
+[.optdoc]
+Without this option, the input stream selection of the device is left unchanged.
+This option has no effect on single-stream carriers or non-DVB-S2 modulations.
+
+[.opt]
 *--j83* _value_
 
 [.optdoc]
@@ -234,6 +244,26 @@ The intermediate frequency is still computed from `--satellite-frequency` and `-
 [.optdoc]
 This is useful to explicitly disable LNB control in a lab where sending those signals on the cable is a problem.
 Note: even without this option, LNB control is automatically skipped on input channels which do not support it.
+
+[.opt]
+*--pls-code* _value_
+
+[.optdoc]
+DVB-S2 demodulators: specify the Physical Layer Scrambling (PLS) code value, from 0 to 262143 (0x3FFFF).
+The value is a GOLD or ROOT code, depending on `--pls-mode`.
+The default is 0 in GOLD mode, the standard scrambling sequence.
+
+[.optdoc]
+Other values require Dektec SDK 2026.09 or higher (drivers, DTAPI 6.14 and DtapiService) and a device which supports them,
+such as DTA-2127, DTA-2128 or DTA-2132.
+
+[.opt]
+*--pls-mode* _mode_
+
+[.optdoc]
+DVB-S2 demodulators: specify the Physical Layer Scrambling (PLS) mode of `--pls-code`.
+Must be one of `GOLD`, `ROOT`.
+The default is `GOLD`.
 
 [.opt]
 *--polarity* _value_

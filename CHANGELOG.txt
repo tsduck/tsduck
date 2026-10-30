@@ -34,6 +34,10 @@ VERSION 3.46-4890 (October 2026)
     "Builder Guide"  (how to build and install TSDuck),  the  "Developer Guide"
     (how to develop applications using the TSDuck  library),  the  "Contributor
     Guide" (how to contribute to the development of TSDuck).
+  * Plugin "dektec" (input): on DVB-S2 demodulators, added the selection of the
+    input  stream  on  multistream  carriers  and the Physical Layer Scrambling
+    (PLS) code. PLS codes other than the default one require Dektec SDK 2026.09
+    or higher.
   * Changed or removed options in existing commands and plugins:
     - Option --ffs has been renamed as --fc in  plugins "srt"  for  consistency
       with the libsrt options.
@@ -43,6 +47,7 @@ VERSION 3.46-4890 (October 2026)
     - Option --display-url in plugins "srt".
     - Option --max-encrypted-segment-size in input plugin "hls".
     - Option --allow-emulator-pipes in "tsscan" and input plugin "dvb".
+    - Options --isi, --pls-code, --pls-mode in input plugin "dektec".
 
 [BUG] Bug fixes:
 
