@@ -12,6 +12,7 @@
 
 #include "tshlsPlayList.h"
 #include "tsCerrReport.h"
+#include "tsReportBuffer.h"
 #include "tsunit.h"
 
 
@@ -27,6 +28,7 @@ class HLSTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(MediaPlaylistWithEncryption);
     TSUNIT_DECLARE_TEST(BuildMasterPlaylist);
     TSUNIT_DECLARE_TEST(BuildMediaPlaylist);
+    TSUNIT_DECLARE_TEST(Permissive);
 
 public:
     virtual void beforeTest() override;
@@ -446,4 +448,95 @@ TSUNIT_DEFINE_TEST(BuildMediaPlaylist)
         u"#EXT-X-ENDLIST\n";
 
     TSUNIT_EQUAL(refContent2, pl.textContent());
+}
+
+TSUNIT_DEFINE_TEST(Permissive)
+{
+    static const ts::UChar* const content =
+        u"#EXTM3U\n"
+        u"#EXT-X-TARGETDURATION:6\n"
+        u"#EXT-X-VERSION:3\n"
+        u"#EXT-X-MEDIA-SEQUENCE:0\n"
+        u"#EXT-X-PLAYLIST-TYPE:VOD\n"
+        u"#EXT-X-INDEPENDENT-SEGMENTS\n"
+        u"#EXTINF:6.00000,\n"
+        u"#EXT-X-BITRATE:2060\n"
+        u"file0.ts\n"
+        u"#EXTINF:6.00000,\n"
+        u"#EXT-X-BITRATE:2063\n"
+        u"http://foo.bar/media/file1.ts\n"
+        u"#EXTINF:6.00000,\n"
+        u"#EXT-X-BITRATE:2056\n"
+        u"https://foo.bar/media/file2.ts\n"
+        u"#EXTINF:6.00000,\n"
+        u"#EXT-X-BITRATE:2055\n"
+        u"file:///root/media/file3.ts\n"
+        u"#EXT-X-ENDLIST\n";
+
+    ts::ReportBuffer<> rep;
+    ts::hls::PlayList pl(&rep);
+    TSUNIT_ASSERT(pl.loadText(content));
+    TSUNIT_ASSERT(pl.isValid());
+    TSUNIT_EQUAL(ts::hls::PlayListType::VOD, pl.type());
+    TSUNIT_EQUAL(4, pl.segmentCount());
+    TSUNIT_EQUAL(0, pl.playListCount());
+    TSUNIT_ASSERT(pl.endList());
+    TSUNIT_ASSERT(!pl.isPermissiveURL());
+
+    TSUNIT_ASSERT(pl.setFile(u"/a/b/main.m3u8"));
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    TSUNIT_EQUAL(u"file0.ts", pl.segment(0).relative_uri);
+    TSUNIT_EQUAL(u"/a/b/file0.ts", pl.segment(0).file_path);
+    TSUNIT_EQUAL(u"", pl.segment(0).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(0).title);
+
+    TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).relative_uri);
+    TSUNIT_EQUAL(u"/media/file1.ts", pl.segment(1).file_path);
+    TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(1).title);
+
+    TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).relative_uri);
+    TSUNIT_EQUAL(u"/media/file2.ts", pl.segment(2).file_path);
+    TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(2).title);
+
+    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).relative_uri);
+    TSUNIT_EQUAL(u"/root/media/file3.ts", pl.segment(3).file_path);
+    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(3).title);
+
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    TSUNIT_ASSERT(!pl.setURL(u"http://site.com/tv/main.m3u8"));
+    TSUNIT_EQUAL(u"Error: reference to file:///root/media/file3.ts is not allowed in playlist with http: URL", rep.messages());
+    rep.clear();
+
+    pl.setPermissiveURL(true);
+    TSUNIT_ASSERT(pl.isPermissiveURL());
+
+    TSUNIT_ASSERT(pl.setURL(u"http://site.com/tv/main.m3u8"));
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    TSUNIT_EQUAL(u"file0.ts", pl.segment(0).relative_uri);
+    TSUNIT_EQUAL(u"/tv/file0.ts", pl.segment(0).file_path);
+    TSUNIT_EQUAL(u"http://site.com/tv/file0.ts", pl.segment(0).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(0).title);
+
+    TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).relative_uri);
+    TSUNIT_EQUAL(u"/media/file1.ts", pl.segment(1).file_path);
+    TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(1).title);
+
+    TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).relative_uri);
+    TSUNIT_EQUAL(u"/media/file2.ts", pl.segment(2).file_path);
+    TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(2).title);
+
+    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).relative_uri);
+    TSUNIT_EQUAL(u"/root/media/file3.ts", pl.segment(3).file_path);
+    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).url.toString());
+    TSUNIT_EQUAL(u"", pl.segment(3).title);
+
+    TSUNIT_EQUAL(u"", rep.messages());
 }

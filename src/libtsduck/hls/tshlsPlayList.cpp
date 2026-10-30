@@ -84,7 +84,7 @@ bool ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri, bool s
             return false;
         }
         else if (!_permissive_url) {
-            // Check if the resolved URL is compatible with the URL of the playlist/
+            // Check if the resolved URL is compatible with the URL of the playlist.
             UString main(_url.getScheme());
             UString sub(media.url.getScheme());
             main.convertToLower();
@@ -92,7 +92,7 @@ bool ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri, bool s
             main.trim();
             sub.trim();
             if ((main.starts_with(u"http") && !sub.starts_with(u"http")) || (main.starts_with(u"ftp") && !sub.starts_with(u"ftp"))) {
-                report().log(SilentLevel(silent), u"refernce to %s is not allowed in playlist with %s: URL", uri, main);
+                report().log(SilentLevel(silent), u"reference to %s is not allowed in playlist with %s: URL", uri, main);
                 media.url.clear();
                 media.file_path.clear();
                 return false;
@@ -101,7 +101,6 @@ bool ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri, bool s
     }
     else if (_original.empty()) {
         // The playlist has no file name or URL, use the provided URI only (must be fully specified).
-        media.relative_uri = uri;
         media.url.setURL(uri);
         if (media.url.isValid()) {
             media.file_path = media.url.getPath();
@@ -110,12 +109,17 @@ bool ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri, bool s
             media.file_path = uri;
         }
     }
+    else if (URL::IsURL(uri)) {
+        // The URI of the playlist is a file and the segment is a URL.
+        media.url.setURL(uri);
+        media.file_path = media.url.getPath();
+    }
     else if (uri.starts_with(u"/")) {
-        // The original URI of the playlist was a file and the segment is an absolute file name.
+        // The URI of the playlist is a file and the segment is an absolute file name.
         media.file_path = uri;
     }
     else {
-        // The original URI of the playlist was a file and the segment is a relative file name.
+        // The URI of the playlist is a file and the segment is a relative file name.
         media.file_path = _file_base + uri;
     }
     return true;
@@ -494,8 +498,7 @@ bool ts::hls::PlayList::setURL(const UString& url_string, bool silent)
 {
     const URL url(url_string);
     if (url.isValid()) {
-        setURL(url, silent);
-        return true;
+        return setURL(url, silent);
     }
     else {
         report().log(SilentLevel(silent), u"invalid URL: %s", url_string);

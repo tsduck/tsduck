@@ -236,6 +236,13 @@ namespace ts::hls {
         void setPermissiveURL(bool permissive) { _permissive_url = permissive; }
 
         //!
+        //! Check if the playlist allows permissive URL resolution.
+        //! @return True if the playlist allows permissive URL resolution, false otherwise.
+        //! @see setPermissiveURL()
+        //!
+        bool isPermissiveURL() { return _permissive_url; }
+
+        //!
         //! Add a custom tag in the playlist.
         //! @param [in] tag A custom tag line to add in the playlist. If @a does not start
         //! with a @c '#', it will be automatically added.
