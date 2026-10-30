@@ -29,6 +29,9 @@ namespace ts::hls {
     //!
     class TSDUCKDLL PlayList: public ReporterBase, public StringifyInterface
     {
+        TS_DEFAULT_COPY_MOVE(PlayList);
+    private:
+        PlayList() = delete;
     public:
         //!
         //! Constructor.
