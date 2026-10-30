@@ -45,6 +45,8 @@ public:
     bool                got_bitrate = false;   // Got bitrate at least once.
     uint64_t            demod_freq = 0;        // Demodulation frequency in Hz
     Dtapi::DtDemodPars  demod_pars {};         // Demodulation parameters
+    std::optional<int>  isi {};                // DVB-S2 Input Stream Id to select (--isi)
+    bool                is_dvbs2 = false;      // Demodulation type is one of the DVB-S2 modulations
     Dtapi::DtIpPars2    ip_pars {};            // TS-over-IP parameters
     int                 sat_number = 0;        // Satellite number
     Polarization        polarity = POL_VERTICAL;  // Polarity.
@@ -199,6 +201,12 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"ISDB-T demodulators: indicate the sub-channel number (0..41) of the centre segment of the spectrum. "
          u"The default is 22.");
 
+    option(u"isi", 0, INTEGER, 0, 1, 0, 255);
+    help(u"isi",
+         u"DVB-S2 demodulators: select the Input Stream Id (ISI) of the multistream to demodulate, "
+         u"from 0 to 255. Without this option, the input stream selection of the device is left unchanged. "
+         u"This option has no effect on single-stream carriers or non-DVB-S2 modulations.");
+
     option(u"j83", 0, Names {
         {u"A", DTAPI_MOD_J83_A},
         {u"B", DTAPI_MOD_J83_B},
@@ -247,6 +255,18 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     option(u"no-lnb-control");
     help(u"no-lnb-control",
          u"DVB-S/S2 receivers: do not send any control command to the LNB.");
+
+    option(u"pls-code", 0, INTEGER, 0, 1, 0, PLS_CODE_MAX);
+    help(u"pls-code",
+         u"DVB-S2 demodulators: specify the Physical Layer Scrambling (PLS) code value, from 0 to 262143, "
+         u"in GOLD or ROOT mode depending on --pls-mode. The default is 0 (GOLD), the standard scrambling "
+         u"sequence. Other values require Dektec SDK 2026.09 or higher (drivers, DTAPI 6.14 and "
+         u"DtapiService) and a device which supports them, such as DTA-2127, DTA-2128 or DTA-2132.");
+
+    option(u"pls-mode", 0, PLSModeEnum());
+    help(u"pls-mode", u"mode",
+         u"DVB-S2 demodulators: specify the Physical Layer Scrambling (PLS) mode of --pls-code. "
+         u"The default is GOLD.");
 
     option(u"polarity", 0, PolarizationEnum());
     help(u"polarity",
@@ -348,11 +368,13 @@ bool ts::DektecInputPlugin::getOptions()
     getIntValue(_guts->chan_index, u"channel", -1);
     getIntValue(_guts->timeout_ms, u"receive-timeout", _guts->timeout_ms); // preserve previous value
     getIntValue(_guts->sat_number, u"satellite-number", 0);
+    getOptionalIntValue(_guts->isi, u"isi", true);
     getIntValue(_guts->polarity, u"polarity", POL_VERTICAL);
     getIntValue(_guts->opt_fifo_size, u"fifo-size", 0);
     _guts->preload_fifo = present(u"preload-fifo");
     _guts->high_band = false;
     _guts->lnb_setup = false;
+    _guts->is_dvbs2 = false;
 
     bool success = GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue) &&
                    GetDektecIPArgs(*this, true, _guts->ip_pars);
@@ -435,7 +457,31 @@ bool ts::DektecInputPlugin::getOptions()
                     dvbs2->m_FecFrame = DTAPI_MOD_S2_FRM_AUTO;
                     dvbs2->m_Pilots = DTAPI_MOD_S2_PILOTS_AUTO;
                     dvbs2->m_SpecInv = DTAPI_MOD_S_S2_SPECINV_AUTO;
+
+                    // DTAPI expects the PLS code as a GOLD sequence index.
+                    const uint32_t pls_code = intValue<uint32_t>(u"pls-code", 0);
+                    uint32_t gold_code = pls_code;
+                    if (intValue<PLSMode>(u"pls-mode", PLS_GOLD) == PLS_ROOT) {
+                        gold_code = PLSCodeRootToGold(pls_code);
+                        if (!present(u"pls-code")) {
+                            error(u"--pls-code is required with --pls-mode ROOT");
+                            success = false;
+                        }
+                        else if (gold_code > PLS_CODE_MAX) {
+                            error(u"invalid ROOT PLS code %d", pls_code);
+                            success = false;
+                        }
+                    }
+#if TS_DTAPI_VERSION >= 614
+                    dvbs2->m_ScramblingSeqNr = int(gold_code);
+#else
+                    if (gold_code != 0) {
+                        error(u"PLS code requires DTAPI 6.14 or higher");
+                        success = false;
+                    }
+#endif
                 }
+                _guts->is_dvbs2 = true;
                 _guts->lnb_setup = true;
                 break;
             }
@@ -506,6 +552,11 @@ bool ts::DektecInputPlugin::getOptions()
             error(u"invalid Dektec demodulation parameters: %s", DektecStrError(status));
             success = false;
         }
+    }
+
+    // Multistream and PLS options apply to DVB-S2 only.
+    if (!_guts->is_dvbs2 && (present(u"isi") || present(u"pls-code") || present(u"pls-mode"))) {
+        warning(u"--isi, --pls-code and --pls-mode ignored: they only apply to DVB-S2 demodulation");
     }
 
     // Skip LNB setup if no-lnb-control option is present
@@ -666,6 +717,23 @@ bool ts::DektecInputPlugin::start()
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
             return startError(u"error tuning Dektec demodulator", status);
+        }
+
+        // Select the DVB-S2 input stream (ISI), only with --isi. Ignored by the device on
+        // single-stream carriers. If the --isi value does not exist on the carrier, no stream is received.
+        if (_guts->is_dvbs2 && _guts->isi.has_value()) {
+            if ((dt_flags & DTAPI_CAP_RX_DVBS2_MIS) == 0) {
+                warning(u"--isi ignored: this device does not support DVB-S2 multistream");
+            }
+            else {
+                Dtapi::DtDvbS2StreamSelPars sel;
+                sel.m_Isi = _guts->isi.value();
+                debug(u"selecting DVB-S2 ISI %d", sel.m_Isi);
+                status = _guts->chan.SetStreamSelection(sel);
+                if (status != DTAPI_OK) {
+                    return startError(u"error selecting DVB-S2 input stream (ISI)", status);
+                }
+            }
         }
     }
 
