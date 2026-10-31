@@ -494,7 +494,7 @@ TSUNIT_DEFINE_TEST(Permissive)
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"A:\\b\\media\\file0.ts", pl.segment(0).file_path);
 #else
-    TSUNIT_EQUAL(u"/a/b/file0.ts", pl.segment(0).file_path);
+    TSUNIT_EQUAL(u"/a/b/media/file0.ts", pl.segment(0).file_path);
 #endif
     TSUNIT_EQUAL(u"", pl.segment(0).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(0).title);
