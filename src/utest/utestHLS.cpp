@@ -80,7 +80,11 @@ TSUNIT_DEFINE_TEST(MasterPlaylist)
     ts::hls::MediaElement media;
     TSUNIT_ASSERT(pl.buildURL(media, u"foo.bar"));
     TSUNIT_EQUAL(u"foo.bar", media.relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"teststreams\\hls\\img_bipbop_adv_example_ts\\foo.bar", media.file_path);
+#else
     TSUNIT_EQUAL(u"/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.file_path);
+#endif
     TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.url.toString());
     TSUNIT_EQUAL(u"https://tsduck.io/teststreams/hls/img_bipbop_adv_example_ts/foo.bar", media.urlString());
     TSUNIT_EQUAL(0, pl.segmentCount());
@@ -461,7 +465,7 @@ TSUNIT_DEFINE_TEST(Permissive)
         u"#EXT-X-INDEPENDENT-SEGMENTS\n"
         u"#EXTINF:6.00000,\n"
         u"#EXT-X-BITRATE:2060\n"
-        u"file0.ts\n"
+        u"media/file0.ts\n"
         u"#EXTINF:6.00000,\n"
         u"#EXT-X-BITRATE:2063\n"
         u"http://foo.bar/media/file1.ts\n"
@@ -486,24 +490,40 @@ TSUNIT_DEFINE_TEST(Permissive)
     TSUNIT_ASSERT(pl.setFile(u"/a/b/main.m3u8"));
     TSUNIT_EQUAL(u"", rep.messages());
 
-    TSUNIT_EQUAL(u"file0.ts", pl.segment(0).relative_uri);
+    TSUNIT_EQUAL(u"media/file0.ts", pl.segment(0).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"A:\\b\\media\\file0.ts", pl.segment(0).file_path);
+#else
     TSUNIT_EQUAL(u"/a/b/file0.ts", pl.segment(0).file_path);
+#endif
     TSUNIT_EQUAL(u"", pl.segment(0).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(0).title);
 
     TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"media\\file1.ts", pl.segment(1).file_path);
+#else
     TSUNIT_EQUAL(u"/media/file1.ts", pl.segment(1).file_path);
+#endif
     TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(1).title);
 
     TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"media\\file2.ts", pl.segment(2).file_path);
+#else
     TSUNIT_EQUAL(u"/media/file2.ts", pl.segment(2).file_path);
+#endif
     TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(2).title);
 
     TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"root\\media\\file3.ts", pl.segment(3).file_path);
+#else
     TSUNIT_EQUAL(u"/root/media/file3.ts", pl.segment(3).file_path);
-    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).url.toString());
+#endif
+    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).url.toString(false));
     TSUNIT_EQUAL(u"", pl.segment(3).title);
 
     TSUNIT_EQUAL(u"", rep.messages());
@@ -518,24 +538,40 @@ TSUNIT_DEFINE_TEST(Permissive)
     TSUNIT_ASSERT(pl.setURL(u"http://site.com/tv/main.m3u8"));
     TSUNIT_EQUAL(u"", rep.messages());
 
-    TSUNIT_EQUAL(u"file0.ts", pl.segment(0).relative_uri);
-    TSUNIT_EQUAL(u"/tv/file0.ts", pl.segment(0).file_path);
-    TSUNIT_EQUAL(u"http://site.com/tv/file0.ts", pl.segment(0).url.toString());
+    TSUNIT_EQUAL(u"media/file0.ts", pl.segment(0).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"tv\\media\\file0.ts", pl.segment(0).file_path);
+#else
+    TSUNIT_EQUAL(u"/tv/media/file0.ts", pl.segment(0).file_path);
+#endif
+    TSUNIT_EQUAL(u"http://site.com/tv/media/file0.ts", pl.segment(0).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(0).title);
 
     TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"media\\file1.ts", pl.segment(1).file_path);
+#else
     TSUNIT_EQUAL(u"/media/file1.ts", pl.segment(1).file_path);
+#endif
     TSUNIT_EQUAL(u"http://foo.bar/media/file1.ts", pl.segment(1).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(1).title);
 
     TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"media\\file2.ts", pl.segment(2).file_path);
+#else
     TSUNIT_EQUAL(u"/media/file2.ts", pl.segment(2).file_path);
+#endif
     TSUNIT_EQUAL(u"https://foo.bar/media/file2.ts", pl.segment(2).url.toString());
     TSUNIT_EQUAL(u"", pl.segment(2).title);
 
     TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).relative_uri);
+#if defined(TS_WINDOWS)
+    TSUNIT_EQUAL(u"root\\media\\file3.ts", pl.segment(3).file_path);
+#else
     TSUNIT_EQUAL(u"/root/media/file3.ts", pl.segment(3).file_path);
-    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).url.toString());
+#endif
+    TSUNIT_EQUAL(u"file:///root/media/file3.ts", pl.segment(3).url.toString(false));
     TSUNIT_EQUAL(u"", pl.segment(3).title);
 
     TSUNIT_EQUAL(u"", rep.messages());

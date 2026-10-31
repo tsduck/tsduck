@@ -29,8 +29,8 @@ namespace ts::hls {
         MediaElement() = default;
 
         //!
-        //! Get the URL string to use.
-        //! @return The URL string to use.
+        //! Get the URL or file path string to use.
+        //! @return The URL or file path string to use.
         //!
         UString urlString() const;
 
@@ -39,7 +39,7 @@ namespace ts::hls {
 
         // Public fields.
         UString relative_uri {};  //!< Relative URI, verbatime from playlist.
-        UString file_path {};     //!< Full file path.
+        UString file_path {};     //!< Absolute file path, in operating system native format.
         URL     url {};           //!< Full URL, invalid if accessed by file path only.
     };
 }

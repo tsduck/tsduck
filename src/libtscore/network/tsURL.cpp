@@ -75,6 +75,8 @@ void ts::URL::parse(const UString& path)
     if (colon > 0) {
 
         _scheme = path.substr(0, colon);
+        _scheme.convertToLower();
+        _scheme.trim();
         _username.clear();
         _password.clear();
         _host.clear();
@@ -294,14 +296,14 @@ void ts::URL::clear()
 // Convert to a string object.
 //----------------------------------------------------------------------------
 
-ts::UString ts::URL::toString(bool useWinInet) const
+ts::UString ts::URL::toString(bool use_win_inet) const
 {
     UString url;
     if (!_scheme.empty()) {
         url = _scheme;
         url.append(u"://");
 #if defined(TS_WINDOWS)
-        if (useWinInet && _scheme == u"file" && _username.empty() && _password.empty() && _host.empty() && _port == 0) {
+        if (use_win_inet && _scheme == u"file" && _username.empty() && _password.empty() && _host.empty() && _port == 0) {
             // We need the final string 'file://C:/dir/file' to contain 2 slashes instead of the standard 3.
             url.pop_back();
         }
@@ -342,16 +344,16 @@ ts::UString ts::URL::toString(bool useWinInet) const
 // Extract a relative URL of this object, from a base URL.
 //----------------------------------------------------------------------------
 
-ts::UString ts::URL::toRelative(const UString& base, bool useWinInet) const
+ts::UString ts::URL::toRelative(const UString& base, bool use_win_inet) const
 {
-    return toRelative(URL(base), useWinInet);
+    return toRelative(URL(base), use_win_inet);
 }
 
-ts::UString ts::URL::toRelative(const URL& base, bool useWinInet) const
+ts::UString ts::URL::toRelative(const URL& base, bool use_win_inet) const
 {
     // If the base is not on the same server, there is no relative path, return the full URL.
     if (!sameServer(base)) {
-        return toString(useWinInet);
+        return toString(use_win_inet);
     }
 
     // Get directory part of base path.

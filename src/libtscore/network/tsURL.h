@@ -75,37 +75,37 @@ namespace ts {
 
         //!
         //! Convert to a string object.
-        //! @param [in] useWinInet This boolean is used on Windows only. When true, a file
+        //! @param [in] use_win_inet This boolean is used on Windows only. When true, a file
         //! URL is built as 'file://C:/dir/file' (with 2 slashes). When false, the URL is
         //! 'file:///C:/dir/file' (with 3 slashes). The latter form is the documented one
         //! from Microsoft and should be considered as the "correct" one. However, the
         //! Microsoft WinInet library (which is used by the WebRequest class) requires
         //! the incorrect form with 2 slashes. So, if the resulting URL is to be used
-        //! by WebRequest, set @a useWinInet to true (the default) but if the URL needs
+        //! by WebRequest, set @a use_win_inet to true (the default) but if the URL needs
         //! to be published somewhere, use false.
         //! @return The URL as a string.
         //!
-        UString toString(bool useWinInet = true) const;
+        UString toString(bool use_win_inet = true) const;
 
         //!
         //! Extract a relative URL of this object, from a base URL.
         //! @param [in] base The base URL to use. If this object and @a base share the
         //! same scheme and host specification.
-        //! @param [in] useWinInet This boolean is used on Windows only.
+        //! @param [in] use_win_inet This boolean is used on Windows only.
         //! See toString() for details.
         //! @return The relative URL as a string.
         //!
-        UString toRelative(const URL& base, bool useWinInet = true) const;
+        UString toRelative(const URL& base, bool use_win_inet = true) const;
 
         //!
         //! Extract a relative URL of this object, from a base URL.
         //! @param [in] base The base URL to use. If this object and @a base share the
         //! same scheme and host specification.
-        //! @param [in] useWinInet This boolean is used on Windows only.
+        //! @param [in] use_win_inet This boolean is used on Windows only.
         //! See toString() for details.
         //! @return The relative URL as a string.
         //!
-        UString toRelative(const UString& base, bool useWinInet = true) const;
+        UString toRelative(const UString& base, bool use_win_inet = true) const;
 
         //!
         //! Check if two URL's use the same server (scheme, host, user, etc.)

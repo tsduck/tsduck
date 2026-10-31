@@ -74,8 +74,9 @@ namespace ts {
     //! Return a "vernacular" version of a file path.
     //! @ingroup files
     //! @param [in] path A file path.
-    //! @return A copy of @a path where all '/' and '\' have been
-    //! translated into the local directory separator.
+    //! @return A copy of @a path where all '/' and '\' have been translated into the local directory separator.
+    //! On Windows, a file path starting with '/' which cannot be translated as a valid Windows absolute path
+    //! becomes a relative path.
     //!
     TSCOREDLL UString VernacularFilePath(const UString& path);
 

@@ -48,12 +48,12 @@ ts::UString ts::VernacularFilePath(const UString& path)
     UString vern(path);
 
 #if defined(TS_WINDOWS)
-    // With Windows Linux Subsystem, the syntax "/mnt/c/" means "C:\"
+    // With Windows Linux Subsystem, the syntax "/mnt/c/" means "C:\". Currently transform it as "/c/".
     if (vern.length() >= 6 && vern.starts_with(u"/mnt/") && IsAlpha(vern[5]) && (vern.length() == 6 || vern[6] == u'/')) {
         vern.erase(0, 4);
     }
 
-    // With Cygwin, the syntax "/cygdrive/C/" means "C:\"
+    // With Cygwin, the syntax "/cygdrive/C/" means "C:\". Currently transform it as "/C/".
     if (vern.starts_with(u"/cygdrive/")) {
         vern.erase(0, 9);
     }
@@ -68,6 +68,12 @@ ts::UString ts::VernacularFilePath(const UString& path)
         else {
             vern[2] = u'\\';
         }
+    }
+
+    // Any remaining leading '/' is a UNIX form of absolute path which does not translate to
+    // any Windows absolute path. Make it a relative path.
+    while (vern.starts_with(u'/')) {
+        vern.erase(0, 1);
     }
 #endif
 
@@ -89,9 +95,10 @@ ts::UString ts::VernacularFilePath(const UString& path)
 bool ts::IsAbsoluteFilePath(const ts::UString& path)
 {
 #if defined(TS_WINDOWS)
-    return path.starts_with(u"\\\\") || (path.length() >= 3 && IsAlpha(path[0]) && path[1] == u':' && path[2] == u'\\');
+    // Also include UNIX-style absolute paths.
+    return path.starts_with(u'/') || path.starts_with(u"\\\\") || (path.length() >= 3 && IsAlpha(path[0]) && path[1] == u':' && path[2] == u'\\');
 #else
-    return !path.empty() && path[0] == u'/';
+    return path.starts_with(u'/');
 #endif
 }
 
