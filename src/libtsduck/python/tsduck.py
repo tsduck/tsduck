@@ -366,7 +366,7 @@ class Report(NativeObject):
         # void tspySetMaxSeverity(void* report, int severity)
         cfunc = _lib.tspySetMaxSeverity
         cfunc.restype = None
-        tspySetMaxSeveritycfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
         cfunc(self._getNative(), severity)
 
     ##
@@ -1026,7 +1026,7 @@ class SectionFile(NativeObject):
         # void tspySectionFileSetCRCValidation(void* sf, int mode)
         cfunc = _lib.tspySectionFileSetCRCValidation
         cfunc.restype = None
-        tspySectionFileSetCRCValidationcfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
         cfunc(self._getNative(), mode)
 
     ##
