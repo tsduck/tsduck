@@ -23,6 +23,7 @@ John Hansen Aal
 Chris Hibbert
 Paul Higgs
 Harald Jordan
+Derek Kozel
 Thierry Lelégard (original author, current maintainer)
 Jérôme Lévèque
 Aaron Levinson
@@ -47,4 +48,4 @@ Enrico Vittorini
 Fei Wong
 Marwan Yassin
 
-If you wish to contribute, please see the [contributor guide](https://tsduck.io/docs/tsduck-contrib.html).
+If you wish to contribute, please see the contributor guide: https://tsduck.io/docs/tsduck-contrib.html
