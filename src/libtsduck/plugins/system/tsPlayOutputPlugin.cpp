@@ -176,7 +176,7 @@ bool ts::PlayOutputPlugin::start()
     }
     else if (_use_ffplay) {
         opts = ffplay_opts;
-        if (!searchInPath(exec, search_path, xine_exec)) {
+        if (!searchInPath(exec, search_path, ffplay_exec)) {
             error(u"ffplay not found in PATH");
             return false;
         }

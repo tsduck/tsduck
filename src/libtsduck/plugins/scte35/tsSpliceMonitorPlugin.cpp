@@ -307,11 +307,15 @@ ts::UString ts::SpliceMonitorPlugin::header(PID splice_pid, uint32_t event_id)
         line.format(u"packet %'d, ", tsp->pluginPackets());
     }
     if (splice_pid != PID_NULL) {
-        SpliceContext& ctx(_splice_contexts[splice_pid]);
         line.format(u"splice PID %n, ", splice_pid);
         if (event_id != SpliceInsert::INVALID_EVENT_ID) {
-            const SpliceEvent& evt(ctx.splice_events[event_id]);
-            line.format(u"event %n %d, ", evt.event_id, evt.event_out ? u"out" : u"in");
+            const auto ctx = _splice_contexts.find(splice_pid);
+            if (ctx != _splice_contexts.end()) {
+                const auto evt = ctx->second.splice_events.find(event_id);
+                if (evt != ctx->second.splice_events.end()) {
+                    line.format(u"event %n %d, ", evt->second.event_id, evt->second.event_out ? u"out" : u"in");
+                }
+            }
         }
     }
     return line;
@@ -648,7 +652,7 @@ ts::PacketProcessStatus ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt, TS
                     SpliceEvent& evt(it->second);
 
                     // Look for event occurrence.
-                    if (evt.event_id != SpliceInsert::INVALID_EVENT_ID && evt.event_pts != INVALID_PTS && ctx->last_pts >= evt.event_pts) {
+                    if (evt.event_pts != INVALID_PTS && ctx->last_pts >= evt.event_pts) {
 
                         // Evaluate time since first command. Assume constant bitrate since then.
                         const cn::milliseconds preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - evt.first_cmd_packet);

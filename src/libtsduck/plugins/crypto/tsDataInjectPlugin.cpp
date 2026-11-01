@@ -179,7 +179,7 @@ void ts::DataInjectPlugin::clearSession()
     _packetizer.reset();
     _lost_packets = 0;
 
-    // Initial bandwidth allocation (zero means unlimited)
+    // Initial bandwidth allocation (zero means unlimited).
     _req_bitrate = _max_bitrate;
     _req_bitrate_changed = false;
 }
@@ -249,9 +249,11 @@ ts::PacketProcessStatus ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPac
                 _cc_fixer.feedPacket(pkt);
                 // Compute next insertion point if the data PID bitrate is specified.
                 // Otherwise, try to update any null packet (unbounded bitrate).
-                if (!_unregulated || _req_bitrate != 0) {
+                // Take care of floating point conversion which may result in division by zero.
+                const auto br = _req_bitrate.toInt64();
+                if (!_unregulated || br != 0) {
                     // TODO: refine this, works only for low injection bitrates.
-                    _pkt_next_data += (tsp->bitrate() / _req_bitrate).toInt();
+                    _pkt_next_data += (tsp->bitrate() / br).toInt();
                 }
             }
         }

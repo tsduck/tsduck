@@ -281,8 +281,8 @@ ts::PacketProcessStatus ts::SpliceRestampPlugin::processPacket(TSPacket& pkt, TS
                 }
             }
             const uint64_t pts_adjust = new_pcr >= old_pcr ?
-                ((new_pcr - old_pcr) % PTSTraits::SCALE) / SYSTEM_CLOCK_SUBFACTOR :
-                PTSTraits::SCALE - ((old_pcr - new_pcr) % PTSTraits::SCALE) / SYSTEM_CLOCK_SUBFACTOR;
+                (new_pcr - old_pcr) / SYSTEM_CLOCK_SUBFACTOR :
+                PTSTraits::SCALE - (old_pcr - new_pcr) / SYSTEM_CLOCK_SUBFACTOR;
             if (!_current_adjustment.has_value()) {
                 verbose(u"initial PTS adjustment is %'d", pts_adjust);
                 debug(u"old PCR: %'d 0x%<012X, new PCR: %'d 0x%<012X", old_pcr, new_pcr);

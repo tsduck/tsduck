@@ -110,7 +110,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
          u"Message tag to be displayed in alarms. "
          u"Useful when the plugin is used several times in the same process.");
 
-    option(u"time-interval", 't', UINT16);
+    option(u"time-interval", 't', INTEGER, 0, 1, 1, 3600);
     help(u"time-interval",
          u"Time interval (in seconds) used to compute the bitrate. "
          u"Default: " + UString::Decimal(DEFAULT_TIME_WINDOW_SIZE) + u" s.");

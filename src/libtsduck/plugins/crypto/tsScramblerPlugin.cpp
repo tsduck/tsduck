@@ -799,7 +799,7 @@ void ts::ScramblerPlugin::CryptoPeriod::handleECM(const ecmgscs::ECMResponse& re
         pzer.getPackets(_ecm);
 
     }
-    else if (response.ECM_datagram.size() % PKT_SIZE != 0) {
+    else if (response.ECM_datagram.empty() || response.ECM_datagram.size() % PKT_SIZE != 0) {
         // ECMG returns ECM in packet format, but not an integral number of packets
         _plugin->error(u"invalid ECM size (%d bytes), not a multiple of %d", response.ECM_datagram.size(), PKT_SIZE);
         _plugin->_abort = true;

@@ -131,7 +131,7 @@ namespace ts {
         // Initialize _additional_tags from _args.
         void InitAdditionalFlags();
 
-        // Helper for escape strings.
+        // Helper for escape strings. Also turn end of lines into space to avoid injection of fake lines.
         static UString Escape(const UString& name, const UString& specials, bool add_quotes);
     };
 

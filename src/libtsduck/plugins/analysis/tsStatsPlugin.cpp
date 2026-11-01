@@ -258,11 +258,10 @@ ts::PacketProcessStatus ts::StatsPlugin::processPacket(TSPacket& pkt, TSPacketMe
     }
 
     // Check tracked labels.
-    if (!_track_pids) {
+    if (pkt_data.hasAnyLabel(_labels)) {
         for (size_t label = 0; label < _labels.size(); ++label) {
-            if (pkt_data.hasLabel(label)) {
-                const ContextPtr ctx(getContext(label));
-                ctx->addPacketData(tsp->pluginPackets(), pkt);
+            if (_labels.test(label) && pkt_data.hasLabel(label)) {
+                getContext(label)->addPacketData(tsp->pluginPackets(), pkt);
             }
         }
     }

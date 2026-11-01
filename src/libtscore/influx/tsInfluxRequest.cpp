@@ -173,6 +173,14 @@ ts::UString ts::InfluxRequest::Escape(const UString& name, const UString& specia
         result.append(u'"');
     }
     for (UChar c : name) {
+        if (c == u'\n') {
+            // Turn LF/EOL into space to avoid injection of fake lines.
+            c = u' ';
+        }
+        else if (c == u'\r') {
+            // Remove CR, mostly used in CR-LF combinations.
+            continue;
+        }
         if (specials.contains(c)) {
             result.append(u'\\');
         }

@@ -340,13 +340,13 @@ void ts::AbstractDescrambler::processECM(ECMStream& estream)
     }
 
     // Here, we have an ECM to decipher.
-    const size_t dumpSize = std::min<size_t>(8, ecm.payloadSize());
+    const size_t dump_size = std::min<size_t>(8, ecm.payloadSize());
     if (debug()) {
         debug(u"packet %d, decipher ECM, %d bytes: %s%s",
               tsp->pluginPackets(),
               ecm.payloadSize(),
-              UString::Dump(ecm.payload(), dumpSize, UString::SINGLE_LINE),
-              dumpSize < ecm.payloadSize() ? u" ..." : u"");
+              UString::Dump(ecm.payload(), dump_size, UString::SINGLE_LINE),
+              dump_size < ecm.payloadSize() ? u" ..." : u"");
     }
 
     // Submit the ECM to the CAS (subclass).
@@ -512,25 +512,30 @@ ts::PacketProcessStatus ts::AbstractDescrambler::processPacket(TSPacket& pkt, TS
             _mutex.lock();
         }
 
-        // Store the new CW in the descrambler.
+        // Store the new CW in the descrambler. This may fail if the control word is incorrect.
+        bool set_cw_ok = true;
         if (scv == SC_EVEN_KEY) {
-            pecm->scrambling.setScramblingType(pecm->cw_even.scrambling, false);
-            pecm->scrambling.setCW(pecm->cw_even.cw, SC_EVEN_KEY);
+            set_cw_ok = pecm->scrambling.setScramblingType(pecm->cw_even.scrambling, false) && pecm->scrambling.setCW(pecm->cw_even.cw, SC_EVEN_KEY);
             pecm->new_cw_even = false;
         }
         else {
-            pecm->scrambling.setScramblingType(pecm->cw_odd.scrambling, false);
-            pecm->scrambling.setCW(pecm->cw_odd.cw, SC_ODD_KEY);
+            set_cw_ok = pecm->scrambling.setScramblingType(pecm->cw_odd.scrambling, false) && pecm->scrambling.setCW(pecm->cw_odd.cw, SC_ODD_KEY);
             pecm->new_cw_odd = false;
         }
 
         if (!_synchronous) {
             _mutex.unlock();
         }
+
+        if (!set_cw_ok) {
+            // Specific error messages already displayed in failing functions, just a final message.
+            error(u"failing to set CW, scrambled packets may be passed unchanged");
+        }
     }
 
-    // Descramble the packet payload.
-    return pecm->scrambling.decrypt(pkt) ? TSP_OK : TSP_END;
+    // Descramble the packet payload. Ignore descrambling errors, pass scrambled packets.
+    pecm->scrambling.decrypt(pkt);
+    return TSP_OK;
 }
 
 TS_POP_WARNING()

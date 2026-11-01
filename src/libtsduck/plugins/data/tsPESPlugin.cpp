@@ -324,7 +324,7 @@ void ts::PESPlugin::saveOnePES(FileNameGenerator& namegen, const uint8_t* data, 
     std::ofstream file(filename, std::ios::out | std::ios::binary);
     if (!file) {
         error(u"cannot create %s", filename);
-        _abort = false;
+        _abort = true;
     }
     else {
         file.write(reinterpret_cast<const char*>(data), size);

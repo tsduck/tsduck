@@ -333,7 +333,7 @@ void ts::ZapPlugin::setServiceId(ServiceContext& ctx, uint16_t service_id)
         }
 
         // At least one service id is known, we need the PAT, if not already done.
-        _demux.addPID(TID_PAT);
+        _demux.addPID(PID_PAT);
 
         // Reprocess last PAT if present to collect new PMT.
         if (_last_pat.isValid()) {
@@ -647,7 +647,10 @@ void ts::ZapPlugin::analyzeCADescriptors(std::set<PID>& pids, const DescriptorLi
             if (descs[index].payloadSize() >= 4) {
                 const uint16_t pid = GetUInt16(descs[index].payload() + 2) & 0x1FFF;
                 pids.insert(pid);
-                _pid_state[pid] = pid_state;
+                // Mark the PID state only if not yet known (input CA PID could be forged with any PAT or PMT value).
+                if (_pid_state[pid] == TSPID_DROP) {
+                    _pid_state[pid] = pid_state;
+                }
             }
         }
     }

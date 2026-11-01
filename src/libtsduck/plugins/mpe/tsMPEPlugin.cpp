@@ -224,9 +224,13 @@ bool ts::MPEPlugin::start()
 
     // Open/create output file if present.
     if (!_outfile_name.empty()) {
-        std::ios::openmode mode(std::ios::out | std::ios::binary);
+        std::ios::openmode mode = std::ios::out | std::ios::binary;
         if (_outfile_append) {
-            mode |= std::ios::ate;
+            // Warning, there is a trap here. Flag ios::ate is documented as "seek to the end of stream immediately after open".
+            // However, open() with ios::out already truncated the file. Technically, ios::ate is not part of open(). Flag ios::app
+            // means "seek to the end of stream before each write". So, it is not exactly equivalent to append on an existing file
+            // and it is slightly more expensive at each write, but it does the job.
+            mode |= std::ios::app;
         }
         _outfile.open(_outfile_name, mode);
         if (!_outfile.is_open()) {
