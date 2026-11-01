@@ -89,31 +89,35 @@ namespace ts {
         //! Set the optional proxy host and port for this request (options -\-proxy-host and -\-proxy-port).
         //! @param [in] host Proxy host name or address.
         //! @param [in] port Proxy port number.
+        //! @param [in] ignore_empty If true, empty host name and zero port number are ignored.
         //!
-        void setProxyHost(const UString& host, uint16_t port);
+        void setProxyHost(const UString& host, uint16_t port, bool ignore_empty = false);
 
         //!
         //! Set the default proxy host and port for all subsequent Web requests in the application.
         //! Initially loaded from environment variables https_proxy or http_proxy.
         //! @param [in] host Proxy host name or address.
         //! @param [in] port Proxy port number.
+        //! @param [in] ignore_empty If true, empty host name and zero port number are ignored.
         //!
-        static void SetDefaultProxyHost(const UString& host, uint16_t port);
+        static void SetDefaultProxyHost(const UString& host, uint16_t port, bool ignore_empty = false);
 
         //!
         //! Set the optional proxy authentication for this request (options -\-proxy-user and -\-proxy-password).
         //! @param [in] user Proxy user name.
         //! @param [in] password Proxy user's password.
+        //! @param [in] ignore_empty If true, empty user name or password are ignored.
         //!
-        void setProxyUser(const UString& user, const UString& password);
+        void setProxyUser(const UString& user, const UString& password, bool ignore_empty = false);
 
         //!
         //! Set the default proxy authentication for all subsequent requests.
         //! Initially loaded from environment variables https_proxy or http_proxy.
         //! @param [in] user Proxy user name.
         //! @param [in] password Proxy user's password.
+        //! @param [in] ignore_empty If true, empty user name or password are ignored.
         //!
-        static void SetDefaultProxyUser(const UString& user, const UString& password);
+        static void SetDefaultProxyUser(const UString& user, const UString& password, bool ignore_empty = false);
 
         //!
         //! Get the current actual proxy host (option -\-proxy-host or default).

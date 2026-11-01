@@ -136,11 +136,11 @@ jobs:
         export PREFIX=$(pwd)/bin/systest
         ${{ matrix.make }} install SYSPREFIX=$PREFIX
         # Build the test applications using that installation.
-        export PATH=$PREFIX/bin:$PATH:
-        export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH:
+        export PATH=$PREFIX/bin:$PATH
+        export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH
         export LD_LIBRARY_PATH2=$LD_LIBRARY_PATH
-        export PYTHONPATH=$PREFIX/share/tsduck/python:$PYTHONPATH:
-        export CLASSPATH=$PREFIX/share/tsduck/java/tsduck.jar:$CLASSPATH:
+        export PYTHONPATH=$PREFIX/share/tsduck/python:$PYTHONPATH
+        export CLASSPATH=$PREFIX/share/tsduck/java/tsduck.jar:$CLASSPATH
         ${{ matrix.make }} -C sample
 
   build_windows:

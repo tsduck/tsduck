@@ -29,16 +29,24 @@ ts::WebRequestArgs::DefaultProxy::DefaultProxy() :
 {
 }
 
-void ts::WebRequestArgs::SetDefaultProxyHost(const UString& host, uint16_t port)
+void ts::WebRequestArgs::SetDefaultProxyHost(const UString& host, uint16_t port, bool ignore_empty)
 {
-    _default_proxy_host = host;
-    _default_proxy_port = port;
+    if (!ignore_empty || !host.empty()) {
+        _default_proxy_host = host;
+    }
+    if (!ignore_empty || port != 0) {
+        _default_proxy_port = port;
+    }
 }
 
-void ts::WebRequestArgs::SetDefaultProxyUser(const UString& user, const UString& password)
+void ts::WebRequestArgs::SetDefaultProxyUser(const UString& user, const UString& password, bool ignore_empty)
 {
-    _default_proxy_user = user;
-    _default_proxy_assword = password;
+    if (!ignore_empty || !user.empty()) {
+        _default_proxy_user = user;
+    }
+    if (!ignore_empty || !password.empty()) {
+        _default_proxy_assword = password;
+    }
 }
 
 
@@ -46,16 +54,24 @@ void ts::WebRequestArgs::SetDefaultProxyUser(const UString& user, const UString&
 // Set/get proxy options.
 //----------------------------------------------------------------------------
 
-void ts::WebRequestArgs::setProxyHost(const UString& host, uint16_t port)
+void ts::WebRequestArgs::setProxyHost(const UString& host, uint16_t port, bool ignore_empty)
 {
-    _proxy_host = host;
-    _proxy_port = port;
+    if (!ignore_empty || !host.empty()) {
+        _proxy_host = host;
+    }
+    if (!ignore_empty || port != 0) {
+        _proxy_port = port;
+    }
 }
 
-void ts::WebRequestArgs::setProxyUser(const UString& user, const UString& password)
+void ts::WebRequestArgs::setProxyUser(const UString& user, const UString& password, bool ignore_empty)
 {
-    _proxy_user = user;
-    _proxy_password = password;
+    if (!ignore_empty || !user.empty()) {
+        _proxy_user = user;
+    }
+    if (!ignore_empty || !password.empty()) {
+        _proxy_password = password;
+    }
 }
 
 const ts::UString& ts::WebRequestArgs::proxyHost() const

@@ -19,7 +19,6 @@
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsErrCodeReport.h"
-#include "tsNullReport.h"
 #include "tsForkPipe.h"
 #include "tsDuckExtensionRepository.h"
 #if defined(TS_WINDOWS)
@@ -191,9 +190,9 @@ Options::Options(int argc, char *argv[]) :
     getValue(name, u"name");
     getValue(out_dir, u"output-directory");
 
-    // Proxy settings.
-    ts::WebRequestArgs::SetDefaultProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"));
-    ts::WebRequestArgs::SetDefaultProxyUser(value(u"proxy-user"), value(u"proxy-password"));
+    // Proxy settings. Ignore empty values (default is read from environment variables).
+    ts::WebRequestArgs::SetDefaultProxyHost(value(u"proxy-host"), intValue<uint16_t>(u"proxy-port"), true);
+    ts::WebRequestArgs::SetDefaultProxyUser(value(u"proxy-user"), value(u"proxy-password"), true);
 
     // Default download is --source.
     if (download && !binary && !source) {
@@ -215,7 +214,7 @@ Options::Options(int argc, char *argv[]) :
         if (!fs::is_directory(out_dir)) {
             error(u"directory not found: %s", out_dir);
         }
-        else if (!out_dir.ends_with(ts::UString(1, fs::path::preferred_separator))) {
+        else if (!out_dir.ends_with(fs::path::preferred_separator)) {
             // Make sure we can use out_dir directly with a file name.
             out_dir.append(fs::path::preferred_separator);
         }
@@ -438,12 +437,12 @@ namespace {
 
 #if !defined(TS_NO_GITHUB)
 namespace {
-    bool RunUpgradeCommand(Options& opt, const ts::UString& command, bool needPrivilege)
+    bool RunUpgradeCommand(Options& opt, const ts::UString& command, bool need_privilege)
     {
         ts::UString cmd(command);
 
         // Use a privileged command from an non-privileged process ?
-        if (needPrivilege && !ts::IsPrivilegedUser()) {
+        if (need_privilege && !ts::IsPrivilegedUser()) {
             #if defined(TS_UNIX)
                 // Same command using sudo.
                 cmd.insert(0, u"sudo ");
@@ -510,7 +509,9 @@ namespace {
         ts::UStringList files;
         for (const auto& it : assets) {
             if (ignore_pattern.empty() || !it.name.contains(ignore_pattern)) {
+                // The complete file name will be used in a command line => quote special characters.
                 files.push_back(opt.out_dir + it.name);
+                files.back().quoted();
             }
         }
 

@@ -88,7 +88,11 @@ class _InByteBuffer:
         elif isinstance(strings, str):
             if len(self._data) > 0:
                 self._data.extend(b'\xFF\xFF')
-            self._data.extend(strings.encode("utf-16"))
+            ustr = strings.encode("utf-16")
+            if b'\xFF\xFF' in ustr:
+                # Nasty string separator injection...
+                raise ValueError('Invalid string with embedded binary FFFF')
+            self._data.extend(ustr)
 
     # "uint8_t* buffer" parameter for the C++ function.
     def data_ptr(self):
@@ -1221,8 +1225,8 @@ class SystemMonitor(NativeObject):
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):
-        # void tspyDeleteReport(void* report)
-        cfunc = _lib.tspyDeleteReport
+        # void tspyDeleteSystemMonitor(void* report)
+        cfunc = _lib.tspyDeleteSystemMonitor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
         cfunc(self._getNative())

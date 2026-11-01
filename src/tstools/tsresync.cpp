@@ -105,6 +105,9 @@ Options::Options(int argc, char *argv[]) :
         error(u"specified --header-size too large for specified --packet-size");
     }
 
+    // Enforce the --min-contiguous size to contain at least 2 packets (for insanely large packets).
+    contig_size = std::max(contig_size, 2 * packet_size);
+
     exitOnError();
 }
 
@@ -133,10 +136,10 @@ public:
     bool checkSync(const uint8_t* buf, size_t buf_size, size_t pkt_size, size_t header_size);
 
     // Get packet sizes, as determined by checkSync(). Size is zero if no valid packet size found.
-    size_t inputPacketSize() const {return _in_pkt_size;}
-    size_t inputHeaderSize() const {return _in_header_size;}
-    size_t outputPacketSize() const {return _out_pkt_size;}
-    size_t outputHeaderSize() const {return _out_header_size;}
+    size_t inputPacketSize() const { return _in_pkt_size; }
+    size_t inputHeaderSize() const { return _in_header_size; }
+    size_t outputPacketSize() const { return _out_pkt_size; }
+    size_t outputHeaderSize() const { return _out_header_size; }
 
     // Get output size so far in bytes and packets
     uint64_t outputFileBytes() const {return _out_size;}
@@ -226,9 +229,15 @@ bool Resynchronizer::writePacket(const uint8_t* input_packet)
 bool Resynchronizer::checkSync(const uint8_t* buf, size_t buf_size, size_t pkt_size, size_t header_size)
 {
     assert(pkt_size >= header_size + ts::PKT_SIZE);
-    const uint8_t* end = buf + buf_size - pkt_size + 1;
 
-    // Check if the buffer contains packets with the appropriate size
+    // Check that there is at least one packet in the buffer.
+    if (buf_size < pkt_size) {
+        return false;
+    }
+
+    // Check if the buffer contains packets with the appropriate size.
+    // Compute end right after the last possible packet.
+    const uint8_t* end = buf + buf_size - pkt_size + 1;
     while (buf < end) {
         if (buf[header_size] != ts::SYNC_BYTE) {
             return false; // not found

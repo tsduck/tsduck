@@ -86,9 +86,9 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
 //----------------------------------------------------------------------------
 
 namespace {
-    bool ExtractECMs(GenECMOptions& opt, ts::SectionFile& ecmFile, const ts::ecmgscs::ChannelStatus& channelStatus, const ts::ecmgscs::ECMResponse& response)
+    bool ExtractECMs(GenECMOptions& opt, ts::SectionFile& ecm_file, const ts::ecmgscs::ChannelStatus& channel_status, const ts::ecmgscs::ECMResponse& response)
     {
-        if (channelStatus.section_TSpkt_flag) {
+        if (channel_status.section_TSpkt_flag) {
 
             // The ECM is in TS packet format.
             if (response.ECM_datagram.size() % ts::PKT_SIZE != 0) {
@@ -104,7 +104,7 @@ namespace {
                 demux.feedPacket(pkt);
             }
             for (const auto& table : demux.tables()) {
-                ecmFile.add(table);
+                ecm_file.add(table);
             }
         }
         else {
@@ -112,7 +112,7 @@ namespace {
             const uint8_t* data = response.ECM_datagram.data();
             size_t remain = response.ECM_datagram.size();
             size_t size = 0;
-            while ((size = ts::Section::SectionSize(data, remain)) > 0) {
+            while ((size = ts::Section::SectionSize(data, remain)) > 0 && size <= remain) {
                 // Get one section.
                 assert(size <= remain);
                 const auto section = std::make_shared<ts::Section>(data, size);
@@ -120,7 +120,7 @@ namespace {
                     opt.error(u"ECMG returned an invalid section");
                     return false;
                 }
-                ecmFile.add(section);
+                ecm_file.add(section);
                 data += size;
                 remain -= size;
             }
@@ -138,8 +138,8 @@ int MainCode(int argc, char *argv[])
 {
     GenECMOptions opt(argc, argv);
     ts::tlv::Logger logger(&opt, ts::Severity::Debug);
-    ts::ecmgscs::ChannelStatus channelStatus(opt.ecmgscs);
-    ts::ecmgscs::StreamStatus streamStatus(opt.ecmgscs);
+    ts::ecmgscs::ChannelStatus channel_status(opt.ecmgscs);
+    ts::ecmgscs::StreamStatus stream_status(opt.ecmgscs);
     ts::ECMGClient ecmg(logger, opt.ecmgscs);
 
     // Set logging levels.
@@ -148,7 +148,7 @@ int MainCode(int argc, char *argv[])
     logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.ecmg.log_data);
 
     // Connect to ECMG.
-    if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus)) {
+    if (!ecmg.connect(opt.ecmg, channel_status, stream_status)) {
         // Error connecting to ECMG, error message already reported
         return EXIT_FAILURE;
     }
@@ -164,12 +164,12 @@ int MainCode(int argc, char *argv[])
     ecmg.disconnect();
 
     // Get the ECM section from the ECMG response.
-    ts::SectionFile ecmFile(opt.duck);
-    if (!ExtractECMs(opt, ecmFile, channelStatus, response)) {
+    ts::SectionFile ecm_file(opt.duck);
+    if (!ExtractECMs(opt, ecm_file, channel_status, response)) {
         // Malformed response, error message already reported
         return EXIT_FAILURE;
     }
 
     // Save the binary file containing the ECM's.
-    return ecmFile.saveBinary(opt.out_file) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return ecm_file.saveBinary(opt.out_file) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

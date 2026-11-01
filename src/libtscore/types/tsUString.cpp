@@ -1182,14 +1182,14 @@ void ts::UString::quoted(UChar quote_character, const UString& special_character
 {
     // Check if the string contains any character which requires quoting.
     // An empty string needs to be quoted as well to be identified as an actual empty string.
-    bool needQuote = force_quote || empty();
-    for (size_type i = 0; !needQuote && i < size(); ++i) {
+    bool need_quote = force_quote || empty();
+    for (size_type i = 0; !need_quote && i < size(); ++i) {
         const UChar c = at(i);
-        needQuote = c == '\\' || c == quote_character || IsSpace(c) || special_characters.contains(c);
+        need_quote = c == '\\' || c == quote_character || IsSpace(c) || special_characters.contains(c);
     }
 
     // Perform quoting only if needed.
-    if (needQuote) {
+    if (need_quote) {
         // Opening quote.
         insert(0, 1, quote_character);
         // Loop on all characters. Skip new opening quote.

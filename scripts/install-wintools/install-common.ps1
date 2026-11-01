@@ -198,6 +198,7 @@ function Get-URL-Local([string]$Url)
 # Get an HTML page. Return $null if not found.
 function Get-HTML([string]$Url, [switch]$Fatal = $false)
 {
+    $response = $null
     $status = 0
     $message = ""
     try {
@@ -218,8 +219,8 @@ function Get-HTML([string]$Url, [switch]$Fatal = $false)
         if ($Fatal) {
             Exit-Script $message
         }
-        Write-Output $message
-        $reponse = $null
+        Write-Host $message
+        $response = $null
     }
     return $response
 }

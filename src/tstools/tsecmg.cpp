@@ -286,6 +286,8 @@ namespace ts {
         virtual ts::ReactiveTCPConnection& getConnection() override;
 
     private:
+        using ResponsePtr = std::shared_ptr<ecmgscs::ECMResponse>;
+
         Reactor&                _reactor;
         ECMGOptions&            _opt;
         ECMGState&              _state;
@@ -294,8 +296,8 @@ namespace ts {
         ReactiveTLVStream       _tlv_client {_opt.logger, _opt.ecmgscs, _react_client, true, 3};
         UString                 _peer {};
         std::optional<uint16_t> _channel_id {};
-        std::map<uint16_t, uint16_t> _stream_ids {};  // Map of current stream id => ECM id.
-        std::map<EventId, tlv::MessagePtr> _delayed_responses {};  // Delayed responses, by timer id.
+        std::map<uint16_t, uint16_t>   _stream_ids {};         // Map of current stream id => ECM id.
+        std::map<EventId, ResponsePtr> _delayed_responses {};  // Delayed ECM responses, by timer id.
 
         // Send a response message. The message is serialized and asynchronously sent.
         bool send(const tlv::Message& msg) { return _tlv_client.startSendMessage(nullptr, msg); }
@@ -303,7 +305,7 @@ namespace ts {
         // Send an error related to the msg.
         bool sendErrorResponse(const tlv::MessagePtr& msg, uint16_t error_status);
 
-        // Free the channel number.
+        // Free the channel number and resources.
         void freeChannel();
 
         // Handle the various ECMG client messages. Return false on unrecoverable error (e.g. network error).
@@ -336,7 +338,7 @@ ts::ECMGChannel::ECMGChannel(Reactor& reactor, ECMGOptions& opt, ECMGState& stat
 // Destructor.
 ts::ECMGChannel::~ECMGChannel()
 {
-    // Cleanup channel registration in case of abort.
+    // Cleanup in case of early abort.
     freeChannel();
 }
 
@@ -354,6 +356,16 @@ ts::ReactiveTCPConnection& ts::ECMGChannel::getConnection()
 
 void ts::ECMGChannel::freeChannel()
 {
+    // Cancel all timers for delayed response.
+    for (const auto& it : _delayed_responses) {
+        _reactor.cancelTimer(it.first, true);
+    }
+    _delayed_responses.clear();
+
+    // Clear all stream_id / ECM_id associations.
+    _stream_ids.clear();
+
+    // Free the channel number.
     if (_channel_id.has_value()) {
         if (_state.closeChannel(_channel_id.value())) {
             _opt.debug(u"released ECM_channel_id %d", _channel_id.value());
@@ -488,13 +500,13 @@ bool ts::ECMGChannel::handleChannelSetup(const std::shared_ptr<ecmgscs::ChannelS
         // Channel already set in this session.
         return sendErrorResponse(msg, ecmgscs::Errors::inv_channel_id);
     }
-    else if (!_state.openChannel(msg->channel_id)) {
-        // Channel id already in use.
-        return sendErrorResponse(msg, ecmgscs::Errors::channel_id_in_use);
-    }
     else if (!_opt.super_cas_ids.empty() && !_opt.super_cas_ids.contains(msg->Super_CAS_id)) {
         // Super_CAS_id is not one of those we support.
         return sendErrorResponse(msg, ecmgscs::Errors::inv_Super_CAS_id);
+    }
+    else if (!_state.openChannel(msg->channel_id)) {
+        // Channel id already in use.
+        return sendErrorResponse(msg, ecmgscs::Errors::channel_id_in_use);
     }
     else {
         // Channel accepted.
@@ -531,9 +543,7 @@ bool ts::ECMGChannel::handleChannelClose(const std::shared_ptr<ecmgscs::ChannelC
     }
     else {
         // Channel ok, close everything, no response expected.
-        _state.closeChannel(msg->channel_id);
-        _channel_id.reset();
-        _stream_ids.clear();
+        freeChannel();
         return true;
     }
 }
@@ -600,8 +610,23 @@ bool ts::ECMGChannel::handleStreamCloseRequest(const std::shared_ptr<ecmgscs::St
         return sendErrorResponse(msg, ecmgscs::Errors::inv_stream_id);
     }
     else {
-        // Stream ok, close it.
+        // Stream ok. Cancel all pending timers for delayed ECM response.
+        for (auto it = _delayed_responses.begin(); it != _delayed_responses.end(); ) {
+            if (it->second != nullptr && it->second->stream_id == msg->stream_id) {
+                // This is a timer for this channel, cancel it.
+                _reactor.cancelTimer(it->first, true);
+                it = _delayed_responses.erase(it);
+            }
+            else {
+                // Not for this stream.
+                ++it;
+            }
+        }
+
+        // Forget stream_id / ECM_id association.
         _stream_ids.erase(msg->stream_id);
+
+        // Send the response to the client.
         ecmgscs::StreamCloseResponse resp(_opt.ecmgscs);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
