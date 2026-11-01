@@ -224,20 +224,21 @@ ts::PacketProcessStatus ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPac
         // Try to insert data
         if (_unregulated || _pkt_next_data <= tsp->pluginPackets()) {
             // Time to insert data packet, if any is available immediately.
-            std::lock_guard<std::mutex> lock(_mutex);
-
-            // Get next packet to insert.
             bool got_packet = false;
-            if (_section_mode) {
-                // Section mode: Get a packet from the packetizer.
-                got_packet = _packetizer.getNextPacket(pkt);
-            }
-            else {
-                // Packet mode: Dequeue a packet immediately.
-                PacketPtr pp;
-                got_packet = _packet_queue.dequeue(pp, cn::milliseconds::zero());
-                if (got_packet) {
-                    pkt = *pp;
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                // Get next packet to insert.
+                if (_section_mode) {
+                    // Section mode: Get a packet from the packetizer.
+                    got_packet = _packetizer.getNextPacket(pkt);
+                }
+                else {
+                    // Packet mode: Dequeue a packet immediately.
+                    PacketPtr pp;
+                    got_packet = _packet_queue.dequeue(pp, cn::milliseconds::zero());
+                    if (got_packet) {
+                        pkt = *pp;
+                    }
                 }
             }
 
@@ -372,9 +373,9 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
                     auto p = std::make_shared<TSPacket>();
                     p->copyFrom(data);
                     processPacketLoss(u"packets", _packet_queue.enqueue(p, cn::milliseconds::zero()));
-                    data += PKT_SIZE;
-                    size -= PKT_SIZE;
                 }
+                data += PKT_SIZE;
+                size -= PKT_SIZE;
             }
             if (size != 0) {
                 error(u"extraneous %d bytes in datagram", size);

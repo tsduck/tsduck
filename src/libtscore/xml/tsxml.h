@@ -56,7 +56,7 @@ namespace ts {
         using ElementVector = std::vector<const Element*>;
 
         //!
-        //! Specify the defaut maximum number of nested levels of elements.
+        //! Specify the default maximum number of nested levels of elements.
         //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @ingroup xml
         //!

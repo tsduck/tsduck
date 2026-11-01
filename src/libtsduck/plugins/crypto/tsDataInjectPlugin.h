@@ -121,8 +121,8 @@ namespace ts {
         volatile bool      _req_bitrate_changed = false;     // Requested bitrate has changed.
         // Start of protected area.
         std::mutex         _mutex {};                        // Mutex for access to protected area
-        uint32_t           _client_id = 0;                   // DVB SimilCrypt client id.
-        uint16_t           _data_id = 0;                     // DVB SimilCrypt data id.
+        uint32_t           _client_id = 0;                   // DVB SimulCrypt client id.
+        uint16_t           _data_id = 0;                     // DVB SimulCrypt data id.
         bool               _section_mode = false;            // Datagrams are sections.
         Packetizer         _packetizer {duck, PID_NULL, this}; // Generate packets in the case of incoming sections.
         BitRate            _req_bitrate = 0;                 // Requested bitrate

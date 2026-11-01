@@ -133,18 +133,26 @@ namespace ts {
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
         //! If the file name is empty or "-", the standard input is used.
         //! @param [in] type File type. If UNSPECIFIED, the file type is based on the file name.
+        //! @param [in] max_nested Specify the maximum number of nested levels of XML elements,
+        //! when the file is XML. Higher numbers of nested levels may put pressure on the thread
+        //! stack size. For JSON files, the maximum value is twice @a max_nested because of the
+        //! XML<=>JSON conversion rules. This parameter is ignored for binary files.
         //! @return True on success, false on error.
         //!
-        bool load(const UString& file_name, SectionFormat type = SectionFormat::UNSPECIFIED);
+        bool load(const UString& file_name, SectionFormat type = SectionFormat::UNSPECIFIED, size_t max_nested = xml::DEFAULT_MAX_NESTED);
 
         //!
         //! Load a binary or XML file.
         //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard stream in input mode (binary mode for binary files).
         //! @param [in] type File type. If UNSPECIFIED, return an error.
+        //! @param [in] max_nested Specify the maximum number of nested levels of XML elements,
+        //! when the file is XML. Higher numbers of nested levels may put pressure on the thread
+        //! stack size. For JSON files, the maximum value is twice @a max_nested because of the
+        //! XML<=>JSON conversion rules. This parameter is ignored for binary files.
         //! @return True on success, false on error.
         //!
-        bool load(std::istream& strm, SectionFormat type = SectionFormat::UNSPECIFIED);
+        bool load(std::istream& strm, SectionFormat type = SectionFormat::UNSPECIFIED, size_t max_nested = xml::DEFAULT_MAX_NESTED);
 
         //!
         //! Load an XML file.
@@ -152,25 +160,31 @@ namespace ts {
         //! @param [in] file_name XML file name.
         //! If the file name starts with "<?xml", this is considered as "inline XML content".
         //! If the file name is empty or "-", the standard input is used.
+        //! @param [in] max_nested Specify the maximum number of nested levels of XML elements.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @return True on success, false on error.
         //!
-        bool loadXML(const UString& file_name);
+        bool loadXML(const UString& file_name, size_t max_nested = xml::DEFAULT_MAX_NESTED);
 
         //!
         //! Load an XML file from an open text stream.
         //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard text stream in input mode.
+        //! @param [in] max_nested Specify the maximum number of nested levels of XML elements.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @return True on success, false on error.
         //!
-        bool loadXML(std::istream& strm);
+        bool loadXML(std::istream& strm, size_t max_nested = xml::DEFAULT_MAX_NESTED);
 
         //!
         //! Parse an XML content.
         //! The parsed tables are added to the content of this object.
         //! @param [in] xml_content XML file content in UTF-8.
+        //! @param [in] max_nested Specify the maximum number of nested levels of XML elements.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @return True on success, false on error.
         //!
-        bool parseXML(const UString& xml_content);
+        bool parseXML(const UString& xml_content, size_t max_nested = xml::DEFAULT_MAX_NESTED);
 
         //!
         //! Load a JSON file.
@@ -179,27 +193,33 @@ namespace ts {
         //! @param [in] file_name JSON file name.
         //! If the file name starts with "{" or "[", this is considered as "inline JSON content".
         //! If the file name is empty or "-", the standard input is used.
+        //! @param [in] max_nested Specify the maximum number of nested levels of JSON objects.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @return True on success, false on error.
         //!
-        bool loadJSON(const UString& file_name);
+        bool loadJSON(const UString& file_name, size_t max_nested = json::DEFAULT_MAX_NESTED);
 
         //!
         //! Load a JSON file from an open text stream.
         //! The JSON must have the format of a previous automated XML-to-JSON conversion.
         //! The loaded sections are added to the content of this object.
         //! @param [in,out] strm A standard text stream in input mode.
+        //! @param [in] max_nested Specify the maximum number of nested levels of JSON objects.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @return True on success, false on error.
         //!
-        bool loadJSON(std::istream& strm);
+        bool loadJSON(std::istream& strm, size_t max_nested = json::DEFAULT_MAX_NESTED);
 
         //!
         //! Parse a JSON content.
         //! The JSON must have the format of a previous automated XML-to-JSON conversion.
         //! The parsed tables are added to the content of this object.
         //! @param [in] json_content JSON file content in UTF-8.
+        //! @param [in] max_nested Specify the maximum number of nested levels of JSON objects.
+        //! Higher numbers of nested levels may put pressure on the thread stack size.
         //! @return True on success, false on error.
         //!
-        bool parseJSON(const UString& json_content);
+        bool parseJSON(const UString& json_content, size_t max_nested = json::DEFAULT_MAX_NESTED);
 
         //!
         //! Save an XML file.

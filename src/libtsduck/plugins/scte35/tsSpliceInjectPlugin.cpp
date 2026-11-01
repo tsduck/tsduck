@@ -577,7 +577,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                 addr++;
                 size--;
             }
-            // Does this look like XML or JSON now ?
+            // Does this look like XML or JSON now?
             if (size > 0) {
                 if (addr[0] == '<') {
                     type = ts::SectionFormat::XML;
@@ -602,8 +602,10 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     }
 
     // Analyze the message as a binary, XML or JSON section file.
+    // Limit the analysis of XML files to 16 levels (SCTE-35 doesn't need more).
+    // Using more (the default) would allow forged sections to overflow the thread's stack.
     SectionFile secFile(duck);
-    if (!secFile.load(strm, type)) {
+    if (!secFile.load(strm, type, 16)) {
         // Error loading sections, error message already reported.
         return;
     }

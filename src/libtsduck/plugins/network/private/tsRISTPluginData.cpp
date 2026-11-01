@@ -236,7 +236,7 @@ bool ts::RISTPluginData::addPeers()
             return false;
         }
 
-        // Add user authentication if specified in URL.
+        // Add user authentication if specified in URL (SRP = Secure Remote Password).
         if (config->srp_username[0] != '\0' && config->srp_password[0] != '\0') {
 
             // The API changed in librist 0.2.8 (API version 4.3.0).
@@ -247,8 +247,9 @@ bool ts::RISTPluginData::addPeers()
             #endif
 
             if (err != 0) {
-                // Report warning but do not fail.
-                _report.warning(u"error %d while setting SRP authentication on %s", err, _peer_urls[i]);
+                _report.error(u"error %d while setting SRP authentication on %s", err, _peer_urls[i]);
+                cleanup();
+                return false;
             }
         }
     }

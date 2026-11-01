@@ -57,9 +57,9 @@ namespace ts::json {
     using ValuePtrList = std::list<ValuePtr>;
 
     //!
-    //! Specify the defaut maximum number of nested levels of objects.
+    //! Specify the default maximum number of nested levels of objects.
     //! Higher numbers of nested levels may put pressure on the thread stack size.
-    //! @ingroup xml
+    //! @ingroup json
     //!
     static constexpr size_t DEFAULT_MAX_NESTED = 256;
 

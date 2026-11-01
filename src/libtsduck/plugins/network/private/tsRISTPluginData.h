@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsRIST.h"
 #include "tsLibRIST.h"
 #include "tsArgs.h"
 #include "tsDuckContext.h"

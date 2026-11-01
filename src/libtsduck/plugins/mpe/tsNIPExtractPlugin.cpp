@@ -83,22 +83,22 @@ ts::PacketProcessStatus ts::mcast::NIPExtractPlugin::processPacket(TSPacket& pkt
 
     // If superclass does not want to terminate, pull a replacement packet from the extracted service.
     if (status != TSP_END) {
+
+        // Drop completed or empty segments from _output queue if necessary.
+        while (!_output.empty() && _output_next + PKT_SIZE > _output.front()->size()) {
+            _output.pop_front();
+            _output_next = 0;
+        }
+
         if (_output.empty()) {
             // Output queue empty, drop packet.
             status = TSP_DROP;
         }
         else {
             // Get next packet to output.
-            assert(_output_next + PKT_SIZE <= _output.front()->size());
             pkt.copyFrom(_output.front()->data() + _output_next);
             _output_next += PKT_SIZE;
             status = TSP_OK;
-
-            // Drop completed or empty segments if necessary.
-            while (!_output.empty() && _output_next + PKT_SIZE > _output.front()->size()) {
-                _output.pop_front();
-                _output_next = 0;
-            }
         }
     }
 
@@ -297,12 +297,14 @@ bool ts::mcast::NIPExtractPlugin::processSegment(const FluteFile& file)
     // Check that the segment contains TS packets. Check at most the first 10 TS packets.
     const ByteBlockPtr content(file.contentPointer());
     const size_t check_count = std::min<size_t>(10, content->size() / PKT_SIZE);
-    for (size_t i = 0; i < check_count; ++i) {
-        if ((*content)[i * PKT_SIZE] != SYNC_BYTE) {
-            error(u"segment does not contain TS packets: %s", file.name());
-            setError();
-            return false;
-        }
+    bool got_packets = content->size() % PKT_SIZE == 0;
+    for (size_t i = 0; i < check_count && got_packets; ++i) {
+        got_packets = (*content)[i * PKT_SIZE] == SYNC_BYTE;
+    }
+    if (!got_packets) {
+        error(u"segment does not contain TS packets: %s", file.name());
+        setError();
+        return false;
     }
 
     // Enqueue the segment file content.

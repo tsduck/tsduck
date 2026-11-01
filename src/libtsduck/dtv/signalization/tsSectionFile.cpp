@@ -526,25 +526,25 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
 // Load / parse an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadXML(const UString& file_name)
+bool ts::SectionFile::loadXML(const UString& file_name, size_t max_nested)
 {
     xml::Document doc(_duck.report());
     doc.setTweaks(_xml_tweaks);
-    return doc.load(file_name, false) && parseDocument(doc);
+    return doc.load(file_name, false, max_nested) && parseDocument(doc);
 }
 
-bool ts::SectionFile::loadXML(std::istream& strm)
+bool ts::SectionFile::loadXML(std::istream& strm, size_t max_nested)
 {
     xml::Document doc(_duck.report());
     doc.setTweaks(_xml_tweaks);
-    return doc.load(strm) && parseDocument(doc);
+    return doc.load(strm, max_nested) && parseDocument(doc);
 }
 
-bool ts::SectionFile::parseXML(const UString& xml_content)
+bool ts::SectionFile::parseXML(const UString& xml_content, size_t max_nested)
 {
     xml::Document doc(_duck.report());
     doc.setTweaks(_xml_tweaks);
-    return doc.parse(xml_content) && parseDocument(doc);
+    return doc.parse(xml_content, max_nested) && parseDocument(doc);
 }
 
 bool ts::SectionFile::parseDocument(const xml::Document& doc)
@@ -601,38 +601,38 @@ ts::UString ts::SectionFile::toXML() const
 // Load / parse a JSON file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::loadJSON(const UString& file_name)
+bool ts::SectionFile::loadJSON(const UString& file_name, size_t max_nested)
 {
     json::ValuePtr root;
     xml::Document doc(_duck.report());
     doc.setTweaks(_xml_tweaks);
 
     return loadThisModel() &&
-           json::LoadFile(root, file_name, _duck.report()) &&
+           json::LoadFile(root, file_name, _duck.report(), max_nested) &&
            _model.convertToXML(*root, doc, true) &&
            parseDocument(doc);
 }
 
-bool ts::SectionFile::loadJSON(std::istream& strm)
+bool ts::SectionFile::loadJSON(std::istream& strm, size_t max_nested)
 {
     json::ValuePtr root;
     xml::Document doc(_duck.report());
     doc.setTweaks(_xml_tweaks);
 
     return loadThisModel() &&
-           json::LoadStream(root, strm, _duck.report()) &&
+           json::LoadStream(root, strm, _duck.report(), max_nested) &&
            _model.convertToXML(*root, doc, true) &&
            parseDocument(doc);
 }
 
-bool ts::SectionFile::parseJSON(const UString& json_content)
+bool ts::SectionFile::parseJSON(const UString& json_content, size_t max_nested)
 {
     json::ValuePtr root;
     xml::Document doc(_duck.report());
     doc.setTweaks(_xml_tweaks);
 
     return loadThisModel() &&
-           json::Parse(root, json_content, _duck.report()) &&
+           json::Parse(root, json_content, _duck.report(), max_nested) &&
            _model.convertToXML(*root, doc, true) &&
            parseDocument(doc);
 }
@@ -707,15 +707,15 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
 // Load a binary or XML file.
 //----------------------------------------------------------------------------
 
-bool ts::SectionFile::load(const UString& file_name, SectionFormat type)
+bool ts::SectionFile::load(const UString& file_name, SectionFormat type, size_t max_nested)
 {
     switch (GetSectionFileFormat(file_name, type)) {
         case SectionFormat::BINARY:
             return loadBinary(file_name);
         case SectionFormat::XML:
-            return loadXML(file_name);
+            return loadXML(file_name, max_nested);
         case SectionFormat::JSON:
-            return loadJSON(file_name);
+            return loadJSON(file_name, 2 * max_nested);
         case SectionFormat::UNSPECIFIED:
         default:
             _duck.report().error(u"unknown file type for %s", file_name);
@@ -723,15 +723,15 @@ bool ts::SectionFile::load(const UString& file_name, SectionFormat type)
     }
 }
 
-bool ts::SectionFile::load(std::istream& strm, SectionFormat type)
+bool ts::SectionFile::load(std::istream& strm, SectionFormat type, size_t max_nested)
 {
     switch (type) {
         case SectionFormat::BINARY:
             return loadBinary(strm);
         case SectionFormat::XML:
-            return loadXML(strm);
+            return loadXML(strm, max_nested);
         case SectionFormat::JSON:
-            return loadJSON(strm);
+            return loadJSON(strm, 2 * max_nested);
         case SectionFormat::UNSPECIFIED:
         default:
             _duck.report().error(u"unknown input file type");
