@@ -21,6 +21,6 @@ Write-Output "==== Graphviz download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-Install-Standard-Exe "http://graphviz.org/download/" "*Release_graphviz-install-*-win64.exe*" "" @("/S")
+Install-Standard-Exe "https://graphviz.org/download/" "https://*Release_graphviz-install-*-win64.exe*" "" @("/S")
 
 Exit-Script

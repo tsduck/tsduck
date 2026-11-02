@@ -230,15 +230,22 @@ function Get-URL-In-HTML([string]$Url, [string]$Pattern, [string]$FallbackURL = 
 {
     $Fatal = -not $FallbackURL
     $response = Get-HTML $Url -Fatal:$Fatal
-    if ($response -eq $null) {
-        $ref = $null
+    $ref = $null
+    if ($response -ne $null) {
+        $ref = $response.Links.href | 
+            ForEach-Object {
+                if ($_ -ne $null) {
+                    # Build the absolute URL's from base URL (the download page) and href links.
+                    [string](New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$Url, $_))
+                }
+            } |
+            Where-Object {
+                $_ -like $Pattern
+            } |
+            Select-Object -First 1
     }
-    else {
-        $ref = $response.Links.href | Where-Object { $_ -like $Pattern } | Select-Object -First 1
-    }
-    if (-not -not $ref) {
-        # Build the absolute URL's from base URL (the download page) and href links.
-        return [string](New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$Url, $ref))
+    if ($ref -ne $null) {
+        return $ref
     }
     elseif ($Fatal) {
         Exit-Script "No package found in $Url"

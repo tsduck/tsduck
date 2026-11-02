@@ -25,10 +25,10 @@ if ($env:PROCESSOR_ARCHITECTURE -like 'Arm64*') {
     Write-Host "WARNING: Dektec WinSDK can be used to build Intel binaries only"
 }
 
-$ReleasePage = "http://www.dektec.com/downloads/SDK/"
+$ReleasePage = "https://www.dektec.com/downloads/SDK/"
 $DtapiInstaller = "DekTec SDK - Windows Setup.exe"
 
-$Url = Get-URL-In-HTML $ReleasePage "*/WinSDK*.zip"
+$Url = Get-URL-In-HTML $ReleasePage "https://*/WinSDK*.zip"
 
 $DtapiZipName = Get-URL-Local $Url
 $DtapiZipFile = (Join-Path $Destination $DtapiZipName)

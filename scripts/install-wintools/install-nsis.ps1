@@ -23,8 +23,8 @@ Write-Output "==== NSIS download and installation procedure"
 
 Install-Standard-Exe `
     "https://nsis.sourceforge.io/Download" `
-    "*/nsis-*-setup.exe?download" `
-    "http://prdownloads.sourceforge.net/nsis/nsis-3.05-setup.exe?download" `
+    "https://*/nsis-*-setup.exe?download" `
+    "https://prdownloads.sourceforge.net/nsis/nsis-3.13-setup.exe?download" `
     @("/S")
 
 Exit-Script
