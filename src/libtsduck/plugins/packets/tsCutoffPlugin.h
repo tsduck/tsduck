@@ -14,6 +14,7 @@
 #pragma once
 #include "tsProcessorPlugin.h"
 #include "tsUDPReceiver.h"
+#include "tsIPArgs.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 
@@ -42,7 +43,7 @@ namespace ts {
         // Plugin private fields.
         volatile bool    _terminate = false;
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
-        IPAddressSet     _allowed_temote {};
+        IPArgs           _clients {};
         UDPReceiverArgs  _sock_args {};
         UDPReceiver      _sock {this};
         CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};

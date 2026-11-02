@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4890 (October 2026)
+VERSION 3.46-4903 (November 2026)
 
 [INC] Incompatibilities with previous versions:
 
@@ -16,6 +16,9 @@ VERSION 3.46-4890 (October 2026)
   * For security reasons,  an http: or https: HLS playlist may  only  reference
     http: or https: sub-playlists or segments.  As an example,  it is no longer
     possible to reference a file: segment in an http: playlist.
+  * For security reasons,  the  plugin  "cutoff"  only allows the local host to
+    send commands by default.  Other  remote sources must be explicitly allowed
+    using option --allow.
 
 [IMP] Improvements on existing commands and plugins:
 

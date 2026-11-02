@@ -283,14 +283,14 @@ namespace ts::hls {
         //! Get the segment target duration (informative, in media playlist).
         //! @return The segment target duration in seconds.
         //!
-        cn::seconds targetDuration() const { return _target_duration; }
+        cn::seconds segmentTargetDuration() const { return _target_duration; }
 
         //!
         //! Set the segment target duration in a media playlist.
         //! @param [in] duration The segment target duration in seconds.
         //! @return True on success, false on error.
         //!
-        bool setTargetDuration(cn::seconds duration);
+        bool setSegmentTargetDuration(cn::seconds duration);
 
         //!
         //! Get the sequence number of first segment (in media playlist).

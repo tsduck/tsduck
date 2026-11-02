@@ -197,7 +197,7 @@ bool ts::hls::PlayList::setTypeMedia()
 // Set various properties in the playlist.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::setTargetDuration(cn::seconds duration)
+bool ts::hls::PlayList::setSegmentTargetDuration(cn::seconds duration)
 {
     if (setTypeMedia()) {
         _target_duration = duration;

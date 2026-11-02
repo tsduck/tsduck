@@ -176,15 +176,10 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
 
 bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    bool success =
-        remote_control.loadServerArgs(args, u"remote") &&
-        remote_control.loadAllowedClients(args, u"allow");
-
-    // By default, without proper authentication, the local host is the only allowed address.
-    if (remote_control.allowed_clients.empty() && (!remote_control.use_tls || remote_control.auth_token.empty())) {
-        remote_control.allowed_clients.insert(IPAddress::LocalHost4);
-        remote_control.allowed_clients.insert(IPAddress::LocalHost6);
-    }
+    // Get remote control port parameters.
+    // Without proper authentication, the local host is the only allowed client by default.
+    bool success = remote_control.loadServerArgs(args, u"remote") &&
+        remote_control.loadAllowedClients(args, u"allow", !remote_control.use_tls || remote_control.auth_token.empty());
 
     app_name = args.appName();
     fast_switch = args.present(u"fast-switch");

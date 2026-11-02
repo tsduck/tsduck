@@ -226,7 +226,7 @@ bool ts::hls::OutputPlugin::start()
     }
     if (!_playlist_file.empty()) {
         _playlist.reset(_playlist_type, _playlist_file);
-        _playlist.setTargetDuration(_target_duration);
+        _playlist.setSegmentTargetDuration(_target_duration);
         _playlist.setMediaSequence(_initial_media_seq);
     }
     return true;

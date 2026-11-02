@@ -90,7 +90,7 @@ TSUNIT_DEFINE_TEST(MasterPlaylist)
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(24, pl.playListCount());
     TSUNIT_EQUAL(5, pl.altPlayListCount());
-    TSUNIT_EQUAL(0, pl.targetDuration().count());
+    TSUNIT_EQUAL(0, pl.segmentTargetDuration().count());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
@@ -146,7 +146,7 @@ TSUNIT_DEFINE_TEST(MasterPlaylistWithAlternate)
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(7, pl.playListCount());
     TSUNIT_EQUAL(2, pl.altPlayListCount());
-    TSUNIT_EQUAL(0, pl.targetDuration().count());
+    TSUNIT_EQUAL(0, pl.segmentTargetDuration().count());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
@@ -212,7 +212,7 @@ TSUNIT_DEFINE_TEST(MediaPlaylist)
     TSUNIT_EQUAL(100, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
     TSUNIT_EQUAL(0, pl.altPlayListCount());
-    TSUNIT_EQUAL(6, pl.targetDuration().count());
+    TSUNIT_EQUAL(6, pl.segmentTargetDuration().count());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(pl.endList());
 
@@ -386,7 +386,7 @@ TSUNIT_DEFINE_TEST(BuildMediaPlaylist)
     TSUNIT_EQUAL(0, pl.playListCount());
 
     TSUNIT_ASSERT(pl.setMediaSequence(7));
-    TSUNIT_ASSERT(pl.setTargetDuration(cn::seconds(5)));
+    TSUNIT_ASSERT(pl.setSegmentTargetDuration(cn::seconds(5)));
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_ASSERT(pl.setEndList(true));
     TSUNIT_ASSERT(pl.endList());

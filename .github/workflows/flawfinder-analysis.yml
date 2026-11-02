@@ -34,7 +34,7 @@ jobs:
       security-events: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
 
       - name: flawfinder_scan
         uses: david-a-wheeler/flawfinder@2.0.19

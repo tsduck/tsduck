@@ -89,6 +89,7 @@ Options
 
 [.optdoc]
 Specify an IP address or host name which is allowed to send remote commands.
+By default, as a security precaution, only the local host is allowed to send control commands.
 Several `--allow` options can be used to specify several allowed remote control systems.
 
 [.optdoc]

@@ -118,7 +118,17 @@ bool ts::IPArgs::loadServerAddress(Args& args, const UChar* server_option)
 // Common code for loadAllowedClients() and loadDeniedClients().
 //----------------------------------------------------------------------------
 
-bool ts::IPArgs::loadAddressesArgs(IPAddressSet IPArgs::* field, Args& args, const UChar* option)
+bool ts::IPArgs::loadAllowedClients(Args& args, const UChar* option, bool default_local_only)
+{
+    return loadAddressesArgs(&IPArgs::allowed_clients, args, option, default_local_only);
+}
+
+bool ts::IPArgs::loadDeniedClients(Args& args, const UChar* option)
+{
+    return loadAddressesArgs(&IPArgs::denied_clients, args, option, false);
+}
+
+bool ts::IPArgs::loadAddressesArgs(IPAddressSet IPArgs::* field, Args& args, const UChar* option, bool default_local_only)
 {
     bool success = true;
     const size_t count = args.count(option);
@@ -131,6 +141,11 @@ bool ts::IPArgs::loadAddressesArgs(IPAddressSet IPArgs::* field, Args& args, con
         else if (addr.hasAddress()) {
             (this->*field).insert(addr);
         }
+    }
+    if (default_local_only && (this->*field).empty()) {
+        // By default, the local host is the only allowed address with default_local_only.
+        (this->*field).insert(IPAddress::LocalHost4);
+        (this->*field).insert(IPAddress::LocalHost6);
     }
     return success;
 }

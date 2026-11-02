@@ -178,7 +178,10 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
 
 bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    bool success = control.loadServerArgs(args, u"control");
+    // Get control port parameters.
+    // Without proper authentication, the local host is the only allowed client by default.
+    bool success = control.loadServerArgs(args, u"control") &&
+        control.loadAllowedClients(args, u"control-source", !control.use_tls || control.auth_token.empty());
 
     // Legacy options when --control is not specified.
     if (!args.present(u"control")) {
@@ -210,14 +213,6 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 
     // Convert MB in MiB for buffer size for compatibility with original versions.
     ts_buffer_size = size_t((uint64_t(ts_buffer_size) * 1024 * 1024) / 1000000);
-
-    // Get optional allowed remote addresses.
-    success = control.loadAllowedClients(args, u"control-source") && success;
-    if (control.allowed_clients.empty() && (!control.use_tls || control.auth_token.empty())) {
-        // By default, without proper authentication, the local host is the only allowed address.
-        control.allowed_clients.insert(IPAddress::LocalHost4);
-        control.allowed_clients.insert(IPAddress::LocalHost6);
-    }
 
     // Decode --add-input-stuffing nullpkt/inpkt.
     instuff_nullpkt = instuff_inpkt = 0;

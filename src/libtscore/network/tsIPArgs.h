@@ -84,9 +84,10 @@ namespace ts {
         //! Load the set of allowed clients from a command line (server side).
         //! @param [in,out] args Command line arguments.
         //! @param [in] option Option which defines the client addresses.
+        //! @param [in] default_local_only When true and no value is specified for the option, the local host is the only allowed client.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadAllowedClients(Args& args, const UChar* option) { return loadAddressesArgs(&IPArgs::allowed_clients, args, option); }
+        bool loadAllowedClients(Args& args, const UChar* option, bool default_local_only);
 
         //!
         //! Load the set of denied clients from a command line (server side).
@@ -94,7 +95,7 @@ namespace ts {
         //! @param [in] option Option which defines the client addresses.
         //! @return True on success, false on error in argument line.
         //!
-        bool loadDeniedClients(Args& args, const UChar* option) { return loadAddressesArgs(&IPArgs::denied_clients, args, option); }
+        bool loadDeniedClients(Args& args, const UChar* option);
 
         //!
         //! On the server side, check if a client address is allowed, based on sets of allowed and denied clients.
@@ -126,6 +127,6 @@ namespace ts {
         bool loadServerAddress(Args& args, const UChar* server_option);
 
         // Common code for loadAllowedClients() and loadDeniedClients().
-        bool loadAddressesArgs(IPAddressSet IPArgs::*, Args&, const UChar* option);
+        bool loadAddressesArgs(IPAddressSet IPArgs::*, Args&, const UChar* option, bool default_local_only);
     };
 }

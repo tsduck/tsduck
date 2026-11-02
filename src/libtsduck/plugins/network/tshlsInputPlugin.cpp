@@ -407,9 +407,20 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
         // can be produced as late as the estimated end time of the previous playlist. So, we retry
         // at regular intervals until we get new segments.
 
+        if (_playlist.segmentTargetDuration() >= cn::hours(1)) {
+            warning(u"segment target duration is suspectly high: %s", _playlist.segmentTargetDuration());
+        }
+        if (_playlist.terminationUTC() - Time::CurrentUTC() >= cn::hours(1)) {
+            warning(u"playlist duration is suspectly high: %s", _playlist.terminationUTC() - Time::CurrentUTC());
+        }
+
         while (_playlist.segmentCount() == 0 && Time::CurrentUTC() <= _playlist.terminationUTC() && !tsp->aborting()) {
             // The wait between two retries is half the target duration of a segment, with a minimum of 2 seconds.
-            std::this_thread::sleep_for(std::max(cn::seconds(2), _playlist.targetDuration() / 2));
+            // Also limit the wait time to 5 seconds to poll for abort.
+            std::this_thread::sleep_for(std::min(cn::seconds(5), std::max(cn::seconds(2), _playlist.segmentTargetDuration() / 2)));
+            if (tsp->aborting()) {
+                return false;
+            }
             // This time, we stop on reload error.
             if (!_playlist.reload(false, web_args)) {
                 break;

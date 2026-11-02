@@ -27,8 +27,9 @@ ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
 
     option(u"allow", 'a', STRING);
     help(u"allow", u"address",
-        u"Specify an IP address or host name which is allowed to send remote commands. "
-        u"Several --allow options are allowed. By default, all remote commands are accepted.");
+         u"Specify an IP address or host name which is allowed to send remote commands. "
+         u"As a security precaution, only the local host is allowed by default. "
+         u"Several --allow options are allowed.");
 
     option(u"max-queue", 0, POSITIVE);
     help(u"max-queue",
@@ -44,26 +45,12 @@ ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
 bool ts::CutoffPlugin::getOptions()
 {
     _max_queued = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_COMMANDS);
-
-    // Get UDP options.
-    bool ok = _sock_args.loadArgs(*this, _sock.parameters().receive_timeout);
-    _sock.setParameters(_sock_args);
-
-    // Resolve all allowed remote.
-    UStringVector remotes;
-    getValues(remotes, u"allow");
-    _allowed_temote.clear();
-    for (const auto& it : remotes) {
-        const IPAddress addr(it, *this);
-        if (addr.hasAddress()) {
-            _allowed_temote.insert(addr);
-        }
-        else {
-            ok = false;
-        }
+    // Get UPD parameters, reuse the receive timeout from the socket as default.
+    const bool ok = _sock_args.loadArgs(*this, _sock.parameters().receive_timeout);
+    if (ok) {
+        _sock.setParameters(_sock_args);
     }
-
-    return ok;
+    return _clients.loadAllowedClients(*this, u"allow", true) && ok;
 }
 
 
@@ -176,7 +163,7 @@ void ts::CutoffPlugin::main()
         while (_sock.receive(inbuf, sizeof(inbuf), insize, sender, destination, tsp)) {
 
             // Filter out unauthorized remote systems.
-            if (!_allowed_temote.empty() && !_allowed_temote.contains(sender)) {
+            if (!_clients.isAllowed(sender)) {
                 warning(u"rejected remote command from unauthorized host %s", sender);
                 continue;
             }
