@@ -64,7 +64,7 @@ void ts::SimulCryptDate::get(const tlv::MessageFactory& mf, tlv::TAG tag)
 
 ts::SimulCryptDate::operator ts::Time() const
 {
-    return Time(Time::Fields(year(), month(), day(), hour(), minute(), second(), 10 * hundredth()));
+    return year() >= Time::FirstSafeSystemYear ? Time(Time::Fields(year(), month(), day(), hour(), minute(), second(), 10 * hundredth())) : Time::Epoch;
 }
 
 

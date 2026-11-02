@@ -196,7 +196,7 @@ namespace ts {
 
         //!
         //! Convert to a Time object
-        //! @return The equivalent ts::Time object.
+        //! @return The equivalent ts::Time object or Time::Epoch if the SimulCryptDate is not convertible to a Time value.
         //!
         operator Time() const;
 

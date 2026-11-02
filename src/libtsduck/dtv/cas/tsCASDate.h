@@ -194,5 +194,5 @@ ts::UString ts::CASDate<YEARBASE>::toString() const
 template <int YEARBASE>
 ts::CASDate<YEARBASE>::operator ts::Time() const
 {
-    return isValid() ? Time(year(), month(), day(), 0, 0) : Time::Epoch;
+    return isValid() && year() >= Time::FirstSafeSystemYear ? Time(year(), month(), day(), 0, 0) : Time::Epoch;
 }
