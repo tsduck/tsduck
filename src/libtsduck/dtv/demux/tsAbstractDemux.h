@@ -71,6 +71,12 @@ namespace ts {
         virtual size_t pidCount() const;
 
         //!
+        //! Get the current number of TS packets which were processed by the demux.
+        //! @return The current number of TS packets which were processed by the demux.
+        //!
+        size_t packetCount() const { return _packet_count; }
+
+        //!
         //! Check if a PID is filtered.
         //! @param [in] pid The PID to test.
         //! @return Tue if @a pid is filtered.

@@ -76,6 +76,32 @@ namespace ts {
         void setPESHandler(PESHandlerInterface* h) { _pes_handler = h; }
 
         //!
+        //! Default maximum size for unbounded PES packets.
+        //! @see setMaxUnboundedSize()
+        //!
+        static constexpr size_t DEFAULT_MAX_UNBOUNDED_PES_SIZE = 512 * 1024;
+
+        //!
+        //! Set the maximum size for unbounded PES packets.
+        //! Unbounded PES packets have no predetermined size. They implicitely end when the next PES packet
+        //! starts on the same PID. The demux accumulates the PES content for them on each PID as long as no
+        //! new PES packet starts. To avoid saturating the memory of the demux, we limit the size of unbounded
+        //! PES packets. If an unbounded PES packet exceeds the specified maximum size, the binary content which
+        //! was accumulated so far for that PES packet is passed to the handler's handleInvalidPESPacket() and
+        //! the PES packet is dropped. Accumulating PES data on that PID will restart at the beginning of the
+        //! next PES packet.
+        //! @param [in] size The maximum size for unbounded PES packets to use.
+        //!
+        void setMaxUnboundedSize(size_t size) { _max_unbounded_size = size; }
+
+        //!
+        //! Get the maximum size for unbounded PES packets.
+        //! @return The maximum size for unbounded PES packets.
+        //! @see setMaxUnboundedSize()
+        //!
+        size_t getMaxUnboundedSize() const { return _max_unbounded_size; }
+
+        //!
         //! Set the default audio or video codec for all analyzed PES PID's.
         //! The analysis of the content of a PES packet sometimes depends on the PES data format.
         //! The PES demux uses several ways to determine the data format inside a PES packet.
@@ -212,6 +238,18 @@ namespace ts {
         // All known PID's are referenced here, not only demuxed PES PID's.
         using PIDTypeMap = std::map<PID,PIDType>;
 
+        // To avoid accumulating partial PES packets on PIDs which are silent, we perform some garbage collection
+        // from time to time. The garbage collection interval as well as the duration after which a silent PID is
+        // reset are arbitrary. Based on 50 Mb/s transport stream, we collect garbage every 5 seconds and we reset
+        // PIDs without packet in the last 60 seconds. The actual durations are higher for TS at a lower bitrate.
+        // The intervals are computed in number of TS packets.
+        static constexpr PacketCounter GC_REF_BITRATE = 50'000'000; // b/s
+        static constexpr PacketCounter GC_INTERVAL = (5 * GC_REF_BITRATE) / PKT_SIZE_BITS;
+        static constexpr PacketCounter GC_EXPIRATION = (60 * GC_REF_BITRATE) / PKT_SIZE_BITS;
+
+        // Perform garbage collection on silent PIDs.
+        void garbageCollector();
+
         // Feed the demux with a TS packet (PID already filtered).
         void processPacket(const TSPacket&);
 
@@ -219,7 +257,7 @@ namespace ts {
         void processPESPacketIfComplete(PID, PIDContext&);
 
         // Process a complete PES packet
-        void processPESPacket(PID, PIDContext&);
+        void processPESPacket(PID, PIDContext&, bool invalid_packet);
 
         // Process all video/audio analysis on the PES packet.
         void handlePESContent(PIDContext&, const PESPacket&);
@@ -230,6 +268,8 @@ namespace ts {
         // Private members:
         PESHandlerInterface* _pes_handler = nullptr;
         CodecType            _default_codec {CodecType::UNDEFINED};
+        size_t               _max_unbounded_size = DEFAULT_MAX_UNBOUNDED_PES_SIZE;
+        PacketCounter        _next_gc = 0;
         PIDContextMap        _pids {};
         PIDTypeMap           _pid_types {};
         SectionDemux         _section_demux;

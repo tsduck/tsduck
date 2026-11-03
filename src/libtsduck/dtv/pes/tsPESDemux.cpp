@@ -7,12 +7,12 @@
 //----------------------------------------------------------------------------
 
 #include "tsPESDemux.h"
+#include "tsDuckContext.h"
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
 #include "tsMemory.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
-#include "tsPSI.h"
 #include "tsPES.h"
 #include "tsAccessUnitIterator.h"
 #include "tsAlgorithm.h"
@@ -45,6 +45,7 @@ void ts::PESDemux::immediateReset()
     SuperClass::immediateReset();
     _pids.clear();
     _pid_types.clear();
+    _next_gc = GC_INTERVAL;
 
     // Reset the section demux back to initial state (intercepting the PAT).
     _section_demux.reset();
@@ -143,6 +144,22 @@ bool ts::PESDemux::allAC3(PID pid) const
 
 
 //----------------------------------------------------------------------------
+// Perform garbage collection on silent PIDs.
+//----------------------------------------------------------------------------
+
+void ts::PESDemux::garbageCollector()
+{
+    for (auto& it : _pids) {
+        if (it.second.last_pkt + GC_EXPIRATION < _packet_count && it.second.sync) {
+            // Last packet on that PID is way too old, give up current PES packet, if any.
+            it.second.syncLost();
+            _duck.report().debug(u"PESDemux garbage collector: resetting silent PID %n", it.first);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Feed the demux with a TS packet.
 //----------------------------------------------------------------------------
 
@@ -154,6 +171,12 @@ void ts::PESDemux::feedPacket(const TSPacket& pkt)
     // Process PES data on filtered PID's.
     if (_pid_filter[pkt.getPID()]) {
         processPacket(pkt);
+    }
+
+    // Perform garbage collection on silent PIDs.
+    if (_packet_count >= _next_gc) {
+        _next_gc += GC_INTERVAL;
+        garbageCollector();
     }
 
     // Invoke super class for its own processing.
@@ -180,7 +203,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     // If at a unit start and the context exists, process previous PES packet in context
     if (pc_exists && pkt.getPUSI() && pci->second.sync && pci->second.ts != nullptr && !pci->second.ts->empty()) {
         // Process packet, invoke all handlers
-        processPESPacket(pid, pci->second);
+        processPESPacket(pid, pci->second, false);
         // Recheck PID context in case it was reset by a handler
         pci = _pids.find(pid);
         pc_exists = pci != _pids.end();
@@ -285,7 +308,7 @@ void ts::PESDemux::flushUnboundedPES(PID pid)
 {
     const auto pci = _pids.find(pid);
     if (pci != _pids.end() && pci->second.sync && pci->second.ts != nullptr && !pci->second.ts->empty()) {
-        processPESPacket(pid, pci->second);
+        processPESPacket(pid, pci->second, false);
     }
 }
 
@@ -352,10 +375,11 @@ void ts::PESDemux::processPESPacketIfComplete(PID pid, PIDContext& pc)
         // There is enough to get the PES packet length.
         const size_t len = GetUInt16(pc.ts->data() + 4);
         // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
-        // But if the PES packet size is specified, check if we have the complete PES packet.
-        if (len != 0 && pc.ts->size() >= 6 + len) {
-            // We have the complete PES packet.
-            processPESPacket(pid, pc);
+        // In that case, we declare an invalid packet if it exceeds the maximum size.
+        // If the PES packet size is specified, check if we have the complete PES packet.
+        if ((len == 0 && pc.ts->size() > _max_unbounded_size) || (len != 0 && pc.ts->size() >= 6 + len)) {
+            // We have the complete PES packet. Consider it as invalid when unbounded.
+            processPESPacket(pid, pc, len == 0);
         }
     }
 }
@@ -365,7 +389,7 @@ void ts::PESDemux::processPESPacketIfComplete(PID pid, PIDContext& pc)
 // Process a complete PES packet
 //----------------------------------------------------------------------------
 
-void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
+void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc, bool invalid_packet)
 {
     // Note: We need to process even if _pes_handler is null. Subclasses of the
     // PES demux may override handlePESPacket() and have their own processing.
@@ -374,10 +398,14 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     // This is used to prevent the destruction of PID contexts during the execution of a handler.
     beforeCallingHandler(pid);
     try {
-        // Build a PES packet object around the TS buffer
-        PESPacket pes(pc.ts, pid);
+        // Build a PES packet object around the TS buffer, unless considered invalid by the caller.
+        PESPacket pes;
+        if (!invalid_packet) {
+            pes.reload(pc.ts, pid);
+            invalid_packet = !pes.isValid();
+        }
 
-        if (pes.isValid()) {
+        if (!invalid_packet) {
             // Count valid PES packets
             pc.pes_count++;
 
