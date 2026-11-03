@@ -492,7 +492,7 @@ ts::PacketProcessStatus ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSPacke
                 }
             }
             // Fix continuity counters if needed.
-            _cc_fixer.feedPacket(pkt);
+            _cc_fixer.processPacket(pkt);
         }
     }
 

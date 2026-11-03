@@ -300,7 +300,7 @@ ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMeta
         return TSP_END;
     }
     if (_update_cc) {
-        _cc_fixer.feedPacket(pkt);
+        _cc_fixer.processPacket(pkt);
     }
 
     // If the target bitrate is specified, compute the next pkt so the bitrate will be closer to the target bitrate.

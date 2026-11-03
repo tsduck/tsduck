@@ -54,6 +54,6 @@ namespace ts {
         TSPacketFormat     _file_format = TSPacketFormat::AUTODETECT; // Input file format
         TSPacketLabelSet   _set_labels {};               // Labels to set on output packets.
         TSPacketLabelSet   _reset_labels {};             // Labels to reset on output packets.
-        ContinuityAnalyzer _cc_fixer {AllPIDs(), this};  // To fix continuity counters in mux'ed PID's
+        ContinuityAnalyzer _cc_fixer {duck, AllPIDs()};  // To fix continuity counters in mux'ed PID's
     };
 }

@@ -104,7 +104,7 @@ void ts::MPEDemux::handleSection(SectionDemux& demux, const Section& section)
     // So, we need to carefully filter the sections. This must be a
     // DSM-CC Private Data section and it must come from a PID we filter.
 
-    if (section.tableId() == TID_DSMCC_PD && hasPID(section.sourcePID())) {
+    if (section.tableId() == TID_DSMCC_PD && isFilteredPID(section.sourcePID())) {
 
         // Build the corresponding MPE packet.
         MPEPacket mpe(section);
@@ -134,7 +134,7 @@ void ts::MPEDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat(_duck, table);
+            PAT pat(duck(), table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
                 // Remember our transport stream.
                 _ts_id = pat.ts_id;
@@ -147,7 +147,7 @@ void ts::MPEDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_PMT: {
-            std::shared_ptr<PMT> pmt = std::make_shared<PMT>(_duck, table);
+            std::shared_ptr<PMT> pmt = std::make_shared<PMT>(duck(), table);
             if (pmt != nullptr && pmt->isValid()) {
                 // Keep track of all PMT's in the TS.
                 _pmts[pmt->service_id] = pmt;
@@ -158,7 +158,7 @@ void ts::MPEDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_INT: {
-            INT imnt(_duck, table);
+            INT imnt(duck(), table);
             if (imnt.isValid()) {
                 processINT(imnt);
             }
@@ -186,7 +186,7 @@ void ts::MPEDemux::processPMT(const PMT& pmt)
 
         // Loop on all data_broadcast_id_descriptors for the component.
         for (size_t i = stream.descs.search(DID_DVB_DATA_BROADCAST_ID); i < stream.descs.count(); i = stream.descs.search(DID_DVB_DATA_BROADCAST_ID, i + 1)) {
-            const DataBroadcastIdDescriptor desc(_duck, stream.descs[i]);
+            const DataBroadcastIdDescriptor desc(duck(), stream.descs[i]);
             if (desc.isValid()) {
                 // Found a valid data_broadcast_id_descriptor.
                 switch (desc.data_broadcast_id) {
@@ -241,7 +241,7 @@ void ts::MPEDemux::processINTDescriptors(const DescriptorList& descs)
 {
     // Loop on all IP/MAC stream_location_descriptors.
     for (size_t i = descs.search(DID_INT_STREAM_LOC); i < descs.count(); i = descs.search(DID_INT_STREAM_LOC, i + 1)) {
-        const IPMACStreamLocationDescriptor desc(_duck, descs[i]);
+        const IPMACStreamLocationDescriptor desc(duck(), descs[i]);
         if (desc.isValid() && desc.transport_stream_id == _ts_id) {
             // Found an MPE PID in this transport stream.
 

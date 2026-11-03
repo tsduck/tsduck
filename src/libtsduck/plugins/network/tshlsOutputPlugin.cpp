@@ -22,9 +22,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
-    ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
-    _demux(duck, this),
-    _cc_fixer(NoPID(), this)
+    ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename")
 {
     option(u"", 0, FILENAME, 1, 1);
     help(u"",
@@ -469,12 +467,12 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
             const PID pid = pkt[i].getPID();
             if (pid == PID_PAT) {
                 tmp = *p;
-                _cc_fixer.feedPacket(tmp);
+                _cc_fixer.processPacket(tmp);
                 p = &tmp;
             }
             else if (_pmt_pid != PID_NULL && pid == _pmt_pid) {
                 tmp = *p;
-                _cc_fixer.feedPacket(tmp);
+                _cc_fixer.processPacket(tmp);
                 p = &tmp;
             }
         }

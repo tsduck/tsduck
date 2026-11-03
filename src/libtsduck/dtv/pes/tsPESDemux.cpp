@@ -25,7 +25,7 @@
 ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
     _pes_handler(pes_handler),
-    _section_demux(_duck, this)
+    _section_demux(duck, this)
 {
     // Analyze the PAT, to get the PMT's, to get the stream types.
     _section_demux.addPID(PID_PAT);
@@ -150,10 +150,10 @@ bool ts::PESDemux::allAC3(PID pid) const
 void ts::PESDemux::garbageCollector()
 {
     for (auto& it : _pids) {
-        if (it.second.last_pkt + GC_EXPIRATION < packetCount() && it.second.sync) {
+        if (it.second.last_pkt + GC_EXPIRATION < totalPackets() && it.second.sync) {
             // Last packet on that PID is way too old, give up current PES packet, if any.
             it.second.syncLost();
-            _duck.report().debug(u"PESDemux garbage collector: resetting silent PID %n", it.first);
+            report().debug(u"PESDemux garbage collector: resetting silent PID %n", it.first);
         }
     }
 }
@@ -169,12 +169,12 @@ void ts::PESDemux::feedPacket(const TSPacket& pkt)
     _section_demux.feedPacket(pkt);
 
     // Process PES data on filtered PID's.
-    if (hasPID(pkt.getPID())) {
+    if (isFilteredPID(pkt.getPID())) {
         processPacket(pkt);
     }
 
     // Perform garbage collection on silent PIDs.
-    if (packetCount() >= _next_gc) {
+    if (totalPackets() >= _next_gc) {
         _next_gc += GC_INTERVAL;
         garbageCollector();
     }
@@ -233,8 +233,8 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
             pc.continuity = pkt.getCC();
             pc.sync = true;
             pc.ts->copy(pl, pl_size);
-            pc.first_pkt = packetCount();
-            pc.last_pkt = packetCount();
+            pc.first_pkt = totalPackets();
+            pc.last_pkt = totalPackets();
             pc.pcr = pkt.getPCR(); // can be invalid
 
             // Check if the complete PES packet is now present (without waiting for the next PUSI).
@@ -288,7 +288,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     pc.ts->append(pl, pl_size);
 
     // Last TS packet containing actual data for this PES packet
-    pc.last_pkt = packetCount();
+    pc.last_pkt = totalPackets();
 
     // Keep track of first PCR in the PES packet.
     if (pc.pcr == INVALID_PCR && pkt.hasPCR()) {
@@ -338,7 +338,7 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
     switch (table.tableId()) {
         case TID_PAT: {
             // Got a PAT, add all PMT PID's to section demux.
-            const PAT pat(_duck, table);
+            const PAT pat(duck(), table);
             if (pat.isValid()) {
                 for (const auto& it : pat.pmts) {
                     _section_demux.addPID(it.second);
@@ -348,11 +348,11 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
         case TID_PMT: {
             // Got a PMT, collect all stream types.
-            const PMT pmt(_duck, table);
+            const PMT pmt(duck(), table);
             if (pmt.isValid()) {
                 for (const auto& it : pmt.streams) {
                     _pid_types[it.first].stream_type = it.second.stream_type;
-                    _pid_types[it.first].default_codec = it.second.getCodec(_duck);
+                    _pid_types[it.first].default_codec = it.second.getCodec(duck());
                 }
             }
             break;

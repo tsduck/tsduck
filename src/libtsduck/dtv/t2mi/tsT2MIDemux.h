@@ -30,9 +30,7 @@ namespace ts {
     //! The application decides which T2-MI PID's should be demuxed. These PID's can
     //! be selected from the beginning or in response to the discovery of T2-MI PID's.
     //!
-    class TSDUCKDLL T2MIDemux:
-        public AbstractDemux,
-        private TableHandlerInterface
+    class TSDUCKDLL T2MIDemux: public AbstractDemux, private TableHandlerInterface
     {
         TS_NOBUILD_NOCOPY(T2MIDemux);
     public:

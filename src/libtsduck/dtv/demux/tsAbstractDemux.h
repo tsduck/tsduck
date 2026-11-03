@@ -12,13 +12,10 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTS.h"
+#include "tsTSPacket.h"
+#include "tsDuckContext.h"
 
 namespace ts {
-
-    class TSPacket;
-    class DuckContext;
-
     //!
     //! Abstract base class for all sorts of demux from TS packets.
     //!
@@ -32,6 +29,18 @@ namespace ts {
     {
         TS_NOBUILD_NOCOPY(AbstractDemux);
     public:
+        //!
+        //! Get the associated Report.
+        //! @return A reference to the associated Report.
+        //!
+        Report& report() { return _duck.report(); }
+
+        //!
+        //! Get the associated TSDuck execution context.
+        //! @return A reference to the associated DuckContext.
+        //!
+        DuckContext& duck() { return _duck; }
+
         //!
         //! The following method feeds the demux with a TS packet.
         //! @param [in] pkt A TS packet.
@@ -49,13 +58,13 @@ namespace ts {
         //! Add one PID to filter.
         //! @param [in] pid The new PID to filter.
         //!
-        virtual void addPID(PID pid);
+        virtual void addPID(PID pid) { _pid_filter.set(pid); }
 
         //!
         //! Add several PID's to filter.
         //! @param [in] pids The list of new PID's to filter.
         //!
-        virtual void addPIDs(const PIDSet& pids);
+        virtual void addPIDs(const PIDSet& pids) { _pid_filter |= pids; }
 
         //!
         //! Remove one PID to filter.
@@ -68,20 +77,26 @@ namespace ts {
         //! Get the current number of PID's being filtered.
         //! @return The current number of PID's being filtered.
         //!
-        virtual size_t pidCount() const;
+        virtual size_t pidCount() const { return _pid_filter.count(); }
 
         //!
-        //! Get the current number of TS packets which were processed by the demux.
+        //! Get the current total number of TS packets which were processed by the demux.
         //! @return The current number of TS packets which were processed by the demux.
         //!
-        PacketCounter packetCount() const { return _packet_count; }
+        PacketCounter totalPackets() const { return _total_packets; }
+
+        //!
+        //! Get the number of processed TS packets in filtered PIDs.
+        //! @return The number of processed TS packets.
+        //!
+        PacketCounter processedPackets() const { return _processed_packets; }
 
         //!
         //! Check if a PID is filtered.
         //! @param [in] pid The PID to test.
         //! @return Tue if @a pid is filtered.
         //!
-        virtual bool hasPID(PID pid) const;
+        virtual bool isFilteredPID(PID pid) const { return pid < _pid_filter.size() && _pid_filter.test(pid); }
 
         //!
         //! Reset the demux.
@@ -183,16 +198,15 @@ namespace ts {
         //!
         virtual void immediateResetPID(PID pid);
 
-        // Protected directly accessible to subclasses.
-        DuckContext& _duck;             //!< The TSDuck execution context is accessible to all subclasses.
-
     private:
+        DuckContext&  _duck;                       // TSDuck execution context.
+        PIDSet        _pid_filter {};              // Current set of filtered PID's.
         bool          _in_handler = false;         // True when in the context of an application-defined handler
         bool          _reset_pending = false;      // Delayed reset()
         bool          _pid_reset_pending = false;  // Delayed resetPID(_pid_in_handler)
         PID           _pid_in_handler = PID_NULL;  // PID which is currently processed by the handler
         int           _demux_id = 0;               // Demux identity (from application)
-        PacketCounter _packet_count = 0;           // Number of TS packets in the demultiplexed stream.
-        PIDSet        _pid_filter {};              // Current set of filtered PID's.
+        PacketCounter _total_packets = 0;          // Total number of TS packets in the transport stream.
+        PacketCounter _processed_packets = 0;      // Number of processed packets in filtered PIDs.
     };
 }

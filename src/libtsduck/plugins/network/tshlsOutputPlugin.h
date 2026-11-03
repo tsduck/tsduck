@@ -62,7 +62,7 @@ namespace ts::hls {
 
         // Working data.
         FileNameGenerator  _name_generator {};            // Generate the segment file names.
-        SectionDemux       _demux;                        // Demux to extract PAT and PMT.
+        SectionDemux       _demux {duck, this};           // Demux to extract PAT and PMT.
         TSPacketVector     _pat_packets {};               // TS packets for the PAT at start of each segment file.
         TSPacketVector     _pmt_packets {};               // TS packets for the PMT at start of each segment file, after the PAT.
         PID                _pmt_pid = PID_NULL;           // PID of the PMT of the reference service.
@@ -75,7 +75,7 @@ namespace ts::hls {
         hls::PlayList      _playlist {this};              // Generated playlist.
         PCRAnalyzer        _pcr_analyzer {1, 4};          // PCR analyzer to compute bitrates. Minimum required: 1 PID, 4 PCR.
         BitRate            _previous_bitrate = 0;         // Bitrate of previous segment.
-        ContinuityAnalyzer _cc_fixer;                     // To fix continuity counters in PAT and PMT PID's.
+        ContinuityAnalyzer _cc_fixer {duck, NoPID()};     // To fix continuity counters in PAT and PMT PID's.
 
         static constexpr cn::seconds DEFAULT_OUT_DURATION      = cn::seconds(10); // Default segment target duration for output streams.
         static constexpr cn::seconds DEFAULT_OUT_LIVE_DURATION = cn::seconds(5);  // Default segment target duration for output live streams.

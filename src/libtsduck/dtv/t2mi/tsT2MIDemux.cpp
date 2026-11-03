@@ -87,7 +87,7 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     _psi_demux.feedPacket(pkt);
 
     // If the packet is not filtered or scrambled, nothing more to do.
-    if (!hasPID(pid) || pkt.isScrambled()) {
+    if (!isFilteredPID(pid) || pkt.isScrambled()) {
         return;
     }
 
@@ -342,7 +342,7 @@ void ts::T2MIDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
     switch (table.tableId()) {
 
         case TID_PAT: {
-            PAT pat(_duck, table);
+            PAT pat(duck(), table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
                 // Add all PMT PID's to PSI demux.
                 for (const auto& it : pat.pmts) {
@@ -353,7 +353,7 @@ void ts::T2MIDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         }
 
         case TID_PMT: {
-            PMT pmt(_duck, table);
+            PMT pmt(duck(), table);
             if (pmt.isValid()) {
                 processPMT(pmt);
             }
@@ -380,7 +380,7 @@ void ts::T2MIDemux::processPMT(const PMT& pmt)
         const PID pid = it.first;
         const DescriptorList& dlist(it.second.descs);
         for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
-            const T2MIDescriptor desc(_duck, dlist[index]);
+            const T2MIDescriptor desc(duck(), dlist[index]);
             if (desc.isValid() && _handler != nullptr) {
                 // Invoke the user-defined handler to signal the new PID.
                 beforeCallingHandler(pid);

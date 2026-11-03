@@ -187,7 +187,7 @@ namespace ts::tr101290 {
         std::array<bool, COUNTER_COUNT> _counters_flags {};    // Mark which errors were detected in a packet, reset at each packet.
         std::map<PID, Counters>         _counters_by_pid {};   // Error counters by PID.
         SectionDemux                    _demux {_duck, this, this};
-        ContinuityAnalyzer              _continuity {AllPIDs()};
+        ContinuityAnalyzer              _continuity {_duck, AllPIDs()};
         std::map<PID,PIDContext>        _pids {};
         std::map<XTID,XTIDContext>      _xtids {};
 

@@ -97,7 +97,7 @@ void ts::TimeTrackerDemux::feedPacket(const TSPacket& pkt)
     }
 
     // Track PTS on the demuxed PID's.
-    if (hasPID(pid) && pkt.hasPTS()) {
+    if (isFilteredPID(pid) && pkt.hasPTS()) {
         _pids[pid].set(pkt.getPTS());
     }
 }

@@ -152,7 +152,7 @@ void ts::tr101290::Analyzer::feedPacket(const PCR& timestamp, const TSPacket& pk
     }
 
     // [[1.4]] Continuity_count_error: Incorrect packet order, a packet occurs more than twice, lost packet.
-    if (!_continuity.feedPacket(pkt)) {
+    if (!_continuity.processPacket(pkt)) {
         addErrorOnce(u"1.4", Continuity_count_error, pid);
     }
 

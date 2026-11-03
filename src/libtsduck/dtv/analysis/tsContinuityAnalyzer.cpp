@@ -8,27 +8,15 @@
 
 #include "tsContinuityAnalyzer.h"
 #include "tsjsonObject.h"
-#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* report) :
-    _report(report != nullptr ? report : &NULLREP),
-    _pid_filter(pid_filter)
+ts::ContinuityAnalyzer::ContinuityAnalyzer(DuckContext& duck, const PIDSet& pid_filter) :
+    SuperClass(duck, pid_filter)
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Change the output device to report errors.
-//----------------------------------------------------------------------------
-
-void ts::ContinuityAnalyzer::setReport(Report* report)
-{
-    _report = report != nullptr ? report : &NULLREP;
 }
 
 
@@ -36,61 +24,18 @@ void ts::ContinuityAnalyzer::setReport(Report* report)
 // Reset all collected information
 //----------------------------------------------------------------------------
 
-void ts::ContinuityAnalyzer::reset()
+void ts::ContinuityAnalyzer::immediateReset()
 {
-    _total_packets = 0;
-    _processed_packets = 0;
+    SuperClass::immediateReset();
     _fix_count = 0;
     _error_count = 0;
     _pid_states.clear();
 }
 
-
-//----------------------------------------------------------------------------
-// PID filter management.
-//----------------------------------------------------------------------------
-
-void ts::ContinuityAnalyzer::setPIDFilter(const PIDSet& pids)
+void ts::ContinuityAnalyzer::immediateResetPID(PID pid)
 {
-    // Get list of removed PID's
-    const PIDSet removed_pids(_pid_filter & ~pids);
-
-    // Set the new filter
-    _pid_filter = pids;
-
-    // Reset context of all removed PID's
-    if (removed_pids.any()) {
-        for (PID pid = 0; pid < PID_MAX; ++pid) {
-            if (removed_pids[pid]) {
-                _pid_states.erase(pid);
-            }
-        }
-    }
-}
-
-void ts::ContinuityAnalyzer::addPID(PID pid)
-{
-    if (pid < _pid_filter.size()) {
-        _pid_filter.set(pid);
-    }
-}
-
-void ts::ContinuityAnalyzer::addPIDs(const PIDSet& pids)
-{
-    _pid_filter |= pids;
-}
-
-void ts::ContinuityAnalyzer::removePID(PID pid)
-{
-    if (pid < _pid_filter.size() && _pid_filter[pid]) {
-        _pid_filter.reset(pid);
-        _pid_states.erase(pid);
-    }
-}
-
-bool ts::ContinuityAnalyzer::hasPID(PID pid) const
-{
-    return pid < _pid_filter.size() && _pid_filter.test(pid);
+    SuperClass::immediateResetPID(pid);
+    _pid_states.erase(pid);
 }
 
 
@@ -131,7 +76,7 @@ ts::TSPacket ts::ContinuityAnalyzer::lastPacket(PID pid) const
 
 
 //----------------------------------------------------------------------------
-//  Return the number of missing packets between two continuity counters
+// Return the number of missing packets between two continuity counters
 //----------------------------------------------------------------------------
 
 size_t ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
@@ -148,7 +93,7 @@ size_t ts::ContinuityAnalyzer::MissingPackets(int cc1, int cc2)
 
 ts::UString ts::ContinuityAnalyzer::linePrefix(PID pid) const
 {
-    return UString::Format(u"%spacket index: %'d, PID: %n", _prefix, _total_packets, pid);
+    return UString::Format(u"%spacket index: %'d, PID: %n", _prefix, totalPackets(), pid);
 }
 
 
@@ -159,13 +104,23 @@ ts::UString ts::ContinuityAnalyzer::linePrefix(PID pid) const
 void ts::ContinuityAnalyzer::logJSON(PID pid, const UChar* type, size_t packet_count)
 {
     json::Object root;
-    root.add(u"index", _total_packets);
+    root.add(u"index", totalPackets());
     root.add(u"pid", pid);
     root.add(u"type", type);
     if (packet_count != NPOS) {
         root.add(u"packets", packet_count);
     }
-    _report->log(_severity, _prefix + root.oneLiner(*_report));
+    report().log(_severity, _prefix + root.oneLiner(report()));
+}
+
+
+//----------------------------------------------------------------------------
+// Inherited feedPacket() is equivalent to processPacket(const TSPacket&).
+//----------------------------------------------------------------------------
+
+void ts::ContinuityAnalyzer::feedPacket(const TSPacket& pkt)
+{
+    processPacket(pkt);
 }
 
 
@@ -173,14 +128,14 @@ void ts::ContinuityAnalyzer::logJSON(PID pid, const UChar* type, size_t packet_c
 // Detect / fix error on packet.
 //----------------------------------------------------------------------------
 
-bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
+bool ts::ContinuityAnalyzer::processPacketInternal(TSPacket* pkt, bool update)
 {
     assert(pkt != nullptr);
     const PID pid = pkt->getPID();
     bool result = true;
 
     // The null PID is never eligible for CC processing.
-    if (pid != PID_NULL && _pid_filter.test(pid)) {
+    if (pid != PID_NULL && isFilteredPID(pid)) {
 
         // Get or create PID context.
         PIDState& state(_pid_states[pid]);
@@ -222,7 +177,7 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                         logJSON(pid, u"duplicate", state.dup_count + 1);
                     }
                     else {
-                        _report->log(_severity, u"%s, %d duplicate packets", linePrefix(pid), state.dup_count + 1);
+                        report().log(_severity, u"%s, %d duplicate packets", linePrefix(pid), state.dup_count + 1);
                     }
                 }
                 // There is nothing we can do to fix this.
@@ -252,7 +207,7 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                             logJSON(pid, u"increment-without-payload");
                         }
                         else {
-                            _report->log(_severity, u"%s, incorrect CC increment without payload", linePrefix(pid));
+                            report().log(_severity, u"%s, incorrect CC increment without payload", linePrefix(pid));
                         }
                     }
                     else {
@@ -260,7 +215,7 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                             logJSON(pid, u"missing", MissingPackets(last_cc_in, cc));
                         }
                         else {
-                            _report->log(_severity, u"%s, missing %d packets", linePrefix(pid), MissingPackets(last_cc_in, cc));
+                            report().log(_severity, u"%s, missing %d packets", linePrefix(pid), MissingPackets(last_cc_in, cc));
                         }
                     }
                 }
@@ -277,10 +232,9 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
 
         // Save actual CC for next time.
         state.last_cc_out = pkt->getCC();
-        _processed_packets++;
     }
 
-    // Count total packets.
-    _total_packets++;
+    // Count packets in superclass.
+    SuperClass::feedPacket(*pkt);
     return result;
 }

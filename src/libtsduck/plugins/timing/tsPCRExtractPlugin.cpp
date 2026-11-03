@@ -188,7 +188,7 @@ ts::PacketProcessStatus ts::PCRExtractPlugin::processPacket(TSPacket& pkt, TSPac
     _demux.feedPacket(pkt);
 
     // When all PID's are analyzed, detect SCTE 35 is all PID's, regardless of PSI.
-    if (_scte35 && _all_pids && !_demux.hasPID(pid) && pkt.getPUSI()) {
+    if (_scte35 && _all_pids && !_demux.isFilteredPID(pid) && pkt.getPUSI()) {
         // Check if this packet contains the start of an SCTE command.
         const size_t hs = pkt.getHeaderSize();
         // Index in packet of first table id (header plus pointer field):

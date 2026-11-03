@@ -246,7 +246,7 @@ ts::PacketProcessStatus ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPac
             if (got_packet) {
                 // Update PID and continuity counter.
                 pkt.setPID(_data_pid);
-                _cc_fixer.feedPacket(pkt);
+                _cc_fixer.processPacket(pkt);
                 // Compute next insertion point if the data PID bitrate is specified.
                 // Otherwise, try to update any null packet (unbounded bitrate).
                 // Take care of floating point conversion which may result in division by zero.

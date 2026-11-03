@@ -103,6 +103,6 @@ bool ts::ContinuityPlugin::start()
 
 ts::PacketProcessStatus ts::ContinuityPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    _cc_analyzer.feedPacket(pkt);
+    _cc_analyzer.processPacket(pkt);
     return TSP_OK;
 }

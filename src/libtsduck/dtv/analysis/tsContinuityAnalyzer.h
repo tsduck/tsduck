@@ -12,48 +12,29 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractDemux.h"
 #include "tsTSPacket.h"
-#include "tsReport.h"
 
 namespace ts {
     //!
     //! Continuity counters analysis and repair.
     //! @ingroup libtsduck mpeg
     //!
-    class TSDUCKDLL ContinuityAnalyzer
+    class TSDUCKDLL ContinuityAnalyzer: public AbstractDemux
     {
+        TS_NOBUILD_NOCOPY(ContinuityAnalyzer);
     public:
         //!
+        //! Explicit reference to superclass.
+        //!
+        using SuperClass = AbstractDemux;
+
+        //!
         //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] pid_filter The set of PID's to analyze or fix.
-        //! @param [in] report Where to report discontinuity errors. Drop errors if null.
         //!
-        explicit ContinuityAnalyzer(const PIDSet& pid_filter = NoPID(), Report* report = nullptr);
-
-        // Implementation note:
-        // "= default" definitions required for copy constructor and assignments so that
-        // the compiler understands that we know what we do with the pointer member _report.
-        // Important: take care in case of internal modification, do not break the ownership
-        // of pointers because the compiler will no longer complain.
-
-        //!
-        //! Copy constructor.
-        //! @param [in] other Other instance to copy.
-        //!
-        ContinuityAnalyzer(const ContinuityAnalyzer& other) = default;
-
-        //!
-        //! Assignment operator.
-        //! @param [in] other Other instance to copy.
-        //! @return A reference to this instance.
-        //!
-        ContinuityAnalyzer& operator=(const ContinuityAnalyzer& other) = default;
-
-        //!
-        //! Reset all collected information.
-        //! Do not change processing options (display and/or fix errors).
-        //!
-        void reset();
+        explicit ContinuityAnalyzer(DuckContext& duck, const PIDSet& pid_filter = NoPID());
 
         //!
         //! Process a constant TS packet.
@@ -61,7 +42,7 @@ namespace ts {
         //! @param [in] pkt A transport stream packet.
         //! @return True if the packet has no discontinuity error. False if it has an error.
         //!
-        bool feedPacket(const TSPacket& pkt) { return feedPacketInternal(const_cast<TSPacket*>(&pkt), false); }
+        bool processPacket(const TSPacket& pkt) { return processPacketInternal(const_cast<TSPacket*>(&pkt), false); }
 
         //!
         //! Process or modify a TS packet.
@@ -70,20 +51,7 @@ namespace ts {
         //! @return True if the packet had no discontinuity error and is unmodified.
         //! False if the packet had an error or was modified.
         //!
-        bool feedPacket(TSPacket& pkt) { return feedPacketInternal(&pkt, true); }
-
-        //!
-        //! Get the total number of TS packets.
-        //! @return The total number of TS packets.
-        //!
-        PacketCounter totalPackets() const { return _total_packets; }
-
-        //!
-        //! Get the number of processed TS packets.
-        //! Only packets from selected PID's are counted.
-        //! @return The number of processed TS packets.
-        //!
-        PacketCounter processedPackets() const { return _processed_packets; }
+        bool processPacket(TSPacket& pkt) { return processPacketInternal(&pkt, true); }
 
         //!
         //! Get the number of fixed (modified) TS packets.
@@ -96,12 +64,6 @@ namespace ts {
         //! @return The number of discontinuity errors.
         //!
         PacketCounter errorCount() const { return _error_count; }
-
-        //!
-        //! Change the output device to report errors.
-        //! @param [in] report Where to report discontinuity errors. Drop errors if null.
-        //!
-        void setReport(Report* report);
 
         //!
         //! Change error reporting.
@@ -157,43 +119,6 @@ namespace ts {
         void setJSON(bool on) { _json = on; }
 
         //!
-        //! Replace the list of PID's to process.
-        //! @param [in] pid_filter The list of PID's to process.
-        //!
-        void setPIDFilter(const PIDSet& pid_filter);
-
-        //!
-        //! Add one PID to process.
-        //! @param [in] pid The new PID to process.
-        //!
-        void addPID(PID pid);
-
-        //!
-        //! Add several PID's to process.
-        //! @param [in] pids The list of new PID's to process.
-        //!
-        void addPIDs(const PIDSet& pids);
-
-        //!
-        //! Remove one PID to process.
-        //! @param [in] pid The PID to no longer process.
-        //!
-        void removePID(PID pid);
-
-        //!
-        //! Get the current number of PID's being processed.
-        //! @return The current number of PID's being processed.
-        //!
-        size_t pidCount() const { return _pid_filter.count(); }
-
-        //!
-        //! Check if a PID is processed.
-        //! @param [in] pid The PID to test.
-        //! @return True if @a pid is processed.
-        //!
-        bool hasPID(PID pid) const;
-
-        //!
         //! Get the first CC in a PID.
         //! @param [in] pid The PID to check.
         //! @return The first CC value in the PID or ts::INVALID_CC when the PID is not filtered.
@@ -238,8 +163,16 @@ namespace ts {
         //!
         static size_t MissingPackets(int cc1, int cc2);
 
+        // Inherited feedPacket() is equivalent to processPacket(const TSPacket&) without bool result.
+        virtual void feedPacket(const TSPacket& pkt) override;
+
+    protected:
+        // Inherited methods.
+        virtual void immediateReset() override;
+        virtual void immediateResetPID(PID pid) override;
+
     private:
-        // PID analysis state
+        // PID analysis state.
         class PIDState
         {
         public:
@@ -250,11 +183,7 @@ namespace ts {
             TSPacket last_pkt_in {};           // Last input packet (before modification, if any).
         };
 
-        // A map of PID state, indexed by PID.
-        using PIDStateMap = std::map<PID,PIDState>;
-
         // Private members.
-        Report*       _report;                    // Where to report errors, never null.
         int           _severity = Severity::Info; // Severity level for error messages.
         bool          _display_errors = false;    // Display discontinuity errors.
         bool          _fix_errors = false;        // Fix discontinuity errors.
@@ -262,16 +191,13 @@ namespace ts {
         bool          _generator = false;         // Use generator mode.
         bool          _json = false;              // Log JSON messages.
         UString       _prefix {};                 // Message prefix.
-        PacketCounter _total_packets = 0;         // Total number of packets.
-        PacketCounter _processed_packets = 0;     // Number of processed packets.
         PacketCounter _fix_count = 0;             // Number of fixed (modified) packets.
         PacketCounter _error_count = 0;           // Number of discontinuity errors.
-        PIDSet        _pid_filter {};             // Current set of filtered PID's.
-        PIDStateMap   _pid_states {};             // State of all PID's.
+        std::map<PID,PIDState> _pid_states {};    // State of all PID's.
 
         // Internal version of feedPacket.
         // The packet is modified only if update is true.
-        bool feedPacketInternal(TSPacket* pkt, bool update);
+        bool processPacketInternal(TSPacket* pkt, bool update);
 
         // Build the first part of an error message.
         UString linePrefix(PID pid) const;

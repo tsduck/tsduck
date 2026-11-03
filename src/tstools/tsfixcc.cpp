@@ -26,11 +26,12 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        bool         test = false;          // Test mode
-        bool         circular = false;      // Add empty packets to enforce circular continuity
-        bool         no_replicate = false;  // Option --no-replicate-duplicated
-        fs::path     filename {};           // File name
-        std::fstream file {};               // File buffer
+        ts::DuckContext duck {this};           // TSDuck execution context
+        bool            test = false;          // Test mode
+        bool            circular = false;      // Add empty packets to enforce circular continuity
+        bool            no_replicate = false;  // Option --no-replicate-duplicated
+        fs::path        filename {};           // File name
+        std::fstream    file {};               // File buffer
 
         // Check if there was an I/O error on the file.
         // Print an error message if this is the case.
@@ -96,7 +97,7 @@ bool Options::fileError(const ts::UChar* message)
 int MainCode(int argc, char *argv[])
 {
     Options opt(argc, argv);
-    ts::ContinuityAnalyzer fixer(ts::AllPIDs(), &opt);
+    ts::ContinuityAnalyzer fixer(opt.duck, ts::AllPIDs());
 
     // Configure the CC analyzer.
     fixer.setDisplay(true);
@@ -134,7 +135,7 @@ int MainCode(int argc, char *argv[])
         }
 
         // Process packet
-        if (!fixer.feedPacket(pkt) && !opt.test) {
+        if (!fixer.processPacket(pkt) && !opt.test) {
             // Packet was modified, need to rewrite it.
             // Rewind to beginning of current packet
             opt.file.seekp(pos);

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDemux.h"
+#include "tsTSPacket.h"
 
 
 //----------------------------------------------------------------------------
@@ -47,32 +48,12 @@ void ts::AbstractDemux::setPIDFilter(const PIDSet& pids)
     }
 }
 
-void ts::AbstractDemux::addPID(PID pid)
-{
-    _pid_filter.set(pid);
-}
-
-void ts::AbstractDemux::addPIDs(const PIDSet& pids)
-{
-    _pid_filter |= pids;
-}
-
 void ts::AbstractDemux::removePID(PID pid)
 {
     if (_pid_filter[pid]) {
         _pid_filter.reset(pid);
         resetPID(pid);
     }
-}
-
-size_t ts::AbstractDemux::pidCount() const
-{
-    return _pid_filter.count();
-}
-
-bool ts::AbstractDemux::hasPID(PID pid) const
-{
-    return pid < _pid_filter.size() && _pid_filter.test(pid);
 }
 
 
@@ -104,6 +85,7 @@ void ts::AbstractDemux::resetPID(PID pid)
 
 void ts::AbstractDemux::immediateReset()
 {
+    _total_packets = _processed_packets = 0;
 }
 
 void ts::AbstractDemux::immediateResetPID(PID pid)
@@ -117,9 +99,11 @@ void ts::AbstractDemux::immediateResetPID(PID pid)
 
 void ts::AbstractDemux::feedPacket(const TSPacket& pkt)
 {
-    // At this stage, we only count packets.
-    // More interesting stuff in subclasses.
-    _packet_count++;
+    // At this stage, we only count packets. More interesting stuff in subclasses.
+    _total_packets++;
+    if (_pid_filter.test(pkt.getPID())) {
+        _processed_packets++;
+    }
 }
 
 

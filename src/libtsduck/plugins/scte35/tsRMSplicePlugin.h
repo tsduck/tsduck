@@ -107,7 +107,7 @@ namespace ts {
         std::set<uint32_t>  _event_ids {};                // Set of event IDs of interest
         bool                _dry_run = false;             // Just report what it would do
         PID                 _video_pid = PID_NULL;        // First video PID, if there is one
-        ContinuityAnalyzer  _cc_fixer {NoPID(), this};    // To fix continuity counters in spliced PID's.
+        ContinuityAnalyzer  _cc_fixer {duck, NoPID()};    // To fix continuity counters in spliced PID's.
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux&, const Section&) override;
