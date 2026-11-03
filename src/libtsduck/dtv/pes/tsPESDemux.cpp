@@ -150,7 +150,7 @@ bool ts::PESDemux::allAC3(PID pid) const
 void ts::PESDemux::garbageCollector()
 {
     for (auto& it : _pids) {
-        if (it.second.last_pkt + GC_EXPIRATION < _packet_count && it.second.sync) {
+        if (it.second.last_pkt + GC_EXPIRATION < packetCount() && it.second.sync) {
             // Last packet on that PID is way too old, give up current PES packet, if any.
             it.second.syncLost();
             _duck.report().debug(u"PESDemux garbage collector: resetting silent PID %n", it.first);
@@ -169,12 +169,12 @@ void ts::PESDemux::feedPacket(const TSPacket& pkt)
     _section_demux.feedPacket(pkt);
 
     // Process PES data on filtered PID's.
-    if (_pid_filter[pkt.getPID()]) {
+    if (hasPID(pkt.getPID())) {
         processPacket(pkt);
     }
 
     // Perform garbage collection on silent PIDs.
-    if (_packet_count >= _next_gc) {
+    if (packetCount() >= _next_gc) {
         _next_gc += GC_INTERVAL;
         garbageCollector();
     }
@@ -233,8 +233,8 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
             pc.continuity = pkt.getCC();
             pc.sync = true;
             pc.ts->copy(pl, pl_size);
-            pc.first_pkt = _packet_count;
-            pc.last_pkt = _packet_count;
+            pc.first_pkt = packetCount();
+            pc.last_pkt = packetCount();
             pc.pcr = pkt.getPCR(); // can be invalid
 
             // Check if the complete PES packet is now present (without waiting for the next PUSI).
@@ -288,7 +288,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     pc.ts->append(pl, pl_size);
 
     // Last TS packet containing actual data for this PES packet
-    pc.last_pkt = _packet_count;
+    pc.last_pkt = packetCount();
 
     // Keep track of first PCR in the PES packet.
     if (pc.pcr == INVALID_PCR && pkt.hasPCR()) {

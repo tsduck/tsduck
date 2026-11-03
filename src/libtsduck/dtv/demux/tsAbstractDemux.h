@@ -74,7 +74,7 @@ namespace ts {
         //! Get the current number of TS packets which were processed by the demux.
         //! @return The current number of TS packets which were processed by the demux.
         //!
-        size_t packetCount() const { return _packet_count; }
+        PacketCounter packetCount() const { return _packet_count; }
 
         //!
         //! Check if a PID is filtered.
@@ -184,15 +184,15 @@ namespace ts {
         virtual void immediateResetPID(PID pid);
 
         // Protected directly accessible to subclasses.
-        DuckContext&  _duck;             //!< The TSDuck execution context is accessible to all subclasses.
-        PIDSet        _pid_filter {};    //!< Current set of filtered PID's.
-        PacketCounter _packet_count = 0; //!< Number of TS packets in the demultiplexed stream.
+        DuckContext& _duck;             //!< The TSDuck execution context is accessible to all subclasses.
 
     private:
-        bool _in_handler = false;        // True when in the context of an application-defined handler
-        PID  _pid_in_handler = PID_NULL; // PID which is currently processed by the handler
-        bool _reset_pending = false;     // Delayed reset()
-        bool _pid_reset_pending = false; // Delayed resetPID(_pid_in_handler)
-        int  _demux_id = 0;              // Demux identity (from application)
+        bool          _in_handler = false;         // True when in the context of an application-defined handler
+        bool          _reset_pending = false;      // Delayed reset()
+        bool          _pid_reset_pending = false;  // Delayed resetPID(_pid_in_handler)
+        PID           _pid_in_handler = PID_NULL;  // PID which is currently processed by the handler
+        int           _demux_id = 0;               // Demux identity (from application)
+        PacketCounter _packet_count = 0;           // Number of TS packets in the demultiplexed stream.
+        PIDSet        _pid_filter {};              // Current set of filtered PID's.
     };
 }

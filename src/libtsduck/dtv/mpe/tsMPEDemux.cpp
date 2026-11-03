@@ -104,7 +104,7 @@ void ts::MPEDemux::handleSection(SectionDemux& demux, const Section& section)
     // So, we need to carefully filter the sections. This must be a
     // DSM-CC Private Data section and it must come from a PID we filter.
 
-    if (section.tableId() == TID_DSMCC_PD && _pid_filter.test(section.sourcePID())) {
+    if (section.tableId() == TID_DSMCC_PD && hasPID(section.sourcePID())) {
 
         // Build the corresponding MPE packet.
         MPEPacket mpe(section);

@@ -87,7 +87,7 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     _psi_demux.feedPacket(pkt);
 
     // If the packet is not filtered or scrambled, nothing more to do.
-    if (!_pid_filter[pid] || pkt.isScrambled()) {
+    if (!hasPID(pid) || pkt.isScrambled()) {
         return;
     }
 
