@@ -24,7 +24,7 @@ ts::DuplicatePlugin::DuplicatePlugin(TSP* tsp_) :
          u"Silently drop overflow packets. By default, overflow packets trigger warnings. "
          u"See also option --max-buffered-packets.");
 
-    option(u"max-buffered-packets", 'm', UNSIGNED);
+    option(u"max-buffered-packets", 'm', POSITIVE);
     help(u"max-buffered-packets",
          u"Specify the maximum number of buffered packets. "
          u"The input packets to duplicate are internally buffered until a null packet "
@@ -92,7 +92,7 @@ ts::PacketProcessStatus ts::DuplicatePlugin::processPacket(TSPacket& pkt, TSPack
 
     // Copy packets to duplicate in the buffer.
     if (duplicate) {
-        if (_queue.size() >= _max_buffered) {
+        if (_max_buffered > 0 && _queue.size() >= _max_buffered) {
             // Buffer overflow, drop the oldest packet.
             _queue.pop_front();
             if (!_silent_drop) {
