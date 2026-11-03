@@ -256,12 +256,20 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     emmgmux.setVersion(protocol_version);
 
     // Load sections from input files.
-    for (const auto& it : input_files) {
+    for (const auto& filename : input_files) {
         ts::SectionFile file(duck);
         file.setCRCValidation(ts::CRC32::CHECK);
-        if (file.load(it)) {
-            sections.insert(sections.end(), file.sections().begin(), file.sections().end());
+        if (file.load(filename)) {
+            if (file.sectionsCount() == 0) {
+                warning(u"no section loaded from %s", filename);
+            }
+            else {
+                sections.insert(sections.end(), file.sections().begin(), file.sections().end());
+            }
         }
+    }
+    if (!input_files.empty() && sections.empty()) {
+        error(u"no section loaded from all input files");
     }
 
     exitOnError();
@@ -385,6 +393,7 @@ void EMMGSectionProvider::provideSection(ts::SectionCounter counter, ts::Section
     }
     else {
         // Get the next loaded section.
+        assert(_next_section < _opt.sections.size());
         section = _opt.sections[_next_section];
         if (++_next_section >= _opt.sections.size()) {
             _next_section = 0;
