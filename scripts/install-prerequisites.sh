@@ -278,7 +278,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
             echo "WARNING: installing apparmor-utils to get aa-disable"
             sudo apt install -y apparmor-utils
         fi
-        /usr/sbin/aa-disable $QPDF_PROFILE
+        sudo /usr/sbin/aa-disable $QPDF_PROFILE || true
     fi
 
 #-----------------------------------------------------------------------------
