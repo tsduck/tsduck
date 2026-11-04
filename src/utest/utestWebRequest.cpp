@@ -39,6 +39,7 @@ class WebRequestTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(NonExistentHost);
     TSUNIT_DECLARE_TEST(InvalidURL);
     TSUNIT_DECLARE_TEST(Post);
+    TSUNIT_DECLARE_TEST(MaxSize);
     TSUNIT_DECLARE_TEST(Reactive);
 
 public:
@@ -276,6 +277,26 @@ TSUNIT_DEFINE_TEST(Post)
                     << response << std::endl;
         }
     }
+}
+
+TSUNIT_DEFINE_TEST(MaxSize)
+{
+    ts::ReportBuffer<> rep;
+    ts::WebRequest request(&rep);
+
+    request.args().setMaxDownloadSize(64); // will most likely overflow
+
+    ts::ByteBlockPtr data;
+    TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://www.github.com/", data));
+    debug() << "WebRequestTest::testLMaxSize: " << rep.messages() << std::endl;
+
+    ts::UStringVector lines;
+    rep.messages().splitLines(lines, ts::NPOS);
+
+    size_t size = 0;
+    TSUNIT_ASSERT(!lines.empty());
+    TSUNIT_ASSERT(lines[0].scan(u"Error: download size exceeded: %d bytes", &size));
+    TSUNIT_ASSERT(size > 64);
 }
 
 

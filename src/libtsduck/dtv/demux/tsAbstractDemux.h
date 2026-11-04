@@ -181,11 +181,11 @@ namespace ts {
 
         //!
         //! Helper for subclass, after invoking an application-defined handler.
-        //! @param [in] executeDelayedOperations When true (the default), execute all pending reset operations.
+        //! @param [in] execute_delayed_operations When true (the default), execute all pending reset operations.
         //! @return True if a delayed reset was executed.
         //! @see beforeCallingHandler()
         //!
-        bool afterCallingHandler(bool executeDelayedOperations = true);
+        bool afterCallingHandler(bool execute_delayed_operations = true);
 
         //!
         //! Reset the demux immediately.

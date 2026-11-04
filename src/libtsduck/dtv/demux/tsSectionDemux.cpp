@@ -12,6 +12,7 @@
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
 #include "tsReportFile.h"
+#include "tsAlgorithm.h"
 #include "tsEIT.h"
 
 
@@ -577,27 +578,28 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
 void ts::SectionDemux::fixAndFlush(bool pack, bool fill_eit)
 {
-    // Loop on all PID's.
-    for (auto& it1 : _pids) {
-        const PID pid = it1.first;
-        PIDContext& pc(it1.second);
-
-        // Mark that we are in the context of a table or section handler.
-        // This is used to prevent the destruction of PID contexts during
-        // the execution of a handler.
-        beforeCallingHandler(pid);
-        try {
-            // Loop on all TID's currently found in the PID.
-            for (auto& it2 : pc.tids) {
-                // Force a notification of the partial table, if any.
-                it2.second.notify(*this, pack, fill_eit);
+    // Loop on all PID's. Get the list of PID's first, then search each of them one by one.
+    // Because a handler can modify the list, we cannot call a handler while walkig through the map.
+    for (const auto& pid : MapKeysSet(_pids)) {
+        const auto it1 = _pids.find(pid);
+        if (it1 != _pids.end()) {
+            // Mark that we are in the context of a table or section handler.
+            // This is used to prevent the destruction of PID contexts during
+            // the execution of a handler.
+            beforeCallingHandler(pid);
+            try {
+                // Loop on all TID's currently found in the PID.
+                for (auto& it2 : it1->second.tids) {
+                    // Force a notification of the partial table, if any.
+                    it2.second.notify(*this, pack, fill_eit);
+                }
             }
+            catch (...) {
+                afterCallingHandler(false);
+                throw;
+            }
+            afterCallingHandler(true);
         }
-        catch (...) {
-            afterCallingHandler(false);
-            throw;
-        }
-        afterCallingHandler(true);
     }
 }
 

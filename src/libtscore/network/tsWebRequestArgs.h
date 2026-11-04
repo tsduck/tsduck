@@ -144,6 +144,22 @@ namespace ts {
         const UString& proxyPassword() const;
 
         //!
+        //! Set a maximum download size.
+        //! When a download exceeds that size, the transfer is aborted. This limit includes the
+        //! response headers. The idea is to prevent a hostile server from returnind endless data
+        //! (or headers). Initially, there is no practical size limit.
+        //! @param [in] size Maximum download size in bytes.
+        //!
+        void setMaxDownloadSize(uint64_t size) { _max_download_size = size; }
+
+        //!
+        //! Get the maximum download size.
+        //! @return The maximum download size in bytes.
+        //! @see setMaxDownloadSize()
+        //!
+        uint64_t maxDownloadSize() const { return _max_download_size; }
+
+        //!
         //! Enable the propagation of cookies for all requests using the same instance of a web request.
         //! Cookies are initially enabled by default.
         //! @param [in] file_name The name of the file to use to load and store cookies.
@@ -318,6 +334,7 @@ namespace ts {
         bool             _https_insecure = false;
         bool             _use_cookies = true;
         bool             _temporary_cookies_file = false;
+        uint64_t         _max_download_size = std::numeric_limits<uint64_t>::max();
         fs::path         _cookies_file_name {};
         ByteBlock        _post_data {};
         UStringToUStringMultiMap _request_headers {};

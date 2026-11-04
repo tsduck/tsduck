@@ -30,6 +30,7 @@ void ts::WebRequestStatus::reset(const UString& url)
     _final_url = url;
     _http_status = 0;
     _content_size = 0;
+    _raw_data_size = 0;
     _header_content_size = 0;
     _response_headers.clear();
 }
@@ -97,9 +98,8 @@ void ts::WebRequestStatus::setFinalURL(const UString& url, bool only_if_differen
 void ts::WebRequestStatus::processReponseHeaders(const UString& text, Report& report)
 {
     // Split header lines.
-    const UString CR(1, u'\r');
     UStringList lines;
-    text.toRemoved(CR).split(lines, u'\n', true, true);
+    text.toRemoved(u'\r').split(lines, u'\n', true, true);
 
     // Process headers one by one.
     for (const auto& line : lines) {

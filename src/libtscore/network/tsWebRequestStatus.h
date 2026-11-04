@@ -145,6 +145,26 @@ namespace ts {
         void addContentSize(size_t size) { _content_size += size; }
 
         //!
+        //! Get the size in bytes of the total raw downloaded data (headers and content).
+        //! It must be set by the application when the actual content was downloaded.
+        //! @return Size in bytes of the total raw downloaded data.
+        //!
+        size_t totalRawDataSize() const { return _raw_data_size; }
+
+        //!
+        //! Set the size in bytes of the total raw downloaded data (headers and content).
+        //! @param [in] size Size in bytes of the total raw downloaded data (headers and content).
+        //!
+        void setTotalRawDataSize(size_t size) { _raw_data_size = size; }
+
+        //!
+        //! Add a value to the size in bytes of the total raw downloaded data (headers and content).
+        //! Can be called each time a chunk of downloaded data is received.
+        //! @param [in] size Size in bytes of the additional total raw downloaded data (headers and content).
+        //!
+        void addTotalRawDataSize(size_t size) { _raw_data_size += size; }
+
+        //!
         //! Get all response headers.
         //! @return A constant reference to a map of response headers.
         //!
@@ -171,6 +191,7 @@ namespace ts {
         UString _final_url {};
         int     _http_status = 0;                       // 200, 404, etc.
         size_t  _content_size = 0;                      // actually downloaded size
+        size_t  _raw_data_size = 0;                     // raw data size (headers and content)
         size_t  _header_content_size = 0;               // content size, as announced in response header
         UStringToUStringMultiMap _response_headers {};  // all response headers (received)
     };

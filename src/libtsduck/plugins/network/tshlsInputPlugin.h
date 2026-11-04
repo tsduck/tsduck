@@ -43,6 +43,9 @@ namespace ts::hls {
         // Maximum size of an encrypted segment (32 MB, equivalent to 32 seconds @8Mb/s).
         static constexpr size_t DEFAULT_MAX_ENCR_SEG_SIZE = 32 * 1024 * 1024;
 
+        // Maximum size of a playlist. Used to avoid large rogue playlists.
+        static constexpr size_t MAX_PLAYLIST_SIZE = 4 * 1024 * 1024;
+
         // Command line options:
         URL     _url {};
         BitRate _min_rate = 0;
@@ -66,8 +69,9 @@ namespace ts::hls {
         UString _alt_language {};
 
         // Working data:
-        size_t    _segment_count = 0;
-        PlayList  _playlist {this};
+        size_t         _segment_count = 0;
+        PlayList       _playlist {this};
+        WebRequestArgs _playlist_args {};
 
         // Working data for encrypted segment:
         ByteBlock _seg_key {};    // Segment decryption key, size 0 = clear, 16 = AES-128-CBC, 32 = AES-256-GCM.

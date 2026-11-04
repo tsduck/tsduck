@@ -448,7 +448,11 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc, bool invalid_packet
     afterCallingHandler(true);
 
     // Consider that we lose sync in case there are additional TS packets on that PID before next PUSI.
-    pc.syncLost();
+    // Warning: afterCallingHandler() may have executed defered reset on PIDs and pc is no longer valid. We need to recheck.
+    auto pci = _pids.find(pid);
+    if (pci != _pids.end()) {
+        pci->second.syncLost();
+    }
 }
 
 

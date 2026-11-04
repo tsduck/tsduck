@@ -762,22 +762,32 @@ int ts::ReactiveWebRequest::Guts::CurlTimerCallback(::CURLM* multi, long timeout
 
 size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
+    size_t result = CURL_WRITEFUNC_ERROR;
     const auto guts = static_cast<Guts*>(userdata);
-    if (guts == nullptr) {
-        return CURL_WRITEFUNC_ERROR;
-    }
-    else {
-        const size_t chunk_size = size * nmemb;
+    if (guts != nullptr) {
+        auto& status(guts->_request._status);
+        const auto max_size = guts->_request._args.maxDownloadSize();
+        size_t chunk_size = size * nmemb;
+
+        if (status.totalRawDataSize() + chunk_size > max_size) {
+            guts->_request.report().error(u"download size exceeded: %'d bytes", status.totalRawDataSize() + chunk_size);
+            chunk_size = status.totalRawDataSize() > max_size ? 0 : max_size - status.totalRawDataSize();
+            // Keep error status in 'result'.
+        }
+        else {
+            result = chunk_size;
+        }
+
         guts->_total_size += chunk_size;
         guts->_request.reactor().trace(u"[curl] write callback, size: %d, nmemb: %d, total: %'d", size, nmemb, guts->_total_size);
 
         // After receiving some data, it is no longer possible to retry the connection.
         guts->_can_retry = false;
 
-        // With libcurl, there is no way to be notified of "end of connection", after response headers.
-        // If this is the first response data chunk, then this is the "end of connection".
+        // With libcurl, there is no way to be notified of "end of connection phase", after response headers.
+        // If this is the first response data chunk, then this is the "end of connection phase".
         // Need to notify the application of end of startOpen().
-        if (guts->_request._status.contentSize() == 0) {
+        if (status.contentSize() == 0) {
             guts->_open_done = true;
             guts->_completion_code = SYS_SUCCESS;
             guts->_request.reactor().signalEvent(guts->_event);
@@ -789,9 +799,9 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
             guts->_received_data->append(ptr, chunk_size);
             guts->_request.reactor().signalEvent(guts->_event);
         }
-        guts->_request._status.addContentSize(chunk_size);
-        return chunk_size;
+        status.addContentSize(chunk_size);
     }
+    return result;
 }
 
 
@@ -809,8 +819,15 @@ size_t ts::ReactiveWebRequest::Guts::CurlHeaderCallback(char* buffer, size_t siz
         guts->_request.reactor().trace(u"[curl] header callback, size: %d, nitems: %d", size, nitems);
         // Store the headers in the request status.
         const size_t total_size = size * nitems;
-        guts->_request._status.processReponseHeaders(UString::FromUTF8(buffer, total_size), guts->_request.report());
-        return total_size;
+        if (guts->_request._status.totalRawDataSize() + total_size > guts->_request._args.maxDownloadSize()) {
+            guts->_request.report().error(u"download size exceeded: %'d bytes", guts->_request._status.totalRawDataSize() + total_size);
+            return 0; // error
+        }
+        else {
+            guts->_request._status.addTotalRawDataSize(total_size);
+            guts->_request._status.processReponseHeaders(UString::FromUTF8(buffer, total_size), guts->_request.report());
+            return total_size;
+        }
     }
 }
 

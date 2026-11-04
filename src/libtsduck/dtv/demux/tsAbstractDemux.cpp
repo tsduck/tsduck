@@ -120,7 +120,7 @@ void ts::AbstractDemux::beforeCallingHandler(PID pid)
     _pid_reset_pending = false;
 }
 
-bool ts::AbstractDemux::afterCallingHandler(bool executeDelayedOperations)
+bool ts::AbstractDemux::afterCallingHandler(bool execute_delayed_operations)
 {
     bool result = false;
 
@@ -128,7 +128,7 @@ bool ts::AbstractDemux::afterCallingHandler(bool executeDelayedOperations)
     _in_handler = false;
 
     // Now process the delayed destructions.
-    if (executeDelayedOperations) {
+    if (execute_delayed_operations) {
         if (_pid_reset_pending) {
             // Reset of this PID was requested by a handler.
             immediateResetPID(_pid_in_handler);

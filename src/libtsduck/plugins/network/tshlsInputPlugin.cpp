@@ -231,9 +231,13 @@ bool ts::hls::InputPlugin::start()
     _seg_data.clear();
     _seg_size = _seg_next = _seg_end = 0;
 
+    // When loading playlist, use same parameters as segment, except a maximum size.
+    _playlist_args = web_args;
+    _playlist_args.setMaxDownloadSize(MAX_PLAYLIST_SIZE);
+
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url.toString(), false, web_args, hls::PlayListType::UNKNOWN)) {
+    if (!_playlist.loadURL(_url.toString(), false, _playlist_args, hls::PlayListType::UNKNOWN)) {
         return false;
     }
 
@@ -269,7 +273,7 @@ bool ts::hls::InputPlugin::start()
             else {
                 assert(index < master.altPlayListCount());
                 verbose(u"selected playlist: %s", master.altPlayList(index));
-                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, web_args, hls::PlayListType::UNKNOWN)) {
+                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, _playlist_args, hls::PlayListType::UNKNOWN)) {
                     return false;
                 }
             }
@@ -304,7 +308,7 @@ bool ts::hls::InputPlugin::start()
 
                 // Download selected media playlist.
                 _playlist.clear();
-                if (_playlist.loadURL(nextURL, false, web_args, hls::PlayListType::UNKNOWN)) {
+                if (_playlist.loadURL(nextURL, false, _playlist_args, hls::PlayListType::UNKNOWN)) {
                     break; // media playlist loaded
                 }
                 else if (master.playListCount() == 1) {
@@ -400,7 +404,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
     if (!completed && _playlist.segmentCount() < 2 && _playlist.isUpdatable()) {
 
         // Reload the playlist, ignore errors, continue to play next segments.
-        _playlist.reload(false, web_args);
+        _playlist.reload(false, _playlist_args);
 
         // If the playlist is still empty, this means that we have read all segments before the server
         // could produce new segments. For live streams, this is possible because new segments
@@ -422,7 +426,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
                 return false;
             }
             // This time, we stop on reload error.
-            if (!_playlist.reload(false, web_args)) {
+            if (!_playlist.reload(false, _playlist_args)) {
                 break;
             }
         }

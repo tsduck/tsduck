@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4903 (November 2026)
+VERSION 3.46-4911 (November 2026)
 
 [INC] Incompatibilities with previous versions:
 
@@ -62,10 +62,13 @@ VERSION 3.46-4903 (November 2026)
     loaded first.  With continuous and endless "http" streams, the memory could
     have been exhausted.
   * Fixed  potential  crash  (thread stack overflow) when injecting XML or JSON
-    documents  with  more than 300 nested levels.  This vulnerability was found
-    using AI.
+    documents  with  more than 300 nested levels.
   * Fixed  a potential infinite loop when a DSMCC carousel contained an invalid
-    truncated compressed container This vulnerability was found using AI.
+    truncated compressed container.
+  * A complete security audit of the code was conducted using  Claude Opus 5.5.
+    Total findings: 1 critical, 26 high, 56 medium, 133 low, 140 informational.
+    All  critical,  high,  medium  issues  were fixed,  as well as most low and
+    informational ones. The details are not listed here.
 
 -------------------------------------------------------------------------------
 
