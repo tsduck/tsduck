@@ -267,6 +267,20 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
     [[ ${#GEMLIST[@]} -gt 0 ]] && sudo gem install "${GEMLIST[@]}"
 
+    # On some versions of Ubuntu, there is an AppArmor configuration issue with qpdf.
+    # Building documentation fails (qpdf opening a PDF file fails with "permission denied".
+    # It is currently unclear which versions of AppArmor are affected. Seen on Ubuntu 26.04.
+    # Disable the corresponding AppArmor profile.
+    QPDF_PROFILE=/etc/apparmor.d/qpdf
+    if [[ -z $NODOC && -e $QPDF_PROFILE ]]; then
+        echo "WARNING: disabling AppArmor profile $QPDF_PROFILE because some versions are buggy"
+        if [[ ! -e /usr/sbin/aa-disable ]]; then
+            echo "WARNING: installing apparmor-utils to get aa-disable"
+            sudo apt install -y apparmor-utils
+        fi
+        /usr/sbin/aa-disable $QPDF_PROFILE
+    fi
+
 #-----------------------------------------------------------------------------
 # == Linux Mint ==
 # Update command: sudo apt update; sudo apt upgrade
