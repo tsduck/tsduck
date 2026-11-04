@@ -334,7 +334,7 @@ namespace ts {
         bool             _https_insecure = false;
         bool             _use_cookies = true;
         bool             _temporary_cookies_file = false;
-        size_t           _max_download_size = std::numeric_limits<uint64_t>::max();
+        size_t           _max_download_size = std::numeric_limits<size_t>::max();
         fs::path         _cookies_file_name {};
         ByteBlock        _post_data {};
         UStringToUStringMultiMap _request_headers {};
