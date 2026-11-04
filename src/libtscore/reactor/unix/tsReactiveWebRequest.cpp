@@ -800,6 +800,7 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
             guts->_request.reactor().signalEvent(guts->_event);
         }
         status.addContentSize(chunk_size);
+        status.addTotalRawDataSize(chunk_size);
     }
     return result;
 }

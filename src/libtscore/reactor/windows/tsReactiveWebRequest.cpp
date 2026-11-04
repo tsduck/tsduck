@@ -159,7 +159,7 @@ private:
     void completeOperation(int error_code);
 
     // Transmit response headers to the WebRequest.
-    void transmitResponseHeaders();
+    bool transmitResponseHeaders();
 
     // Start a receive operation. Complete the request on error.
     void startReceive();
@@ -682,34 +682,47 @@ void ts::ReactiveWebRequest::Guts::processAsyncCompletion(AsyncOp op, const ::IN
         case AsyncInternetOpenUrl: {
             // Connection complete either after InternetOpenUrl or InternetConnect/HttpOpenRequest/HttpSendRequest.
             // Send the response headers to the WebRequest object.
-            transmitResponseHeaders();
+            const int error_code = transmitResponseHeaders() ? SYS_SUCCESS : SYS_ERROR;
             _open_completed = true;
             if (_handler != nullptr) {
-                _handler->handleWebOpen(_request, SYS_SUCCESS, _handler_data);
+                _handler->handleWebOpen(_request, error_code, _handler_data);
             }
 
             // Start receiving the content.
-            startReceive();
+            if (error_code == SYS_SUCCESS) {
+                startReceive();
+            }
             break;
         }
         case AsyncInternetReadFile: {
             if (_received_size == 0) {
                 // Successful reception of zero bytes means end of file.
                 completeOperation(SYS_EOF);
+                return;
             }
-            else {
-                // Adjust received size.
-                _received_data->resize(size_t(_received_size));
-                _request._status.addContentSize(_received_data->size());
-                // Pass data to the application.
-                if (_handler != nullptr) {
-                    _handler->handleWebReceive(_request, _received_data, SYS_SUCCESS, _handler_data);
-                }
-                // Let the ownership of the shared pointer to the application.
-                _received_data.reset();
-                // Start next receive operation.
-                startReceive();
+
+            // Adjust received size.
+            _received_data->resize(size_t(_received_size));
+            _request._status.addContentSize(_received_data->size());
+            _request._status.addTotalRawDataSize(_received_data->size());
+
+            // Check maximum received size.
+            if (_request._status.totalRawDataSize() > _request._args.maxDownloadSize()) {
+                _request.report().error(u"download size exceeded: %'d bytes", _request._status.totalRawDataSize());
+                completeOperation(SYS_ERROR);
+                return;
             }
+
+            // Pass data to the application.
+            if (_handler != nullptr) {
+                _handler->handleWebReceive(_request, _received_data, SYS_SUCCESS, _handler_data);
+            }
+
+            // Let the ownership of the shared pointer to the application.
+            _received_data.reset();
+
+            // Start next receive operation.
+            startReceive();
             break;
         }
         case AsyncNone:
@@ -725,8 +738,11 @@ void ts::ReactiveWebRequest::Guts::processAsyncCompletion(AsyncOp op, const ::IN
 // Transmit response headers to the WebRequest.
 //----------------------------------------------------------------------------
 
-void ts::ReactiveWebRequest::Guts::transmitResponseHeaders()
+bool ts::ReactiveWebRequest::Guts::transmitResponseHeaders()
 {
+    const size_t max_size = _request._args.maxDownloadSize();
+    size_t current_size = _request._status.totalRawDataSize();
+
     // Query the response headers from the URL handle.
     // First try with an arbitrary buffer size.
     UString headers(1024, CHAR_NULL);
@@ -738,25 +754,38 @@ void ts::ReactiveWebRequest::Guts::transmitResponseHeaders()
         ::DWORD err = ::GetLastError();
         if (err != ERROR_INSUFFICIENT_BUFFER) {
             _request.report().error(u"error getting HTTP response headers: %s", WinErrorMessage(err));
-            return;
+            return false;
         }
 
+        // If the result is too large, no need to resize the buffer.
+        current_size += size_t(headers_size);
+
         // The buffer was too small, reallocate one.
-        headers.resize(size_t(headers_size));
-        headers_size = ::DWORD(headers.size());
-        index = 0;
-        if (!::HttpQueryInfoW(_inet_request, HTTP_QUERY_RAW_HEADERS_CRLF, headers.data(), &headers_size, &index)) {
-            err = ::GetLastError();
-            _request.report().error(u"error getting HTTP response headers: %s", WinErrorMessage(err));
-            return;
+        if (current_size <= max_size) {
+            headers.resize(size_t(headers_size));
+            headers_size = ::DWORD(headers.size());
+            index = 0;
+            if (!::HttpQueryInfoW(_inet_request, HTTP_QUERY_RAW_HEADERS_CRLF, headers.data(), &headers_size, &index)) {
+                err = ::GetLastError();
+                _request.report().error(u"error getting HTTP response headers: %s", WinErrorMessage(err));
+                return false;
+            }
         }
     }
 
-    // Adjust actual string length.
-    headers.resize(std::min(std::max<::DWORD>(0, headers_size), ::DWORD(headers.size() - 1)));
+    if (current_size <= max_size) {
+        // Adjust actual string length.
+        headers.resize(std::min(std::max<::DWORD>(0, headers_size), ::DWORD(headers.size() - 1)));
 
-    // Pass the headers to the WebRequest.
-    _request._status.processReponseHeaders(headers, _request.report());
+        // Pass the headers to the WebRequest.
+        _request._status.processReponseHeaders(headers, _request.report());
+        _request._status.setTotalRawDataSize(current_size);
+        return true;
+    }
+    else {
+        _request.report().error(u"download size exceeded: %'d bytes", current_size);
+        return false;
+    }
 }
 
 

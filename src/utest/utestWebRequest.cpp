@@ -295,7 +295,7 @@ TSUNIT_DEFINE_TEST(MaxSize)
 
     size_t size = 0;
     TSUNIT_ASSERT(!lines.empty());
-    TSUNIT_ASSERT(lines[0].scan(u"Error: download size exceeded: %d bytes", &size));
+    TSUNIT_ASSERT(lines[0].scan(u"Error: download size exceeded: %'d bytes", &size));
     TSUNIT_ASSERT(size > 64);
 }
 

@@ -150,14 +150,14 @@ namespace ts {
         //! (or headers). Initially, there is no practical size limit.
         //! @param [in] size Maximum download size in bytes.
         //!
-        void setMaxDownloadSize(uint64_t size) { _max_download_size = size; }
+        void setMaxDownloadSize(size_t size) { _max_download_size = size; }
 
         //!
         //! Get the maximum download size.
         //! @return The maximum download size in bytes.
         //! @see setMaxDownloadSize()
         //!
-        uint64_t maxDownloadSize() const { return _max_download_size; }
+        size_t maxDownloadSize() const { return _max_download_size; }
 
         //!
         //! Enable the propagation of cookies for all requests using the same instance of a web request.
@@ -334,7 +334,7 @@ namespace ts {
         bool             _https_insecure = false;
         bool             _use_cookies = true;
         bool             _temporary_cookies_file = false;
-        uint64_t         _max_download_size = std::numeric_limits<uint64_t>::max();
+        size_t           _max_download_size = std::numeric_limits<uint64_t>::max();
         fs::path         _cookies_file_name {};
         ByteBlock        _post_data {};
         UStringToUStringMultiMap _request_headers {};
