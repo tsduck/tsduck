@@ -91,11 +91,11 @@ namespace ts {
     private:
         Report&                   _log;                // For debug messages.
         volatile int              _watch_dog_id = 0;   // Application-defined watchdog identifier.
-        volatile bool             _terminate = false;  // Terminate the thread.
         std::mutex                _mutex {};           // Mutex to protect the following fields.
         std::condition_variable   _condition {};       // Condition to signal when something changed.
         WatchDogHandlerInterface* _handler = nullptr;  // Handler for expiration.
         cn::milliseconds          _timeout {};         // Expiration timeout, 0 means no timeout.
+        bool                      _terminate = false;  // Terminate the thread.
         bool                      _active = false;     // The watchdog is active.
         bool                      _started = false;    // The thread is started.
 

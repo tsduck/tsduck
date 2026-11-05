@@ -25,8 +25,11 @@ ts::WatchDog::~WatchDog()
 {
     // Terminate the thread and wait for actual thread termination.
     // Does nothing if the thread has not been started.
-    _terminate = true;
-    _condition.notify_all();
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _terminate = true;
+        _condition.notify_all();
+    }
     waitForTermination();
 }
 
@@ -109,13 +112,16 @@ void ts::WatchDog::main()
 {
     _log.debug(u"Watchdog thread started, id %d", _watch_dog_id);
 
-    while (!_terminate) {
+    for (bool term = false; !term; ) {
         bool expired = false;
         WatchDogHandlerInterface* h = nullptr;
 
         // Wait for the condition to be signaled. Get protected data while under mutex protection.
         {
             std::unique_lock<std::mutex> lock(_mutex);
+            if (_terminate) {
+                break;
+            }
             if (!_active || _timeout <= cn::milliseconds::zero()) {
                 _condition.wait(lock);
             }
@@ -123,10 +129,11 @@ void ts::WatchDog::main()
                 expired = _condition.wait_for(lock, _timeout) == std::cv_status::timeout;
             }
             h = _handler;
+            term = _terminate;
         }
 
         // Handle the expiration. No longer under mutex protection to avoid deadlocks in handler.
-        if (!_terminate && expired && h != nullptr) {
+        if (!term && expired && h != nullptr) {
             _log.debug(u"Watchdog expired, id %d", _watch_dog_id);
             h->handleWatchDogTimeout(*this);
         }

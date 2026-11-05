@@ -198,11 +198,11 @@ std::ostream& operator<<(std::ostream& strm, ts::UChar c)
     }
     else if (c < 0x0800) {
         // 2 bytes encoding.
-        return strm << char(0x80 | (c & 0x3F)) << char(0xC0 | (c & 0x1F));
+        return strm << char(0xC0 | ((c >> 6) & 0x1F)) << char(0x80 | (c & 0x3F));
     }
     else {
         // 3 bytes encoding.
-        return strm << char(0x80 | (c & 0x3F)) << char(0x80 | (c & 0x3F)) << char(0xE0 | (c & 0x0F));
+        return strm << char(0xE0 | ((c >> 12) & 0x0F)) << char(0x80 | ((c >> 6) & 0x3F)) << char(0x80 | (c & 0x3F));
     }
 }
 
