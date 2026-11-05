@@ -22,7 +22,7 @@ namespace ts {
     //!
     class TSCOREDLL MessageQueueHandlerInterface: public SubscriptionHandlerInterface
     {
-        TS_SUBINTERFACE(MessageQueueHandlerInterface);
+        TS_NOCOPY_SUBINTERFACE(MessageQueueHandlerInterface);
     public:
         //!
         //! Called when a message was enqueued.

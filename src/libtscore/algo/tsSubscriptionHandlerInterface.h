@@ -28,12 +28,12 @@ namespace ts {
     //!
     class TSCOREDLL SubscriptionHandlerInterface
     {
-        TS_INTERFACE(SubscriptionHandlerInterface);
+        TS_NOCOPY_INTERFACE(SubscriptionHandlerInterface);
     private:
         // The base of the interface class keeps a set of all objects it is a subscriber of. The idea is
         // that this object can automatically deregister itself from all subscriptions in the destructor.
         bool                        _destructing = false;
-        std::shared_ptr<std::mutex> _mutex = std::make_shared<std::mutex>();
+        std::mutex                  _mutex {};
         std::set<SubscriptionBase*> _subscriptions {};
 
         // The class SubscriptionBase is allowed to call register/deregister.

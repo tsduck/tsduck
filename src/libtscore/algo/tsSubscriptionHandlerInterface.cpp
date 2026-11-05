@@ -17,7 +17,7 @@
 void ts::SubscriptionHandlerInterface::registerSubscription(SubscriptionBase* obj)
 {
     if (!_destructing && obj != nullptr) {
-        std::lock_guard<std::mutex> lock(*_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _subscriptions.insert(obj);
     }
 }
@@ -26,7 +26,7 @@ void ts::SubscriptionHandlerInterface::deregisterSubscription(SubscriptionBase* 
 {
     // Avoid modifying _subscriptions during destructor.
     if (!_destructing) {
-        std::lock_guard<std::mutex> lock(*_mutex);
+        std::lock_guard<std::mutex> lock(_mutex);
         _subscriptions.erase(obj);
     }
 }

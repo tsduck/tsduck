@@ -1123,6 +1123,32 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
         TS_DEFAULT_COPY_MOVE(classname)
 
 //!
+//! A macro to declare the basic operators in the declaration of a non-copyable interface class.
+//! @ingroup cpp
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NOCOPY_INTERFACE(classname)                      \
+    public:                                                 \
+        /** @cond nodoxygen */                              \
+        classname() = default;                              \
+        virtual ~classname();                               \
+        /** @endcond */                                     \
+        TS_NOCOPY(classname)
+
+//!
+//! A macro to declare the basic operators in the declaration of a non-copyable interface class which is a subclass of another interface.
+//! @ingroup cpp
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NOCOPY_SUBINTERFACE(classname)                   \
+    public:                                                 \
+        /** @cond nodoxygen */                              \
+        classname() = default;                              \
+        virtual ~classname() override;                      \
+        /** @endcond */                                     \
+        TS_NOCOPY(classname)
+
+//!
 //! Singleton class declaration.
 //! @ingroup cpp
 //!

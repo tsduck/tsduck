@@ -27,7 +27,7 @@ namespace ts {
     //!
     class TSCOREDLL SocketHandlerInterface: public SubscriptionHandlerInterface
     {
-        TS_SUBINTERFACE(SocketHandlerInterface);
+        TS_NOCOPY_SUBINTERFACE(SocketHandlerInterface);
     public:
         //!
         //! Called when a socket is about to be opened.
