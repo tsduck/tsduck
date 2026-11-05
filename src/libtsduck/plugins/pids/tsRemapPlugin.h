@@ -34,10 +34,10 @@ namespace ts {
         using CyclingPacketizerPtr = std::shared_ptr<CyclingPacketizer>;
         using PacketizerMap = std::map<PID, CyclingPacketizerPtr>;
 
-        bool          _update_psi = false;  // Update all PSI
-        bool          _pmt_ready = false;   // All PMT PID's are known
-        SectionDemux  _demux {duck, this};  // Section demux
-        PacketizerMap _pzer {};             // Packetizer for sections
+        bool          _update_psi = false;  // Update all PSI.
+        bool          _pmt_ready = false;   // All PMT PID's are known.
+        SectionDemux  _demux {duck, this};  // Section demux.
+        PacketizerMap _pzer {};             // Packetizer for sections of PAT, CAT, PMT (nothing else).
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -45,7 +45,7 @@ namespace ts {
         // Get the remapped value of a PID (or same PID if not remapped)
         PID remap(PID);
 
-        // Get the packetizer for one PID, create it if necessary and "create"
+        // Get the packetizer for one PID, create it if necessary and "create".
         CyclingPacketizerPtr getPacketizer(PID pid, bool create);
 
         // Process a list of descriptors, remap PIDs in CA descriptors.

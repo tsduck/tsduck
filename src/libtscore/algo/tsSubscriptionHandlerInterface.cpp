@@ -14,17 +14,19 @@
 // Register / deregister the subscription to an object.
 //----------------------------------------------------------------------------
 
-void ts::SubscriptionHandlerInterface::registerSocket(SubscriptionBase* obj)
+void ts::SubscriptionHandlerInterface::registerSubscription(SubscriptionBase* obj)
 {
-    if (obj != nullptr) {
+    if (!_destructing && obj != nullptr) {
+        std::lock_guard<std::mutex> lock(*_mutex);
         _subscriptions.insert(obj);
     }
 }
 
-void ts::SubscriptionHandlerInterface::deregisterSocket(SubscriptionBase* obj)
+void ts::SubscriptionHandlerInterface::deregisterSubscription(SubscriptionBase* obj)
 {
     // Avoid modifying _subscriptions during destructor.
     if (!_destructing) {
+        std::lock_guard<std::mutex> lock(*_mutex);
         _subscriptions.erase(obj);
     }
 }

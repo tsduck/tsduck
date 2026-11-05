@@ -189,17 +189,17 @@ namespace ts {
             // Constructor
             ECMStream(AbstractDescrambler* parent) : scrambling(parent->_scrambling) {}
 
-            TID           last_tid = TID_NULL;  // Last table id (0x80 or 0x81)
-            TSScrambling  scrambling;           // Descrambling using CW from the ECM's of this stream.
+            TID              last_tid = TID_NULL;  // Last table id (0x80 or 0x81)
+            TSScrambling     scrambling;           // Descrambling using CW from the ECM's of this stream.
             // -- start of write-protected, read-volatile area --
-            volatile bool cw_valid = false;     // CW's are valid
-            volatile bool new_cw_even = false;  // New CW available (even)
-            volatile bool new_cw_odd = false;   // New CW available (odd)
+            std::atomic_bool cw_valid {false};     // CW's are valid
+            std::atomic_bool new_cw_even {false};  // New CW available (even)
+            std::atomic_bool new_cw_odd {false};   // New CW available (odd)
             // -- start of protected area --
-            bool          new_ecm = false;      // New ECM available
-            Section       ecm {};               // Last received ECM
-            CWData        cw_even {};           // Last valid CW (even)
-            CWData        cw_odd {};            // Last valid CW (odd)
+            bool             new_ecm = false;      // New ECM available
+            Section          ecm {};               // Last received ECM
+            CWData           cw_even {};           // Last valid CW (even)
+            CWData           cw_odd {};            // Last valid CW (odd)
             // -- end of protected area --
         };
 
@@ -236,24 +236,26 @@ namespace ts {
         // Stack usage required by this module in the ECM deciphering thread.
         static constexpr size_t ECM_THREAD_STACK_OVERHEAD = 16 * 1024;
 
-        // Abstract descrambler private data.
+        // Command line arguments.
         bool                    _use_service = false;         // Descramble a service (ie. not a specific list of PID's).
         bool                    _need_ecm = false;            // We need to get control words from ECM's.
-        bool                    _abort = false;               // Error, abort asap.
         bool                    _synchronous = false;         // Synchronous ECM deciphering.
         bool                    _swap_cw = false;             // Swap even/odd CW from ECM.
-        TSScrambling            _scrambling {*this};          // Default descrambling (used with fixed control words).
         PIDSet                  _pids {};                     // Explicit PID's to descramble.
         ServiceDiscovery        _service {duck, this};        // Service to descramble (by name, id or none).
+        TSScrambling            _scrambling {*this};          // Default descrambling (used with fixed control words).
+
+        // Working data.
         size_t                  _stack_usage;                 // Stack usage for ECM deciphering.
+        bool                    _abort = false;               // Error, abort asap.
         SectionDemux            _demux {duck, nullptr, this}; // Section demux to extract ECM's.
-        ECMStreamMap            _ecm_streams {};              // ECM streams, indexed by PID.
         ScrambledStreamMap      _scrambled_streams {};        // Scrambled streams, indexed by PID.
         std::mutex              _mutex {};                    // Exclusive access to protected areas
         std::condition_variable _ecm_to_do {};                // Notify thread to process ECM.
         ECMThread               _ecm_thread {this};           // Thread which deciphers ECM's.
         // -- start of protected area --
         bool                    _stop_thread = false;         // Terminate ECM processing thread
+        ECMStreamMap            _ecm_streams {};              // ECM streams, indexed by PID. The map structure must be protected.
         // -- end of protected area --
     };
 }

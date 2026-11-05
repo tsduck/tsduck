@@ -197,6 +197,18 @@
     #define TS_UBSAN 1
 #endif
 
+#if defined(DOXYGEN)
+    //!
+    //! Defined when the code is compiled for TSAN, the Thread Sanitizer.
+    //! Notes:
+    //! - MSVC does not support TSAN.
+    //! @ingroup cpp
+    //!
+    #define TS_TSAN
+#elif (__has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)) && !defined(TS_TSAN)
+    #define TS_TSAN 1
+#endif
+
 
 //----------------------------------------------------------------------------
 // Unified O/S naming: TS_LINUX, TS_WINDOWS, etc

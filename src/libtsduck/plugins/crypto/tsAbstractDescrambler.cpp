@@ -8,6 +8,7 @@
 
 #include "tsAbstractDescrambler.h"
 #include "tsMemory.h"
+#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -96,6 +97,10 @@ bool ts::AbstractDescrambler::getOptions()
 
 ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStream(PID ecm_pid)
 {
+    // The structure of the _ecm_streams map must be protected.
+    // Once a shared_ptr is extracted, the pointer can be used outside the lock.
+    std::unique_lock<std::mutex> lock(_mutex);
+
     auto ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it != _ecm_streams.end()) {
         return ecm_it->second;
@@ -202,8 +207,10 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
     }
 
     // Set global scrambling type from scrambling descriptor, if not specified on the command line.
+    // The structure of the _ecm_streams map must be protected.
     _scrambling.setScramblingType(scrambling_type, false);
     verbose(u"using scrambling mode: %s", NameFromSection(u"dtv", u"ScramblingMode", _scrambling.scramblingType()));
+    std::unique_lock<std::mutex> lock(_mutex);
     for (auto& it : _ecm_streams) {
         it.second->scrambling.setScramblingType(scrambling_type, false);
     }
@@ -273,22 +280,6 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
     const PID ecm_pid = sect.sourcePID();
     log(2, u"got ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
 
-    // Get ECM stream context
-    auto ecm_it = _ecm_streams.find(ecm_pid);
-    if (ecm_it == _ecm_streams.end()) {
-        warning(u"got ECM on non-ECM PID %n", ecm_pid);
-        return;
-    }
-    ECMStreamPtr& estream(ecm_it->second);
-
-    // If same TID as previous CMT on this PID, give up, this is the same ECM.
-    if (sect.tableId() == estream->last_tid) {
-        return;
-    }
-
-    // This is a new ECM on this PID.
-    estream->last_tid = sect.tableId();
-
     // Check if the ECM can be deciphered (ask subclass)
     if (!checkECM(sect)) {
         log(2, u"ECM not handled by subclass");
@@ -296,10 +287,32 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
     }
     debug(u"new ECM (TID 0x%X) on PID %n", sect.tableId(), ecm_pid);
 
-    // In asynchronous mode, the CW are accessed under mutex protection.
+    // In asynchronous mode, _ecm_streams and the CW are accessed under mutex protection.
     if (!_synchronous) {
         _mutex.lock();
     }
+
+    // Get ECM stream context
+    auto ecm_it = _ecm_streams.find(ecm_pid);
+    if (ecm_it == _ecm_streams.end()) {
+        if (!_synchronous) {
+            _mutex.unlock();
+        }
+        warning(u"got ECM on non-ECM PID %n", ecm_pid);
+        return;
+    }
+    const ECMStreamPtr estream = ecm_it->second;
+
+    // If same TID as previous CMT on this PID, give up, this is the same ECM.
+    if (sect.tableId() == estream->last_tid) {
+        if (!_synchronous) {
+            _mutex.unlock();
+        }
+        return;
+    }
+
+    // This is a new ECM on this PID.
+    estream->last_tid = sect.tableId();
 
     // Copy the ECM into the PID context.
     estream->ecm.copy(sect);
@@ -412,8 +425,11 @@ void ts::AbstractDescrambler::ECMThread::main()
             terminate = _parent->_stop_thread;
 
             // Decipher ECM's on all ECM PID's.
-            for (auto it = _parent->_ecm_streams.begin(); !terminate && it != _parent->_ecm_streams.end(); ++it) {
-                ECMStreamPtr& estream(it->second);
+            // The structure of _ecm_streams must be acccess under the mutex. We have the mutex here
+            // but it will be released during processECM(). So, we cannot iterate over _ecm_streams
+            // and call processECM() during the iteration. Therefore, we build first a list of all
+            // shared_ptr to ECMStreams and we iterate over that copy.
+            for (auto& estream : MapValuesList(_parent->_ecm_streams)) {
                 if (estream->new_ecm) {
                     // Found an ECM, decipher it. Note that the mutex is
                     // released while deciphering the ECM.
@@ -422,6 +438,9 @@ void ts::AbstractDescrambler::ECMThread::main()
 
                     // Look for termination request while deciphering
                     terminate = _parent->_stop_thread;
+                    if (terminate) {
+                        break;
+                    }
                 }
             }
         } while (!terminate && got_ecm);

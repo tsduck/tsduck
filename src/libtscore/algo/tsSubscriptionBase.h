@@ -20,12 +20,9 @@ namespace ts {
     //! Used as base class in Socket and other socket wrappers which intercept socket events.
     //! @ingroup libtscore cpp
     //!
-    //! Important: the subcription mechanism is not thread-safe. The instance of SubscriptionBase
-    //! and all its subscribers must be used from one single thread.
-    //!
     class TSCOREDLL SubscriptionBase
     {
-        TS_NOCOPY( SubscriptionBase);
+        TS_NOCOPY(SubscriptionBase);
     public:
         //!
         //! Default constructor.
@@ -57,18 +54,32 @@ namespace ts {
         template <typename HANDLER, typename F>
             requires std::derived_from<HANDLER, SubscriptionHandlerInterface>
         void callSubscribers(F&& func) {
-            // We must iterate over a copy of the set because we call a handler at each iteration
-            // and the handler may modify the socket state.
-            for (auto subs : HandlerSet(_subscribers)) {
+            // We must iterate over a copy of the set because we call a handler at each iteration and the handler
+            // may modify the list of subscribers. Furthermore, we need to recheck that a handler is still present
+            // after calling previous handlers.
+            HandlerSet copy;
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                copy = _subscribers;
+            }
+            for (auto subs : copy) {
                 HANDLER* h = dynamic_cast<HANDLER*>(subs);
                 if (h != nullptr) {
-                    func(h);
+                    bool still_there = false;
+                    {
+                        std::lock_guard<std::mutex> lock(_mutex);
+                        still_there = _subscribers.contains(subs);
+                    }
+                    if (still_there) {
+                        func(h);
+                    }
                 }
             }
         }
 
     private:
         using HandlerSet = std::set<SubscriptionHandlerInterface*>;
+        std::mutex _mutex {};
         HandlerSet _subscribers {};
     };
 }

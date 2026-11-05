@@ -311,17 +311,17 @@ template <typename INT1> requires std::integral<INT1>
 ts::Fraction<INT_T>::Fraction(INT1 numerator) :
     _num(int_t(numerator))
 {
-    debug_throw_bound_check<int_t>(numerator);
+    throw_bound_check<int_t>(numerator);
 }
 
 template <typename INT_T> requires std::integral<INT_T>
 template<typename INT1, typename INT2> requires std::integral<INT1> && std::integral<INT2>
 ts::Fraction<INT_T>::Fraction(INT1 numerator, INT2 denominator)
 {
-    debug_throw_div_zero(denominator);
+    throw_div_zero(denominator);
     if (numerator != 0) {
-        debug_throw_bound_check<int_t>(numerator);
-        debug_throw_bound_check<int_t>(denominator);
+        throw_bound_check<int_t>(numerator);
+        throw_bound_check<int_t>(denominator);
         _num = int_t(numerator);
         _den = int_t(denominator);
         sign_reduce(_num, _den);

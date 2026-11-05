@@ -227,13 +227,12 @@ bool ts::MergePlugin::getOptions()
 bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
 {
     // Multi-threading warning: Closing the pipe can be done from the main plugin thread while the merge
-    // thread is reading the pipe or restarting the command (this method). Manipulating the safe pointer
-    // is protected by an internal mutex. Here, the safe pointer shall never be set to a null pointer to
-    // ensure that all calls are valid.
+    // thread is reading the pipe or restarting the command (this method). This is why the pointer is a
+    // std::atomic<std::shared_ptr<TSForkPipe>>.
 
     if (do_close) {
         debug(u"closing merge process pipe");
-        _pipe->close();
+        _pipe.load()->close();
     }
 
     if (_stopping || !do_restart) {
@@ -260,12 +259,12 @@ bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
     // The user can only change the queue size in tsp's virtual memory.
 
     // Start the command.
-    return _pipe->open(_command,
-                       _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
-                       PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
-                       ForkPipe::STDOUT_PIPE,
-                       ForkPipe::STDIN_NONE,
-                       _format);
+    return _pipe.load()->open(_command,
+                              _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
+                              PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
+                              ForkPipe::STDOUT_PIPE,
+                              ForkPipe::STDIN_NONE,
+                              _format);
 }
 
 
@@ -374,7 +373,7 @@ void ts::MergePlugin::main()
             // in the meantime (when the plugin stops) but no one will restart it.
             // So, the object which is pointed to by _pipe does not change.
 
-            pkt_count = _pipe->readPackets(buffer, mdata, max_pkt_count);
+            pkt_count = _pipe.load()->readPackets(buffer, mdata, max_pkt_count);
             success = pkt_count > 0;
 
             if (!success) {

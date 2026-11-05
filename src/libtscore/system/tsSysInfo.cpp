@@ -441,12 +441,15 @@ ts::UString ts::SysInfo::GetCompilerVersion()
     assert(use_assertions = true);
     version.format(u", debug: %s, assertions: %s", UString::OnOff(use_debug), UString::OnOff(use_assertions));
 
-    // Add ASAN and UBSAN indicators.
+    // Add code sanitizers indicators.
 #if defined(TS_ASAN)
     version.append(u", compiled with ASAN");
 #endif
 #if defined(TS_UBSAN)
     version.append(u", compiled with UBSAN");
+#endif
+#if defined(TS_TSAN)
+    version.append(u", compiled with TSAN");
 #endif
 
     return version;

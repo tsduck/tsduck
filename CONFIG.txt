@@ -60,6 +60,7 @@ GPROF             # Compile with code profiling using gprof.
 GCOV              # Compile with code coverage using gcov.
 ASAN              # Compile with code sanitizing using AddressSanitizer with default optimization.
 UBSAN             # Compile with code sanitizing using UndefinedBehaviorSanitizer with default optimization.
+TSAN              # Compile with code sanitizing using ThreadSanitizer with default optimization.
 LLVM              # Force the usage is Clang/LLVM when the default compiler is GCC.
 NOTEST            # Do not build unitary tests.
 NOSTATIC          # Do not build the static library and the static tests.
@@ -130,6 +131,7 @@ CXXFLAGS_PTHREAD             # Pthread options.
 CXXFLAGS_SECURITY            # Security-oriented options.
 CXXFLAGS_STANDARD            # Specifies the standard level of C++ language.
 CXXFLAGS_TARGET              # Specify target CPU.
+CXXFLAGS_TSAN                # For thread sanitizer.
 CXXFLAGS_UBSAN               # For undefined behavior sanitizer.
 CXXFLAGS_WARNINGS            # Specify warnings.
 
@@ -142,6 +144,7 @@ LDFLAGS_GPROF                # For code profiling using gprof.
 LDFLAGS_M32                  # For 32-bit cross-compilation.
 LDFLAGS_PTHREAD              # Pthread options.
 LDFLAGS_LINKER               # System linker specific options.
+LDFLAGS_TSAN                 # For thread sanitizer.
 LDFLAGS_UBSAN                # For undefined behavior sanitizer.
 LDLIBS                       # Specify external libraries.
 LDLIBS_PCSC                  # Libraries for PCSC.

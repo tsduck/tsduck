@@ -221,8 +221,11 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& in_start, const char* in_end, 
         code = *in_start++ & 0xFF;
 
         // Process potential continuation bytes and rebuild the code point.
-        // Note: to speed up the processing, we do not check that continuation bytes,
-        // if any, match the binary pattern 10xxxxxx.
+        // A UTF-8 character is made of an initial byte ('code' above) and 1, 2, or 3 continuation bytes.
+        // Continuation bytes must match the binary pattern 10xxxxxx. If the initial byte is not followed
+        // by the expected number of continuation bytes, we ignore the initial bytes and try to resynchronize
+        // on the next byte. At this point of the loop, in_start points after the initial byte. So, ignoring
+        // it and resynchronizing on the next byte is simply doing nothing.
 
         if (code < 0x80) {
             // 0xxx xxxx, ASCII compatible value, one byte encoding.
@@ -234,7 +237,7 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& in_start, const char* in_end, 
                 // Invalid truncated input string, stop here.
                 break;
             }
-            else {
+            else if ((in_start[0] & 0xC0) == 0x80) {
                 *out_start++ = uint16_t((code & 0x1F) << 6) | (*in_start++ & 0x3F);
             }
         }
@@ -245,7 +248,7 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& in_start, const char* in_end, 
                 in_start = in_end;
                 break;
             }
-            else {
+            else if ((in_start[0] & 0xC0) == 0x80 && (in_start[1] & 0xC0) == 0x80) {
                 *out_start++ = uint16_t((code & 0x0F) << 12) | uint16_t((uint16_t(in_start[0] & 0x3F)) << 6) | (in_start[1] & 0x3F);
                 in_start += 2;
             }
@@ -258,11 +261,12 @@ void ts::UString::ConvertUTF8ToUTF16(const char*& in_start, const char* in_end, 
                 break;
             }
             else if (out_start + 1 >= out_end) {
-                // We need 2 16-bit values in UTF-16.
-                in_start--;  // Push back the leading byte into the input buffer.
+                // We need two 16-bit values in UTF-16 (surrogate pair) but not enough room in output buffer.
+                // Push back the leading byte into the input buffer and stop here.
+                in_start--;
                 break;
             }
-            else {
+            else if ((in_start[0] & 0xC0) == 0x80 && (in_start[1] & 0xC0) == 0x80 && (in_start[2] & 0xC0) == 0x80) {
                 code = ((code & 0x07) << 18) | ((uint32_t(in_start[0] & 0x3F)) << 12) | ((uint32_t(in_start[1] & 0x3F)) << 6) | (in_start[2] & 0x3F);
                 in_start += 3;
                 code -= 0x10000;

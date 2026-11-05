@@ -375,11 +375,12 @@ BINROOT="$ROOTDIR/bin"
 [[ -z $GET_TSDUCK_VERSION ]] && GET_TSDUCK_VERSION='$(PYTHON) $(SCRIPTSDIR)/get-version-from-sources.py'
 
 # Fixed suffix to add to generated BINDIR directory name for some specialized builds.
-[[ -n $GCOV && $BINDIR_SUFFIX != *-gcov* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gcov"
-[[ -n $GPROF && $BINDIR_SUFFIX != *-gprof* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gprof"
-[[ -n $ASAN && $BINDIR_SUFFIX != *-asan* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-asan"
-[[ -n $UBSAN && $BINDIR_SUFFIX != *-ubsan* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-ubsan"
-[[ -n $LLVM && $BINDIR_SUFFIX != *-clang* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-clang"
+[[ -n $GCOV   && $BINDIR_SUFFIX != *-gcov*   ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gcov"
+[[ -n $GPROF  && $BINDIR_SUFFIX != *-gprof*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-gprof"
+[[ -n $ASAN   && $BINDIR_SUFFIX != *-asan*   ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-asan"
+[[ -n $UBSAN  && $BINDIR_SUFFIX != *-ubsan*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-ubsan"
+[[ -n $TSAN   && $BINDIR_SUFFIX != *-tsan*   ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-tsan"
+[[ -n $LLVM   && $BINDIR_SUFFIX != *-clang*  ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-clang"
 [[ -n $STATIC && $BINDIR_SUFFIX != *-static* ]] && BINDIR_SUFFIX="${BINDIR_SUFFIX}-static"
 
 # Output directories for final binaries and objects.
@@ -615,6 +616,15 @@ else
     LDFLAGS_UBSAN=
 fi
 
+# Compilation flags for code sanitizing using ThreadSanitizer with default optimization.
+if [[ -n $TSAN ]]; then
+    CXXFLAGS_TSAN="-fsanitize=thread -fno-omit-frame-pointer -g3"
+    LDFLAGS_TSAN="-fsanitize=thread -fno-omit-frame-pointer -g3"
+else
+    CXXFLAGS_TSAN=
+    LDFLAGS_TSAN=
+fi
+
 # Compilation flags for code coverage using gcov.
 if [[ -n $GCOV ]]; then
     CXXFLAGS_GCOV="--coverage -DGCOV=1"
@@ -669,8 +679,8 @@ fi
 
 # Global compilation flags, only based on other sub-variables (substitution will be done by make).
 CPPFLAGS='$(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) $(CPPFLAGS_EXTRA)'
-CXXFLAGS='$(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_ASAN) $(CXXFLAGS_UBSAN) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_NO_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_TARGET) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)'
-LDFLAGS='$(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_UBSAN) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA) $(LDFLAGS_LINKER)'
+CXXFLAGS='$(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_ASAN) $(CXXFLAGS_UBSAN) $(CXXFLAGS_TSAN) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) $(CXXFLAGS_NO_WARNINGS) $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_TARGET) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)'
+LDFLAGS='$(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_ASAN) $(LDFLAGS_UBSAN) $(LDFLAGS_TSAN) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA) $(LDFLAGS_LINKER)'
 ARFLAGS='$(ARFLAGS_ADD)'
 
 # Java compiler.

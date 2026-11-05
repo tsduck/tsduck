@@ -20,18 +20,25 @@ namespace ts {
 
     //!
     //! Interface class for notification of subscription events.
+    //! All classes which subscribe to events in a subclass of SubscriptionBase must
+    //! implement SubscriptionHandlerInterface. This interface does not declare any
+    //! common method. Each subclass of SubscriptionBase decides which specific
+    //! method should be called.
     //! @ingroup libtscore cpp
     //!
     class TSCOREDLL SubscriptionHandlerInterface
     {
         TS_INTERFACE(SubscriptionHandlerInterface);
     private:
+        // The base of the interface class keeps a set of all objects it is a subscriber of. The idea is
+        // that this object can automatically deregister itself from all subscriptions in the destructor.
+        bool                        _destructing = false;
+        std::shared_ptr<std::mutex> _mutex = std::make_shared<std::mutex>();
+        std::set<SubscriptionBase*> _subscriptions {};
+
         // The class SubscriptionBase is allowed to call register/deregister.
         friend class SubscriptionBase;
-        void registerSocket(SubscriptionBase*);
-        void deregisterSocket(SubscriptionBase*);
-
-        bool _destructing = false;
-        std::set<SubscriptionBase*> _subscriptions {};
+        void registerSubscription(SubscriptionBase*);
+        void deregisterSubscription(SubscriptionBase*);
     };
 }

@@ -17,7 +17,7 @@ ts::SubscriptionBase::~SubscriptionBase()
 {
     // Tell all registered subscribers to deregister from this object before destroying it.
     callSubscribers<SubscriptionHandlerInterface>([this](SubscriptionHandlerInterface* subs) {
-        subs->deregisterSocket(this);
+        subs->deregisterSubscription(this);
     });
     _subscribers.clear();
 }
@@ -30,11 +30,12 @@ ts::SubscriptionBase::~SubscriptionBase()
 void ts::SubscriptionBase::addSubscription(SubscriptionHandlerInterface* handler)
 {
     if (handler != nullptr) {
-        // Make sure we can call the handler.
-        _subscribers.insert(handler);
-
         // Make sure the handler can cancel its subscription when destructed.
-        handler->registerSocket(this);
+        handler->registerSubscription(this);
+
+        // Make sure we can call the handler.
+        std::lock_guard<std::mutex> lock(_mutex);
+        _subscribers.insert(handler);
     }
 }
 
@@ -42,9 +43,12 @@ void ts::SubscriptionBase::cancelSubscription(SubscriptionHandlerInterface* hand
 {
     if (handler != nullptr) {
         // No longer call the handler.
-        _subscribers.erase(handler);
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            _subscribers.erase(handler);
+        }
 
         // Make sure the handler no longer cancel its subscription when destructed.
-        handler->deregisterSocket(this);
+        handler->deregisterSubscription(this);
     }
 }

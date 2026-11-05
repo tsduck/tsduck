@@ -129,18 +129,30 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
     if (table.tableId() == TID_PAT && table.sourcePID() == PID_PAT) {
         PAT pat(duck, table);
         if (pat.isValid()) {
-            // Process the PAT content
+            // Process the PAT content.
             pat.nit_pid = remap(pat.nit_pid);
             for (auto& it : pat.pmts) {
-                // Need to filter and transform this PMT
+                // Need to filter and transform this PMT.
                 _demux.addPID(it.second);
                 getPacketizer(it.second, true);
-                // Remap the PMT PID if necessary
+                // Remap the PMT PID if necessary.
                 it.second = remap(it.second);
             }
-            // All PMT PID's are now known
+            // All PMT PID's are now known.
             _pmt_ready = true;
-            // Replace the PAT
+            // Cleanup unused packetizers (former PMT PIDs, no longer in the new PAT).
+            static const std::set<PID> unmodified {PID_PAT, PID_CAT, PID_SDT, PID_NIT};
+            for (auto it = _pzer.begin(); it != _pzer.end(); ) {
+                if (unmodified.contains(it->first) || pat.pmts.contains(it->first)) {
+                    // This table is still valid, keep the packetizer.
+                    ++it;
+                }
+                else {
+                    // PID no longer referenced, remove packetizer.
+                    it = _pzer.erase(it);
+                }
+            }
+            // Replace the PAT.
             const CyclingPacketizerPtr pzer = getPacketizer(PID_PAT, true);
             pzer->removeSections(TID_PAT);
             pzer->addTable(duck, pat);
@@ -149,9 +161,9 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
     else if (table.tableId() == TID_CAT && table.sourcePID() == PID_CAT) {
         CAT cat(duck, table);
         if (cat.isValid()) {
-            // Process the CAT content
+            // Process the CAT content.
             processDescriptors(cat.descs, TID_CAT);
-            // Replace the CAT
+            // Replace the CAT.
             const CyclingPacketizerPtr pzer = getPacketizer(PID_CAT, true);
             pzer->removeSections(TID_CAT);
             pzer->addTable(duck, cat);
@@ -160,7 +172,7 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
     else if (table.tableId() == TID_PMT) {
         PMT pmt(duck, table);
         if (pmt.isValid()) {
-            // Process the PMT content
+            // Process the PMT content.
             processDescriptors(pmt.descs, TID_PMT);
             pmt.pcr_pid = remap(pmt.pcr_pid);
             PMT::StreamMap new_map(nullptr);
@@ -191,7 +203,7 @@ ts::PacketProcessStatus ts::RemapPlugin::processPacket(TSPacket& pkt, TSPacketMe
     if (_update_psi) {
 
         // Filter sections
-        _demux.feedPacket (pkt);
+        _demux.feedPacket(pkt);
 
         // Rebuild PSI packets
         const CyclingPacketizerPtr pzer = getPacketizer(pid, false);

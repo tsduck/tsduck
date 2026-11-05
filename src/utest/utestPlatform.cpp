@@ -25,6 +25,7 @@ class PlatformTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(Endianness);
     TSUNIT_DECLARE_TEST(IntegerTypes);
     TSUNIT_DECLARE_TEST(64bitLiterals);
+    TSUNIT_DECLARE_TEST(Atomic);
     TSUNIT_DECLARE_TEST(Stringify);
     TSUNIT_DECLARE_TEST(Version);
     TSUNIT_DECLARE_TEST(Chrono);
@@ -170,6 +171,20 @@ TSUNIT_DEFINE_TEST(64bitLiterals)
 
     TSUNIT_EQUAL(0x0FEDCBA9, uint32_t(ui64 >> 36));
     TSUNIT_EQUAL(0xFFEDCBA9, int32_t(i64 >> 36));
+}
+
+// Test case: Lock on atomic types.
+TSUNIT_DEFINE_TEST(Atomic)
+{
+    debug() << "PlatformTest: std::atomic_bool().is_lock_free() = " << std::atomic_bool().is_lock_free() << std::endl
+            << "PlatformTest: std::atomic_bool::is_always_lock_free = " << std::atomic_bool::is_always_lock_free << std::endl
+            << "PlatformTest: std::atomic_int().is_lock_free() = " << std::atomic_int().is_lock_free() << std::endl
+            << "PlatformTest: std::atomic_int::is_always_lock_free = " << std::atomic_int::is_always_lock_free << std::endl
+            << "PlatformTest: std::atomic<uint64_t>().is_lock_free() = " << std::atomic<uint64_t>().is_lock_free() << std::endl
+            << "PlatformTest: std::atomic<uint64_t>::is_always_lock_free = " << std::atomic<uint64_t>::is_always_lock_free << std::endl;
+
+    // Atomic bool is a reasonable expectation, weak error (non-fatal) if it isn't.
+    TSUNIT_ASSUME(std::atomic_bool().is_lock_free());
 }
 
 // Test case: stringification macro

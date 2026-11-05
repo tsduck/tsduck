@@ -67,21 +67,21 @@ namespace ts {
         TSPacketLabelSet _reset_labels {};              // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
-        using TSForkPipePtr = std::shared_ptr<TSForkPipe>;
+        using TSForkPipePtr = std::atomic<std::shared_ptr<TSForkPipe>>;
 
         // Working data.
-        bool          _got_eof = false;    // Got end of merged stream.
-        volatile bool _stopping = false;   // Plugin stop in progress.
-        PacketCounter _merged_count = 0;   // Number of merged packets.
-        PacketCounter _hold_count = 0;     // Number of times we didn't try to merge to perform smoothing insertion.
-        PacketCounter _empty_count = 0;    // Number of times we could merge but there was no packet to merge.
-        TSForkPipePtr _pipe {};            // Executed command.
-        TSPacketQueue _queue {};           // TS packet queue from merge to main.
-        PIDSet        _main_pids {};       // Set of detected PID's in main stream.
-        PIDSet        _merge_pids {};      // Set of detected PID's in merged stream that we pass in main stream.
-        PCRMerger     _pcr_merger {duck};  // Adjust PCR's in merged stream.
-        PSIMerger     _psi_merger {duck, PSIMerger::NONE};  // Used to merge PSI/SI from both streams.
-        PacketInsertionController _insert_control {*this};  // Used to control insertion points for the merge
+        bool             _got_eof = false;    // Got end of merged stream.
+        std::atomic_bool _stopping = false;   // Plugin stop in progress.
+        PacketCounter    _merged_count = 0;   // Number of merged packets.
+        PacketCounter    _hold_count = 0;     // Number of times we didn't try to merge to perform smoothing insertion.
+        PacketCounter    _empty_count = 0;    // Number of times we could merge but there was no packet to merge.
+        TSForkPipePtr    _pipe {};            // Executed command.
+        TSPacketQueue    _queue {};           // TS packet queue from merge to main.
+        PIDSet           _main_pids {};       // Set of detected PID's in main stream.
+        PIDSet           _merge_pids {};      // Set of detected PID's in merged stream that we pass in main stream.
+        PCRMerger        _pcr_merger {duck};  // Adjust PCR's in merged stream.
+        PSIMerger        _psi_merger {duck, PSIMerger::NONE};  // Used to merge PSI/SI from both streams.
+        PacketInsertionController _insert_control {*this};     // Used to control insertion points for the merge
 
         // Start/restart/stop the merge command.
         bool startStopCommand(bool do_close, bool do_start);
