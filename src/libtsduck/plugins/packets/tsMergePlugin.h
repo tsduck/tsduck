@@ -67,7 +67,16 @@ namespace ts {
         TSPacketLabelSet _reset_labels {};              // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
+        // The intended type is std::atomic<std::shared_ptr<TSForkPipe>>. This is allowed by C++20. However, the
+        // libc++ which ships with Apple clang version 21.0.0 does not support this feature. In that case, and
+        // until we identify which version supports this, we omit the atomic property on macOS.
+#if defined(TS_MAC)
+        using TSForkPipePtr = std::shared_ptr<TSForkPipe>;
+        std::shared_ptr<TSForkPipe> pipe() const { return _pipe; }
+#else
         using TSForkPipePtr = std::atomic<std::shared_ptr<TSForkPipe>>;
+        std::shared_ptr<TSForkPipe> pipe() const { return _pipe.load(); }
+#endif
 
         // Working data.
         bool             _got_eof = false;    // Got end of merged stream.
