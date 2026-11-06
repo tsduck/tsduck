@@ -63,6 +63,11 @@ Extract encapsulated TS packets from one PLP of a T2-MI stream.
 The transport stream is completely replaced by the extracted stream.
 
 [.optdoc]
+When the PLP uses null packet deletion, the deleted null packets are reinserted in the extracted stream.
+The extracted stream may then contain more packets than the input stream:
+use `--output-file` to get the complete extracted stream.
+
+[.optdoc]
 This is the default if neither `--extract` nor `--t2mi-file` nor `--log` nor `--identify` is specified.
 
 [.opt]

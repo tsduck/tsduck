@@ -13,15 +13,34 @@
 #include "tsPAT.h"
 #include "tsMemory.h"
 
+namespace {
+    // Values of the MODE field in a DVB-T2 BBHEADER, see ETSI EN 302 755, section 5.1.7.
+    constexpr uint8_t T2_MODE_NM  = 0;  // Normal Mode
+    constexpr uint8_t T2_MODE_HEM = 1;  // High Efficiency Mode
+
+    // CRC-8 of the first 9 bytes of a DVB-T2 BBHEADER, see ETSI EN 302 755, annex F.
+    // Generator polynomial X^8+X^7+X^6+X^4+X^2+1, register initialized to zero.
+    uint8_t BBHeaderCRC8(const uint8_t* bbh)
+    {
+        uint8_t crc = 0;
+        for (size_t i = 0; i < ts::T2_BBHEADER_SIZE - 1; ++i) {
+            crc ^= bbh[i];
+            for (int bit = 0; bit < 8; ++bit) {
+                crc = (crc & 0x80) != 0 ? uint8_t((crc << 1) ^ 0xD5) : uint8_t(crc << 1);
+            }
+        }
+        return crc;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
 ts::T2MIDemux::PLPContext::PLPContext() :
-    first_packet(true),
-    ts(),
-    ts_next(0)
+    sync(false),
+    up()
 {
 }
 
@@ -163,6 +182,12 @@ void ts::T2MIDemux::PIDContext::lostSync()
     sync = false;
 }
 
+void ts::T2MIDemux::PLPContext::lostSync()
+{
+    up.clear();     // partial user packet.
+    sync = false;
+}
+
 
 //----------------------------------------------------------------------------
 // Process and remove complete T2-MI packets from the buffer.
@@ -245,9 +270,35 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
         return;
     }
 
-    // Null packet deletion (NPD) from MATYPE.
-    // WARNING: usage of NPD is probably wrong here, need to be checked on streams with NPD=1.
-    size_t npd = (data[0] & 0x04) ? 1 : 0;
+    // Get / create PLP context.
+    const uint8_t plp = pkt.plp();
+    PLPContextPtr& plpp(pc.plps[plp]);
+    if (plpp == nullptr) {
+        plpp = std::make_shared<PLPContext>();
+    }
+
+    // Layout of a transmitted user packet (UP), see ETSI EN 302 755, section 5.1.8.
+    // Normal Mode: CRC-8 of the previous UP (in place of the sync byte), 187 bytes, optional ISSY, optional DNP.
+    // The size of the UP is given by UPL, including CRC-8, ISSY and DNP.
+    // High Efficiency Mode: 187 bytes (sync byte removed), optional DNP. The ISSY, if any, is in the BBHEADER.
+    // The MODE is XOR'ed with the CRC-8 of the BBHEADER, any other value means a corrupted BBHEADER.
+    const size_t npd = (data[0] & 0x04) ? 1 : 0;  // Size of DNP field (null packet deletion).
+    const uint8_t mode = data[9] ^ BBHeaderCRC8(data);
+    size_t up_size = 0;  // Size in bytes of a transmitted UP.
+    size_t up_crc = 0;   // Size of the CRC-8 field before the TS packet without sync byte.
+    if (mode == T2_MODE_HEM) {
+        up_size = PKT_SIZE - 1 + npd;
+    }
+    else if (mode == T2_MODE_NM) {
+        const size_t upl = GetUInt16(data + 2);
+        up_size = upl % 8 == 0 ? upl / 8 : 0;
+        up_crc = 1;
+    }
+    if (up_size < up_crc + PKT_SIZE - 1 + npd) {
+        // Unknown mode or invalid UPL, cannot locate TS packets.
+        plpp->lostSync();
+        return;
+    }
 
     // Data Field Length in bytes.
     size_t dfl = (GetUInt16(data + 4) + 7) / 8;
@@ -264,71 +315,59 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
         dfl = size;
     }
 
-    // Get / create PLP context.
-    const uint8_t plp = pkt.plp();
-    PLPContextPtr& plpp(pc.plps[plp]);
-    if (plpp == nullptr) {
-        plpp = std::make_shared<PLPContext>();
-    }
-
     if (syncd == 0xFFFF) {
-        // No user packet in data field
-        plpp->ts.append(data, dfl);
+        // No user packet starts in data field, the current one continues.
+        if (plpp->sync) {
+            plpp->up.append(data, dfl);
+            if (plpp->up.size() > up_size) {
+                plpp->lostSync();
+            }
+        }
     }
     else {
         // Synchronization distance in bytes, bounded by data field size.
         syncd = std::min(syncd / 8, dfl);
 
-        // Process end of previous packet.
-        if (!plpp->first_packet && syncd > 0) {
-            if (plpp->ts.size() % PKT_SIZE == 0) {
-                plpp->ts.append(SYNC_BYTE);
+        // Process end of previous packet. Drop it when its size is wrong (lost or inconsistent baseband frames).
+        if (plpp->sync) {
+            plpp->up.append(data, syncd);
+            if (plpp->up.size() == up_size) {
+                outputTS(pkt, plpp->up.data() + up_crc, npd ? plpp->up[up_size - 1] : 0);
             }
-            plpp->ts.append(data, syncd - npd);
         }
-        plpp->first_packet = false;
+        plpp->sync = true;
         data += syncd;
         dfl -= syncd;
 
         // Process subsequent complete packets.
-        while (dfl >= PKT_SIZE - 1) {
-            plpp->ts.append(SYNC_BYTE);
-            plpp->ts.append(data, PKT_SIZE - 1);
-            data += PKT_SIZE - 1;
-            dfl -= PKT_SIZE - 1;
+        while (dfl >= up_size) {
+            outputTS(pkt, data + up_crc, npd ? data[up_size - 1] : 0);
+            data += up_size;
+            dfl -= up_size;
         }
 
-        // Process optional trailing truncated packet.
-        if (dfl > 0) {
-            plpp->ts.append(SYNC_BYTE);
-            plpp->ts.append(data, dfl);
-        }
+        // Keep optional trailing truncated packet.
+        plpp->up.copy(data, dfl);
     }
+}
 
-    // Now process each complete TS packet.
-    while (plpp->ts_next + PKT_SIZE <= plpp->ts.size()) {
 
-        // Build the TS packet.
+//----------------------------------------------------------------------------
+// Notify a TS packet from a user packet (data points after the sync byte),
+// after the null packets which were deleted before it.
+//----------------------------------------------------------------------------
+
+void ts::T2MIDemux::outputTS(const T2MIPacket& pkt, const uint8_t* data, size_t deleted_nulls)
+{
+    // Notify the application. Note that we are already in a protected section.
+    if (_handler != nullptr) {
+        for (size_t i = 0; i < deleted_nulls; ++i) {
+            _handler->handleTSPacket(*this, pkt, NullPacket);
+        }
         TSPacket tsPkt;
-        MemCopy(tsPkt.b, &plpp->ts[plpp->ts_next], PKT_SIZE);
-        plpp->ts_next += PKT_SIZE;
-
-        // Notify the application. Note that we are already in a protected section.
-        if (_handler != nullptr) {
-            _handler->handleTSPacket(*this, pkt, tsPkt);
-        }
-    }
-
-    // Compress or cleanup the TS buffer.
-    if (plpp->ts_next >= plpp->ts.size()) {
-        // No more packet to output, cleanup.
-        plpp->ts.clear();
-        plpp->ts_next = 0;
-    }
-    else if (plpp->ts_next >= 100 * PKT_SIZE) {
-        // TS buffer has many unused packets, compress it.
-        plpp->ts.erase(0, plpp->ts_next);
-        plpp->ts_next = 0;
+        tsPkt.b[0] = SYNC_BYTE;
+        MemCopy(tsPkt.b + 1, data, PKT_SIZE - 1);
+        _handler->handleTSPacket(*this, pkt, tsPkt);
     }
 }
 

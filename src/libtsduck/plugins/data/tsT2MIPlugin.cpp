@@ -280,10 +280,11 @@ void ts::T2MIPlugin::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, co
     if (!_abort && _extract && _extract_plp == t2mi.plp()) {
         if (_replace_ts) {
             // Enqueue the TS packet for replacement later.
-            // We do not really care about queue size because an overflow is not possible.
             // This plugin deletes all input packets and replaces them with demux'ed packets.
-            // And the number of input TS packets is always higher than the number of output
-            // packets because of T2-MI encapsulation and other PID's.
+            // The number of input TS packets is usually higher than the number of output
+            // packets because of T2-MI encapsulation and other PID's. However, when the PLP
+            // uses null packet deletion, the reinserted null packets may outnumber the input
+            // packets and the queue grows. Use --output-file to get the complete stream.
             _ts_queue.push_back(ts);
         }
         else {

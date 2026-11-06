@@ -73,12 +73,14 @@ namespace ts {
         // Analysis context for one PLP inside one T2-MI stream.
         struct PLPContext
         {
-            bool      first_packet;  // First T2-MI packet not yet processed
-            ByteBlock ts;            // Buffer to accumulate extracted TS packets.
-            size_t    ts_next;       // Next packet to output.
+            bool      sync;  // We are synchronous on the user packets of this PLP.
+            ByteBlock up;    // Start of a user packet which continues in the next baseband frame.
 
             // Default constructor
             PLPContext();
+
+            // Reset after lost of synchronization.
+            void lostSync();
         };
 
         // Map of safe pointers to PLPContext, indexed by PLP id.
@@ -112,6 +114,9 @@ namespace ts {
 
         // Demux all encapsulated TS packets from a T2-MI packet.
         void demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt);
+
+        // Notify a TS packet from a user packet, after the null packets which were deleted before it.
+        void outputTS(const T2MIPacket& pkt, const uint8_t* data, size_t deleted_nulls);
 
         // Process a PMT.
         void processPMT(const PMT& pmt);
