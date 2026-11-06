@@ -53,6 +53,10 @@ installer-tarball:
 # make subcommand, after the binaries are built.
 # Explicitly exclude packages which notoriously provide alternate versions
 # of standard library (e.g. wolfram).
+# Shared libraries are searched by full path, as resolved by ldd, and by real
+# path (with a merged /usr, ldd returns /lib/... and dpkg knows /usr/lib/...).
+# A search by file name only would also match private copies of the same
+# library in unrelated packages (e.g. /opt/vendor/lib/libz.so.1).
 
 F_GETDPKG   = $(addsuffix $(COMMA),$(shell dpkg -S 2>/dev/null $(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) | \
                                            grep -v -i -e wolfram | sed -e 's/:.*//' | sort -u))
@@ -60,7 +64,8 @@ F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
                           $(addprefix $(BINDIR)/,$(TSTOOLS)) \
                           $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS))) | \
                       grep -i $(addprefix -e ,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)) | \
-                      sed -e 's/[[:space:]]*=>.*//' -e 's/^[[:space:]]*//' | sort -u)
+                      sed -n -e 's|.*=>[[:space:]]*\(/[^[:space:]]*\).*|\1|p' | sort -u | \
+                      while read f; do echo "$$f"; realpath -e "$$f" 2>/dev/null; done | sort -u)
 F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
 
 deb-tools-control:
@@ -87,7 +92,7 @@ deb-dev-control:
 	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt-dev,/ $(call F_GETDPKG,srt/srt.h)/') \
 	    $(if $(NORIST),-e '/librist/d',-e 's/ librist-dev,/ $(call F_GETDPKG,librist/librist.h)/') \
 	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit-dev,/ $(call F_GETDPKG,editline/readline.h)/') \
-	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb.h)/') \
+	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb-1.0/libusb.h)/') \
 	    $(if $(NOPCSC),-e '/libpcsc/d',-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h)/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h)/') \
 	    -e '/^ *$$/d' \
