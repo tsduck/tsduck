@@ -128,11 +128,7 @@ namespace ts {
     //!
     TSCOREDLL inline ieee_float32_t GetFloat32BE(const void* p)
     {
-        const uint32_t i = GetUInt32BE(p);
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        return *reinterpret_cast<const ieee_float32_t*>(&i);
-        TS_POP_WARNING()
+        return std::bit_cast<ieee_float32_t>(GetUInt32BE(p));
     }
 
     //!
@@ -143,11 +139,7 @@ namespace ts {
     //!
     TSCOREDLL inline ieee_float32_t GetFloat32LE(const void* p)
     {
-        const uint32_t i = GetUInt32LE(p);
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        return *reinterpret_cast<const ieee_float32_t*>(&i);
-        TS_POP_WARNING()
+        return std::bit_cast<ieee_float32_t>(GetUInt32LE(p));
     }
 
     //!
@@ -166,11 +158,7 @@ namespace ts {
     //!
     TSCOREDLL inline ieee_float64_t GetFloat64BE(const void* p)
     {
-        const uint64_t i = GetUInt64BE(p);
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        return *reinterpret_cast<const ieee_float64_t*>(&i);
-        TS_POP_WARNING()
+        return std::bit_cast<ieee_float64_t>(GetUInt64BE(p));
     }
 
     //!
@@ -181,11 +169,7 @@ namespace ts {
     //!
     TSCOREDLL inline ieee_float64_t GetFloat64LE(const void* p)
     {
-        const uint64_t i = GetUInt64LE(p);
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        return *reinterpret_cast<const ieee_float64_t*>(&i);
-        TS_POP_WARNING()
+        return std::bit_cast<ieee_float64_t>(GetUInt64LE(p));
     }
 
     //!
@@ -204,10 +188,7 @@ namespace ts {
     //!
     TSCOREDLL inline void PutFloat32BE(void* p, ieee_float32_t f)
     {
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        PutUInt32BE(p, *reinterpret_cast<const uint32_t*>(&f));
-        TS_POP_WARNING()
+        PutUInt32BE(p, std::bit_cast<uint32_t>(f));
     }
 
     //!
@@ -218,10 +199,7 @@ namespace ts {
     //!
     TSCOREDLL inline void PutFloat32LE(void* p, ieee_float32_t f)
     {
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        PutUInt32LE(p, *reinterpret_cast<const uint32_t*>(&f));
-        TS_POP_WARNING()
+        PutUInt32LE(p, std::bit_cast<uint32_t>(f));
     }
 
     //!
@@ -240,10 +218,7 @@ namespace ts {
     //!
     TSCOREDLL inline void PutFloat64BE(void* p, ieee_float64_t f)
     {
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        PutUInt64BE(p, *reinterpret_cast<const uint64_t*>(&f));
-        TS_POP_WARNING()
+        PutUInt64BE(p, std::bit_cast<uint64_t>(f));
     }
 
     //!
@@ -254,10 +229,7 @@ namespace ts {
     //!
     TSCOREDLL inline void PutFloat64LE(void* p, ieee_float64_t f)
     {
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(undefined-reinterpret-cast)
-        PutUInt64LE(p, *reinterpret_cast<const uint64_t*>(&f));
-        TS_POP_WARNING()
+        PutUInt64LE(p, std::bit_cast<uint64_t>(f));
     }
 
     //!
