@@ -72,6 +72,10 @@ VERSION 3.46-4911 (November 2026)
   * Plugin "t2mi": with --log,  the frame index is displayed only for the T2-MI
     packet types which have one, and the FEF index for the FEF packets. Before,
     the first payload byte was always displayed as frame index.
+  * Plugin "t2mi" and class T2MIDemux: fixed TS extraction from PLP's in Normal
+    Mode  (CRC-8 at the start of each packet was read as data),  with ISSY  in
+    Normal Mode (ISSY field was read as data), and with null packet deletion
+    (DNP field was read as data). Deleted null packets are now reinserted.
   * A complete security audit of the code was conducted using  Claude Opus 5.5.
     Total findings: 1 critical, 26 high, 56 medium, 133 low, 140 informational.
     All  critical,  high,  medium  issues  were fixed,  as well as most low and
