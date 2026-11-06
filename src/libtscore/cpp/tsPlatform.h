@@ -787,7 +787,10 @@ TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Now require C++20, no need 
 TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
 TS_LLVM_NOWARNING(unsafe-buffer-usage)            // "unsafe pointer arithmetic" (new with clang 16) => we know what we are doing here.
-
+TS_LLVM_NOWARNING(lifetime-safety-intra-tu-suggestions) // "implicit this in intra-TU function should be marked [[clang::lifetimebound]]" (new with clang 23) => could be useful but too many.
+TS_LLVM_NOWARNING(lifetime-safety-cross-tu-suggestions) // "implicit this in cross-TU function should be marked [[clang::lifetimebound]]" (new with clang 23) => could be useful but too many.
+TS_LLVM_NOWARNING(lifetime-safety-invalidation)   // "parameter 'xxx' is later invalidated" => a storm of false positive with clang 23.
+TS_LLVM_NOWARNING(lifetime-safety-experimental)   // same with clang 24.
 
 TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
 TS_MSC_NOWARNING(4189)  // local variable is initialized but not referenced

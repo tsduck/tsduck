@@ -58,6 +58,7 @@
 #pragma clang diagnostic ignored "-Wweak-vtables"           // Test classes may have no explicit virtual method
 #pragma clang diagnostic ignored "-Wmissing-noreturn"       // Test cases with expected exception may be detected as [[noreturn]]
 #pragma clang diagnostic ignored "-Wused-but-marked-unused" // 'snprintf' was marked unused but was used (with _FORTIFY_SOURCE)
+#pragma clang diagnostic ignored "-Wlifetime-safety-cross-tu-suggestions" // Parameters and result lifetime checks are too aggressive, too many false positive
 
 #endif
 
