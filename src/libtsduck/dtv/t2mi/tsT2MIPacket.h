@@ -173,11 +173,34 @@ namespace ts {
         uint8_t superframeIndex() const { return _is_valid ? ((content()[2] >> 4) & 0x0F) : 0; }
 
         //!
+        //! Check if the packet has a frame index (frame_idx).
+        //! This is the case of the packet types whose payload starts with frame_idx (see ETSI TS 102 773, section 5.2).
+        //! @return True if the packet has a frame index.
+        //!
+        bool frameIndexValid() const;
+
+        //!
         //! Get the T2-MI frame index.
         //! This is valid only for some packet types (see ETSI TS 102 773, section 5.2).
-        //! @return The T2-MI frame index.
+        //! @return The T2-MI frame index or zero if the packet has no frame index.
+        //! @see frameIndexValid()
         //!
-        uint8_t frameIndex() const { return payloadSize() >= 1 ? content()[T2MI_HEADER_SIZE] : 0; }
+        uint8_t frameIndex() const { return frameIndexValid() ? content()[T2MI_HEADER_SIZE] : 0; }
+
+        //!
+        //! Check if the packet has a FEF part index (fef_idx).
+        //! This is the case of the FEF part and FEF sub-part packet types (see ETSI TS 102 773, sections 5.2.9 to 5.2.12).
+        //! @return True if the packet has a FEF part index.
+        //!
+        bool fefIndexValid() const;
+
+        //!
+        //! Get the T2-MI FEF part index.
+        //! This is valid only for FEF part and FEF sub-part packets.
+        //! @return The FEF part index or zero if the packet has no FEF part index.
+        //! @see fefIndexValid()
+        //!
+        uint8_t fefIndex() const { return fefIndexValid() ? content()[T2MI_HEADER_SIZE] : 0; }
 
         //!
         //! Check if the packet has a valid PLP (Physical Layer Pipe) identifier.

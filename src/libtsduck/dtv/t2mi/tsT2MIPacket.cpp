@@ -183,6 +183,40 @@ size_t ts::T2MIPacket::payloadSize() const
     return _is_valid ? size() - T2MI_HEADER_SIZE - SECTION_CRC32_SIZE : 0;
 }
 
+bool ts::T2MIPacket::frameIndexValid() const
+{
+    // The payload starts with frame_idx in these packet types only.
+    TS_PARTIAL_SWITCH_BEGIN()
+    switch (packetType()) {
+        case T2MIPacketType::BASEBAND_FRAME:
+        case T2MIPacketType::AUX_IQ_DATA:
+        case T2MIPacketType::ARBITRARY_CELL:
+        case T2MIPacketType::L1_CURRENT:
+        case T2MIPacketType::L1_FUTURE:
+        case T2MIPacketType::P2_BIAS_BALANCING:
+            return payloadSize() >= 1;
+        default:
+            return false;
+    }
+    TS_PARTIAL_SWITCH_END()
+}
+
+bool ts::T2MIPacket::fefIndexValid() const
+{
+    // The payload starts with fef_idx in these packet types only.
+    TS_PARTIAL_SWITCH_BEGIN()
+    switch (packetType()) {
+        case T2MIPacketType::FEF_NULL:
+        case T2MIPacketType::FEF_IQ_DATA:
+        case T2MIPacketType::FEF_COMPOSITE:
+        case T2MIPacketType::FEF_SUBPART:
+            return payloadSize() >= 1;
+        default:
+            return false;
+    }
+    TS_PARTIAL_SWITCH_END()
+}
+
 bool ts::T2MIPacket::interleavingFrameStart() const
 {
     // Get the interleaving frame start flag.

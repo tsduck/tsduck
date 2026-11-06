@@ -229,13 +229,20 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 
     // Log T2-MI packets.
     if (_log && _extract_pid == pid) {
+        UString indexInfo;
+        if (pkt.frameIndexValid()) {
+            indexInfo = UString::Format(u", frame index: %d", pkt.frameIndex());
+        }
+        else if (pkt.fefIndexValid()) {
+            indexInfo = UString::Format(u", FEF index: %d", pkt.fefIndex());
+        }
         UString plpInfo;
         if (hasPLP) {
             plpInfo = UString::Format(u", PLP: %n", plp);
         }
-        info(u"PID %n, packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
+        info(u"PID %n, packet type: %s, size: %d bytes, packet count: %d, superframe index: %d%s%s",
              pid, NameFromSection(u"dtv", u"t2mi.packet_type", pkt.packetType(), NamesFlags::HEX_VALUE_NAME),
-             pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo);
+             pkt.size(), pkt.packetCount(), pkt.superframeIndex(), indexInfo, plpInfo);
     }
 
     // Select PLP when extraction is requested.
