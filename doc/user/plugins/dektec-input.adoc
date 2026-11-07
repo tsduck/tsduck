@@ -86,6 +86,16 @@ Specify the data reception timeout in milliseconds.
 This timeout applies to each receive operation, individually.
 By default, receive operations wait for data, possibly forever.
 
+[.opt]
+*--serial* _value_
+
+[.optdoc]
+Serial number of the Dektec device to use, as displayed by `tsdektec -a -v` or in the JSON output of `tsdektec -a -j`.
+The options `--device` and `--serial` are mutually exclusive.
+
+[.optdoc]
+By default, use the first input Dektec device.
+
 [.usage]
 Demodulators options
 

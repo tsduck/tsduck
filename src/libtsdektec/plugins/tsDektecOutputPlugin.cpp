@@ -34,6 +34,7 @@ public:
     bool                 is_started = false;        // Device started
     bool                 mute_on_stop = false;      // Device supports output muting
     int                  dev_index = -1;            // Dektec device index
+    int64_t              serial = -1;               // Dektec device serial number (-1: not specified)
     int                  chan_index = -1;           // Device output channel index
     DektecDevice         device {};                 // Device characteristics
     Dtapi::DtDevice      dtdev {};                  // Device descriptor
@@ -176,6 +177,12 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"in the system). Use the command \"tsdektec -a [-v]\" to have a "
          u"complete list of devices in the system. By default, use the first "
          u"output Dektec device.");
+
+    option(u"serial", 0, UNSIGNED);
+    help(u"serial",
+         u"Serial number of the Dektec device to use, as displayed by \"tsdektec -a -v\" "
+         u"or in the JSON output of \"tsdektec -a -j\". The options --device and --serial "
+         u"are mutually exclusive. By default, use the first output Dektec device.");
 
     option(u"dmb-constellation", 0, Names {
         {u"4-QAM-NR", DTAPI_MOD_DTMB_QAM4NR},
@@ -761,6 +768,7 @@ bool ts::DektecOutputPlugin::start()
 
     // Get command line arguments
     getIntValue(_guts->dev_index, u"device", -1);
+    getIntValue(_guts->serial, u"serial", -1);
     getIntValue(_guts->chan_index, u"channel", -1);
     getValue(_guts->opt_bitrate, u"bitrate", 0);
     _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : (present(u"wait-detach") ? DTAPI_WAIT_UNTIL_SENT : 0);
@@ -777,12 +785,16 @@ bool ts::DektecOutputPlugin::start()
         error(u"options --instant-detach and --wait-detach are mutually exclusive.");
         return false;
     }
+    if (present(u"device") && present(u"serial")) {
+        error(u"options --device and --serial are mutually exclusive");
+        return false;
+    }
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();
 
     // Locate the device
-    if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, false, *tsp)) {
+    if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, false, _guts->serial, *tsp)) {
         return false;
     }
 
