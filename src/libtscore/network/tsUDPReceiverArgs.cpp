@@ -211,7 +211,7 @@ bool ts::UDPReceiverArgs::loadArgs(Args& args,
 
         // If a destination address is specified, it must be a multicast address.
         if (destination.hasAddress() && !destination.isMulticast()) {
-            args.error(u"address %s is not multicast", destination);
+            args.error(u"address %s is not multicast; to receive unicast packets, specify the port only and the local address with --local-address", destination);
             ok = false;
         }
 
