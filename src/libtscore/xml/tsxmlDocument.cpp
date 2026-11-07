@@ -102,12 +102,12 @@ bool ts::xml::Document::load(const UString& file_name, bool search, size_t max_n
 {
     // Specific case of inline XML content, when the string is not the name of a file but directly an XML content.
     if (IsInlineXML(file_name)) {
-        return parse(file_name, max_nested + 1);
+        return parse(file_name, max_nested);
     }
 
     // Specific case of the standard input.
     if (file_name.empty() || file_name == u"-") {
-        return load(std::cin, max_nested + 1);
+        return load(std::cin, max_nested);
     }
 
     // Actual file name to load after optional search in directories.

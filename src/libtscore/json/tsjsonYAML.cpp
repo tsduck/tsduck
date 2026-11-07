@@ -95,6 +95,9 @@ ts::UString ts::json::YAML::QuotedString(const UString& str)
         if (c == '"') {
             quoted.append(u"\\\"");
         }
+        else if (c == '\\') {
+            quoted.append(u"\\\\");
+        }
         else if (IsPrintable(c)) {
             quoted.append(c);
         }

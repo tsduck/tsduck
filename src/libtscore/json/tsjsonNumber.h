@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsjsonValue.h"
+#include "tsIntegerUtils.h"
 
 namespace ts::json {
     //!
@@ -28,12 +29,31 @@ namespace ts::json {
         Number() = default;
 
         //!
+        //! Constructor with an integer value.
+        //! @tparam T An integer  type.
+        //! @param [in] value Initial value.
+        //!
+        template <typename T> requires std::integral<T>
+        Number(T value) :
+            _float(double(value)),
+            _valid_integer(bound_check<int64_t>(value)),
+            _integer(_valid_integer ? int64_t(value) : 0)
+        {
+        }
+
+        //!
         //! Constructor with an integer or floating point value.
         //! @tparam T An integer or floating point type.
         //! @param [in] value Initial value.
+        //! @param [in] force_invalid_integer If true, don't try to convert as an integer, consider it invalid.
         //!
-        template <typename T> requires std::is_arithmetic_v<T>
-        Number(T value) : _integer(int64_t(value)), _float(double(value)) {}
+        template <typename T> requires std::floating_point<T>
+        Number(T value, bool force_invalid_integer = false) :
+            _float(double(value)),
+            _valid_integer(!force_invalid_integer && _float >= double(std::numeric_limits<int64_t>::min()) && _float <= double(std::numeric_limits<int64_t>::max())),
+            _integer(_valid_integer ? int64_t(value) : 0)
+        {
+        }
 
         // Implementation of ts::json::Value.
         virtual Type type() const override;
@@ -47,7 +67,8 @@ namespace ts::json {
         virtual void clear() override;
 
     private:
+        double  _float = 0.0;
+        bool    _valid_integer = false; // if false, _float is ok but its value is not representable as an int64_t
         int64_t _integer = 0;
-        double _float = 0.0;
     };
 }

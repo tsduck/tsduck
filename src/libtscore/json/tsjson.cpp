@@ -67,7 +67,10 @@ ts::json::ValuePtr ts::json::Factory(Type type, const UString& value)
                 return std::make_shared<Number>(ivalue);
             }
             else if (value.toFloat(fvalue)) {
-                return std::make_shared<Number>(fvalue);
+                // The value is a valid float but not a valid integer. There are two cases:
+                // - The string is a syntactically valid integer but outside range of int64_t -> force invalid integer.
+                // - The string not a syntactically valid integer -> let floating point bound checking decide if it can rounded to an integer.
+                return std::make_shared<Number>(fvalue, value.isInteger(UString::DEFAULT_THOUSANDS_SEPARATOR));
             }
             else {
                 return std::make_shared<Null>();
@@ -147,8 +150,8 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
     value.reset();
 
     UString str;
-    int64_t intVal = 0;
-    double floatVal= 0.0;
+    int64_t int_val = 0;
+    double float_val= 0.0;
 
     // Leading spaces are ignored.
     parser.skipWhiteSpace();
@@ -167,15 +170,15 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
         value = std::make_shared<String>(str);
     }
     else if (parser.parseNumericLiteral(str, false, true)) {
-        if (str.toInteger(intVal, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
-            value = std::make_shared<Number>(intVal);
+        if (str.toInteger(int_val, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+            value = std::make_shared<Number>(int_val);
         }
-        else if (str.toFloat(floatVal)) {
-            value = std::make_shared<Number>(floatVal);
+        else if (str.toFloat(float_val)) {
+            value = std::make_shared<Number>(float_val);
         }
         else {
             // Invalid integer,
-            report.error(u"line %d: JSON floating-point numbers not yet supported, using \"null\" instead", parser.lineNumber());
+            report.error(u"line %d: invalid JSON number '%s', probably out of range, using \"null\" instead", parser.lineNumber(), str);
             value = std::make_shared<Null>();
         }
     }
@@ -201,6 +204,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
                 !parser.skipWhiteSpace() ||
                 !Parse(element, parser, false, report, max_nested - 1))
             {
+                value.reset();
                 return false;
             }
             // Found field.
@@ -213,6 +217,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             // Expect a comma before next field.
             if (!parser.match(u",", true)) {
                 report.error(u"line %d: syntax error in JSON object, missing ','", parser.lineNumber());
+                value.reset();
                 return false;
             }
         }
@@ -221,6 +226,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
         // Need to recurse, validate the depth first.
         if (max_nested == 0) {
             report.error(u"line %d: too many nested JSON objects", parser.lineNumber());
+            value.reset();
             return false;
         }
         // Parse an array.
@@ -234,6 +240,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             }
             ValuePtr element;
             if (!Parse(element, parser, false, report, max_nested - 1)) {
+                value.reset();
                 return false;
             }
             // Found an element.
@@ -246,6 +253,7 @@ bool ts::json::Parse(ValuePtr& value, TextParser& parser, bool jsonOnly, Report&
             // Expect a comma before next element
             if (!parser.match(u",", true)) {
                 report.error(u"line %d: syntax error in JSON array, missing ','", parser.lineNumber());
+                value.reset();
                 return false;
             }
         }

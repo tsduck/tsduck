@@ -51,35 +51,53 @@ bool ts::DVBCharTableUTF8::canEncode(const UString& str, size_t start, size_t co
 // Encode a C++ Unicode string into a DVB string.
 //----------------------------------------------------------------------------
 
-size_t ts::DVBCharTableUTF8::encode(uint8_t*& buffer, size_t& size, const UString& str, size_t start, size_t count) const
+size_t ts::DVBCharTableUTF8::encode(uint8_t*& out_buffer, size_t& out_size, const UString& in_str16, size_t in_start, size_t in_count) const
 {
-    size_t result = 0;
+    size_t out_count = 0;
+    in_start = std::min(in_start, in_str16.length());
+    in_count = std::min(in_str16.length() - in_start, in_count);
 
     // Serialize characters as long as there is free space.
-    while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
-        if (str[start] != ts::CARRIAGE_RETURN) {
+    while (out_buffer != nullptr && out_size > 0 && in_count > 0) {
+        size_t len16 = 1;
+        if (in_str16[in_start] != ts::CARRIAGE_RETURN) {
 
-            // Convert a 1-character string to UTF-8.
-            const std::string utf8(str.substr(start, 1).toUTF8());
-            const size_t len = utf8.length();
-            if (len > size) {
-                // Won't fit in the buffer, stop now.
-                break;
+            // Convert a 1-character string to UTF-8. First, identify the UTF-16 character.
+            bool valid = true;
+            if (IsLeadingSurrogate(in_str16[in_start])) {
+                // If the character is the first one of a surrogate pair, convert the pair.
+                if (in_count > 1 && IsTrailingSurrogate(in_str16[in_start+1])) {
+                    len16 = 2;
+                }
+                else {
+                    // Invalid leading part of a surrogate pair. Skip that character.
+                    valid = false;
+                }
             }
 
-            // Small optimization.
-            if (len == 1) {
-                *buffer = uint8_t(utf8[0]);
+            // Second, convert the 1-character string.
+            if (valid) {
+                const std::string utf8(in_str16.substr(in_start, len16).toUTF8());
+                const size_t len8 = utf8.length();
+                if (len8 > out_size) {
+                    // Won't fit in the buffer, stop now.
+                    break;
+                }
+
+                // Small optimization.
+                if (len8 == 1) {
+                    *out_buffer = uint8_t(utf8[0]);
+                }
+                else {
+                    MemCopy(out_buffer, utf8.data(), len8);
+                }
+                out_buffer += len8;
+                out_size -= len8;
             }
-            else {
-                MemCopy(buffer, utf8.data(), len);
-            }
-            buffer += len;
-            size -= len;
         }
-        result++; // include CR characters, not physically encoded, but still taken into account.
-        start++;
-        count--;
+        out_count += len16; // include CR characters, not physically encoded, but still taken into account.
+        in_start += len16;
+        in_count -= len16;
     }
-    return result;
+    return out_count;
 }

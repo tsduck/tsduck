@@ -167,6 +167,30 @@ TSUNIT_DEFINE_TEST(Numbers)
         u"  \"d\": 100\n"
         u"}",
         jv->printed());
+
+    ts::json::Number n1(12345.0);
+    TSUNIT_EQUAL(ts::json::Type::Number, n1.type());
+    TSUNIT_ASSERT(n1.isNumber());
+    TSUNIT_ASSERT(n1.isInteger());
+    TSUNIT_EQUAL(12345, n1.toInteger(789));
+    TSUNIT_EQUAL(12345.0, n1.toFloat(789.0));
+    TSUNIT_EQUAL(true, n1.toBoolean());
+
+    ts::json::Number n2(123.45);
+    TSUNIT_EQUAL(ts::json::Type::Number, n2.type());
+    TSUNIT_ASSERT(n2.isNumber());
+    TSUNIT_ASSERT(!n2.isInteger());
+    TSUNIT_EQUAL(123, n2.toInteger(789));
+    TSUNIT_EQUAL(123.45, n2.toFloat(789.0));
+    TSUNIT_EQUAL(true, n2.toBoolean());
+
+    ts::json::Number n3(2e150);
+    TSUNIT_EQUAL(ts::json::Type::Number, n3.type());
+    TSUNIT_ASSERT(n3.isNumber());
+    TSUNIT_ASSERT(!n3.isInteger());
+    TSUNIT_EQUAL(789, n3.toInteger(789));
+    TSUNIT_EQUAL(2e150, n3.toFloat(789.0));
+    TSUNIT_EQUAL(false, n3.toBoolean());
 }
 
 TSUNIT_DEFINE_TEST(GitHub)
@@ -694,6 +718,15 @@ TSUNIT_DEFINE_TEST(Factory)
     TSUNIT_EQUAL(-12, jv->toInteger());
     TSUNIT_EQUAL(-12.45, jv->toFloat());
     TSUNIT_EQUAL(u"-12.45", jv->toString());
+
+    jv = ts::json::Factory(ts::json::Type::Number, u"9223372036854775808"); // int64 max + 1
+    TSUNIT_ASSERT(jv != nullptr);
+    TSUNIT_EQUAL(ts::json::Type::Number, jv->type());
+    TSUNIT_ASSERT(jv->isNumber());
+    TSUNIT_ASSERT(!jv->isInteger());
+    TSUNIT_EQUAL(456, jv->toInteger(456));
+    TSUNIT_EQUAL(9'223'372'036'854'775'808.0, jv->toFloat());
+    TSUNIT_EQUAL(u"9.223372e+18", jv->toString()); // default precision is 6
 }
 
 TSUNIT_DEFINE_TEST(Query)

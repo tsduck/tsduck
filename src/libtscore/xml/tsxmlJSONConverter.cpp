@@ -320,22 +320,22 @@ void ts::xml::JSONConverter::convertObjectToXML(Element* element, const json::Va
 
 void ts::xml::JSONConverter::convertArrayToXML(Element* parent, const json::Value& array) const
 {
-    assert(array.isArray());
-
     // Each element in the array is a direct child of the parent.
-    for (size_t i = 0; i < array.size(); ++i) {
-        const json::Value& child(array.at(i));
-        if (child.isObject()) {
-            Element* e = parent->addElement(ElementNameOf(child));
-            convertObjectToXML(e, child);
-        }
-        else if (child.isArray()) {
-            // Not expected in a reverse conversion, create a direct child XML element from each array element.
-            convertArrayToXML(parent, child);
-        }
-        else if (!child.isNull()) {
-            // A text node.
-            parent->addText(child.toString());
+    if (array.isArray()) {
+        for (size_t i = 0; i < array.size(); ++i) {
+            const json::Value& child(array.at(i));
+            if (child.isObject()) {
+                Element* e = parent->addElement(ElementNameOf(child));
+                convertObjectToXML(e, child);
+            }
+            else if (child.isArray()) {
+                // Not expected in a reverse conversion, create a direct child XML element from each array element.
+                convertArrayToXML(parent, child);
+            }
+            else if (!child.isNull()) {
+                // A text node.
+                parent->addText(child.toString());
+            }
         }
     }
 }

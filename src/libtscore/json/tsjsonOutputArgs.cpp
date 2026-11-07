@@ -182,7 +182,7 @@ bool ts::json::OutputArgs::tcpConnect(Report& rep)
     }
 
     if ((_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size)) &&
-        _tcp_sock.bind(IPSocketAddress::AnySocketAddress4) &&
+        _tcp_sock.bind(IPSocketAddress::AnySocketAddress(_tcp_destination.generation())) &&
         _tcp_sock.connect(_tcp_destination))
     {
         _text_sock.reset();
@@ -211,16 +211,19 @@ bool ts::json::OutputArgs::tcpDisconnect(bool force)
 bool ts::json::OutputArgs::report(const json::Value& root, const fs::path& file_name, Report& rep)
 {
     // Process file output.
+    bool ok = true;
     if (_json_opt) {
         TextFormatter text(rep);
-        text.setFile(file_name);
-        root.print(text);
-        text << ts::endl;
-        text.close();
+        ok = text.setFile(file_name);
+        if (ok) {
+            root.print(text);
+            text << ts::endl;
+            text.close();
+        }
     }
 
     // Other output forms.
-    return report(root, rep);
+    return report(root, rep) && ok;
 }
 
 bool ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep)

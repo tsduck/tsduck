@@ -1863,6 +1863,35 @@ bool ts::UString::toTristate(Tristate& value) const
 
 
 //----------------------------------------------------------------------------
+// Check if the string is a syntactically valid integer.
+//----------------------------------------------------------------------------
+
+bool ts::UString::isInteger(const UString& thousand_separators) const
+{
+    bool hexa = false;
+    const UChar* p = data();
+    const UChar* const end = p + size();
+    if (p < end && (*p == u'+' || *p == '-')) {
+        ++p;
+    }
+    if (p + 1 < end && p[0] == u'0' && (p[1] == u'x' || p[1] == u'X')) {
+        p += 2;
+        hexa = true;
+    }
+    if (p >= end) {
+        return false;
+    }
+    while (p < end) {
+        if (!IsDigit(*p) && (!hexa || !IsHexa(*p)) && !thousand_separators.contains(*p)) {
+            return false;
+        }
+        ++p;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Internal helpers for toInteger(), signed version.
 //----------------------------------------------------------------------------
 

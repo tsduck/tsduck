@@ -110,7 +110,10 @@ bool ts::DVBCharTableSingleByte::decode(UString& str, const uint8_t* dvb, size_t
 
 bool ts::DVBCharTableSingleByte::canEncode(const UString& str, size_t start, size_t count) const
 {
-    for (size_t i = 0; i < str.length(); ++i) {
+    start = std::min(start, str.length());
+    count = std::min(str.length() - start, count);
+
+    for (size_t i = start; i < count; ++i) {
         const UChar cp = str[i];
         if (!_bytes_map.contains(cp) && cp != CARRIAGE_RETURN) {
             // Untranslatable character.
@@ -129,9 +132,11 @@ size_t ts::DVBCharTableSingleByte::encode(uint8_t*& buffer, size_t& size, const 
 {
     uint8_t* const base = buffer;
     size_t result = 0;
+    start = std::min(start, str.length());
+    count = std::min(str.length() - start, count);
 
     // Serialize characters as long as there is free space.
-    while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
+    while (buffer != nullptr && size > 0 && count > 0) {
         const UChar cp = str[start];
         const auto it = _bytes_map.find(cp);
         if (cp != ts::CARRIAGE_RETURN && it != _bytes_map.end()) {

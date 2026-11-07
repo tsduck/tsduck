@@ -779,6 +779,7 @@ bool ts::xml::Element::getISODurationAttribute(cn::milliseconds& value,
 {
     UString str;
     if (!getAttribute(str, name, required)) {
+        return false;
     }
     if (!required && str.empty()) {
         value = def_value;

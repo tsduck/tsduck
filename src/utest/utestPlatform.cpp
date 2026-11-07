@@ -66,22 +66,28 @@ TSUNIT_DEFINE_TEST(Endianness)
 // Test case: predefined integer types.
 TSUNIT_DEFINE_TEST(IntegerTypes)
 {
-    debug()
-        << "PlatformTest: sizeof(int) = " << sizeof(int)
-        << ", sizeof(long) = " << sizeof(long)
-        << ", sizeof(long long) = " << sizeof(long long)
-        << ", sizeof(void*) = " << sizeof(void*) << std::endl
-        << "PlatformTest: sizeof(char) = " << sizeof(char)
-        << ", sizeof(unsigned char) = " << sizeof(unsigned char)
-        << ", is_signed(char) = " << std::is_signed<char>::value << std::endl
-        << "PlatformTest: sizeof(wchar_t) = " << sizeof(wchar_t) << std::endl
-        << "PlatformTest: sizeof(fs::path::value_type) = " << sizeof(fs::path::value_type) << std::endl
-        << "std::numeric_limits<int64_t>::max() = " << std::numeric_limits<int64_t>::max() << std::endl
-        << "std::numeric_limits<int64_t>::digits10 = " << std::numeric_limits<int64_t>::digits10 << std::endl
-        << "std::numeric_limits<double>::max() = " << std::numeric_limits<double>::max() << std::endl
-        << "std::numeric_limits<double>::min() = " << std::numeric_limits<double>::min() << std::endl
-        << "std::numeric_limits<double>::lowest() = " << std::numeric_limits<double>::lowest() << std::endl
-        << "std::numeric_limits<double>::digits10 = " << std::numeric_limits<double>::digits10 << std::endl;
+    debug() << "PlatformTest: sizeof(int) = " << sizeof(int)
+            << ", sizeof(long) = " << sizeof(long)
+            << ", sizeof(long long) = " << sizeof(long long)
+            << ", sizeof(void*) = " << sizeof(void*) << std::endl
+            << "PlatformTest: sizeof(float) = " << sizeof(float)
+            << ", sizeof(double) = " << sizeof(double)
+            << ", sizeof(long double) = " << sizeof(long double) << std::endl
+            << "PlatformTest: sizeof(char) = " << sizeof(char)
+            << ", sizeof(unsigned char) = " << sizeof(unsigned char)
+            << ", is_signed(char) = " << std::is_signed<char>::value << std::endl
+            << "PlatformTest: sizeof(wchar_t) = " << sizeof(wchar_t) << std::endl
+            << "PlatformTest: sizeof(fs::path::value_type) = " << sizeof(fs::path::value_type) << std::endl
+            << "std::numeric_limits<int64_t>::max() = " << std::numeric_limits<int64_t>::max() << std::endl
+            << "std::numeric_limits<int64_t>::digits10 = " << std::numeric_limits<int64_t>::digits10 << std::endl
+            << "std::numeric_limits<double>::max() = " << std::numeric_limits<double>::max() << std::endl
+            << "std::numeric_limits<double>::min() = " << std::numeric_limits<double>::min() << std::endl
+            << "std::numeric_limits<double>::lowest() = " << std::numeric_limits<double>::lowest() << std::endl
+            << "std::numeric_limits<double>::digits10 = " << std::numeric_limits<double>::digits10 << std::endl
+            << "std::numeric_limits<long double>::max() = " << std::numeric_limits<long double>::max() << std::endl
+            << "std::numeric_limits<long double>::min() = " << std::numeric_limits<long double>::min() << std::endl
+            << "std::numeric_limits<long double>::lowest() = " << std::numeric_limits<long double>::lowest() << std::endl
+            << "std::numeric_limits<long double>::digits10 = " << std::numeric_limits<long double>::digits10 << std::endl;
 
     TSUNIT_EQUAL(1, sizeof(int8_t));
     TSUNIT_EQUAL(2, sizeof(int16_t));

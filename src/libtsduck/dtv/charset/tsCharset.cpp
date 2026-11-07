@@ -200,8 +200,9 @@ ts::ByteBlock ts::Charset::encoded(const UString& str, size_t start, size_t coun
     start = std::min(start, length);
 
     // Assume maximum number of bytes per character is 6 (max 4 in UTF-8 for instance).
-    // Use 6 in case there are charset changes in the middle (eg. Japanese ARIB STD-B24)
-    ByteBlock bb(6 * std::min(length - start, count));
+    // Use absolute max of 8 in case there are charset changes in the middle (eg. Japanese ARIB STD-B24).
+    // And add a margin of 16, just in case.
+    ByteBlock bb(8 * std::min(length - start, count) + 16);
 
     // Convert the string.
     uint8_t* buffer = bb.data();

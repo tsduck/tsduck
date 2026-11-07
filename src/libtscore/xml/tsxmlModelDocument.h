@@ -64,7 +64,12 @@ namespace ts::xml {
         //! @param [in] name Name of the child element to search.
         //! @return Address of the child model or zero if not found.
         //!
-        const Element* findModelElement(const Element* elem, const UString& name) const;
+        const Element* findModelElement(const Element* elem, const UString& name) const
+        {
+            UStringList any;
+            return findModelElementBounded(elem, name, any);
+        }
+
 
     private:
         //!
@@ -74,5 +79,14 @@ namespace ts::xml {
         //! @return True if @a doc matches @a model, false if it does not.
         //!
         bool validateElement(const Element* model, const Element* doc) const;
+
+        //!
+        //! Find a child element by name in an XML model element, used by findModelElement.
+        //! @param [in] elem An XML element in a model document.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in,out] any_list List of nested "any", to detect recursion.
+        //! @return Address of the child model or zero if not found.
+        //!
+        const Element* findModelElementBounded(const Element* elem, const UString& name, UStringList& any_list) const;
     };
 }

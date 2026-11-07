@@ -45,6 +45,7 @@ class XMLTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(IntValue);
     TSUNIT_DECLARE_TEST(Iterators);
     TSUNIT_DECLARE_TEST(Depth);
+    TSUNIT_DECLARE_TEST(RecursiveModel);
 
 public:
     virtual void beforeTest() override;
@@ -915,4 +916,49 @@ TSUNIT_DEFINE_TEST(Depth)
     rep.clear();
     TSUNIT_ASSERT(doc.parse(text, depth));
     TSUNIT_EQUAL(u"", rep.messages());
+}
+
+
+TSUNIT_DEFINE_TEST(RecursiveModel)
+{
+    static const ts::UChar* model_xml =
+        u"<?xml version='1.0' encoding='UTF-8'?>\n"
+        u"<doc>\n"
+        u"  <_a>\n"
+        u"    <c/>\n"
+        u"    <d/>\n"
+        u"    <_any in='_b'/>\n"
+        u"  </_a>\n"
+        u"  <_b>\n"
+        u"    <e/>\n"
+        u"    <f/>\n"
+        u"    <_any in='_a'/>\n"
+        u"  </_b>\n"
+        u"  <foo>\n"
+        u"    <_any in='_a'/>\n"
+        u"  </foo>\n"
+        u"  <bar/>\n"
+        u"</doc>";
+
+    static const ts::UChar* doc_xml =
+        u"<?xml version='1.0' encoding='UTF-8'?>\n"
+        u"<doc>\n"
+        u"  <foo>\n"
+        u"    <x/>\n"
+        u"  </foo>\n"
+        u"  <bar/>\n"
+        u"</doc>";
+
+    ts::ReportBuffer<> rep;
+    ts::xml::ModelDocument model(rep);
+    TSUNIT_ASSERT(model.parse(model_xml));
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    ts::xml::Document doc(rep);
+    TSUNIT_ASSERT(doc.parse(doc_xml));
+    TSUNIT_EQUAL(u"", rep.messages());
+
+    TSUNIT_ASSERT(!model.validate(doc));
+    TSUNIT_EQUAL(u"Error: invalid XML model, recursive <_any in=\"_a\"> at line 11\n"
+                 u"Error: unexpected node <x> in <foo>, line 4", rep.messages());
 }

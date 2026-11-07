@@ -15,17 +15,17 @@
 // Constructor / destructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCharTable::DVBCharTable(const UChar* name, uint32_t tableCode) :
+ts::DVBCharTable::DVBCharTable(const UChar* name, uint32_t table_code) :
     Charset(name),
-    _code(tableCode)
+    _code(table_code)
 {
     // Register the character set.
     TableCodeRepository::Instance().add(_code, this);
 }
 
-ts::DVBCharTable::DVBCharTable(std::initializer_list<const UChar*> names, uint32_t tableCode) :
+ts::DVBCharTable::DVBCharTable(std::initializer_list<const UChar*> names, uint32_t table_code) :
     Charset(names),
-    _code(tableCode)
+    _code(table_code)
 {
     // Register the character set.
     TableCodeRepository::Instance().add(_code, this);
@@ -101,22 +101,22 @@ void ts::DVBCharTable::unregister() const
 // Get the character coding table at the beginning of a DVB string.
 //----------------------------------------------------------------------------
 
-bool ts::DVBCharTable::DecodeTableCode(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize)
+bool ts::DVBCharTable::DecodeTableCode(uint32_t& code, size_t& code_size, const uint8_t* dvb, size_t dvb_size)
 {
     // Null or empty buffer is a valid empty string.
-    if (dvb == nullptr || dvbSize == 0) {
+    if (dvb == nullptr || dvb_size == 0) {
         code = 0;
-        codeSize = 0;
+        code_size = 0;
         return true;
     }
     else if (*dvb >= 0x20) {
         // Default character set.
         code = 0;
-        codeSize = 0;
+        code_size = 0;
         return true;
     }
     else if (*dvb == 0x1F) {
-        if (dvbSize >= 2) {
+        if (dvb_size >= 2) {
             // Second byte is encoding_type_id.
             // Value          Owner/Charset
             // 0x00 to 0x04 - BBC
@@ -125,14 +125,14 @@ bool ts::DVBCharTable::DecodeTableCode(uint32_t& code, size_t& codeSize, const u
             // Currently unsupported, Huffmann decoding table not publicly
             // available.
             code = 0xFFFFFFFF;
-            codeSize = 2;
+            code_size = 2;
             return false;
         }
     }
     else if (*dvb == 0x10) {
-        if (dvbSize >= 3) {
+        if (dvb_size >= 3) {
             code = GetUInt24(dvb);
-            codeSize = 3;
+            code_size = 3;
             /*
              * Here are the values for ISO 8859 charsets both present in one
              * byte and three-bytes sets.
@@ -159,14 +159,15 @@ bool ts::DVBCharTable::DecodeTableCode(uint32_t& code, size_t& codeSize, const u
         }
     }
     else {
+        // One-byte table code. In theory, zero is reserved, just ignore it and use the default table (code 0).
         code = *dvb;
-        codeSize = 1;
+        code_size = 1;
         return true;
     }
 
     // Invalid format
     code = 0xFFFFFFFF;
-    codeSize = 0;
+    code_size = 0;
     return false;
 }
 
@@ -179,7 +180,7 @@ size_t ts::DVBCharTable::encodeTableCode(uint8_t*& buffer, size_t& size) const
 {
     // Intermediate buffer, just in case the output buffer is too small.
     uint8_t buf[4] = {0};
-    size_t codeSize = 0;
+    size_t code_size = 0;
 
     if (buffer == nullptr || size == 0 || _code == 0) {
         // Empty buffer or default character set.
@@ -188,29 +189,29 @@ size_t ts::DVBCharTable::encodeTableCode(uint8_t*& buffer, size_t& size) const
     else if (_code < 0x1F && _code != 0x10) {
         // On byte code.
         buf[0] = uint8_t(_code);
-        codeSize = 1;
+        code_size = 1;
     }
     else if ((_code & 0xFFFFFF00) == 0x00001F00) {
         // Two bytes, 0x1F followed by encoding_type_id.
         PutUInt16(buf, uint16_t(_code));
-        codeSize = 2;
+        code_size = 2;
     }
     else if ((_code & 0xFFFF0000) == 0x00100000) {
         // Three bytes, 0x10 followed by 16-bit code.
         PutUInt24(buf, _code);
-        codeSize = 3;
+        code_size = 3;
     }
     else {
         // Invalid table code.
         return 0;
     }
 
-    // Now copy the table code.
-    if (codeSize > size) {
-        codeSize = size;
+    // Now copy the table code. Truncate if too long.
+    if (code_size > size) {
+        code_size = size;
     }
-    MemCopy(buffer, buf, codeSize);
-    buffer += codeSize;
-    size -= codeSize;
-    return codeSize;
+    MemCopy(buffer, buf, code_size);
+    buffer += code_size;
+    size -= code_size;
+    return code_size;
 }

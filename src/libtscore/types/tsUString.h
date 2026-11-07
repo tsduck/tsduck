@@ -1921,6 +1921,18 @@ namespace ts {
         static UString TristateNamesList();
 
         //!
+        //! Check if the string is a syntactically valid integer.
+        //! @param [in] thousand_separators A string of characters which are interpreted as thousands
+        //! separators and are ignored. <i>Any character</i> from the @a thousand_separators string
+        //! is interpreted as a separator. Note that this implies that the optional thousands separators
+        //! may have one character only.
+        //! @return True if the string is a syntactically valid integer, false otherwise.
+        //! Note that a string can be a valid integer and may not be convertible into a given integer type,
+        //! if the corresponding integer value is outside the valid range for the integer type.
+        //!
+        bool isInteger(const UString& thousand_separators = UString()) const;
+
+        //!
         //! Convert a string into an integer.
         //!
         //! This string must contain the representation of an integer value in decimal or hexadecimal

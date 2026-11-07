@@ -75,12 +75,12 @@ namespace ts {
         //! @param [out] code Returned character coding table value.
         //! Zero when no code is present (use the default character table).
         //! 0xFFFFFFFF in case of invalid data.
-        //! @param [out] codeSize Size in bytes of character coding table in @a dvb.
+        //! @param [out] code_size Size in bytes of character coding table in @a dvb.
         //! @param [in] dvb Address of a DVB string.
-        //! @param [in] dvbSize Size in bytes of the DVB string.
+        //! @param [in] dvb_size Size in bytes of the DVB string.
         //! @return True on success, false on error (truncated, unsupported format, etc.)
         //!
-        static bool DecodeTableCode(uint32_t& code, size_t& codeSize, const uint8_t* dvb, size_t dvbSize);
+        static bool DecodeTableCode(uint32_t& code, size_t& code_size, const uint8_t* dvb, size_t dvb_size);
 
         //!
         //! Get the DVB table code for the character set.
@@ -98,8 +98,10 @@ namespace ts {
         //!
         //! Encode the character set table code.
         //!
-        //! Stop either when the specified number of characters are serialized or
-        //! when the buffer is full, whichever comes first.
+        //! Stop either when the specified number of characters are serialized or when the buffer is full,
+        //! whichever comes first. In case of short buffer, the table code is truncated. It is assumed that
+        //! the buffer will contain a complete encoded string. So, if the buffer cannot accomodate the table
+        //! code, there will be no room for the string, which will be invalid anyway.
         //!
         //! @param [in,out] buffer Address of the buffer.
         //! The address is updated to point after the encoded value.
@@ -120,16 +122,16 @@ namespace ts {
         //!
         //! Protected constructor.
         //! @param [in] name charset name
-        //! @param [in] tableCode DVB table code
+        //! @param [in] table_code DVB table code
         //!
-        DVBCharTable(const UChar* name, uint32_t tableCode);
+        DVBCharTable(const UChar* name, uint32_t table_code);
 
         //!
         //! Protected constructor.
         //! @param [in] names Character set names. The first one is the "main" name.
-        //! @param [in] tableCode DVB table code
+        //! @param [in] table_code DVB table code
         //!
-        DVBCharTable(std::initializer_list<const UChar*> names, uint32_t tableCode);
+        DVBCharTable(std::initializer_list<const UChar*> names, uint32_t table_code);
 
     private:
         uint32_t _code;  // Table code.
