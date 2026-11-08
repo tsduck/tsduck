@@ -59,6 +59,7 @@ namespace ts {
         //!
         //! Load the document to parse from a list of lines.
         //! @param [in] lines Reference to a list of text lines forming the document.
+        //! A reference is kept to the external list of strings. The document is not duplicated.
         //! The lifetime of the referenced list must equals or exceeds the lifetime of the parser.
         //!
         void loadDocument(const UStringList& lines);
@@ -66,29 +67,32 @@ namespace ts {
         //!
         //! Load the document to parse.
         //! @param [in] text Document text to parse with embedded new-line characters.
+        //! The text lines are loaded (and duplicated) inside this object.
         //!
         void loadDocument(const UString& text);
 
         //!
         //! Load the document to parse from a text file.
-        //! @param [in] fileName Name of the file to load.
+        //! @param [in] file_name Name of the file to load.
+        //! The text lines are loaded inside this object.
         //! @return True on success, false on failure.
         //!
-        bool loadFile(const fs::path& fileName);
+        bool loadFile(const fs::path& file_name);
 
         //!
         //! Load the document to parse from a text stream.
         //! @param [in,out] strm A standard text stream in input mode.
+        //! The text lines are loaded inside this object.
         //! @return True on success, false on error.
         //!
         bool loadStream(std::istream& strm);
 
         //!
         //! Save the document to parse to a text file.
-        //! @param [in] fileName Name of the file to save.
+        //! @param [in] file_name Name of the file to save.
         //! @return True on success, false on failure.
         //!
-        bool saveFile(const fs::path& fileName);
+        bool saveFile(const fs::path& file_name);
 
         //!
         //! Save the document to parse to a text stream.
@@ -129,10 +133,10 @@ namespace ts {
             // Only TextParser can use it.
             friend class TextParser;
 
-            const UStringList*          _lines;
-            UStringList::const_iterator _cur_line;
-            size_t                      _cur_line_number;
-            size_t                      _cur_index;
+            const UStringList*          _lines;                // Complete document as a list of lines.
+            UStringList::const_iterator _cur_line;             // Iterator to current line in *_lines.
+            size_t                      _cur_line_number = 1;  // Current line number. For error messages.
+            size_t                      _cur_index = 0;        // Index of next character in current line.
         };
 
         //!
@@ -231,11 +235,11 @@ namespace ts {
         //!
         //! Parse a numeric literal.
         //! @param [out] str Returned numeric literal
-        //! @param [in] allowHexa If true, hexadecimal integers "0x..." are allowed.
-        //! @param [in] allowFloat It true, floating point values "[-]digits[.digits][e|E[+|-]digits]" are allowed.
+        //! @param [in] allow_hexa If true, hexadecimal integers "0x..." are allowed.
+        //! @param [in] allow_float It true, floating point values "[-]digits[.digits][e|E[+|-]digits]" are allowed.
         //! @return True on success, false if no string literal was not found.
         //!
-        virtual bool parseNumericLiteral(UString& str, bool allowHexa = false, bool allowFloat = true);
+        virtual bool parseNumericLiteral(UString& str, bool allow_hexa = false, bool allow_float = true);
 
         //!
         //! Parse a string literal.
@@ -245,11 +249,11 @@ namespace ts {
         //! @param [out] str Returned string literal, including the first and last quote.
         //! When the method returns true (success), it is consequently guaranteed that
         //! the length of the returned string is greater than or equal to 2.
-        //! @param [in] requiredQuote If defined as single or double quote, accept only
+        //! @param [in] required_quote If defined as single or double quote, accept only
         //! that type of quote. Otherwise, accept any of the two.
         //! @return True on success, false if no string literal was not found.
         //!
-        virtual bool parseStringLiteral(UString& str, UChar requiredQuote = CHAR_NULL);
+        virtual bool parseStringLiteral(UString& str, UChar required_quote = CHAR_NULL);
 
         //!
         //! Parse a JSON string literal.
@@ -260,7 +264,7 @@ namespace ts {
 
     private:
         Report&     _report;
-        UStringList _lines;
-        Position    _pos;
+        UStringList _lines {};      // Internal buffer, used only when the content is loaded here.
+        Position    _pos {_lines};  // Current position. May point to _lines or an external list.
     };
 }

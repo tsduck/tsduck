@@ -1431,8 +1431,9 @@ namespace ts {
         //! @param [in] special_characters The list of special characters.
         //! The @a quote_character is implicitly part of @a special_characters.
         //! @param [in] force_quote If true, force quote, even if the content does not require it.
+        //! @param [in] non_print Replacement character for all non-printable characters.
         //!
-        void quoted(UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS, bool force_quote = false);
+        void quoted(UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS, bool force_quote = false, UChar non_print = u'?');
 
         //!
         //! Return a "quoted" version of this string.
@@ -1440,10 +1441,11 @@ namespace ts {
         //! @param [in] special_characters The list of special characters.
         //! The @a quote_character is implicitly part of @a special_characters.
         //! @param [in] force_quote If true, force quote, even if the content does not require it.
+        //! @param [in] non_print Replacement character for all non-printable characters.
         //! @return A "quoted" version of this string.
         //! @see quoted()
         //!
-        UString toQuoted(UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS, bool force_quote = false) const;
+        UString toQuoted(UChar quote_character = u'\'', const UString& special_characters = DEFAULT_SPECIAL_CHARACTERS, bool force_quote = false, UChar non_print = u'?') const;
 
         //!
         //! Convert a container of strings into one big string where all elements are properly quoted when necessary.
@@ -2257,6 +2259,12 @@ namespace ts {
         //! @endcond
 
         //!
+        //! Maximum allowed field width in format strings.
+        //! @see format()
+        //!
+        static constexpr size_t MAX_FIELD_WIDTH = 4096;
+
+        //!
         //! Format a string using a template and arguments.
         //!
         //! The formatted string is appended to this string object.
@@ -2292,6 +2300,8 @@ namespace ts {
         //! - @c ' : For integer conversions, use a separator for groups of thousands.
         //! - @c ! : Short format. With @c std::chrono::duration value, use "ms" instead of "milliseconds", etc.
         //! - @c * : Can be used instead of @e digits. The integer value is taken from the argument list.
+        //!
+        //! The field width is limited to MAX_FIELD_WIDTH characters.
         //!
         //! Since the argument list is typed, it is possible to mix integers and strings of various types and sizes.
         //! Example:

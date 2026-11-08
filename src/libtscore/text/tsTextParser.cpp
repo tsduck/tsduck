@@ -14,27 +14,25 @@
 //----------------------------------------------------------------------------
 
 ts::TextParser::TextParser(Report& report) :
-    _report(report),
-    _lines(),
-    _pos(_lines)
+    _report(report)
 {
 }
 
 ts::TextParser::TextParser(const UStringList& lines, Report& report) :
-    TextParser(report)
+    _report(report)
 {
     loadDocument(lines);
 }
 
 ts::TextParser::TextParser(const UString& text, Report& report) :
-    TextParser(report)
+    _report(report)
 {
     loadDocument(text);
 }
 
-ts::TextParser::Position::Position(const UStringList& textLines) :
-    _lines(&textLines),
-    _cur_line(textLines.begin()),
+ts::TextParser::Position::Position(const UStringList& text_lines) :
+    _lines(&text_lines),
+    _cur_line(text_lines.begin()),
     _cur_line_number(1),
     _cur_index(0)
 {
@@ -72,12 +70,12 @@ void ts::TextParser::loadDocument(const UString& text)
     _pos = Position(_lines);
 }
 
-bool ts::TextParser::loadFile(const fs::path& fileName)
+bool ts::TextParser::loadFile(const fs::path& file_name)
 {
     // Load the file into the internal lines buffer.
-    const bool ok = UString::Load(_lines, fileName);
+    const bool ok = UString::Load(_lines, file_name);
     if (!ok) {
-        _report.error(u"error reading file %s", fileName);
+        _report.error(u"error reading file %s", file_name);
     }
 
     // Initialize the parser on the internal lines buffer, including on file error (empty).
@@ -103,14 +101,14 @@ bool ts::TextParser::loadStream(std::istream& strm)
 // Save the document to parse to a text file.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::saveFile(const fs::path& fileName)
+bool ts::TextParser::saveFile(const fs::path& file_name)
 {
-    return UString::Save(_lines, fileName);
+    return UString::Save(*_pos._lines, file_name);
 }
 
 bool ts::TextParser::saveStream(std::ostream& strm)
 {
-    return UString::Save(_lines, strm);
+    return UString::Save(*_pos._lines, strm);
 }
 
 
@@ -126,7 +124,7 @@ bool ts::TextParser::isAtPosition(const Position& pos) const
 bool ts::TextParser::seek(const Position& pos)
 {
     // Check that we are still on the same document. This is a minimum fool-proof check.
-    // But there is no guarantee that pos.curLine is still valid.
+    // But there is no guarantee that pos._cur_line is still valid.
     if (pos._lines == _pos._lines) {
         _pos = pos;
         return true;
@@ -153,7 +151,10 @@ bool ts::TextParser::eol() const
 
 void ts::TextParser::rewind()
 {
-    _pos = Position(_lines);
+    assert(_pos._lines != nullptr);
+    _pos._cur_line = _pos._lines->begin();
+    _pos._cur_line_number = 1;
+    _pos._cur_index = 0;
 }
 
 
@@ -187,7 +188,7 @@ bool ts::TextParser::skipWhiteSpace()
 
 bool ts::TextParser::skipLine()
 {
-    while (_pos._cur_line != _pos._lines->end()) {
+    if (_pos._cur_line != _pos._lines->end()) {
         _pos._cur_line++;
         _pos._cur_line_number++;
         _pos._cur_index = 0;
@@ -207,17 +208,17 @@ bool ts::TextParser::match(const UString& str, bool skipIfMatch, CaseSensitivity
         return false;
     }
 
-    size_t lineIndex = _pos._cur_index;
-    size_t strIndex = 0;
-    while (strIndex < str.length()) {
-        if (lineIndex >= _pos._cur_line->length() || !Match(str[strIndex++], (*_pos._cur_line)[lineIndex++], cs)) {
+    size_t line_index = _pos._cur_index;
+    size_t str_index = 0;
+    while (str_index < str.length()) {
+        if (line_index >= _pos._cur_line->length() || !Match(str[str_index++], (*_pos._cur_line)[line_index++], cs)) {
             // str does not match
             return false;
         }
     }
 
     if (skipIfMatch) {
-        _pos._cur_index = lineIndex;
+        _pos._cur_index = line_index;
     }
     return true;
 }
@@ -285,7 +286,7 @@ bool ts::TextParser::isAtNumberStart() const
 // Parse a numeric literal.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allowFloat)
+bool ts::TextParser::parseNumericLiteral(UString& str, bool allow_hexa, bool allow_float)
 {
     str.clear();
 
@@ -313,11 +314,11 @@ bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allo
         // Detected hexadecimal prefix, skip it.
         index += 3;
         // Reject if hexa not allowed by caller.
-        if (!allowHexa) {
+        if (!allow_hexa) {
             return false;
         }
         // Reject floating point format with hexa.
-        allowFloat = false;
+        allow_float = false;
         // Skip all hexa digits.
         while (index < end && IsHexa(line[index])) {
             ++index;
@@ -331,7 +332,7 @@ bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allo
     }
 
     // Skip additional floating point representation.
-    if (allowFloat) {
+    if (allow_float) {
         if (index < end && line[index] == u'.') {
             ++index;
             while (index < end && IsDigit(line[index])) {
@@ -366,7 +367,7 @@ bool ts::TextParser::parseNumericLiteral(UString& str, bool allowHexa, bool allo
 // Parse a string literal.
 //----------------------------------------------------------------------------
 
-bool ts::TextParser::parseStringLiteral(UString& str, UChar requiredQuote)
+bool ts::TextParser::parseStringLiteral(UString& str, UChar required_quote)
 {
     str.clear();
 
@@ -382,10 +383,10 @@ bool ts::TextParser::parseStringLiteral(UString& str, UChar requiredQuote)
 
     // Validate the type of quote.
     const UChar quote = line[index++];
-    if (requiredQuote == u'\'' && quote != u'\'') {
+    if (required_quote == u'\'' && quote != u'\'') {
         return false;
     }
-    if (requiredQuote == u'"' && quote != u'"') {
+    if (required_quote == u'"' && quote != u'"') {
         return false;
     }
     if (quote != u'\'' && quote != u'"') {

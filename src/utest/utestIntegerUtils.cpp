@@ -213,6 +213,9 @@ TSUNIT_DEFINE_TEST(round_up)
 
 TSUNIT_DEFINE_TEST(SignExtend)
 {
+    TSUNIT_EQUAL(0, ts::SignExtend(int32_t(25), 0));
+    TSUNIT_EQUAL(0, ts::SignExtend(int32_t(24), 1));
+    TSUNIT_EQUAL(-1, ts::SignExtend(int32_t(25), 1));
     TSUNIT_EQUAL(25, ts::SignExtend(int32_t(25), 12));
     TSUNIT_EQUAL(0x07FF, ts::SignExtend(int16_t(0x07FF), 12));
     TSUNIT_EQUAL(-1, ts::SignExtend(int16_t(0x0FFF), 12));

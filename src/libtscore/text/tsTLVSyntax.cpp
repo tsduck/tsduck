@@ -121,7 +121,7 @@ bool ts::TLVSyntax::locateTLV(const uint8_t* data, size_t data_size, size_t& tlv
 
     if (_start >= 0 && _size >= 0) {
         // Fixed TLV area.
-        if (size_t(_start + _size) > data_size) {
+        if (size_t(_start) + size_t(_size) > data_size) {
             return false; // Won't fit
         }
         else {

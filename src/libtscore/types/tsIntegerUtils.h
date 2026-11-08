@@ -301,7 +301,7 @@ namespace ts {
             return a > nl::max() - b;
         }
         else {
-            return b > 0 ? a > nl::max() - b : a < nl::min() - b;
+            return (b > 0 && a > nl::max() - b) || (b < 0 && a < nl::min() - b);
         }
 #endif
     }
@@ -326,7 +326,7 @@ namespace ts {
             return a < b;
         }
         else {
-            return b < 0 ? a > nl::max() + b : a < nl::min() + b;
+            return (b < 0 && a > nl::max() + b) || (b > 0 && a < nl::min() + b);
         }
 #endif
     }
@@ -802,11 +802,12 @@ namespace ts {
 template <typename INT> requires std::integral<INT>
 INT ts::bounded_add(INT a, INT b)
 {
+    using nl = std::numeric_limits<INT>;
     if constexpr (std::unsigned_integral<INT>) {
         // Unsigned addition.
-        if (a > std::numeric_limits<INT>::max() - b) {
+        if (a > nl::max() - b) {
             // Overflow.
-            return std::numeric_limits<INT>::max();
+            return nl::max();
         }
         else {
             return a + b;
@@ -814,17 +815,16 @@ INT ts::bounded_add(INT a, INT b)
     }
     else if constexpr (std::signed_integral<INT>) {
         // Signed addition.
-        const INT c = a + b;
-        if (a > 0 && b > 0 && c <= 0) {
+        if (b > 0 && a > nl::max() - b) {
             // Overflow.
-            return std::numeric_limits<INT>::max();
+            return nl::max();
         }
-        else if (a < 0 && b < 0 && c >= 0) {
+        else if (b < 0 && a < nl::min() - b) {
             // Underflow.
-            return std::numeric_limits<INT>::min();
+            return nl::min();
         }
         else {
-            return c;
+            return a + b;
         }
     }
     else {
@@ -840,6 +840,7 @@ INT ts::bounded_add(INT a, INT b)
 template <typename INT> requires std::integral<INT>
 INT ts::bounded_sub(INT a, INT b)
 {
+    using nl = std::numeric_limits<INT>;
     if constexpr (std::unsigned_integral<INT>) {
         // Unsigned subtraction.
         if (a < b) {
@@ -852,17 +853,16 @@ INT ts::bounded_sub(INT a, INT b)
     }
     else {
         // Signed subtraction.
-        const INT c = a - b;
-        if (a > 0 && b < 0 && c <= 0) {
+        if (b < 0 && a > nl::max() + b) {
             // Overflow.
-            return std::numeric_limits<INT>::max();
+            return nl::max();
         }
-        else if (a < 0 && b > 0 && c >= 0) {
+        else if (b > 0 && a < nl::min() + b) {
             // Underflow.
-            return std::numeric_limits<INT>::min();
+            return nl::min();
         }
         else {
-            return c;
+            return a - b;
         }
     }
 }
@@ -904,8 +904,8 @@ INT ts::round_up(INT x, INT f)
 template <typename INT> requires std::signed_integral<INT>
 INT ts::SignExtend(INT x, size_t bits)
 {
-    if (bits < 2) {
-        // We need at least two bits, one for the sign, one for the value.
+    if (bits == 0) {
+        // Nothing to return.
         return 0;
     }
     else if (bits >= int(8 * sizeof(x))) {

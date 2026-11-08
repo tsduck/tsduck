@@ -90,6 +90,7 @@ class BufferTest: public tsunit::Test
     TSUNIT_DECLARE_TEST(PutFloat64BE);
     TSUNIT_DECLARE_TEST(GetVluimsbf5);
     TSUNIT_DECLARE_TEST(PutVluimsbf5);
+    TSUNIT_DECLARE_TEST(Reserved);
 
 private:
     // Return a byte block with bytes swapped two by two.
@@ -2080,4 +2081,60 @@ TSUNIT_DEFINE_TEST(PutVluimsbf5)
     TSUNIT_EQUAL(25, b.currentWriteBitOffset());
     mem.resize(4);
     TSUNIT_EQUAL((tsunit::Bytes{0xF0, 0xD5, 0xE6, 0x80}), mem);
+}
+
+TSUNIT_DEFINE_TEST(Reserved)
+{
+    ts::DuckContext duck;
+    static const uint8_t bin[] = {0x1A, 0x54};
+    ts::PSIBuffer buf(duck, bin, sizeof(bin));
+
+    TSUNIT_EQUAL(1, buf.getBits<uint8_t>(4));
+    TSUNIT_EQUAL(0, buf.currentReadByteOffset());
+    TSUNIT_EQUAL(4, buf.currentReadBitOffset());
+    TSUNIT_EQUAL(12, buf.remainingReadBits());
+    TSUNIT_ASSERT(!buf.endOfRead());
+    TSUNIT_ASSERT(!buf.reservedBitsError());
+
+    TSUNIT_ASSERT(buf.skipReservedBits(2, 1));
+    TSUNIT_EQUAL(0, buf.currentReadByteOffset());
+    TSUNIT_EQUAL(6, buf.currentReadBitOffset());
+    TSUNIT_EQUAL(10, buf.remainingReadBits());
+    TSUNIT_ASSERT(!buf.endOfRead());
+    TSUNIT_ASSERT(buf.reservedBitsError());
+
+    TSUNIT_ASSERT(buf.skipReservedBits(2, 0));
+    TSUNIT_EQUAL(1, buf.currentReadByteOffset());
+    TSUNIT_EQUAL(8, buf.currentReadBitOffset());
+    TSUNIT_EQUAL(8, buf.remainingReadBits());
+    TSUNIT_ASSERT(!buf.endOfRead());
+    TSUNIT_ASSERT(buf.reservedBitsError());
+
+    TSUNIT_ASSERT(buf.skipReservedBits(3, 0));
+    TSUNIT_EQUAL(1, buf.currentReadByteOffset());
+    TSUNIT_EQUAL(11, buf.currentReadBitOffset());
+    TSUNIT_EQUAL(5, buf.remainingReadBits());
+    TSUNIT_ASSERT(!buf.endOfRead());
+    TSUNIT_ASSERT(buf.reservedBitsError());
+
+    TSUNIT_ASSERT(buf.skipReservedBits(1, 1));
+    TSUNIT_EQUAL(1, buf.currentReadByteOffset());
+    TSUNIT_EQUAL(12, buf.currentReadBitOffset());
+    TSUNIT_EQUAL(4, buf.remainingReadBits());
+    TSUNIT_ASSERT(!buf.endOfRead());
+    TSUNIT_ASSERT(buf.reservedBitsError());
+
+    TSUNIT_EQUAL(4, buf.getBits<uint8_t>(4));
+    TSUNIT_EQUAL(2, buf.currentReadByteOffset());
+    TSUNIT_EQUAL(16, buf.currentReadBitOffset());
+    TSUNIT_EQUAL(0, buf.remainingReadBits());
+    TSUNIT_ASSERT(buf.endOfRead());
+    TSUNIT_ASSERT(buf.reservedBitsError());
+
+    Debug() << "Buffer::Reserved: error: \"" << buf.reservedBitsErrorString() << "\"" << std::endl;
+
+    TSUNIT_EQUAL(u"Byte 0, bit #5 should be '1'\n"
+                 u"Byte 0, bit #6 should be '0'\n"
+                 u"Byte 1, bit #1 should be '0'",
+                 buf.reservedBitsErrorString());
 }

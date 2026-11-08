@@ -22,6 +22,8 @@ class Base64Test: public tsunit::Test
 {
     TSUNIT_DECLARE_TEST(Encode);
     TSUNIT_DECLARE_TEST(Decode);
+    TSUNIT_DECLARE_TEST(Multiline);
+    TSUNIT_DECLARE_TEST(BadPad);
 };
 
 TSUNIT_REGISTER(Base64Test);
@@ -36,17 +38,19 @@ namespace {
     struct TV {
         std::string bin;
         ts::UString b64;
+        size_t      lsize;   // line size, when encoded in multi-line mode, 0 means one line
+        size_t      lcount;  // line count
     };
 
     const std::list<TV> test_vectors {
-        {"", u""},
-        {"f", u"Zg=="},
-        {"fo", u"Zm8="},
-        {"foo", u"Zm9v"},
-        {"foob", u"Zm9vYg=="},
-        {"fooba", u"Zm9vYmE="},
-        {"foobar", u"Zm9vYmFy"},
-        {"10>40?", u"MTA+NDA/"},
+        {"", u"", 0, 0},
+        {"f", u"Zg==", 0, 1},
+        {"fo", u"Zm8=", 0, 1},
+        {"foo", u"Zm9v", 0, 1},
+        {"foob", u"Zm9vYg==", 0, 1},
+        {"fooba", u"Zm9vYmE=", 0, 1},
+        {"foobar", u"Zm9vYmFy", 3, 3},
+        {"10>40?", u"MTA+NDA/", 4, 2},
         {"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor "
          "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud "
          "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure "
@@ -104,7 +108,7 @@ namespace {
          u"bmlldCwgdXQgZXQgdm9sdXB0YXRlcyByZXB1ZGlhbmRhZSBzaW50IGV0IG1vbGVzdGlhZSBub24gcmVjdXNhbmRh"
          u"ZS4gSXRhcXVlIGVhcnVtIHJlcnVtIGhpYyB0ZW5ldHVyIGEgc2FwaWVudGUgZGVsZWN0dXMsIHV0IGF1dCByZWlj"
          u"aWVuZGlzIHZvbHVwdGF0aWJ1cyBtYWlvcmVzIGFsaWFzIGNvbnNlcXVhdHVyIGF1dCBwZXJmZXJlbmRpcyBkb2xv"
-         u"cmlidXMgYXNwZXJpb3JlcyByZXBlbGxhdC4="}
+         u"cmlidXMgYXNwZXJpb3JlcyByZXBlbGxhdC4=", 88, 34}
     };
 }
 
@@ -161,4 +165,38 @@ TSUNIT_DEFINE_TEST(Decode)
         TSUNIT_ASSERT(dec.decodeTerminate(bin));
         TSUNIT_EQUAL(tv.bin, std::string(reinterpret_cast<const char*>(bin.data()), bin.size()));
     }
+}
+
+TSUNIT_DEFINE_TEST(Multiline)
+{
+    ts::Base64 dec;
+    ts::ByteBlock bin;
+
+    for (const auto& tv : test_vectors) {
+        // Bulk encoding.
+        const ts::UString mono = ts::Base64::Encoded(tv.bin.data(), tv.bin.size(), tv.lsize);
+        ts::UStringVector multi;
+        mono.splitLines(multi, 4096);
+        Debug() << "Base64::Multiline: bin size: " << tv.bin.size() << ", b64 size: " << mono.size() << ", b64 max line size: " << tv.lsize << ", b64 lines count: " << multi.size() << std::endl;
+        TSUNIT_EQUAL(tv.lcount, multi.size());
+
+        // Bulk decoding.
+        TSUNIT_ASSERT(ts::Base64::Decode(bin, mono));
+        TSUNIT_EQUAL(tv.bin, std::string(reinterpret_cast<const char*>(bin.data()), bin.size()));
+    }
+}
+
+
+TSUNIT_DEFINE_TEST(BadPad)
+{
+    ts::ByteBlock bin;
+
+    TSUNIT_ASSERT(!ts::Base64::Decode(bin, u"A==="));
+    TSUNIT_ASSERT(!ts::Base64::Decode(bin, u"TR=="));
+    TSUNIT_ASSERT(ts::Base64::Decode(bin, u"TQ=="));
+    TSUNIT_EQUAL(u"4D", ts::UString::Dump(bin, ts::UString::SINGLE_LINE));
+    TSUNIT_ASSERT(!ts::Base64::Decode(bin, u"TQ==TQ=="));
+    TSUNIT_ASSERT(!ts::Base64::Decode(bin, u"TWF="));
+    TSUNIT_ASSERT(ts::Base64::Decode(bin, u"TWE="));
+    TSUNIT_EQUAL(u"4D 61", ts::UString::Dump(bin, ts::UString::SINGLE_LINE));
 }

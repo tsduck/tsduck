@@ -124,9 +124,10 @@ namespace ts {
 
     private:
         size_t _line_size;
-        size_t _line_count = 0;      // Current count of characters in current output line.
-        size_t _encoding_size = 0;   // Number of valid bytes in _encoding.
-        size_t _decoding_size = 0;   // Number of valid characters in _decoding.
+        size_t _line_count = 0;        // Current count of characters in current output line.
+        size_t _encoding_size = 0;     // Number of valid bytes in _encoding.
+        size_t _decoding_size = 0;     // Number of valid characters in _decoding.
+        bool   _end_decoding = false;  // Got an "end of decoding", i.e. got a padding character.
         std::array<uint8_t, BIN_BLOCK_SIZE> _encoding {};  // Encoding buffer: binary data to encode.
         std::array<UChar, STR_BLOCK_SIZE>   _decoding {};  // Decoding buffer: Base64 characters to decode.
 

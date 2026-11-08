@@ -1175,14 +1175,14 @@ ts::UString ts::UString::toJustified(const UString& right, size_type wid, UChar 
 // Replace the string with a "quoted" version of it.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UString::toQuoted(UChar quote_character, const UString& special_characters, bool force_quote) const
+ts::UString ts::UString::toQuoted(UChar quote_character, const UString& special_characters, bool force_quote, UChar non_print) const
 {
     UString result(*this);
-    result.quoted(quote_character, special_characters, force_quote);
+    result.quoted(quote_character, special_characters, force_quote, non_print);
     return result;
 }
 
-void ts::UString::quoted(UChar quote_character, const UString& special_characters, bool force_quote)
+void ts::UString::quoted(UChar quote_character, const UString& special_characters, bool force_quote, UChar non_print)
 {
     // Check if the string contains any character which requires quoting.
     // An empty string needs to be quoted as well to be identified as an actual empty string.
@@ -1223,6 +1223,9 @@ void ts::UString::quoted(UChar quote_character, const UString& special_character
                     insert(i++, 1, '\\');
                     at(i) = rep;
                 }
+            }
+            else if (!IsPrintable(c)) {
+                at(i) = non_print;
             }
         }
         // Final quote.
@@ -2465,7 +2468,7 @@ void ts::UString::ArgMixInContext::processArg()
     bool short_format = false;
     UChar pad = u' ';
     size_t min_width = 0;
-    size_t max_width = std::numeric_limits<size_t>::max();
+    size_t max_width = NPOS;
     size_t precision = 0;
 
     if (*_fmt == u'<') {
@@ -2485,6 +2488,7 @@ void ts::UString::ArgMixInContext::processArg()
         _fmt++;
     }
     getFormatSize(min_width);
+    min_width = std::min(min_width, MAX_FIELD_WIDTH);
     if (*_fmt == u'.') {
         ++_fmt;
         has_dot = true;

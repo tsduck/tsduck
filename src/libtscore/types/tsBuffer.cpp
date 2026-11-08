@@ -878,9 +878,11 @@ bool ts::Buffer::skipReservedBits(size_t bits, int expected)
 {
     expected &= 1;  // force 0 or 1
     while (!_read_error && bits-- > 0) {
+        const size_t pos = currentReadBitOffset();
         if (getBit() != expected && !_read_error) {
-            // Invalid reserved bit.
-            _reserved_bits_errors.push_back((currentReadBitOffset() << 1) | expected);
+            // Invalid reserved bit. The invalid bit is at previous position (offset - 1).
+            // Entry layout: byte offset || bit offset (3 bits) || expected bit (1 bit).
+            _reserved_bits_errors.push_back((pos << 1) | expected);
         }
     }
     return !_read_error;
@@ -1197,6 +1199,8 @@ ts::UString ts::Buffer::tryGetASCII(size_t bytes)
 
 bool ts::Buffer::tryGetASCII(UString& result, size_t bytes)
 {
+    result.clear();
+
     // If size is unspecified, use the rest of the buffer.
     if (bytes == NPOS) {
         bytes = remainingReadBytes();

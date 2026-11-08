@@ -30,6 +30,9 @@ namespace {
 
     // Number of output bytes per non-padding Base64 character (up to STR_BLOCK_SIZE).
     const size_t bin_size[] = {0, 0, 1, 2, 3};
+
+    // Mask of bits which must be zero in last non-padding Base64 character (up to STR_BLOCK_SIZE).
+    const uint8_t last_mask[] = {0x00, 0x00, 0x0F, 0x03, 0x00};
 }
 
 
@@ -52,6 +55,7 @@ void ts::Base64::reset()
     _line_count = 0;
     _encoding_size = 0;
     _decoding_size = 0;
+    _end_decoding = false;
 }
 
 
@@ -159,8 +163,8 @@ void ts::Base64::encodeTerminate(UString& b64)
 
 bool ts::Base64::decodeBlock(ByteBlock& bin, const UChar* b64, size_t size)
 {
-    // We must have exactly one block.
-    if (size != STR_BLOCK_SIZE) {
+    // We must have exactly one block and not got a previous padding character.
+    if (size != STR_BLOCK_SIZE || _end_decoding) {
         return false;
     }
 
@@ -168,6 +172,23 @@ bool ts::Base64::decodeBlock(ByteBlock& bin, const UChar* b64, size_t size)
     size_t char_count = STR_BLOCK_SIZE;
     while (char_count > 0 && b64[char_count - 1] == PAD_CHAR) {
         char_count--;
+        _end_decoding = true;
+    }
+
+    // Corresponding number of output bytes.
+    const size_t out_size = bin_size[char_count];
+    if (out_size == 0) {
+        // To many padding bytes (e.g. "A===").
+        return false;
+    }
+
+    // Check that the extra bits in the last non-padding bytes are zero.
+    if (last_mask[char_count] != 0x00) {
+        assert(char_count > 0);
+        const size_t last_char = size_t(b64[char_count - 1]);
+        if (last_char >= sizeof(reverse_alphabet) || (reverse_alphabet[last_char] & last_mask[char_count]) != 0) {
+            return false;
+        }
     }
 
     // Decode as 4 6-bit values.
@@ -181,7 +202,6 @@ bool ts::Base64::decodeBlock(ByteBlock& bin, const UChar* b64, size_t size)
     }
 
     // Convert to 3 8-bit values.
-    const size_t out_size = bin_size[char_count];
     uint8_t* out = bin.enlarge(out_size);
     if (out_size > 0) {
         out[0] = uint8_t(dec[0] << 2) | (dec[1] >> 4);
@@ -200,36 +220,26 @@ bool ts::Base64::decodeBlock(ByteBlock& bin, const UChar* b64, size_t size)
 // Decode Base64 string and return partial binary data.
 //----------------------------------------------------------------------------
 
-bool ts::Base64::decodeAdd(ByteBlock& bin, const UString& b64)
+bool ts::Base64::decodeAdd(ByteBlock& bin, const UString& b64_str)
 {
-    bool status = true;
-    size_t b64_index = 0;
+    const UChar* const b64_end = b64_str.data() + b64_str.size();
 
-    // If previous input was buffered, fill it with additional data.
-    if (_decoding_size > 0) {
-        while (_decoding_size < _decoding.size() && b64_index < b64.size()) {
-            _decoding[_decoding_size++] = b64[b64_index++];
+    for (const UChar* b64 = b64_str.data(); b64 < b64_end; ++b64) {
+        // Safely ignore space characters.
+        if (!IsSpace(*b64)) {
+            // Accumulate non-space characters in internal _decoding buffer.
+            assert(_decoding_size < _decoding.size());
+            _decoding[_decoding_size++] = *b64;
+            // Decode a block if full.
+            if (_decoding_size >= _decoding.size()) {
+                _decoding_size = 0;
+                if (!decodeBlock(bin, _decoding.data(), _decoding.size())) {
+                    return false;
+                }
+            }
         }
     }
-
-    // If previous input is a full block, decode it.
-    if (_decoding_size == _decoding.size()) {
-        status = decodeBlock(bin, _decoding.data(), _decoding_size);
-        _decoding_size = 0;
-    }
-
-    // Process full blocks from input Base64 string.
-    while (status && b64_index + STR_BLOCK_SIZE <= b64.size()) {
-        status = decodeBlock(bin, &b64[b64_index], STR_BLOCK_SIZE);
-        b64_index += STR_BLOCK_SIZE;
-    }
-
-    // Buffer remaining input.
-    while (status && b64_index < b64.size()) {
-        _decoding[_decoding_size++] = b64[b64_index++];
-    }
-
-    return status;
+    return true;
 }
 
 
@@ -242,6 +252,7 @@ bool ts::Base64::decodeTerminate(ByteBlock& bin)
     // In Base64 string shall have a multiple of 4 bytes. Hence, the buffer shall be empty.
     const bool status = _decoding_size == 0;
     _decoding_size = 0;
+    _end_decoding = false;
     return status;
 }
 
