@@ -890,6 +890,28 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //----------------------------------------------------------------------------
 
 //!
+//! Attribute for an unaligned type.
+//! @ingroup cpp
+//!
+//! Example:
+//! @code
+//! using unaligned_uint32_t = uint32_t TS_UNALIGNED;
+//! @endcode
+//!
+#if defined(DOXYGEN)
+    #define TS_UNALIGNED
+#elif defined(TS_MSC) && defined(TS_I386)
+    // Attribute is unsupported on i386 but alignment doesn't care.
+    #define TS_UNALIGNED
+#elif defined(TS_MSC)
+    #define TS_UNALIGNED __unaligned
+#elif defined(TS_LLVM) || defined(TS_GCC)
+    #define TS_UNALIGNED __attribute__((aligned(1), may_alias))
+#else
+    #error "New unknown compiler, please update TS_UNALIGNED in tsPlatform.h"
+#endif
+
+//!
 //! Attribute to explicitly disable optimization in a function.
 //! @ingroup cpp
 //!
@@ -1259,6 +1281,14 @@ namespace ts {
     using const_uint16_ptr = const uint16_t*;  //!< Pointer to @c const uint16_t @ingroup cpp
     using const_uint32_ptr = const uint32_t*;  //!< Pointer to @c const uint32_t @ingroup cpp
     using const_uint64_ptr = const uint64_t*;  //!< Pointer to @c const uint64_t @ingroup cpp
+
+    // Unaligned versions of standard integer types.
+    using unaligned_int16_t = int16_t TS_UNALIGNED;    //!< Unaligned @c int16_t @ingroup cpp
+    using unaligned_int32_t = int32_t TS_UNALIGNED;    //!< Unaligned @c int32_t @ingroup cpp
+    using unaligned_int64_t = int64_t TS_UNALIGNED;    //!< Unaligned @c int64_t @ingroup cpp
+    using unaligned_uint16_t = uint16_t TS_UNALIGNED;  //!< Unaligned @c uint16_t @ingroup cpp
+    using unaligned_uint32_t = uint32_t TS_UNALIGNED;  //!< Unaligned @c uint32_t @ingroup cpp
+    using unaligned_uint64_t = uint64_t TS_UNALIGNED;  //!< Unaligned @c uint64_t @ingroup cpp
 
     //!
     //! Constant meaning "no size", "not found" or "do not resize".

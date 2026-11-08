@@ -110,14 +110,14 @@ bool ts::IdenticalBytes(const void* area, size_t area_size)
 void ts::MemXor(void* dest, const void* src1, const void* src2, size_t size)
 {
     while (size >= 8) {
-        *reinterpret_cast<uint64_t*>(dest) = *reinterpret_cast<const uint64_t*>(src1) ^ *reinterpret_cast<const uint64_t*>(src2);
+        *reinterpret_cast<unaligned_uint64_t*>(dest) = *reinterpret_cast<const unaligned_uint64_t*>(src1) ^ *reinterpret_cast<const unaligned_uint64_t*>(src2);
         dest = reinterpret_cast<uint8_t*>(dest) + 8;
         src1 = reinterpret_cast<const uint8_t*>(src1) + 8;
         src2 = reinterpret_cast<const uint8_t*>(src2) + 8;
         size -= 8;
     }
     if (size >= 4) {
-        *reinterpret_cast<uint32_t*>(dest) = *reinterpret_cast<const uint32_t*>(src1) ^ *reinterpret_cast<const uint32_t*>(src2);
+        *reinterpret_cast<unaligned_uint32_t*>(dest) = *reinterpret_cast<const unaligned_uint32_t*>(src1) ^ *reinterpret_cast<const unaligned_uint32_t*>(src2);
         dest = reinterpret_cast<uint8_t*>(dest) + 4;
         src1 = reinterpret_cast<const uint8_t*>(src1) + 4;
         src2 = reinterpret_cast<const uint8_t*>(src2) + 4;
@@ -153,13 +153,13 @@ uint32_t ts::GetUInt24LE(const void* p)
 
 void ts::PutUInt24BE(void* p, uint32_t i)
 {
-    *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 8));
+    *(static_cast<unaligned_uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 8));
     *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i);
 }
 
 void ts::PutUInt24LE(void* p, uint32_t i)
 {
-    *(static_cast<uint16_t*>(p)) = CondByteSwap16LE(static_cast<uint16_t>(i));
+    *(static_cast<unaligned_uint16_t*>(p)) = CondByteSwap16LE(static_cast<uint16_t>(i));
     *(static_cast<uint8_t*>(p) + 2) = static_cast<uint8_t>(i >> 16);
 }
 
@@ -178,12 +178,12 @@ uint64_t ts::GetUInt40LE(const void* p)
 void ts::PutUInt40BE(void* p, uint64_t i)
 {
     *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 32);
-    *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+    *(reinterpret_cast<unaligned_uint32_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap32BE(static_cast<uint32_t>(i));
 }
 
 void ts::PutUInt40LE(void* p, uint64_t i)
 {
-    *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+    *(static_cast<unaligned_uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
     *(static_cast<uint8_t*>(p) + 4) = static_cast<uint8_t>(i >> 32);
 }
 
@@ -201,14 +201,14 @@ uint64_t ts::GetUInt48LE(const void* p)
 
 void ts::PutUInt48BE(void* p, uint64_t i)
 {
-    *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
-    *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 2)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+    *(static_cast<unaligned_uint16_t*>(p)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
+    *(reinterpret_cast<unaligned_uint32_t*>(static_cast<uint8_t*>(p) + 2)) = CondByteSwap32BE(static_cast<uint32_t>(i));
 }
 
 void ts::PutUInt48LE(void* p, uint64_t i)
 {
-    *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
-    *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
+    *(static_cast<unaligned_uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+    *(reinterpret_cast<unaligned_uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
 }
 
 // 56 bits
@@ -226,14 +226,14 @@ uint64_t ts::GetUInt56LE(const void* p)
 void ts::PutUInt56BE(void* p, uint64_t i)
 {
     *(static_cast<uint8_t*>(p)) = static_cast<uint8_t>(i >> 48);
-    *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
-    *(reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(p) + 3)) = CondByteSwap32BE(static_cast<uint32_t>(i));
+    *(reinterpret_cast<unaligned_uint16_t*>(static_cast<uint8_t*>(p) + 1)) = CondByteSwap16BE(static_cast<uint16_t>(i >> 32));
+    *(reinterpret_cast<unaligned_uint32_t*>(static_cast<uint8_t*>(p) + 3)) = CondByteSwap32BE(static_cast<uint32_t>(i));
 }
 
 void ts::PutUInt56LE(void* p, uint64_t i)
 {
-    *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
-    *(reinterpret_cast<uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
+    *(static_cast<unaligned_uint32_t*>(p)) = CondByteSwap32LE(static_cast<uint32_t>(i));
+    *(reinterpret_cast<unaligned_uint16_t*>(static_cast<uint8_t*>(p) + 4)) = CondByteSwap16LE(static_cast<uint16_t>(i >> 32));
     *(static_cast<uint8_t*>(p) + 6) = static_cast<uint8_t>(i >> 48);
 }
 

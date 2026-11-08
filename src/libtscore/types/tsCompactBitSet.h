@@ -78,7 +78,7 @@ namespace ts {
         //!
         //! Constructor from a container of integer values.
         //! @tparam CONTAINER A container type of integer values.
-        //! @param [in] values Initial label values to set.
+        //! @param [in] values Initial bit values to set.
         //! Bits are numbered from LSB to MSB.
         //!
         template<class CONTAINER> requires std::integral<typename CONTAINER::value_type>
@@ -115,21 +115,21 @@ namespace ts {
 
         //!
         //! Negation unary operator.
-        //! @return A new label set.
+        //! @return A new bit set.
         //!
         CompactBitSet<BITS> operator~() const { return CompactBitSet<BITS>(~_value); }
 
         //!
         //! Binary or operator.
         //! @param [in] p Other instance to compare.
-        //! @return A new label set.
+        //! @return A new bit set.
         //!
         CompactBitSet<BITS> operator|(const CompactBitSet<BITS>& p) const { return CompactBitSet<BITS>(_value | p._value); }
 
         //!
         //! Binary and operator.
         //! @param [in] p Other instance to compare.
-        //! @return A new label set.
+        //! @return A new bit set.
         //!
         CompactBitSet<BITS> operator&(const CompactBitSet<BITS>& p) const { return CompactBitSet<BITS>(_value & p._value); }
 
@@ -148,20 +148,20 @@ namespace ts {
         CompactBitSet<BITS>& operator&=(const CompactBitSet<BITS>& p) { _value &= p._value; return *this; }
 
         //!
-        //! Check if all labels are set.
-        //! @return True if all labels are set.
+        //! Check if all bits are set.
+        //! @return True if all bits are set.
         //!
         bool all() const { return _value == ALL; }
 
         //!
-        //! Check if at least one label is set.
-        //! @return True if at least one label is set.
+        //! Check if at least one bit is set.
+        //! @return True if at least one bit is set.
         //!
         bool any() const { return _value != 0; }
 
         //!
-        //! Check if no label is set.
-        //! @return True if no label is set.
+        //! Check if no bit is set.
+        //! @return True if no bit is set.
         //!
         bool none() const { return _value == 0; }
 
@@ -171,46 +171,56 @@ namespace ts {
         void flip() { _value = ~_value & ALL; }
 
         //!
-        //! Set all labels.
+        //! Set all bits.
         //!
         void set() { _value = ALL; }
 
         //!
-        //! Set or reset one label.
-        //! @param [in] pos Label to alter, 0 to 31.
-        //! @param [in] value Optional label value to set, true by default.
+        //! Set or reset one bit.
+        //! @param [in] pos Bit to alter, 0 to 31.
+        //! @param [in] value Optional bit value to set, true by default.
         //!
         void set(size_t pos, bool value = true)
         {
-            if (value) {
-                _value |= (int_t(1) << pos) & ALL;
+            if (pos <= MAX) {
+                if (value) {
+                    _value |= (int_t(1) << pos) & ALL;
+                }
+                else {
+                    _value &= ~(int_t(1) << pos);
+                }
             }
-            else {
+        }
+
+        //!
+        //! Reset all bits.
+        //!
+        void reset() { _value = 0; }
+
+        //!
+        //! Reset one bit.
+        //! @param [in] pos Bit to reset, 0 to 31.
+        //!
+        void reset(size_t pos)
+        {
+            if (pos <= MAX) {
                 _value &= ~(int_t(1) << pos);
             }
         }
 
         //!
-        //! Reset all labels.
+        //! Test is a bit is set.
+        //! @param [in] pos bit to test, 0 to 31.
+        //! @return True if the specified bit is set.
         //!
-        void reset() { _value = 0; }
+        bool test(size_t pos) const
+        {
+            return pos <= MAX && ((_value & (int_t(1) << pos)) != 0);
+        }
 
         //!
-        //! Reset one label.
-        //! @param [in] pos Label to reset, 0 to 31.
-        //!
-        void reset(size_t pos) { _value &= ~(int_t(1) << pos); }
-
-        //!
-        //! Test is a label is set.
-        //! @param [in] pos Label to test, 0 to 31.
-        //! @return True if the specified label is set.
-        //!
-        bool test(size_t pos) const { return (_value & (int_t(1) << pos)) != 0; }
-
-        //!
-        //! Return the set of labels as a 32-bit integer.
-        //! @return The set of labels as a 32-bit integer.
+        //! Return the set of bits as a 32-bit integer.
+        //! @return The set of bits as a 32-bit integer.
         //!
         int_t toInt() const { return _value; }
 

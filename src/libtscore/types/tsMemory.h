@@ -167,7 +167,7 @@ namespace ts {
     //! @param [in] p An address pointing to a 16-bit unsigned integer in big endian representation.
     //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint16_t GetUInt16BE(const void* p) { return CondByteSwap16BE(*(static_cast<const uint16_t*>(p))); }
+    TSCOREDLL inline uint16_t GetUInt16BE(const void* p) { return CondByteSwap16BE(*(static_cast<const unaligned_uint16_t*>(p))); }
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in big endian representation.
@@ -183,7 +183,7 @@ namespace ts {
     //! @param [in] p An address pointing to a 32-bit unsigned integer in big endian representation.
     //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint32_t GetUInt32BE(const void* p) { return CondByteSwap32BE(*(static_cast<const uint32_t*>(p))); }
+    TSCOREDLL inline uint32_t GetUInt32BE(const void* p) { return CondByteSwap32BE(*(static_cast<const unaligned_uint32_t*>(p))); }
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in big endian representation.
@@ -215,7 +215,7 @@ namespace ts {
     //! @param [in] p An address pointing to a 64-bit unsigned integer in big endian representation.
     //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint64_t GetUInt64BE(const void* p) { return CondByteSwap64BE(*(static_cast<const uint64_t*>(p))); }
+    TSCOREDLL inline uint64_t GetUInt64BE(const void* p) { return CondByteSwap64BE(*(static_cast<const unaligned_uint64_t*>(p))); }
 
     //!
     //! Function getting a 16-bit unsigned integer from serialized data in little endian representation.
@@ -223,7 +223,7 @@ namespace ts {
     //! @param [in] p An address pointing to a 16-bit unsigned integer in little endian representation.
     //! @return The 16-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint16_t GetUInt16LE(const void* p) { return CondByteSwap16LE(*(static_cast<const uint16_t*>(p))); }
+    TSCOREDLL inline uint16_t GetUInt16LE(const void* p) { return CondByteSwap16LE(*(static_cast<const unaligned_uint16_t*>(p))); }
 
     //!
     //! Function getting a 24-bit unsigned integer from serialized data in little endian representation.
@@ -239,7 +239,7 @@ namespace ts {
     //! @param [in] p An address pointing to a 32-bit unsigned integer in little endian representation.
     //! @return The 32-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint32_t GetUInt32LE(const void* p) { return CondByteSwap32LE(*(static_cast<const uint32_t*>(p))); }
+    TSCOREDLL inline uint32_t GetUInt32LE(const void* p) { return CondByteSwap32LE(*(static_cast<const unaligned_uint32_t*>(p))); }
 
     //!
     //! Function getting a 40-bit unsigned integer from serialized data in little endian representation.
@@ -271,7 +271,7 @@ namespace ts {
     //! @param [in] p An address pointing to a 64-bit unsigned integer in little endian representation.
     //! @return The 64-bit unsigned integer in native byte order, deserialized from @a p.
     //!
-    TSCOREDLL inline uint64_t GetUInt64LE(const void* p) { return CondByteSwap64LE(*(static_cast<const uint64_t*>(p))); }
+    TSCOREDLL inline uint64_t GetUInt64LE(const void* p) { return CondByteSwap64LE(*(static_cast<const unaligned_uint64_t*>(p))); }
 
     //!
     //! Function serializing a 16-bit unsigned integer data in big endian representation.
@@ -279,7 +279,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
     //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSCOREDLL inline void PutUInt16BE(void* p, uint16_t i) { *(static_cast<uint16_t*>(p)) = CondByteSwap16BE(i); }
+    TSCOREDLL inline void PutUInt16BE(void* p, uint16_t i) { *(static_cast<unaligned_uint16_t*>(p)) = CondByteSwap16BE(i); }
 
     //!
     //! Function serializing a 24-bit unsigned integer data in big endian representation.
@@ -295,7 +295,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 32-bit unsigned integer.
     //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSCOREDLL inline void PutUInt32BE(void* p, uint32_t i) { *(static_cast<uint32_t*>(p)) = CondByteSwap32BE(i); }
+    TSCOREDLL inline void PutUInt32BE(void* p, uint32_t i) { *(static_cast<unaligned_uint32_t*>(p)) = CondByteSwap32BE(i); }
 
     //!
     //! Function serializing a 40-bit unsigned integer data in big endian representation.
@@ -327,7 +327,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 64-bit unsigned integer.
     //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in big endian representation.
     //!
-    TSCOREDLL inline void PutUInt64BE(void* p, uint64_t i) { *(static_cast<uint64_t*>(p)) = CondByteSwap64BE(i); }
+    TSCOREDLL inline void PutUInt64BE(void* p, uint64_t i) { *(static_cast<unaligned_uint64_t*>(p)) = CondByteSwap64BE(i); }
 
     //!
     //! Function serializing a 16-bit unsigned integer data in little endian representation.
@@ -335,7 +335,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 16-bit unsigned integer.
     //! @param [in]  i The 16-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
-    TSCOREDLL inline void PutUInt16LE(void* p, uint16_t i) { *(static_cast<uint16_t*>(p)) = CondByteSwap16LE(i); }
+    TSCOREDLL inline void PutUInt16LE(void* p, uint16_t i) { *(static_cast<unaligned_uint16_t*>(p)) = CondByteSwap16LE(i); }
 
     //!
     //! Function serializing a 24-bit unsigned integer data in little endian representation.
@@ -351,7 +351,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 32-bit unsigned integer.
     //! @param [in]  i The 32-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
-    TSCOREDLL inline void PutUInt32LE(void* p, uint32_t i) { *(static_cast<uint32_t*>(p)) = CondByteSwap32LE(i); }
+    TSCOREDLL inline void PutUInt32LE(void* p, uint32_t i) { *(static_cast<unaligned_uint32_t*>(p)) = CondByteSwap32LE(i); }
 
     //!
     //! Function serializing a 40-bit unsigned integer data in little endian representation.
@@ -383,7 +383,7 @@ namespace ts {
     //! @param [out] p An address where to serialize the 64-bit unsigned integer.
     //! @param [in]  i The 64-bit unsigned integer in native byte order to serialize in little endian representation.
     //!
-    TSCOREDLL inline void PutUInt64LE(void* p, uint64_t i) { *(static_cast<uint64_t*>(p)) = CondByteSwap64LE(i); }
+    TSCOREDLL inline void PutUInt64LE(void* p, uint64_t i) { *(static_cast<unaligned_uint64_t*>(p)) = CondByteSwap64LE(i); }
 
 #else
 
@@ -1119,7 +1119,7 @@ namespace ts {
     template <typename INT> requires std::integral<INT>
     inline INT GetIntBE(const void* p)
     {
-        return CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
+        return CondByteSwapBE<INT>(*(static_cast<const INT TS_UNALIGNED*>(p)));
     }
 
     //!
@@ -1132,7 +1132,7 @@ namespace ts {
     template <typename INT> requires std::integral<INT>
     inline INT GetIntLE(const void* p)
     {
-        return CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
+        return CondByteSwapLE<INT>(*(static_cast<const INT TS_UNALIGNED*>(p)));
     }
 
     //!
@@ -1145,7 +1145,7 @@ namespace ts {
     template <typename INT> requires std::integral<INT>
     inline void GetIntBE(const void* p, INT& i)
     {
-        i = CondByteSwapBE<INT>(*(static_cast<const INT*>(p)));
+        i = CondByteSwapBE<INT>(*(static_cast<const INT TS_UNALIGNED*>(p)));
     }
 
     //!
@@ -1158,7 +1158,7 @@ namespace ts {
     template <typename INT> requires std::integral<INT>
     inline void GetIntLE(const void* p, INT& i)
     {
-        i = CondByteSwapLE<INT>(*(static_cast<const INT*>(p)));
+        i = CondByteSwapLE<INT>(*(static_cast<const INT TS_UNALIGNED*>(p)));
     }
 
     //!
@@ -1171,7 +1171,7 @@ namespace ts {
     template <typename INT> requires std::integral<INT>
     inline void PutIntBE(void* p, INT i)
     {
-        *(static_cast<INT*>(p)) = CondByteSwapBE<INT>(i);
+        *(static_cast<INT TS_UNALIGNED*>(p)) = CondByteSwapBE<INT>(i);
     }
 
     //!
@@ -1184,7 +1184,7 @@ namespace ts {
     template <typename INT> requires std::integral<INT>
     inline void PutIntLE(void* p, INT i)
     {
-        *(static_cast<INT*>(p)) = CondByteSwapLE<INT>(i);
+        *(static_cast<INT TS_UNALIGNED*>(p)) = CondByteSwapLE<INT>(i);
     }
 
 #else
@@ -1451,7 +1451,7 @@ namespace ts {
             return static_cast<INT>(GetUInt16LE(p));
         }
         else if constexpr (SIZE == 2 && std::is_signed_v<INT>) {
-            return static_cast<INT>(GetInt16(p));
+            return static_cast<INT>(GetInt16LE(p));
         }
         else if constexpr (SIZE == 3 && std::is_unsigned_v<INT>) {
             return static_cast<INT>(GetUInt24LE(p));
