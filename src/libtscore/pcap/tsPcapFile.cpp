@@ -212,9 +212,9 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size)
                 // This is a negative power of 10, e.g. 6 means micro-second.
                 ifd.time_units = Power10(data[0]);
             }
-            else if (size_t(data[0] & 0x7F) < size_t(8 * sizeof(ifd.time_units))) {
+            else if (size_t(data[0] & 0x7F) < size_t(8 * sizeof(ifd.time_units) - 1)) {
                 // This is a negative power of 2, e.g. 6 means unit of 1/64 second.
-                ifd.time_units = 1LL << (data[0] & 0x7F);
+                ifd.time_units = std::intmax_t(1) << (data[0] & 0x7F);
             }
             else {
                 return error(u"invalid timestamp resolution 0x%X in pcap-ng file", data[0]);
@@ -222,7 +222,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size)
         }
 
         // Point to next option. Pad length to 4 bytes.
-        data += round_up<uint16_t>(len, 4);
+        data += round_up<size_t>(len, 4);
     }
 
     report().debug(u"pcap-ng interface#%d: link type: %d, time units/second: %'d, time offset: %'!s, FCS length: %d bytes",
@@ -412,7 +412,7 @@ bool ts::PcapFile::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds
             }
 
             // Compute time stamp. Time units should never be null in pcap format.
-            timestamp = _if[0].time_units < 0 ?
+            timestamp = _if[0].time_units <= 0 ?
                 cn::microseconds(-1) :
                 cn::microseconds((cn::microseconds::rep(tstamp) * std::micro::den) + (cn::microseconds::rep(sub_tstamp) * std::micro::den) / _if[0].time_units);
 
@@ -504,8 +504,8 @@ bool ts::PcapFile::readIP(IPPacket& packet, VLANIdStack& vlans, cn::microseconds
             }
         }
         else if (ifd.link_type == LINKTYPE_RAW && cap_size >= 1) {
-            // Raw IPv4 or IPv6 header (version in first byte), no encopsulation.
-            const uint8_t version = buffer[cap_start];
+            // Raw IPv4 or IPv6 header (version in first byte), no encapsulation.
+            const uint8_t version = buffer[cap_start] >> 4;
             if (version != IPv4_VERSION && version != IPv6_VERSION) {
                 // Neither IPv4 nor IPv6.
                 cap_size = 0;

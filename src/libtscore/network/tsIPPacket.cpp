@@ -47,6 +47,7 @@ bool ts::IPPacket::reset(const void* data, size_t size)
 
     // The IP version is in the first 4 bits.
     const uint8_t version = ip[0] >> 4;
+    size_t total_size = 0;
     if (version == IPv4_VERSION) {
         // Verify the IPv4 header checksum. Some IPv4 implementation leaves it to zero, meaning not computed, don't check.
         const uint16_t checksum = GetUInt16BE(ip + IPv4_CHECKSUM_OFFSET);
@@ -55,7 +56,7 @@ bool ts::IPPacket::reset(const void* data, size_t size)
         }
 
         // Extract complete packet size from header.
-        size = std::min<size_t>(size, GetUInt16(ip + IPv4_LENGTH_OFFSET));
+        total_size = GetUInt16(ip + IPv4_LENGTH_OFFSET);
 
         // Source and destination addresses.
         _source.setAddress(GetUInt32BE(ip + IPv4_SRC_ADDR_OFFSET));
@@ -63,12 +64,23 @@ bool ts::IPPacket::reset(const void* data, size_t size)
     }
     else {
         assert(version == IPv6_VERSION);
-        // Complete packet size.
-        size = std::min<size_t>(size, IPv6_MIN_HEADER_SIZE + GetUInt16(ip + IPv6_LENGTH_OFFSET));
+
+        // Extract complete packet size from header.
+        total_size = IPv6_MIN_HEADER_SIZE + GetUInt16(ip + IPv6_LENGTH_OFFSET);
 
         // Source and destination addresses.
         _source.setAddress(ip + IPv6_SRC_ADDR_OFFSET, IPAddress::BYTES6);
         _destination.setAddress(ip + IPv6_DEST_ADDR_OFFSET, IPAddress::BYTES6);
+    }
+
+    // Check extracted complete packet size.
+    if (size < total_size) {
+        // Truncated packet, last part is missing.
+        return false;
+    }
+    else if (size > total_size) {
+        // Memory buffer is larger than the packet. It happens with pcap packets.
+        size = total_size;
     }
 
     // Validate and filter by protocol.

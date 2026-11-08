@@ -82,5 +82,8 @@ namespace ts {
         UDPReceiverArgs    _args {};          // Reception parameters (typically from the command line).
         IPSocketAddress    _first_source {};  // Socket address of first received packet.
         IPSocketAddressSet _sources {};       // Set of all detected packet sources.
+
+        // Limit the amount of accumulated packet sources to avoid that a flood of spoofed packets saturates the memory.
+        static constexpr size_t MAX_SOURCES = 256;
     };
 }

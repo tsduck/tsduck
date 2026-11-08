@@ -187,7 +187,7 @@ bool ts::UDPReceiver::receive(void* data,
         }
 
         // Keep track of senders (sources) to detect or filter multiple sources.
-        if (_sources.count(sender) == 0) {
+        if (!_sources.contains(sender) && _sources.size() < MAX_SOURCES) {
             // Detected an additional source, warn the user that distinct streams are potentially mixed.
             // If no source filtering is applied, this is a warning since this may affect the resulting stream.
             // With source filtering, this is just an informational verbose-level message.
@@ -198,6 +198,9 @@ bool ts::UDPReceiver::receive(void* data,
             }
             report().log(level, u"detected source: %s", sender);
             _sources.insert(sender);
+            if (_sources.size() == MAX_SOURCES) {
+                report().warning(u"too many different sources, stopping logging them");
+            }
         }
 
         // Filter packets based on source address if requested.
