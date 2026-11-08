@@ -580,7 +580,7 @@ namespace ts {
         UString _prefix {};
 
         // Current maximum severity which applies to this object and all Reports in the delegation tree.
-        volatile int _max_severity = Severity::Info;
+        std::atomic_int _max_severity = Severity::Info;
 
         // Last maximum severity which was explicitly set in this report. Can be different from
         // _max_severity because_max_severity can be updated when another Report in the delegation
@@ -595,7 +595,7 @@ namespace ts {
         // Delegate Report. When not null, all messages are logged through this other report (recursively
         // if the delegate has a delegate, etc.) Unsynchronized access during message logging, see comment
         // in the header of the class.
-        Report* volatile _delegate = nullptr;
+        std::atomic<Report*> _delegate = nullptr;
 
         // Indicate if _delegators is not empty.
         // Can be modified only under the global mutex.

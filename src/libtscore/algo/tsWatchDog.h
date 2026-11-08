@@ -90,7 +90,7 @@ namespace ts {
 
     private:
         Report&                   _log;                // For debug messages.
-        volatile int              _watch_dog_id = 0;   // Application-defined watchdog identifier.
+        std::atomic_int           _watch_dog_id = 0;   // Application-defined watchdog identifier.
         std::mutex                _mutex {};           // Mutex to protect the following fields.
         std::condition_variable   _condition {};       // Condition to signal when something changed.
         WatchDogHandlerInterface* _handler = nullptr;  // Handler for expiration.

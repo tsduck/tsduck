@@ -55,13 +55,14 @@ ts::Report::~Report()
         _has_delegators = false;
 
         // Finally, remove ourselves from our delegate.
-        if (_delegate != nullptr) {
-            if (_delegate->_delegators.erase(this) == 0) {
-                _delegate->error(u"internal error, destructing Report 0x%X, unknown in its delegate 0x%X", size_t(this), size_t(_delegate));
-            }
-            _delegate->_transactions += 1;
-            _delegate->_has_delegators = !_delegate->_delegators.empty();
+        const auto deleg = _delegate.load();
+        if (deleg != nullptr) {
             _delegate = nullptr;
+            if (deleg->_delegators.erase(this) == 0) {
+                deleg->error(u"internal error, destructing Report 0x%X, unknown in its delegate 0x%X", size_t(this), size_t(deleg));
+            }
+            deleg->_transactions += 1;
+            deleg->_has_delegators = !deleg->_delegators.empty();
         }
     }
 }
@@ -167,20 +168,20 @@ ts::Report* ts::Report::delegateReport(Report* report)
     // Detect loops in the tree.
     for (Report* del = report; del != nullptr; del = del->_delegate) {
         if (del == this) {
-            _delegate->error(u"internal error, Report 0x%X tries to delegate to 0x%X, would create a loop", size_t(this), size_t(report));
+            _delegate.load()->error(u"internal error, Report 0x%X tries to delegate to 0x%X, would create a loop", size_t(this), size_t(report));
             return _delegate;
         }
     }
 
     // Unlink from previous.
-    Report* const previous = _delegate;
-    if (_delegate != nullptr) {
-        if (_delegate->_delegators.erase(this) == 0) {
-            _delegate->error(u"internal error, Report 0x%X unknown in its delegate 0x%X", size_t(this), size_t(_delegate));
-        }
-        _delegate->_transactions += 1;
-        _delegate->_has_delegators = !_delegate->_delegators.empty();
+    const auto previous = _delegate.load();
+    if (previous != nullptr) {
         _delegate = nullptr;
+        if (previous->_delegators.erase(this) == 0) {
+            previous->error(u"internal error, Report 0x%X unknown in its delegate 0x%X", size_t(this), size_t(previous));
+        }
+        previous->_transactions += 1;
+        previous->_has_delegators = !previous->_delegators.empty();
     }
 
     // The new max severity to set to us and our delegators.
@@ -220,10 +221,10 @@ void ts::Report::log(int severity, const UString& msg)
         _got_errors = true;
     }
     if (severity <= _max_severity) {
-        // _delegate is volatile, use a copy.
-        Report* const del = _delegate;
-        if (del != nullptr) {
-            del->log(severity, _prefix.empty() ? msg : _prefix + msg);
+        // _delegate is atomic, use a copy.
+        Report* const deleg = _delegate;
+        if (deleg != nullptr) {
+            deleg->log(severity, _prefix.empty() ? msg : _prefix + msg);
         }
         else {
             writeLog(severity, _prefix.empty() ? msg : _prefix + msg);

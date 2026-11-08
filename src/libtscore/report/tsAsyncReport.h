@@ -35,7 +35,7 @@ namespace ts {
     //!
     //! Messages are displayed on the standard error device by default.
     //!
-    class TSCOREDLL AsyncReport: public Report, private Thread
+    class TSCOREDLL AsyncReport: public Report
     {
         TS_NOCOPY(AsyncReport);
     public:
@@ -109,11 +109,19 @@ namespace ts {
         // Report implementation.
         virtual void writeLog(int severity, const UString& msg) override;
 
-        // This hook is invoked in the context of the logging thread.
-        virtual void main() override;
+        // Internal logging thread object.
+        class TSCOREDLL LoggingThread: public Thread
+        {
+            TS_NOBUILD_NOCOPY(LoggingThread);
+        public:
+            LoggingThread(AsyncReport& parent);
+        private:
+            AsyncReport& _parent;
+            virtual void main() override final;
+        };
 
-        // The application threads send that type of message to the logging thread
-        struct LogMessage
+        // The application threads send that type of message to the logging thread.
+        struct TSCOREDLL LogMessage
         {
             bool    terminate;
             int     severity;
@@ -123,6 +131,7 @@ namespace ts {
         using LogMessagePtr = LogMessageQueue::MessagePtr;
 
         // Private members:
+        LoggingThread    _thread {*this};
         LogMessageQueue  _log_queue {};
         std::atomic_bool _time_stamp = false;
         std::atomic_bool _synchronous = false;

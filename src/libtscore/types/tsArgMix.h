@@ -536,6 +536,12 @@ namespace ts {
         template <class Rep, class Period>
         ArgMixIn(const cn::duration<Rep, Period>& d) :
             ArgMix(storage_type<int64_t>::value | CHRONO, sizeof(int64_t), int64_t(d.count()), Period::num, Period::den) {}
+        //!
+        //! Constructor from a std::atomic variable.
+        //! @param [in] a A std::atomic value.
+        //!
+        template <typename T>
+        ArgMixIn(const std::atomic<T>& a) : ArgMixIn(a.load()) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.

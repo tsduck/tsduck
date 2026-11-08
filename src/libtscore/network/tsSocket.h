@@ -209,7 +209,7 @@ namespace ts {
         virtual bool allowSetNonBlocking() const override;
 
     private:
-        volatile SysSocketType _sock = SYS_SOCKET_INVALID;
-        IP                     _gen = IP::v4;    // Current generation of the IP address. Never IP::Any.
+        std::atomic<SysSocketType> _sock = SYS_SOCKET_INVALID;
+        IP _gen = IP::v4;  // Current generation of the IP address. Never IP::Any.
     };
 }

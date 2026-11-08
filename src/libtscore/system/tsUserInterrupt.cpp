@@ -9,7 +9,7 @@
 #include "tsUserInterrupt.h"
 #include "tsSysUtils.h"
 
-ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
+std::atomic<ts::UserInterrupt*> ts::UserInterrupt::_active_instance = nullptr;
 
 // On UNIX platforms, we use a semaphore (sem_t). On macOS, the address of the
 // semaphore is returned by sem_open. On other UNIX, the semaphore instance is

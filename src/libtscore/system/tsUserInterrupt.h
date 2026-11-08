@@ -119,6 +119,6 @@ namespace ts {
         std::atomic_bool  _interrupted = false;
 
         // There is only one active instance at a time
-        static UserInterrupt* volatile _active_instance;
+        static std::atomic<UserInterrupt*> _active_instance;
     };
 }

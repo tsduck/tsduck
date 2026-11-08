@@ -184,7 +184,7 @@ namespace ts {
         tlv::Logger&                 _logger;
         const emmgmux::Protocol&     _protocol;
         Report&                      _report {_logger.report()};
-        volatile State               _state = INITIAL;
+        std::atomic<State>           _state = INITIAL;
         IPSocketAddress              _udp_address {};
         uint64_t                     _total_bytes = 0;
         const AbortInterface*        _abort = nullptr;

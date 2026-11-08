@@ -52,12 +52,14 @@ bool ts::Socket::allowSetNonBlocking() const
 
 ts::SysHandleType ts::Socket::getReadHandle() const
 {
-    return _sock == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(_sock);
+    const SysSocketType s = _sock; // read atomic value
+    return s == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(s);
 }
 
 ts::SysHandleType ts::Socket::getWriteHandle() const
 {
-    return _sock == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(_sock);
+    const SysSocketType s = _sock; // read atomic value
+    return s == SYS_SOCKET_INVALID ? SYS_HANDLE_INVALID : SysHandleType(s);
 }
 
 

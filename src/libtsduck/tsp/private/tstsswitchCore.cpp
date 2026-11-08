@@ -16,7 +16,7 @@
 ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log) :
     _log(log),
     _opt(opt),
-    _inputs(_opt.inputs.size(), nullptr),
+    _inputs(_opt.inputs.size()),
     _output(_opt, handlers, *this, _log), // load output plugin and analyze options
     _event_dispatcher(_opt, _log),
     _receive_watchdog(this, _opt.receive_timeout, 0, _log),
@@ -26,8 +26,8 @@ ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerR
     for (size_t i = 0; i < _inputs.size(); ++i) {
         _inputs[i] = new InputExecutor(opt, handlers, i, *this, log);
         // Set the asynchronous logger as report method for all executors.
-        _inputs[i]->delegateReport(&_log);
-        _inputs[i]->setMaxSeverity(_log.maxSeverity());
+        input(i)->delegateReport(&_log);
+        input(i)->setMaxSeverity(_log.maxSeverity());
     }
 
     // Set the asynchronous logger as report method for output as well.
@@ -40,7 +40,7 @@ ts::tsswitch::Core::~Core()
     // Deallocate all input plugins.
     // The destructor of each plugin waits for its termination.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        delete _inputs[i];
+        delete input(i);
     }
     _inputs.clear();
 }
@@ -54,7 +54,7 @@ bool ts::tsswitch::Core::start()
 {
     // Get all input plugin options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        if (!_inputs[i]->plugin()->getOptions()) {
+        if (!input(i)->plugin()->getOptions()) {
             return false;
         }
     }
@@ -75,7 +75,7 @@ bool ts::tsswitch::Core::start()
     bool success = true;
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
         // Here, start() means start the thread, not start input plugin.
-        success = _inputs[i]->start();
+        success = input(i)->start();
     }
 
     if (!success) {
@@ -85,16 +85,16 @@ bool ts::tsswitch::Core::start()
     else if (_opt.fast_switch) {
         // Option --fast-switch, start all plugins, they continue to receive in parallel.
         for (size_t i = 0; i < _inputs.size(); ++i) {
-            _inputs[i]->startInput(i == _cur_plugin);
+            input(i)->startInput(i == _cur_plugin);
         }
     }
     else {
         // Start the first plugin only.
-        _inputs[_cur_plugin]->startInput(true);
+        input(_cur_plugin)->startInput(true);
 
         // If there is a primary input which is not the first one, start it as well.
         if (_opt.primary_input < _inputs.size() && _opt.primary_input != _cur_plugin) {
-            _inputs[_opt.primary_input]->startInput(false);
+            input(_opt.primary_input)->startInput(false);
         }
     }
 
@@ -123,7 +123,7 @@ void ts::tsswitch::Core::stop(bool success)
 
     // Tell all input plugins to terminate.
     for (size_t i = 0; success && i < _inputs.size(); ++i) {
-        _inputs[i]->terminateInput();
+        input(i)->terminateInput();
     }
 }
 
@@ -348,7 +348,7 @@ void ts::tsswitch::Core::execute(const Action& event)
                 break;
             }
             case START: {
-                _inputs[action.index]->startInput(action.flag);
+                input(action.index)->startInput(action.flag);
                 break;
             }
             case STOP: {
@@ -356,13 +356,13 @@ void ts::tsswitch::Core::execute(const Action& event)
                     // Automatically stop the receive timeout when we stop the current plugin.
                     _receive_watchdog.suspend();
                 }
-                _inputs[action.index]->stopInput();
+                input(action.index)->stopInput();
                 break;
             }
             case ABORT_INPUT: {
                 // Abort only if flag is set in action.
-                if (action.flag && !_inputs[action.index]->abortInput()) {
-                    _log.warning(u"input plugin %s does not support interruption, blocking may occur", _inputs[action.index]->pluginName());
+                if (action.flag && !input(action.index)->abortInput()) {
+                    _log.warning(u"input plugin %s does not support interruption, blocking may occur", input(action.index)->pluginName());
                 }
                 break;
             }
@@ -375,7 +375,7 @@ void ts::tsswitch::Core::execute(const Action& event)
                 break;
             }
             case NOTIF_CURRENT: {
-                _inputs[action.index]->setCurrent(action.flag);
+                input(action.index)->setCurrent(action.flag);
                 break;
             }
             case SET_CURRENT: {
@@ -426,7 +426,7 @@ bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, TS
             count = 0;
         }
         else {
-            _inputs[_cur_plugin]->getOutputArea(first, data, count);
+            input(_cur_plugin)->getOutputArea(first, data, count);
         }
         // Return when there is something to output in current plugin or the application terminates.
         if (count > 0 || _terminate) {
@@ -452,7 +452,7 @@ bool ts::tsswitch::Core::outputSent(size_t pluginIndex, size_t count)
     // Inform the input plugin that the packets can be reused for input.
     // We notify the original input plugin from which the packets came.
     // The "current" input plugin may have changed in the meantime.
-    _inputs[pluginIndex]->freeOutput(count);
+    input(pluginIndex)->freeOutput(count);
 
     // Return false when the application terminates.
     return !_terminate;
@@ -598,6 +598,6 @@ void ts::tsswitch::Core::waitForTermination()
 
     // Wait for all input termination.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i]->waitForTermination();
+        input(i)->waitForTermination();
     }
 }

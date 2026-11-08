@@ -147,7 +147,7 @@ namespace ts {
         // Private members
         tlv::Logger&                 _logger;
         const ecmgscs::Protocol&     _protocol;
-        volatile State               _state = INITIAL;
+        std::atomic<State>           _state = INITIAL;
         const AbortInterface*        _abort = nullptr;
         TCPConnection                _tcp_client {&_logger};         // connection with ECMG server
         TLVStream                    _tlv_client {_logger, _protocol, _tcp_client, true, 3};

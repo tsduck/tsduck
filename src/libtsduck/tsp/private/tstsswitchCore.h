@@ -163,6 +163,7 @@ namespace ts::tsswitch {
 
         using ActionSet = std::set<Action>;
         using ActionQueue = std::deque<Action>;
+        using InputExecutorVector = std::vector<std::atomic<InputExecutor*>>;
 
         Report&                     _log;               // Asynchronous log report.
         const InputSwitcherArgs&    _opt;               // Command line options.
@@ -180,6 +181,9 @@ namespace ts::tsswitch {
 
         // Names of actions for debug messages.
         static const Names _action_names;
+
+        // Get an input executor pointer.
+        InputExecutor* input(size_t index) { return _inputs[index].load(); }
 
         // Change input plugin with mutex already held.
         void setInputLocked(size_t index, bool abortCurrent);

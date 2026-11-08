@@ -117,9 +117,4 @@ namespace ts::tsswitch {
         // Implementation of Thread.
         virtual void main() override;
     };
-
-    //!
-    //! Vector of pointers to InputExecutor.
-    //!
-    using InputExecutorVector = std::vector<InputExecutor*>;
 }

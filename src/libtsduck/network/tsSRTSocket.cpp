@@ -190,13 +190,13 @@ public:
     bool setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const void* optval, size_t optlen);
     template <bool SUPPORTED, typename T> bool setSockOpt(::SRT_SOCKOPT opt_name, const char* opt_name_str, const T& optval);
 
-    IPSocketAddress      remote_address {};             // Peer socket address.
-    volatile ::SRTSOCKET sock = SRT_INVALID_SOCK;       // SRT socket for data transmission
-    volatile ::SRTSOCKET listener  = SRT_INVALID_SOCK;  // Listener SRT socket when srt_listen() is used.
-    bool                 disconnected = false;
-    size_t               total_sent_bytes = 0;
-    size_t               total_received_bytes = 0;
-    Time                 next_stats {};
+    IPSocketAddress          remote_address {};             // Peer socket address.
+    std::atomic<::SRTSOCKET> sock = SRT_INVALID_SOCK;       // SRT socket for data transmission
+    std::atomic<::SRTSOCKET> listener  = SRT_INVALID_SOCK;  // Listener SRT socket when srt_listen() is used.
+    bool                     disconnected = false;
+    size_t                   total_sent_bytes = 0;
+    size_t                   total_received_bytes = 0;
+    Time                     next_stats {};
 
 private:
     // Callback which is called on any incoming connection.
@@ -628,7 +628,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPSocketAddress& addr)
     }
 
     // Now keep the two SRT sockets in the context.
-    listener = sock;
+    listener = sock.load();
     sock = data_sock;
 
     // In listener mode, keep the address of the remote peer.
