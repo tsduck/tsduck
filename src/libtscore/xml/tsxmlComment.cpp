@@ -45,7 +45,8 @@ ts::UString ts::xml::Comment::typeName() const
 
 void ts::xml::Comment::print(TextFormatter& output, bool keep_node_open) const
 {
-    output << "<!--" << value() << "-->";
+    UString text(value());
+    output << "<!--" << escapedString(value(), u"", false) << "-->";
 }
 
 

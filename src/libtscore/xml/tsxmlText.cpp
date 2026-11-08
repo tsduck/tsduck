@@ -58,19 +58,12 @@ bool ts::xml::Text::stickyOutput() const
 void ts::xml::Text::print(TextFormatter& output, bool keep_node_open) const
 {
     if (_is_cdata) {
-        output << "<![CDATA[" << value() << "]]>";
+        // In a CDATA, the square brackets must also be escaped.
+        output << "<![CDATA[" << escapedString(value(), u"[]", false) << "]]>";
     }
     else {
-        UString text(value());
         // On non-formatting output (e.g. one-liner XML text), trim all spaces when allowed.
-        if (_trimmable && !output.formatting()) {
-            text.trim(true, true, true);
-        }
-        // In text nodes, without strictly conformant XML, we escape 3 out of 5 XML characters: < > &
-        // This is the required minimum to make the syntax correct.
-        // The quotes (' ") are not escaped since this makes most XML text unreadable.
-        text.convertToHTML(tweaks().strictTextNodeFormatting ? u"<>&'\"" : u"<>&");
-        output << text;
+        output << escapedString(value(), u"", _trimmable && !output.formatting());
     }
 }
 

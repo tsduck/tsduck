@@ -302,6 +302,15 @@ namespace ts::xml {
         virtual bool stickyOutput() const;
 
         //!
+        //! Convert a string into HTML-escaped characters, according to the current XML tweaks for the node.
+        //! @param [in] text The text to escape.
+        //! @param [in] additional_escape Additional characters to escape (useful for CDATA).
+        //! @param [in] trim_spaces Trim spaces first.
+        //! @return The transformed string, ready to output.
+        //!
+        UString escapedString(const UString& text, const UString& additional_escape, bool trim_spaces) const;
+
+        //!
         //! Build a debug string for the node.
         //! @return A debug string for the node.
         //!

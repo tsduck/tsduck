@@ -406,6 +406,28 @@ bool ts::xml::Node::parseChildren(TextParser& parser, size_t max_nested)
 
 
 //----------------------------------------------------------------------------
+// Convert a string into HTML-escaped characters.
+//----------------------------------------------------------------------------
+
+ts::UString ts::xml::Node::escapedString(const UString& input, const UString& additional_escape, bool trim_spaces) const
+{
+    // In text nodes, without strictly conformant XML, we escape 3 out of 5 XML characters: < > &
+    // This is the required minimum to make the syntax correct.
+    // The quotes (' ") are not escaped since this makes most XML text unreadable.
+    static const UString strict_escape(u"<>&'\"");
+    static const UString cool_escape(u"<>&");
+    const UString& escape(tweaks().strictTextNodeFormatting ? strict_escape : cool_escape);
+
+    UString output(input);
+    if (trim_spaces) {
+        output.trim(true, true, true);
+    }
+    output.convertToHTML(escape + additional_escape);
+    return output;
+}
+
+
+//----------------------------------------------------------------------------
 // Build a debug string for the node.
 //----------------------------------------------------------------------------
 
