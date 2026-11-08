@@ -126,7 +126,7 @@ namespace ts::tsp {
     protected:
         PacketBuffer*         _buffer = nullptr;    //!< Description of shared packet buffer.
         PacketMetadataBuffer* _metadata = nullptr;  //!< Description of shared packet metadata buffer.
-        volatile bool         _suspended = false;   //!< The plugin is suspended / resumed.
+        std::atomic_bool      _suspended = false;   //!< The plugin is suspended / resumed.
 
         //!
         //! Pass processed packets to the next packet processor.

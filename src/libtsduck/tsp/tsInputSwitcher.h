@@ -123,7 +123,7 @@ namespace ts {
         InputSwitcherArgs          _args {};
         tsswitch::Core*            _core = nullptr;
         tsswitch::CommandListener* _remote = nullptr;
-        volatile bool              _success = false;
+        std::atomic_bool           _success = false;
 
         // Internal and unconditional cleanupp of resources.
         void internalCleanup();

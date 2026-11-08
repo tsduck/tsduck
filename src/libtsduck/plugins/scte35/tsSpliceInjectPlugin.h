@@ -136,7 +136,7 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            volatile bool _terminate = false;
+            std::atomic_bool _terminate = false;
             PollFiles _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
 
             // Implementation of Thread.
@@ -161,8 +161,8 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            volatile bool _terminate = false;
-            UDPReceiver   _client {_plugin};
+            std::atomic_bool _terminate = false;
+            UDPReceiver _client {_plugin};
 
             // Implementation of Thread.
             virtual void main() override;
@@ -189,7 +189,7 @@ namespace ts {
         PIDSet           _input_pids {};                 // Keep track of input PID's as long as splice PID is unknown.
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
-        volatile bool           _wfb_received = false;   // First batch was received.
+        std::atomic_bool        _wfb_received = false;   // First batch was received.
         std::mutex              _wfb_mutex {};           // Mutex waiting for _wfb_received.
         std::condition_variable _wfb_condition{};        // Condition waiting for _wfb_received.
 

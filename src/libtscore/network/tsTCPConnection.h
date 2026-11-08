@@ -169,9 +169,9 @@ namespace ts {
         virtual bool endOfStream() override;
 
     private:
-        volatile bool _is_connected = false;
-        volatile bool _is_server_side = false;
-        volatile bool _end_of_input = false;
+        std::atomic_bool _is_connected = false;
+        std::atomic_bool _is_server_side = false;
+        std::atomic_bool _end_of_input = false;
 
         // Implementation of Socket interface.
         virtual void declareOpened(SysSocketType sock) override;

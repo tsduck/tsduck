@@ -41,7 +41,7 @@ namespace ts {
         static constexpr size_t SERVER_THREAD_STACK_SIZE = 128 * 1024;
 
         // Plugin private fields.
-        volatile bool    _terminate = false;
+        std::atomic_bool _terminate = false;
         size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
         IPArgs           _clients {};
         UDPReceiverArgs  _sock_args {};

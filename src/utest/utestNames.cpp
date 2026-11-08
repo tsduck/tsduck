@@ -214,17 +214,17 @@ TSUNIT_DEFINE_TEST(Unique)
     e2.add(u"foo", 2, std::numeric_limits<ts::Names::int_t>::max());
 
     auto newval = e2.addNewValue(u"n1");
-    debug() << "NamesTest::Unique: newval = " << newval << std::endl;
+    Debug() << "NamesTest::Unique: newval = " << newval << std::endl;
     TSUNIT_ASSERT(newval != ts::Names::UNKNOWN);
     TSUNIT_ASSERT(newval >= 0);
 
     newval = e2.addNewValue(u"n2");
-    debug() << "NamesTest::Unique: newval = " << newval << std::endl;
+    Debug() << "NamesTest::Unique: newval = " << newval << std::endl;
     TSUNIT_ASSERT(newval != ts::Names::UNKNOWN);
     TSUNIT_ASSERT(newval >= 0);
 
     newval = e2.addNewValue(u"n3");
-    debug() << "NamesTest::Unique: newval = " << newval << std::endl;
+    Debug() << "NamesTest::Unique: newval = " << newval << std::endl;
     TSUNIT_EQUAL(ts::Names::UNKNOWN, newval);
 }
 
@@ -244,7 +244,7 @@ TSUNIT_DEFINE_TEST(NameList)
     ref.push_back(u"AddedElement");
 
     const ts::UString list(e1.nameList());
-    debug() << "EnumerationTest: e1.nameList() = \"" << list << "\"" << std::endl;
+    Debug() << "EnumerationTest: e1.nameList() = \"" << list << "\"" << std::endl;
 
     ts::UStringVector value;
     list.split(value);
@@ -631,7 +631,7 @@ TSUNIT_DEFINE_TEST(Inheritance)
 TSUNIT_DEFINE_TEST(Extension)
 {
     // Create a temporary names file.
-    debug() << "NamesTest::testExtension: extension file: " << _temp_file_name << std::endl;
+    Debug() << "NamesTest::testExtension: extension file: " << _temp_file_name << std::endl;
     TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"[CASystemId]", u"0xF123 = test-cas"}), _temp_file_name));
 
     ts::DuckContext duck;

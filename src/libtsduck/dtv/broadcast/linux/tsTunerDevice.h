@@ -76,8 +76,8 @@ namespace ts {
         bool                _signal_timeout_silent = false;
         cn::milliseconds    _receive_timeout {};
         DeliverySystemSet   _delivery_systems {};
-        volatile bool       _reading_dvr = false;     // Read operation in progree on dvr.
-        volatile bool       _aborted = false;         // Tuner operation was aborted
+        std::atomic_bool    _reading_dvr = false;     // Read operation in progree on dvr.
+        std::atomic_bool    _aborted = false;         // Tuner operation was aborted
         UString             _frontend_name {};        // Frontend device name
         UString             _demux_name {};           // Demux device name
         UString             _dvr_name {};             // DVR device name

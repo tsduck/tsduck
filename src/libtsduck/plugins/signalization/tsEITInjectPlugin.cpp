@@ -345,7 +345,7 @@ bool ts::EITInjectPlugin::start()
             verbose(u"waiting for first batch of events");
             {
                 std::unique_lock<std::mutex> lock(_wfb_mutex);
-                _wfb_cond.wait(lock, [this]() { return _wfb_received; });
+                _wfb_cond.wait(lock, [this]() { return _wfb_received.load(); });
             }
             verbose(u"received first batch of events");
             loadFiles();
@@ -376,7 +376,7 @@ bool ts::EITInjectPlugin::stop()
 
 ts::PacketProcessStatus ts::EITInjectPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // If the file listener thread signaled the volatile bool, process files.
+    // If the file listener thread signaled the std::atomic_bool, process files.
     if (_check_files) {
         loadFiles();
     }

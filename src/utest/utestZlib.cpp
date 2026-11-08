@@ -285,7 +285,7 @@ namespace {
 
 ts::Report& ZlibTest::report()
 {
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
         return CERR;
     }
@@ -309,7 +309,7 @@ bool ZlibTest::verify(const ts::ByteBlock& data, size_t start)
         while (start + diff < data.size() && diff < intext_size && data[start + diff] == uint8_t(intext[diff])) {
             diff++;
         }
-        debug() << "ZlibTest: invalid decompressed data, decompressed size: " << (data.size() - start)
+        Debug() << "ZlibTest: invalid decompressed data, decompressed size: " << (data.size() - start)
                 << ", reference size: " << intext_size << ", first diff at index " << diff << std::endl;
         return false;
     }
@@ -359,7 +359,7 @@ TSUNIT_DEFINE_TEST(Reference9)
 TSUNIT_DEFINE_TEST(AllLevels)
 {
     for (int level = 0; level <= 9; level++) {
-        debug() << "ZlibTest::AllLevels: testing level " << level << std::endl;
+        Debug() << "ZlibTest::AllLevels: testing level " << level << std::endl;
 
         ts::ByteBlock compressed;
         TSUNIT_ASSERT(ts::Zlib::Compress(compressed, intext, intext_size, level, report()));
@@ -428,35 +428,35 @@ TSUNIT_DEFINE_TEST(Specific)
             in.push_back(uint8_t(val));
         }
     }
-    debug() << "ZlibTest::Specific: in size: " << in.size() << std::endl;
+    Debug() << "ZlibTest::Specific: in size: " << in.size() << std::endl;
 
     ts::ByteBlock compressed;
     TSUNIT_ASSERT(ts::Zlib::Compress(compressed, in, 1, report()));
-    debug() << "ZlibTest::Specific: compressed size: " << compressed.size() << std::endl;
+    Debug() << "ZlibTest::Specific: compressed size: " << compressed.size() << std::endl;
 
     ts::ByteBlock decompressed;
     TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, ts::NPOS, report()));
-    debug() << "ZlibTest::Specific: decompressed size: " << decompressed.size() << std::endl;
+    Debug() << "ZlibTest::Specific: decompressed size: " << decompressed.size() << std::endl;
     TSUNIT_ASSERT(decompressed == in);
 
     if (!ts::Zlib::DefaultSdefl() && ts::Zlib::SdeflSupported()) {
         decompressed.clear();
         TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, ts::NPOS, report(), true));
-        debug() << "ZlibTest::Specific: sdefl decompressed size: " << decompressed.size() << std::endl;
+        Debug() << "ZlibTest::Specific: sdefl decompressed size: " << decompressed.size() << std::endl;
         TSUNIT_ASSERT(decompressed == in);
 
         compressed.clear();
         TSUNIT_ASSERT(ts::Zlib::Compress(compressed, in, 1, report(), true));
-        debug() << "ZlibTest::Specific: sdefl compressed size: " << compressed.size() << std::endl;
+        Debug() << "ZlibTest::Specific: sdefl compressed size: " << compressed.size() << std::endl;
 
         decompressed.clear();
         TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, ts::NPOS, report(), true));
-        debug() << "ZlibTest::Specific: sdefl decompressed size: " << decompressed.size() << std::endl;
+        Debug() << "ZlibTest::Specific: sdefl decompressed size: " << decompressed.size() << std::endl;
         TSUNIT_ASSERT(decompressed == in);
 
         decompressed.clear();
         TSUNIT_ASSERT(ts::Zlib::Decompress(decompressed, compressed, ts::NPOS, report(), false));
-        debug() << "ZlibTest::Specific: zlib decompressed size: " << decompressed.size() << std::endl;
+        Debug() << "ZlibTest::Specific: zlib decompressed size: " << decompressed.size() << std::endl;
         TSUNIT_ASSERT(decompressed == in);
     }
 }
@@ -469,11 +469,11 @@ TSUNIT_DEFINE_TEST(Truncated)
         in[i] = uint8_t(i + i % 3 + i % 7);
     }
 
-    debug() << "ZlibTest::Truncated: in size: " << in.size() << std::endl;
+    Debug() << "ZlibTest::Truncated: in size: " << in.size() << std::endl;
 
     ts::ByteBlock compressed;
     TSUNIT_ASSERT(ts::Zlib::Compress(compressed, in, 1, report()));
-    debug() << "ZlibTest::Truncated: compressed size: " << compressed.size() << std::endl;
+    Debug() << "ZlibTest::Truncated: compressed size: " << compressed.size() << std::endl;
 
     // Decompress only half the compressed size. Used to loop forever in a previous version.
     ts::ByteBlock decompressed;

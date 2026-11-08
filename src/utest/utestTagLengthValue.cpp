@@ -100,7 +100,7 @@ TSUNIT_DEFINE_TEST(ECMG)
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    debug() << "TagLengthValueTest::testECMG: serialized:" << std::endl
+    Debug() << "TagLengthValueTest::testECMG: serialized:" << std::endl
             << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
@@ -132,7 +132,7 @@ TSUNIT_DEFINE_TEST(ECMG)
     TSUNIT_EQUAL(refMessage.max_comp_time, ptr->max_comp_time);
 
     const ts::UString str(refMessage.dump(2));
-    debug() << "TagLengthValueTest::testECMG: dump" << std::endl << str << std::endl;
+    Debug() << "TagLengthValueTest::testECMG: dump" << std::endl << str << std::endl;
     TSUNIT_EQUAL(refString, str);
 }
 
@@ -168,7 +168,7 @@ TSUNIT_DEFINE_TEST(EMMG)
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    debug() << "TagLengthValueTest::testEMMG: serialized:" << std::endl
+    Debug() << "TagLengthValueTest::testEMMG: serialized:" << std::endl
             << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
@@ -187,7 +187,7 @@ TSUNIT_DEFINE_TEST(EMMG)
     TSUNIT_EQUAL(refMessage.bandwidth, ptr->bandwidth);
 
     const ts::UString str(refMessage.dump(2));
-    debug() << "TagLengthValueTest::testEMMG: dump" << std::endl << str << std::endl;
+    Debug() << "TagLengthValueTest::testEMMG: dump" << std::endl << str << std::endl;
     TSUNIT_EQUAL(refString, str);
 }
 
@@ -224,7 +224,7 @@ TSUNIT_DEFINE_TEST(ECMGError)
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    debug() << "TagLengthValueTest::testECMGError: serialized:" << std::endl
+    Debug() << "TagLengthValueTest::testECMGError: serialized:" << std::endl
                  << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
@@ -242,7 +242,7 @@ TSUNIT_DEFINE_TEST(ECMGError)
     TSUNIT_ASSERT(refMessage.error_information == ptr->error_information);
 
     const ts::UString str(refMessage.dump(2));
-    debug() << "TagLengthValueTest::testECMGError: dump" << std::endl << str << std::endl;
+    Debug() << "TagLengthValueTest::testECMGError: dump" << std::endl << str << std::endl;
     TSUNIT_EQUAL(refString, str);
 }
 
@@ -282,7 +282,7 @@ TSUNIT_DEFINE_TEST(EMMGError)
     ts::tlv::Serializer zer(data);
     refMessage.serialize(zer);
 
-    debug() << "TagLengthValueTest::testEMMGError: serialized:" << std::endl
+    Debug() << "TagLengthValueTest::testEMMGError: serialized:" << std::endl
             << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
@@ -300,6 +300,6 @@ TSUNIT_DEFINE_TEST(EMMGError)
     TSUNIT_ASSERT(refMessage.error_information == ptr->error_information);
 
     const ts::UString str(refMessage.dump(2));
-    debug() << "TagLengthValueTest::testEMMGError: dump" << std::endl << str << std::endl;
+    Debug() << "TagLengthValueTest::testEMMGError: dump" << std::endl << str << std::endl;
     TSUNIT_EQUAL(refString, str);
 }

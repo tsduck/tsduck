@@ -60,12 +60,12 @@ TSUNIT_DEFINE_TEST(ListTuners)
     ts::TunerPtrVector tuners;
 
     TSUNIT_ASSERT(ts::Tuner::GetAllTuners(duck, tuners));
-    debug() << "TunerTest::testListTuners: found " << tuners.size() << " tuners" << std::endl;
+    Debug() << "TunerTest::testListTuners: found " << tuners.size() << " tuners" << std::endl;
     for (size_t i = 0; i < tuners.size(); ++i) {
-        debug() << "  Tuner #" << i << ": name: \"" << tuners[i]->deviceName() << "\"" << std::endl;
-        debug() << "            info: \"" << tuners[i]->deviceInfo() << "\"" << std::endl;
-        debug() << "            path: \"" << tuners[i]->devicePath() << "\"" << std::endl;
-        debug() << "            type: " << tuners[i]->deliverySystems() << std::endl;
+        Debug() << "  Tuner #" << i << ": name: \"" << tuners[i]->deviceName() << "\"" << std::endl;
+        Debug() << "            info: \"" << tuners[i]->deviceInfo() << "\"" << std::endl;
+        Debug() << "            path: \"" << tuners[i]->devicePath() << "\"" << std::endl;
+        Debug() << "            type: " << tuners[i]->deliverySystems() << std::endl;
     }
 }
 
@@ -89,36 +89,36 @@ TSUNIT_DEFINE_TEST(ScanDVBT)
 
     std::vector<uint32_t> channels;
     ts::GetEnvironment(u"TS_TEST_SCAN_UHF").toIntegers(channels);
-    debug() << "TunerTest::testScanDVBT: scanning " << channels.size() << " UHF channels on tuner \"" << name << "\"" << std::endl;
+    Debug() << "TunerTest::testScanDVBT: scanning " << channels.size() << " UHF channels on tuner \"" << name << "\"" << std::endl;
 
     for (size_t i = 0; i < channels.size(); ++i) {
 
         if (i == 0 || reopen) {
-            debug() << " opening tuner " << name << std::endl;
+            Debug() << " opening tuner " << name << std::endl;
             TSUNIT_ASSERT(tuner.open(name, false));
             TSUNIT_ASSERT(tuner.isOpen());
         }
 
-        debug() << "  scanning channel " << channels[i] << std::endl;
+        Debug() << "  scanning channel " << channels[i] << std::endl;
         args.clear();
         args.delivery_system = ts::DS_DVB_T;
         args.frequency = duck.uhfBand()->frequency(channels[i]);
         args.setDefaultValues();
-        debug() << "  tuning options: " << args.toPluginOptions() << std::endl;
+        Debug() << "  tuning options: " << args.toPluginOptions() << std::endl;
 
         TSUNIT_ASSERT(tuner.tune(args));
         ts::TSScanner scan(duck, tuner, cn::milliseconds(5000));
 
         ts::ServiceList services;
         scan.getServices(services);
-        debug() << "  found " << services.size() << " services" << std::endl;
+        Debug() << "  found " << services.size() << " services" << std::endl;
 
         for (const auto& srv : services) {
-            debug() << "  service " << srv.getName() << ", LCN " << srv.getLCN() << std::endl;
+            Debug() << "  service " << srv.getName() << ", LCN " << srv.getLCN() << std::endl;
         }
 
         if (i == channels.size() - 1 || reopen) {
-            debug() << " closing tuner " << std::endl;
+            Debug() << " closing tuner " << std::endl;
             TSUNIT_ASSERT(tuner.close());
             TSUNIT_ASSERT(!tuner.isOpen());
         }
@@ -138,10 +138,10 @@ TSUNIT_DEFINE_TEST(SignalState)
 #if defined(TS_LINUX)
 TSUNIT_DEFINE_TEST(DTVProperties)
 {
-    debug() << "TunerTest::testDTVProperties:" << std::endl;
+    Debug() << "TunerTest::testDTVProperties:" << std::endl;
     for (uint32_t cmd = 0; cmd <= DTV_MAX_COMMAND + 2; cmd++) {
         const char* name = ts::DTVProperties::CommandName(cmd);
-        debug() << "  " << cmd << ": " << (name == nullptr ? "(null)" : name) << std::endl;
+        Debug() << "  " << cmd << ": " << (name == nullptr ? "(null)" : name) << std::endl;
     }
 }
 #endif // TS_LINUX

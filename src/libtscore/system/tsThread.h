@@ -202,8 +202,8 @@ namespace ts {
         mutable std::recursive_mutex _mutex {};
         ThreadAttributes _attributes {};
         UString          _typename {};
-        volatile bool    _started = false;
-        volatile bool    _waiting = false;
+        std::atomic_bool _started = false;
+        std::atomic_bool _waiting = false;
 
         // Internal version of isCurrentThread(), bypass checks
         bool isCurrentThreadUnchecked() const;

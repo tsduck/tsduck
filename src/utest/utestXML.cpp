@@ -80,7 +80,7 @@ void XMLTest::afterTest()
 
 ts::Report& XMLTest::report()
 {
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         return CERR;
     }
     else {

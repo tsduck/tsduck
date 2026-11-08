@@ -55,13 +55,13 @@ namespace ts::tsswitch {
         void close();
 
     private:
-        Report&       _log;
-        Core&         _core;
+        Report&          _log;
+        Core&            _core;
         const InputSwitcherArgs& _opt;
-        UDPReceiver   _udp_server {&_log};
-        TLSServer     _tls_server {&_log, _opt.remote_control};
-        TLSConnection _tls_client {&_log, _opt.remote_control};
-        volatile bool _terminate = false;
+        UDPReceiver      _udp_server {&_log};
+        TLSServer        _tls_server {&_log, _opt.remote_control};
+        TLSConnection    _tls_client {&_log, _opt.remote_control};
+        std::atomic_bool _terminate = false;
 
         // Implementation of Thread.
         virtual void main() override;

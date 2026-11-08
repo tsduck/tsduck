@@ -70,7 +70,7 @@ TSUNIT_REGISTER(NetworkingTest);
 void NetworkingTest::beforeTest()
 {
     _previous_severity = CERR.maxSeverity();
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
     }
 }
@@ -88,7 +88,7 @@ void NetworkingTest::afterTest()
 
 TSUNIT_DEFINE_TEST(SystemStructures)
 {
-    debug() << "NetworkingTest::SystemStructures: sizeof(::in_addr) = " << sizeof(::in_addr) << std::endl
+    Debug() << "NetworkingTest::SystemStructures: sizeof(::in_addr) = " << sizeof(::in_addr) << std::endl
             << "NetworkingTest::SystemStructures: sizeof(::in6_addr) = " << sizeof(::in6_addr) << std::endl
             << "NetworkingTest::SystemStructures: sizeof(::sockaddr) = " << sizeof(::sockaddr) << std::endl
             << "NetworkingTest::SystemStructures: sizeof(::sockaddr_in) = " << sizeof(::sockaddr_in) << std::endl
@@ -190,7 +190,7 @@ TSUNIT_DEFINE_TEST(IPv4Address)
     TSUNIT_EQUAL(u"2.3.4.5", s1);
 
     // Note: fail if not connected to a network.
-    debug() << "NetworkingTest: www.google.com = " << ts::IPAddress(u"www.google.com", CERR) << std::endl;
+    Debug() << "NetworkingTest: www.google.com = " << ts::IPAddress(u"www.google.com", CERR) << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(IPv6Address)
@@ -385,7 +385,7 @@ TSUNIT_DEFINE_TEST(LocalHost)
     TSUNIT_ASSERT(a1 == ts::IPAddress::LocalHost4);
 
     // Some hosts can return localhost in IPv4 or IPv6.
-    debug() << "NetworkingTest: localhost = " << ts::IPAddress(u"localhost", CERR) << std::endl;
+    Debug() << "NetworkingTest: localhost = " << ts::IPAddress(u"localhost", CERR) << std::endl;
 
     ts::IPAddress a2(u"localhost", CERR);
     if (a2.generation() == ts::IP::v6) {
@@ -420,9 +420,9 @@ TSUNIT_DEFINE_TEST(GetLocalIPAddresses)
     // The two calls must return the same number of addresses.
     TSUNIT_ASSERT(addr.size() == netif.size());
 
-    debug() << "NetworkingTest: GetLocalIPAddresses: " << netif.size() << " local addresses" << std::endl;
+    Debug() << "NetworkingTest: GetLocalIPAddresses: " << netif.size() << " local addresses" << std::endl;
     for (size_t i = 0; i < netif.size(); ++i) {
-        debug() << "NetworkingTest: local address " << i
+        Debug() << "NetworkingTest: local address " << i
                 << ": " << netif[i]
                 << ", mask: " << netif[i].address.mask()
                 << ", broadcast: " << netif[i].address.broadcastAddress() << std::endl;

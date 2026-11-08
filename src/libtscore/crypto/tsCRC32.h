@@ -83,8 +83,8 @@ namespace ts {
         uint32_t _fcs = 0xFFFFFFFF;
 
         // Runtime check once if accelerated CRC32 instructions are supported on this CPU.
-        static volatile bool _accel_checked;
-        static volatile bool _accel_supported;
+        static std::atomic_bool _accel_checked;
+        static std::atomic_bool _accel_supported;
 
         // Accelerated versions, compiled in a separated module.
         uint32_t valueAccel() const;

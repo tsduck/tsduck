@@ -48,7 +48,7 @@ void MessageQueueTest::beforeTestSuite()
 {
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
-    debug() << "MessageQueueTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
+    Debug() << "MessageQueueTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
 }
 
 // Test suite cleanup method.
@@ -139,7 +139,7 @@ namespace {
 
         virtual void test() override
         {
-            tsunit::Test::debug() << "MessageQueueTest: test thread: started" << std::endl;
+            tsunit::Test::Debug() << "MessageQueueTest: test thread: started" << std::endl;
 
             // Initial suspend of 500 ms
             std::this_thread::sleep_for(cn::milliseconds(500));
@@ -150,7 +150,7 @@ namespace {
             do {
                 TSUNIT_ASSERT(_queue.dequeue(message, cn::milliseconds(10000)));
                 TSUNIT_ASSERT(message != nullptr);
-                tsunit::Test::debug() << "MessageQueueTest: test thread: received " << *message << std::endl;
+                tsunit::Test::Debug() << "MessageQueueTest: test thread: received " << *message << std::endl;
                 if (*message >= 0) {
                     TSUNIT_ASSERT(*message == expected);
                     expected++;
@@ -159,7 +159,7 @@ namespace {
                 ts::Thread::Yield();
             } while (*message >= 0);
 
-            tsunit::Test::debug() << "MessageQueueTest: test thread: end" << std::endl;
+            tsunit::Test::Debug() << "MessageQueueTest: test thread: end" << std::endl;
         }
     };
 }
@@ -170,7 +170,7 @@ TSUNIT_DEFINE_TEST(Queue)
     MessageQueueTestThread thread(queue);
     int message = 0;
 
-    debug() << "MessageQueueTest: main thread: starting test" << std::endl;
+    Debug() << "MessageQueueTest: main thread: starting test" << std::endl;
 
     // Enqueue 10 message, should not fail.
     // First 2 messages are enqueued without timeout.
@@ -186,25 +186,25 @@ TSUNIT_DEFINE_TEST(Queue)
     // Start the thread
     const ts::Time start(ts::Time::CurrentUTC());
     TSUNIT_ASSERT(thread.start());
-    debug() << "MessageQueueTest: main thread: test thread started" << std::endl;
+    Debug() << "MessageQueueTest: main thread: test thread started" << std::endl;
 
     // Enqueue 11th message with 50 ms timeout, should fail
-    debug() << "MessageQueueTest: main thread: enqueueing " << message << " (should fail)" << std::endl;
+    Debug() << "MessageQueueTest: main thread: enqueueing " << message << " (should fail)" << std::endl;
     TSUNIT_ASSERT(!queue.enqueue(new int(message), cn::milliseconds(50)));
 
     // Enqueue message, should take at least 500 ms
-    debug() << "MessageQueueTest: main thread: enqueueing " << message << " (10 s. timeout)" << std::endl;
+    Debug() << "MessageQueueTest: main thread: enqueueing " << message << " (10 s. timeout)" << std::endl;
     const bool enqueued = queue.enqueue(new int(message++), cn::milliseconds(10000));
     const cn::milliseconds duration = ts::Time::CurrentUTC() - start;
-    debug() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Chrono(duration) << std::endl;
+    Debug() << "MessageQueueTest: main thread: enqueue = " << ts::UString::TrueFalse(enqueued) << ", duration = " << ts::UString::Chrono(duration) << std::endl;
     TSUNIT_ASSERT(enqueued);
     TSUNIT_ASSUME(duration >= cn::milliseconds(500) - 20 * _precision); // imprecisions accumulate on Windows
 
     // Enqueue exit request
-    debug() << "MessageQueueTest: main thread: force enqueueing -1" << std::endl;
+    Debug() << "MessageQueueTest: main thread: force enqueueing -1" << std::endl;
     queue.forceEnqueue(new int(-1));
 
-    debug() << "MessageQueueTest: main thread: end of test" << std::endl;
+    Debug() << "MessageQueueTest: main thread: end of test" << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(PriorityQueue)

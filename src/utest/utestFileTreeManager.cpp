@@ -66,7 +66,7 @@ TSUNIT_DEFINE_TEST(FileTree)
 
     // Create temporary root directory.
     fs::create_directory(_temp_dir_name, &ts::ErrCodeReport(CERR, u"error creating directory %s", _temp_dir_name));
-    debug() << "TestFileTreeManager::FileTree: root: " << _temp_dir_name << std::endl;
+    Debug() << "TestFileTreeManager::FileTree: root: " << _temp_dir_name << std::endl;
     TSUNIT_ASSERT(fs::is_directory(_temp_dir_name));
 
     // Delete all files after 2 hours.

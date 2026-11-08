@@ -134,7 +134,7 @@ TSUNIT_DEFINE_TEST(Scrambling)
     ts::DVBCSA2 scrambler;
     ts::TSPacket pkt;
 
-    debug() << "ScramblingTest: " << count << " test vectors" << std::endl;
+    Debug() << "ScramblingTest: " << count << " test vectors" << std::endl;
 
     for (size_t ti = 0; ti < count; ++ti, ++vec) {
 
@@ -142,7 +142,7 @@ TSUNIT_DEFINE_TEST(Scrambling)
         const size_t payload_size = vec->plain.getPayloadSize();
         const uint8_t scv = vec->cipher.getScrambling();
 
-        debug() << "ScramblingTest: " << ti << ", header: " << header_size <<
+        Debug() << "ScramblingTest: " << ti << ", header: " << header_size <<
               " byte, payload: " << payload_size <<
               " bytes, PID: " << vec->plain.getPID() <<
               ", scrambling: " << ts::NameFromSection(u"dtv", u"ts.scrambling_control", scv) << std::endl;

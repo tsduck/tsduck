@@ -52,7 +52,7 @@ namespace {
 
         virtual void test() override
         {
-            tsunit::Test::debug() << "ReactiveMessageQueueTest: test thread: started" << std::endl;
+            tsunit::Test::Debug() << "ReactiveMessageQueueTest: test thread: started" << std::endl;
 
             // Initial suspend of 490 ms
             std::this_thread::sleep_for(cn::milliseconds(490));
@@ -66,7 +66,7 @@ namespace {
 
             // Enqueue a null pointer to signal end.
             _queue.enqueue(nullptr);
-            tsunit::Test::debug() << "ReactiveMessageQueueTest: test thread: end" << std::endl;
+            tsunit::Test::Debug() << "ReactiveMessageQueueTest: test thread: end" << std::endl;
         }
     };
 
@@ -78,11 +78,11 @@ namespace {
         virtual void handleDequeuedMessage(ts::ReactiveMessageQueue<int>& queue, ts::MessageQueue<int>::MessagePtr& msg, const ts::ObjectPtr& user_data) override
         {
             if (msg == nullptr) {
-                tsunit::Test::debug() << "ReactiveMessageQueueTest: MessageQueueTestHandler: end" << std::endl;
+                tsunit::Test::Debug() << "ReactiveMessageQueueTest: MessageQueueTestHandler: end" << std::endl;
                 queue.reactor().exitEventLoop();
             }
             else {
-                tsunit::Test::debug() << "ReactiveMessageQueueTest: MessageQueueTestHandler: message = " << *msg << std::endl;
+                tsunit::Test::Debug() << "ReactiveMessageQueueTest: MessageQueueTestHandler: message = " << *msg << std::endl;
                 TSUNIT_EQUAL(++last_message, *msg);
             }
         }
@@ -97,7 +97,7 @@ TSUNIT_DEFINE_TEST(Queue)
     MessageQueueTestThread thread(queue);
     MessageQueueTestHandler handler;
 
-    debug() << "ReactiveMessageQueueTest: main thread: starting test" << std::endl;
+    Debug() << "ReactiveMessageQueueTest: main thread: starting test" << std::endl;
 
     TSUNIT_ASSERT(reactor.open());
     rqueue.startReceive(&handler);
@@ -106,5 +106,5 @@ TSUNIT_DEFINE_TEST(Queue)
     TSUNIT_ASSERT(reactor.close());
     TSUNIT_EQUAL(3, handler.last_message);
 
-    debug() << "MessageQueueTest: main thread: end of test" << std::endl;
+    Debug() << "MessageQueueTest: main thread: end of test" << std::endl;
 }

@@ -203,7 +203,7 @@ TSUNIT_DEFINE_TEST(HelpDefault)
     log.clear();
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--version=short"})));
     const ts::UString version(log.messages());
-    debug() << "ArgsTest::testHelpDefault: version = \"" << version << "\"" << std::endl;
+    Debug() << "ArgsTest::testHelpDefault: version = \"" << version << "\"" << std::endl;
     const size_t dash = version.find(u'-');
     TSUNIT_ASSERT(dash != ts::NPOS);
     TSUNIT_EQUAL(TS_USTRINGIFY(TS_VERSION_MAJOR) u"." TS_USTRINGIFY(TS_VERSION_MINOR), version.substr(0, dash));
@@ -608,7 +608,7 @@ TSUNIT_DEFINE_TEST(MissingParameter)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", USV({u"--opt1"})));
-    debug() << "ArgsTest: testMissingParameter: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testMissingParameter: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: missing parameter", log.messages());
 }
 
@@ -619,7 +619,7 @@ TSUNIT_DEFINE_TEST(TooManyParameters)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"a", u"b", u"c"}));
-    debug() << "ArgsTest: testTooManyParameters: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testTooManyParameters: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: too many parameter, 2 maximum", log.messages());
 }
 
@@ -630,7 +630,7 @@ TSUNIT_DEFINE_TEST(AmbiguousOption)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"a", u"b"}));
-    debug() << "ArgsTest: testAmbiguousOption: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testAmbiguousOption: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: ambiguous option --opt (--opt1, --opt10)", log.messages());
 }
 
@@ -641,7 +641,7 @@ TSUNIT_DEFINE_TEST(InvalidIntegerOption)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"x", u"a", u"b"}));
-    debug() << "ArgsTest: testInvalidIntegerOption: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testInvalidIntegerOption: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: invalid integer value x for option --opt3", log.messages());
 }
 
@@ -652,7 +652,7 @@ TSUNIT_DEFINE_TEST(IntegerTooLow)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt3", u"-10", u"a", u"b"}));
-    debug() << "ArgsTest: testIntegerTooLow: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testIntegerTooLow: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: value for option --opt3 must be >= -4", log.messages());
 }
 
@@ -663,7 +663,7 @@ TSUNIT_DEFINE_TEST(IntegerTooHigh)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt3 10 a b"));
-    debug() << "ArgsTest: testIntegerTooHigh: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testIntegerTooHigh: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: value for option --opt3 must be <= 7", log.messages());
 }
 
@@ -674,7 +674,7 @@ TSUNIT_DEFINE_TEST(InvalidEnum)
     TestArgs args(&log);
 
     TSUNIT_ASSERT(!args.analyze(u"test --opt9 x a b"));
-    debug() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testInvalidEnum: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: invalid value x for option --opt9 (-c), use one of \"val1\", \"val2\", \"val3\"", log.messages());
 }
 
@@ -1090,7 +1090,7 @@ TSUNIT_DEFINE_TEST(InvalidFraction)
     args.option<Frac>(u"opt");
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"foo"}));
-    debug() << "ArgsTest: testInvalidFraction: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testInvalidFraction: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: invalid value foo for option --opt", log.messages());
 }
 
@@ -1104,7 +1104,7 @@ TSUNIT_DEFINE_TEST(InvalidDouble)
     args.option<Double>(u"opt", 0, 0, 1, 12, 15);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"2.3"}));
-    debug() << "ArgsTest: testInvalidDouble: \"" << log << "\"" << std::endl;
+    Debug() << "ArgsTest: testInvalidDouble: \"" << log << "\"" << std::endl;
     TSUNIT_EQUAL(u"Error: value for option --opt must be in range 12 to 15", log.messages());
 }
 

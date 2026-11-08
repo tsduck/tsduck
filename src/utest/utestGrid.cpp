@@ -97,7 +97,7 @@ TSUNIT_DEFINE_TEST(Narrow)
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    debug() << "GridTest::testNarrow: " << std::endl << buffer << std::endl;
+    Debug() << "GridTest::testNarrow: " << std::endl << buffer << std::endl;
     TSUNIT_EQUAL(reference, buffer);
 }
 
@@ -129,7 +129,7 @@ TSUNIT_DEFINE_TEST(Default)
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    debug() << "GridTest::testDefault: " << std::endl << buffer << std::endl;
+    Debug() << "GridTest::testDefault: " << std::endl << buffer << std::endl;
     TSUNIT_EQUAL(reference, buffer);
 }
 
@@ -209,7 +209,7 @@ TSUNIT_DEFINE_TEST(Layout)
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    debug() << "GridTest::testLayout: " << std::endl << buffer << std::endl;
+    Debug() << "GridTest::testLayout: " << std::endl << buffer << std::endl;
     TSUNIT_EQUAL(reference, buffer);
 }
 
@@ -243,6 +243,6 @@ TSUNIT_DEFINE_TEST(B01_04)
     std::string buffer(out.str());
     cleanupEndLines(buffer);
 
-    debug() << "GridTest::testB01_04: " << std::endl << buffer << std::endl;
+    Debug() << "GridTest::testB01_04: " << std::endl << buffer << std::endl;
     TSUNIT_EQUAL(reference, buffer);
 }

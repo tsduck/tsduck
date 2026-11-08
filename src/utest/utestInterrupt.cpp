@@ -63,6 +63,6 @@ TSUNIT_DEFINE_TEST(Interrupt)
         }
     }
     else {
-        debug() << "InterruptTest: interrupt test skipped, define UTEST_INTERRUPT_ALLOWED to force it" << std::endl;
+        Debug() << "InterruptTest: interrupt test skipped, define UTEST_INTERRUPT_ALLOWED to force it" << std::endl;
     }
 }

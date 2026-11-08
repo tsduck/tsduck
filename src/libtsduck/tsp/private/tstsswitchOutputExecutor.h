@@ -52,8 +52,8 @@ namespace ts::tsswitch {
         virtual size_t pluginIndex() const override;
 
     private:
-        OutputPlugin* _output;     // Plugin API.
-        volatile bool _terminate;  // Termination request.
+        OutputPlugin*    _output;     // Plugin API.
+        std::atomic_bool _terminate;  // Termination request.
 
         // Implementation of Thread.
         virtual void main() override;

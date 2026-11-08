@@ -47,7 +47,7 @@ void ThreadTest::beforeTestSuite()
 {
     _precision = cn::milliseconds(2);
     ts::SetTimersPrecision(_precision);
-    debug() << "ThreadTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
+    Debug() << "ThreadTest: timer precision = " << ts::UString::Chrono(_precision) << std::endl;
 }
 
 
@@ -98,11 +98,11 @@ namespace {
     class ThreadTermination: public utest::TSUnitThread
     {
     private:
-        volatile bool&   _report;
-        cn::milliseconds _delay;
-        cn::milliseconds _precision;
+        std::atomic_bool& _report;
+        cn::milliseconds  _delay;
+        cn::milliseconds  _precision;
     public:
-        ThreadTermination(volatile bool& report, cn::milliseconds delay, cn::milliseconds precision) :
+        ThreadTermination(std::atomic_bool& report, cn::milliseconds delay, cn::milliseconds precision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000)),
             _report(report),
             _delay(delay),
@@ -119,7 +119,7 @@ namespace {
             const ts::Time before(ts::Time::CurrentUTC());
             std::this_thread::sleep_for(_delay);
             const ts::Time after(ts::Time::CurrentUTC());
-            tsunit::Test::debug() << "ThreadTest::ThreadTermination: delay = " << _delay.count() << ", after - before = " << (after - before).count() << std::endl;
+            tsunit::Test::Debug() << "ThreadTest::ThreadTermination: delay = " << _delay.count() << ", after - before = " << (after - before).count() << std::endl;
             TSUNIT_ASSERT(after >= before + _delay - _precision);
             _report = true;
         }
@@ -128,7 +128,7 @@ namespace {
 
 TSUNIT_DEFINE_TEST(Termination)
 {
-    volatile bool report = false;
+    std::atomic_bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
     {
         ThreadTermination thread(report, cn::milliseconds(200), _precision);
@@ -149,11 +149,11 @@ namespace {
     class ThreadDeleteWhenTerminated: public utest::TSUnitThread
     {
     private:
-        volatile bool&   _report;
-        cn::milliseconds _delay;
-        cn::milliseconds _precision;
+        std::atomic_bool& _report;
+        cn::milliseconds  _delay;
+        cn::milliseconds  _precision;
     public:
-        ThreadDeleteWhenTerminated(volatile bool& report, cn::milliseconds delay, cn::milliseconds precision) :
+        ThreadDeleteWhenTerminated(std::atomic_bool& report, cn::milliseconds delay, cn::milliseconds precision) :
             utest::TSUnitThread(ts::ThreadAttributes().setStackSize(1000000).setDeleteWhenTerminated(true)),
             _report(report),
             _delay(delay),
@@ -163,7 +163,7 @@ namespace {
         virtual ~ThreadDeleteWhenTerminated() override
         {
             waitForTermination();
-            tsunit::Test::debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
+            tsunit::Test::Debug() << "ThreadTest: ThreadDeleteWhenTerminated deleted" << std::endl;
             _report = true;
         }
         virtual void test() override
@@ -178,7 +178,7 @@ namespace {
 
 TSUNIT_DEFINE_TEST(DeleteWhenTerminated)
 {
-    volatile bool report = false;
+    std::atomic_bool report = false;
     const ts::Time before(ts::Time::CurrentUTC());
     ThreadDeleteWhenTerminated* thread = new ThreadDeleteWhenTerminated(report, cn::milliseconds(100), _precision);
     TSUNIT_ASSERT(thread->start());
@@ -188,7 +188,7 @@ TSUNIT_DEFINE_TEST(DeleteWhenTerminated)
     }
     const ts::Time after(ts::Time::CurrentUTC());
     if (counter > 0) {
-        debug() << "ThreadTest::testDeleteWhenTerminated: ThreadDeleteWhenTerminated deleted after " << (after - before).count() << " milliseconds" << std::endl;
+        Debug() << "ThreadTest::testDeleteWhenTerminated: ThreadDeleteWhenTerminated deleted after " << (after - before).count() << " milliseconds" << std::endl;
     }
     else {
         TSUNIT_FAIL(ts::UString::Format(u"Thread with \"delete when terminated\" not deleted after %d milliseconds", (after - before).count()).toUTF8());
@@ -271,5 +271,5 @@ TSUNIT_DEFINE_TEST(MutexTimeout)
     TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
     mutex.unlock();
 
-    debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
+    Debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
 }

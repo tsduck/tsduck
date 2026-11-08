@@ -10,8 +10,8 @@
 #include "tsSysInfo.h"
 
 // Runtime check once if accelerated CRC32 instructions are supported on this CPU.
-volatile bool ts::CRC32::_accel_checked = false;
-volatile bool ts::CRC32::_accel_supported = false;
+std::atomic_bool ts::CRC32::_accel_checked = false;
+std::atomic_bool ts::CRC32::_accel_supported = false;
 
 
 //----------------------------------------------------------------------------

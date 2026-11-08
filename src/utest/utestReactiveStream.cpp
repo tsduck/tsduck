@@ -86,7 +86,7 @@ namespace {
 
         virtual void handleWriteStream(ts::ReactiveStream& stream, int error_code, const ts::ObjectPtr& user_data) override
         {
-            tsunit::Test::debug() << "handle write: written messages: " << written_messages << ", error code: " << error_code << std::endl;
+            tsunit::Test::Debug() << "handle write: written messages: " << written_messages << ", error code: " << error_code << std::endl;
             TSUNIT_ASSERT(&stream.stream() == &_file);
             TSUNIT_ASSERT(ts::SysSuccess(error_code));
             TSUNIT_ASSERT(written_messages < max_messages);
@@ -102,7 +102,7 @@ namespace {
 
         virtual void handleReadStream(ts::ReactiveStream& stream, const ts::ByteBlockPtr& data, ts::ReactiveInputControl& control, int error_code, const ts::ObjectPtr& user_data) override
         {
-            tsunit::Test::debug() << "handle read: size: " << data->size() << ", read messages: " << read_messages << ", error code: " << error_code << std::endl;
+            tsunit::Test::Debug() << "handle read: size: " << data->size() << ", read messages: " << read_messages << ", error code: " << error_code << std::endl;
             TSUNIT_ASSERT(&stream.stream() == &_file);
 
             if (error_code == ts::SYS_EOF) {
@@ -129,7 +129,7 @@ namespace {
 
 TSUNIT_DEFINE_TEST(File)
 {
-    debug() << "Reactive stream: file name: " << _temp_file_name.string() << std::endl;
+    Debug() << "Reactive stream: file name: " << _temp_file_name.string() << std::endl;
     ts::Reactor reactor(&CERR);
     ts::BinaryFile file(&reactor);
     ts::ReactiveStream rfile(reactor, file, file);
@@ -189,7 +189,6 @@ namespace {
             u"[[[[---- second line ----]]]]"
         };
 
-        std::ostream& debug {tsunit::Test::debug()};
         ts::Reactor reactor {&CERR};
         ts::ForkPipe process {&reactor};
         ts::ReactiveStream react_process {reactor, process, process};
@@ -209,8 +208,8 @@ namespace {
 
     void TestProcessStream::run()
     {
-        debug << "TestProcessStream: file name: " << file_name.string() << std::endl;
-        debug << "TestProcessStream: base name: " << base_name << std::endl;
+        tsunit::Test::Debug() << "TestProcessStream: file name: " << file_name.string() << std::endl
+                              << "TestProcessStream: base name: " << base_name << std::endl;
         TSUNIT_ASSERT(ts::UString::Save(file_content, file_name));
         TSUNIT_ASSERT(fs::exists(file_name));
 
@@ -222,7 +221,7 @@ namespace {
         TSUNIT_ASSERT(!process.isSynchronous());
 
         process_pid = process.getProcessId();
-        debug << "TestProcessStream: process pid: " << process_pid << std::endl;
+        tsunit::Test::Debug() << "TestProcessStream: process pid: " << process_pid << std::endl;
         TSUNIT_ASSERT(process_pid != ts::SYS_PROCESS_ID_INVALID);
 
         process_evid = reactor.newProcessIdTermination(this, process_pid);
@@ -237,7 +236,7 @@ namespace {
         TSUNIT_ASSERT(process.close());
         TSUNIT_ASSERT(reactor.close());
 
-        debug << "TestProcessStream: received " << line_count << " lines" << std::endl;
+        tsunit::Test::Debug() << "TestProcessStream: received " << line_count << " lines" << std::endl;
         TSUNIT_ASSERT(line_count > 0);
 
         fs::remove(file_name, &ts::ErrCodeReport());
@@ -246,7 +245,7 @@ namespace {
 
     void TestProcessStream::handleTextLine(ts::ReactiveTextStream& stream, const ts::UString& line, int error_code, const ts::ObjectPtr& user_data)
     {
-        debug << "TestProcessStream: got line \"" << line.toTrimmed(false) << "\", " << line.size() << " chars, error code: " << error_code << std::endl;
+        tsunit::Test::Debug() << "TestProcessStream: got line \"" << line.toTrimmed(false) << "\", " << line.size() << " chars, error code: " << error_code << std::endl;
         TSUNIT_ASSERT(&stream == &text_process);
         TSUNIT_ASSERT(!got_eof);
 
@@ -263,16 +262,16 @@ namespace {
 
             if (expected == GET_LS && line.contains(base_name) && !line.contains(ls_command)) {
                 // Filter file base name but exclude ls command (powershell echoes its commands).
-                debug << "TestProcessStream: got ls output, sending cat command" << std::endl;
+                tsunit::Test::Debug() << "TestProcessStream: got ls output, sending cat command" << std::endl;
                 TSUNIT_ASSERT(text_process.startWriteLine(nullptr, cat_command + file_name));
                 expected = GET_LINE_0;
             }
             else if (expected == GET_LINE_0 && line.contains(file_content[0])) {
-                debug << "TestProcessStream: got cat output line 0" << std::endl;
+                tsunit::Test::Debug() << "TestProcessStream: got cat output line 0" << std::endl;
                 expected = GET_LINE_1;
             }
             else if (expected == GET_LINE_1 && line.contains(file_content[1])) {
-                debug << "TestProcessStream: got cat output line 2, sending exit command" << std::endl;
+                tsunit::Test::Debug() << "TestProcessStream: got cat output line 2, sending exit command" << std::endl;
                 TSUNIT_ASSERT(text_process.startWriteLine(nullptr, exit_command));
                 expected = END;
             }
@@ -281,7 +280,7 @@ namespace {
 
     void TestProcessStream::handleProcessTermination(ts::Reactor& reac, ts::EventId id, int pid)
     {
-        debug << "TestProcessStream: process terminated, pid: " << pid << std::endl;
+        tsunit::Test::Debug() << "TestProcessStream: process terminated, pid: " << pid << std::endl;
         TSUNIT_ASSERT(&reac == &reactor);
         TSUNIT_ASSERT(id == process_evid);
         TSUNIT_EQUAL(process_pid, pid);

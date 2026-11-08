@@ -118,7 +118,7 @@ namespace ts {
         private:
             ScramblerPlugin* _plugin = nullptr;  // Reference to scrambler plugin
             uint16_t         _cp_number = 0;     // Crypto-period number
-            volatile bool    _ecm_ok = false;    // _ecm field is valid
+            std::atomic_bool _ecm_ok = false;    // _ecm field is valid
             TSPacketVector   _ecm {};            // Packetized ECM
             size_t           _ecm_pkt_index {};  // Next ECM packet to insert in TS
             ByteBlock        _cw_current {};
@@ -163,7 +163,7 @@ namespace ts {
         ecmgscs::StreamStatus  _stream_status {_ecmgscs};   // Initial response to ECMG stream_setup
 
         // ScramblerPlugin state
-        volatile bool     _abort = false;               // Error (service not found, etc)
+        std::atomic_bool  _abort = false;               // Error (service not found, etc)
         bool              _wait_bitrate = false;        // Waiting for bitrate to start scheduling ECM and CP.
         bool              _degraded_mode = false;       // In degraded mode (see comments above)
         PacketCounter     _packet_count = 0;            // Complete TS packet counter

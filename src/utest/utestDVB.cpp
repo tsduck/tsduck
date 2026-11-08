@@ -46,7 +46,7 @@ TSUNIT_REGISTER(DVBTest);
 
 ts::Report& DVBTest::report()
 {
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         return CERR;
     }
     else {
@@ -64,12 +64,12 @@ TSUNIT_DEFINE_TEST(TunerArgs)
     ts::Args args(u"Test tuner", u"[options]");
     ts::TunerArgs tuner_args;
     tuner_args.defineArgs(args, true);
-    debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
+    Debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
 void DVBTest::testParameters(ts::DeliverySystem delsys)
 {
-    debug() << "DVBTest: Default TunerParameters, type: " << ts::DeliverySystemEnum().name(delsys) << std::endl;
+    Debug() << "DVBTest: Default TunerParameters, type: " << ts::DeliverySystemEnum().name(delsys) << std::endl;
 
     ts::ModulationArgs params;
     params.delivery_system = delsys;
@@ -78,7 +78,7 @@ void DVBTest::testParameters(ts::DeliverySystem delsys)
     TSUNIT_ASSERT(params.hasModulationArgs());
 
     const ts::UString opts(params.toPluginOptions());
-    debug() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
+    Debug() << "DVBTest: Options: \"" << opts << "\"" << std::endl;
 
     ts::Args args;
     ts::TunerArgs targs1;
@@ -104,13 +104,13 @@ TSUNIT_DEFINE_TEST(TunerParams)
 TSUNIT_DEFINE_TEST(AllLNB)
 {
     ts::UStringList names(ts::LNB::GetAllNames(report()));
-    debug() << "DVBTest::testAllLNB: " << ts::UString::Join(names, u" | ") << std::endl;
+    Debug() << "DVBTest::testAllLNB: " << ts::UString::Join(names, u" | ") << std::endl;
     TSUNIT_ASSERT(!names.empty());
 }
 
 void DVBTest::displayLNB(const ts::LNB& lnb)
 {
-    debug() << "DVBTest: Test LNB: name: \"" << lnb.name() << "\"" << std::endl
+    Debug() << "DVBTest: Test LNB: name: \"" << lnb.name() << "\"" << std::endl
             << "    convert to string: \"" << lnb << "\"" << std::endl
             << "    valid: " << ts::UString::TrueFalse(lnb.isValid()) << std::endl
             << "    number of bands: " << lnb.bandsCount() << std::endl
@@ -123,7 +123,7 @@ void DVBTest::displayLNB(const ts::LNB& lnb)
 TSUNIT_DEFINE_TEST(LNB)
 {
     ts::LNB lnb1(u"", report());
-    debug() << "DVBTest::testLNB(): default LNB:" << std::endl;
+    Debug() << "DVBTest::testLNB(): default LNB:" << std::endl;
     displayLNB(lnb1);
     TSUNIT_ASSERT(lnb1.isValid());
 

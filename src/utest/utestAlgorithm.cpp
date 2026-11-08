@@ -89,7 +89,7 @@ namespace {
         // Used as predicate for EnumerateCombinations.
         bool operator() (const IdSet& s)
         {
-            tsunit::Test::debug() << "AlgorithmTest: combination: " << s << std::endl;
+            tsunit::Test::Debug() << "AlgorithmTest: combination: " << s << std::endl;
             TSUNIT_EQUAL(1, _collection.erase(s));
             TSUNIT_ASSERT(!_found);
             _found = s == _last;
@@ -123,13 +123,13 @@ TSUNIT_DEFINE_TEST(EnumerateCombinations)
     collection.insert (Set (2, 4, 5, 0));
     collection.insert (Set (3, 4, 5, 0));
 
-    debug() << "AlgorithmTest: 3-elements combinations in " << values
+    Debug() << "AlgorithmTest: 3-elements combinations in " << values
             << " containing " << fixed
             << " ending search at " << end << std::endl;
 
     bool completed = ts::EnumerateCombinations(values, fixed, 3, RemoveIdSet (collection, end));
 
-    debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
+    Debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
     TSUNIT_ASSERT(completed);
     TSUNIT_ASSERT(collection.size() == 0);
 
@@ -143,13 +143,13 @@ TSUNIT_DEFINE_TEST(EnumerateCombinations)
     collection.insert (Set (2, 3, 4, 0));
     collection.insert (Set (2, 4, 5, 0));
 
-    debug() << "AlgorithmTest: 3-elements combinations in " << values
+    Debug() << "AlgorithmTest: 3-elements combinations in " << values
             << " containing " << fixed
             << " ending search at " << end << std::endl;
 
     completed = ts::EnumerateCombinations (values, fixed, 3, RemoveIdSet (collection, end));
 
-    debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
+    Debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
     TSUNIT_ASSERT(completed);
     TSUNIT_ASSERT(collection.size() == 0);
 
@@ -170,12 +170,12 @@ TSUNIT_DEFINE_TEST(EnumerateCombinations)
     collection.insert (Set (2, 4, 5, 0));
     collection.insert (Set (3, 4, 5, 0));
 
-    debug() << "AlgorithmTest: 3-elements combinations in " << values
+    Debug() << "AlgorithmTest: 3-elements combinations in " << values
             << " containing " << fixed
             << " ending search at " << end << std::endl;
 
     completed = ts::EnumerateCombinations (values, fixed, 3, RemoveIdSet (collection, end));
 
-    debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
+    Debug() << "AlgorithmTest: completed: " << completed << ", remaining combinations: " << collection.size() << std::endl;
     TSUNIT_ASSERT(!completed);
 }

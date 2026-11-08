@@ -1264,7 +1264,7 @@ TSUNIT_DEFINE_TEST(GetUTF16)
 {
     // GREEK_SMALL_LETTER_ALPHA has a non-zero most significant byte in Unicode and UTF-16
     const ts::UString mem = ts::UString({u'a', ts::GREEK_SMALL_LETTER_ALPHA}) + u"cdefgh";
-    debug() << "BufferTest::testGetUTF16: reference = \"" << mem << "\"" << std::endl;
+    Debug() << "BufferTest::testGetUTF16: reference = \"" << mem << "\"" << std::endl;
 
     // Run the test in native endian.
     ts::Buffer b(mem.data(), 2 * mem.size());

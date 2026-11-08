@@ -424,7 +424,7 @@ TSUNIT_DEFINE_TEST(ContainerTable)
             container.push_back(uint8_t(val));
         }
     }
-    debug() << "TableTest::ContainerTable: container size: " << container.size() << std::endl;
+    Debug() << "TableTest::ContainerTable: container size: " << container.size() << std::endl;
 
     ts::ContainerTable ct;
     ct.container_id = 0x1234;
@@ -439,14 +439,14 @@ TSUNIT_DEFINE_TEST(ContainerTable)
 
     ts::ByteBlock compressed;
     TSUNIT_ASSERT(ts::Zlib::Compress(compressed, container, 6));
-    debug() << "TableTest::ContainerTable: direct compressed size: " << compressed.size() << std::endl;
+    Debug() << "TableTest::ContainerTable: direct compressed size: " << compressed.size() << std::endl;
     out.clear();
     TSUNIT_ASSERT(ts::Zlib::Decompress(out, compressed));
-    debug() << "TableTest::ContainerTable: direct decompressed size: " << out.size() << std::endl;
+    Debug() << "TableTest::ContainerTable: direct decompressed size: " << out.size() << std::endl;
     TSUNIT_ASSERT(out == container);
 
     ct.setContainer(container, true);
-    debug() << "TableTest::ContainerTable: serialized size: " << ct.compression_wrapper.size() << std::endl;
+    Debug() << "TableTest::ContainerTable: serialized size: " << ct.compression_wrapper.size() << std::endl;
     TSUNIT_ASSERT(ct.compression_wrapper.size() > 4);
     TSUNIT_ASSERT(ct.compression_wrapper.size() < container.size() + 4);
     TSUNIT_EQUAL(1, ct.compression_wrapper[0]);
@@ -461,11 +461,11 @@ TSUNIT_DEFINE_TEST(ContainerTable)
     TSUNIT_ASSERT(ct.getContainer(out));
     TSUNIT_ASSERT(out == container);
 
-    debug() << "TableTest::ContainerTable: serialize" << std::endl;
+    Debug() << "TableTest::ContainerTable: serialize" << std::endl;
     ts::BinaryTable table;
     TSUNIT_ASSERT(ct.serialize(duck, table));
 
-    debug() << "TableTest::ContainerTable: deserialize" << std::endl;
+    Debug() << "TableTest::ContainerTable: deserialize" << std::endl;
     ts::ContainerTable ct2(duck, table);
     TSUNIT_ASSERT(ct2.isValid());
     TSUNIT_EQUAL(0x1234, ct2.container_id);

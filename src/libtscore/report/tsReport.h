@@ -600,7 +600,7 @@ namespace ts {
         // Indicate if _delegators is not empty.
         // Can be modified only under the global mutex.
         // Can be read without locking the global mutex.
-        volatile bool _has_delegators = false;
+        std::atomic_bool _has_delegators = false;
 
         // Set of other instances which delegate to this object.
         // Can be modified only under the global mutex.

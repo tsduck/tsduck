@@ -44,5 +44,5 @@ TSUNIT_DEFINE_TEST(ListFiles)
     TSUNIT_ASSERT(ts::ForkPipe::GetOutput(output, ls, CERR, true));
     TSUNIT_ASSERT(!output.empty());
 
-    debug() << "ForkPipeTest: output of ls: \"" << output << "\"" << std::endl;
+    Debug() << "ForkPipeTest: output of ls: \"" << output << "\"" << std::endl;
 }

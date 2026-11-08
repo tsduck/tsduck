@@ -195,7 +195,7 @@ TSUNIT_DEFINE_TEST(Processing)
     ts::PluginRepository::Instance().registerProcessor(u"test1", TestPlugin::CreateInstance);
 
     // List of preregistered plugins.
-    debug() << "TSProcessorTest: pre-registered plugins: " << std::endl
+    Debug() << "TSProcessorTest: pre-registered plugins: " << std::endl
             << "  input: " << ts::UString::Join(ts::PluginRepository::Instance().inputNames()) << std::endl
             << "  output: " << ts::UString::Join(ts::PluginRepository::Instance().outputNames()) << std::endl
             << "  processor names: " << ts::UString::Join(ts::PluginRepository::Instance().processorNames()) << std::endl;

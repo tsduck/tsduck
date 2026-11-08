@@ -34,7 +34,7 @@ TSUNIT_REGISTER(ConfigTest);
 namespace {
     void displayConfig(const ts::ConfigFile& config, const std::string& title)
     {
-        tsunit::Test::debug() << "*** " << title << " ***" << std::endl
+        tsunit::Test::Debug() << "*** " << title << " ***" << std::endl
             << "Section count: " << config.size() << std::endl;
 
         ts::UStringVector secnames;
@@ -43,28 +43,28 @@ namespace {
         for (size_t sec = 0; sec < secnames.size(); ++sec) {
 
             const ts::ConfigSection& section(config.section(secnames[sec]));
-            tsunit::Test::debug() << "   Section \"" << secnames[sec] << "\", entryCount() = " << section.size() << std::endl;
+            tsunit::Test::Debug() << "   Section \"" << secnames[sec] << "\", entryCount() = " << section.size() << std::endl;
 
             ts::UStringVector entnames;
             section.getEntryNames(entnames);
 
             for (size_t ent = 0; ent < entnames.size(); ++ent) {
                 size_t val_count(section.valueCount(entnames[ent]));
-                tsunit::Test::debug() << "      Entry \"" << entnames[ent] << "\", valueCount() = " << val_count;
+                tsunit::Test::Debug() << "      Entry \"" << entnames[ent] << "\", valueCount() = " << val_count;
                 for (size_t val = 0; val < val_count; ++val) {
-                    tsunit::Test::debug() << ", [" << val << "] = \"" << section.value(entnames[ent], val) << "\"";
+                    tsunit::Test::Debug() << ", [" << val << "] = \"" << section.value(entnames[ent], val) << "\"";
                 }
-                tsunit::Test::debug() << std::endl;
+                tsunit::Test::Debug() << std::endl;
             }
         }
 
-        tsunit::Test::debug() << "*** " << title << " (Save) ***" << std::endl << config;
+        tsunit::Test::Debug() << "*** " << title << " (Save) ***" << std::endl << config;
     }
 }
 
 TSUNIT_DEFINE_TEST(DefaultFile)
 {
-    debug() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName().string() << "\"" << std::endl
+    Debug() << "ConfigTest: DefaultFileName() = \"" << ts::ConfigFile::DefaultFileName().string() << "\"" << std::endl
             << "ConfigTest: DefaultFileName(UNIX_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::UNIX_STYLE).string() << "\"" << std::endl
             << "ConfigTest: DefaultFileName(WINDOWS_STYLE) = \"" << ts::ConfigFile::DefaultFileName(ts::ConfigFile::WINDOWS_STYLE).string() << "\"" << std::endl;
 

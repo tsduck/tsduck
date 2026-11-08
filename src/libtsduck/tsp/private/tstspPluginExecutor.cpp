@@ -149,7 +149,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
 
     // Wake the previous processor when we abort (propagate abort conditions backward).
     if (aborted) {
-        _tsp_aborting = true; // volatile bool in TSP superclass
+        _tsp_aborting = true; // std::atomic_bool in TSP superclass
         ringPrevious<PluginExecutor>()->_to_do.notify_one();
     }
 

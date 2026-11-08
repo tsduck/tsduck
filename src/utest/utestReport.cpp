@@ -302,20 +302,20 @@ TSUNIT_DEFINE_TEST(ErrCodeReport)
 
     // Test existent directory.
     fs::path dir(fs::temp_directory_path());
-    debug() << "ReportTest::testErrCodeReport: testing \"" << dir.string() << "\"" << std::endl;
+    Debug() << "ReportTest::testErrCodeReport: testing \"" << dir.string() << "\"" << std::endl;
 
     TSUNIT_ASSERT(fs::is_directory(dir, &ts::ErrCodeReport(log, u"isdir", dir)));
-    debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
+    Debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
     TSUNIT_ASSERT(log.empty());
 
     // Test non-existent directory.
     fs::path nodir(dir);
     nodir /= "nonexistent";
-    debug() << "ReportTest::testErrCodeReport: testing \"" << nodir.string() << "\"" << std::endl;
+    Debug() << "ReportTest::testErrCodeReport: testing \"" << nodir.string() << "\"" << std::endl;
 
     log.clear();
     TSUNIT_ASSERT(!fs::is_directory(nodir, &ts::ErrCodeReport(log, u"isdir", nodir)));
-    debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
+    Debug() << "ReportTest::testErrCodeReport: log: \"" << log.messages() << "\"" << std::endl;
     TSUNIT_ASSERT(!log.empty());
     TSUNIT_ASSERT(log.messages().starts_with(u"Error: isdir " + nodir + u":"));
 }

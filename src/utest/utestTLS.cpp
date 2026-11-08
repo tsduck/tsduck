@@ -50,7 +50,7 @@ TSUNIT_REGISTER(TLSTest);
 void TLSTest::beforeTest()
 {
     _previous_severity = CERR.maxSeverity();
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
     }
 }
@@ -87,7 +87,7 @@ TSUNIT_DEFINE_TEST(Client)
     TSUNIT_ASSERT(tls_client.isOpen());
     TSUNIT_ASSERT(tls_client.isConnected());
     TSUNIT_ASSERT(!tls_client.isServerSide());
-    debug() << "TLS::Client: connected" << std::endl;
+    Debug() << "TLS::Client: connected" << std::endl;
 
     TSUNIT_ASSERT(text_client.writeLine(u"GET / HTTP/1.0"));
     TSUNIT_ASSERT(text_client.writeLine(u"Host: " + server_name));
@@ -95,7 +95,7 @@ TSUNIT_DEFINE_TEST(Client)
     TSUNIT_ASSERT(text_client.writeLine(u"Accept: text/html"));
     TSUNIT_ASSERT(text_client.writeLine(u"Connection: close"));
     TSUNIT_ASSERT(text_client.writeLine(u""));
-    debug() << "TLS::Client: request sent" << std::endl;
+    Debug() << "TLS::Client: request sent" << std::endl;
 
     size_t line_count = 0;
     size_t empty_count = 0;
@@ -107,9 +107,9 @@ TSUNIT_DEFINE_TEST(Client)
             line.resize(70);
             line += u" [...]";
         }
-        debug() << "TLS::Client: Received \"" << line << "\"" << std::endl;
+        Debug() << "TLS::Client: Received \"" << line << "\"" << std::endl;
     }
-    debug() << "TLS::Client: Received " << line_count << " lines, " << empty_count << " empty lines" << std::endl;
+    Debug() << "TLS::Client: Received " << line_count << " lines, " << empty_count << " empty lines" << std::endl;
 
     TSUNIT_ASSERT(tls_client.disconnect());
     TSUNIT_ASSERT(tls_client.close());

@@ -116,9 +116,9 @@ namespace ts {
         UDPListener        _udp_listener {this};             // UDP listener thread.
         PacketQueue        _packet_queue {};                 // Queue of incoming TS packets.
         SectionQueue       _section_queue {};                // Queue of incoming sections.
-        volatile bool      _channel_established = false;     // Data channel open.
-        volatile bool      _stream_established = false;      // Data stream open.
-        volatile bool      _req_bitrate_changed = false;     // Requested bitrate has changed.
+        std::atomic_bool   _channel_established = false;     // Data channel open.
+        std::atomic_bool   _stream_established = false;      // Data stream open.
+        std::atomic_bool   _req_bitrate_changed = false;     // Requested bitrate has changed.
         // Start of protected area.
         std::mutex         _mutex {};                        // Mutex for access to protected area
         uint32_t           _client_id = 0;                   // DVB SimulCrypt client id.

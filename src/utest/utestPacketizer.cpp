@@ -50,7 +50,7 @@ void PacketizerTest::DemuxTable(ts::BinaryTablePtr& bin_table, const char* name,
 {
     bin_table.reset();
 
-    debug() << "PacketizerTest: DemuxTable: Rebuilding " << name << std::endl;
+    Debug() << "PacketizerTest: DemuxTable: Rebuilding " << name << std::endl;
     TSUNIT_EQUAL(0, packets_size % ts::PKT_SIZE);
 
     ts::DuckContext duck;
@@ -96,7 +96,7 @@ TSUNIT_DEFINE_TEST(Packetizer)
     pzer.addTable(duck, pmt, cn::milliseconds(1000));  // 1000 ms => 1 table / second
     pzer.addTable(duck, sdt, cn::milliseconds(250));   // 250 ms => 4 tables / second
 
-    debug() << "PacketizerTest: Packetizer state before packetization: " << std::endl << pzer;
+    Debug() << "PacketizerTest: Packetizer state before packetization: " << std::endl << pzer;
 
     // Generate 40 packets (4 seconds)
 
@@ -110,7 +110,7 @@ TSUNIT_DEFINE_TEST(Packetizer)
         TSUNIT_EQUAL(ts::SYNC_BYTE, pkt.b[0]);
         TSUNIT_EQUAL(0, pkt.b[4]); // pointer field
         ts::TID tid = pkt.b[5];
-        debug() << "PacketizerTest:   " << pi << ": " << ts::TIDName(duck, tid) << std::endl;
+        Debug() << "PacketizerTest:   " << pi << ": " << ts::TIDName(duck, tid) << std::endl;
         switch (tid) {
             case ts::TID_PAT:
                 pat_count++;
@@ -126,7 +126,7 @@ TSUNIT_DEFINE_TEST(Packetizer)
         }
     }
 
-    debug() << "PacketizerTest: Table count: " << pat_count << " PAT, " << pmt_count << " PMT, " << sdt_count << " SDT" << std::endl
+    Debug() << "PacketizerTest: Table count: " << pat_count << " PAT, " << pmt_count << " PMT, " << sdt_count << " SDT" << std::endl
             << "PacketizerTest: Packetizer state after packetization: " << std::endl << pzer;
 
     TSUNIT_ASSERT(pmt_count == 4);

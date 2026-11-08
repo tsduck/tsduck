@@ -49,7 +49,7 @@ TSUNIT_REGISTER(HLSTest);
 void HLSTest::beforeTest()
 {
     _previous_severity = CERR.maxSeverity();
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
     }
 }

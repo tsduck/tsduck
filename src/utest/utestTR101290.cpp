@@ -60,7 +60,7 @@ namespace {
 
         ts::tr101290::Counters c;
         analyzer.getCounters(c);
-        tsunit::Test::debug() << "TR101290Test, StepPCR: step: " << ts::UString::Chrono(step_ms)
+        tsunit::Test::Debug() << "TR101290Test, StepPCR: step: " << ts::UString::Chrono(step_ms)
                               << ", PCR error: " << c[ts::tr101290::PCR_error]
                               << ", disc error: " << c[ts::tr101290::PCR_discontinuity_indicator_error]
                               << std::endl;

@@ -284,7 +284,7 @@ namespace ts {
         // - Consequently, when these data are accessed in a thread other than the
         //   main thread, the flag _PriorityInitialized is already true.
         //
-        static volatile bool _priority_initialized;
+        static std::atomic_bool _priority_initialized;
         static int _minimum_priority;
         static int _low_priority;
         static int _normal_priority;

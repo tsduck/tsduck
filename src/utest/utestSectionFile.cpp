@@ -88,7 +88,7 @@ void SectionFileTest::afterTest()
 
 ts::Report& SectionFileTest::report()
 {
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         return CERR;
     }
     else {
@@ -112,7 +112,7 @@ TESTTABLE(SCTE35, pmt_scte35)
 
 void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, const uint8_t* ref_sections, size_t ref_sections_size)
 {
-    debug() << "SectionFileTest: Testing " << name << std::endl;
+    Debug() << "SectionFileTest: Testing " << name << std::endl;
 
     // Convert XML reference content to binary tables.
     ts::DuckContext duck;
@@ -125,24 +125,24 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
     const std::string sections(strm.str());
 
     // In debug mode, analyze data before failing.
-    if (debugMode() && (ref_sections_size != sections.size() || !ts::MemEqual(ref_sections, sections.data(), ref_sections_size))) {
+    if (Debug::On() && (ref_sections_size != sections.size() || !ts::MemEqual(ref_sections, sections.data(), ref_sections_size))) {
         const size_t size = std::min(ref_sections_size, sections.size());
         // Search index of first differing byte.
         size_t diff = 0;
         while (diff < size && ref_sections[diff] == uint8_t(sections[diff])) {
             ++diff;
         }
-        debug() << "Reference sections size: " << ref_sections_size << " bytes, generated sections: " << sections.size() << " bytes" << std::endl
+        Debug() << "Reference sections size: " << ref_sections_size << " bytes, generated sections: " << sections.size() << " bytes" << std::endl
                 << "First differing bytes at index " << diff << std::endl;
         const uint32_t flags = ts::UString::HEXA | ts::UString::ASCII | ts::UString::OFFSET | ts::UString::BPL;
         if (diff > 0) {
             const size_t pre = std::min<size_t>(16, diff);
-            debug() << "Before first difference:" << std::endl
+            Debug() << "Before first difference:" << std::endl
                     << ts::UString::Dump(ref_sections + diff - pre, pre, flags, 2, 16, diff - pre);
         }
         if (diff < size) {
             const size_t post = std::min<size_t>(256, size - diff);
-            debug() << "After first difference (reference):" << std::endl
+            Debug() << "After first difference (reference):" << std::endl
                     << ts::UString::Dump(ref_sections + diff, post, flags, 2, 16, diff)
                     << "After first difference (reference):" << std::endl
                     << ts::UString::Dump(sections.data() + diff, post, flags, 2, 16, diff);
@@ -165,7 +165,7 @@ void SectionFileTest::testTable(const char* name, const ts::UChar* ref_xml, cons
 TSUNIT_DEFINE_TEST(ConfigurationFile)
 {
     const ts::UString conf(ts::SearchConfigurationFile(ts::SectionFile::XML_TABLES_MODEL));
-    debug() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
+    Debug() << "SectionFileTest::testConfigurationFile: " << conf << std::endl;
     TSUNIT_ASSERT(fs::exists(conf));
 }
 
@@ -190,7 +190,7 @@ TSUNIT_DEFINE_TEST(GenericDescriptor)
     TSUNIT_ASSERT(desc.toXML(duck, root, context, true) != nullptr);
 
     ts::UString text(doc.toString());
-    debug() << "SectionFileTest::testGenericDescriptor: " << text << std::endl;
+    Debug() << "SectionFileTest::testGenericDescriptor: " << text << std::endl;
     TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<test>\n"
@@ -245,7 +245,7 @@ TSUNIT_DEFINE_TEST(GenericShortTable)
     TSUNIT_ASSERT(ref_table.toXML(duck, root, opt) != nullptr);
 
     ts::UString text(doc.toString());
-    debug() << "SectionFileTest::testGenericShortTable: " << text << std::endl;
+    Debug() << "SectionFileTest::testGenericShortTable: " << text << std::endl;
     TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<test>\n"
@@ -308,7 +308,7 @@ TSUNIT_DEFINE_TEST(GenericLongTable)
     TSUNIT_ASSERT(ref_table.toXML(duck, root, opt) != nullptr);
 
     ts::UString text(doc.toString());
-    debug() << "SectionFileTest::testGenericLongTable: " << text << std::endl;
+    Debug() << "SectionFileTest::testGenericLongTable: " << text << std::endl;
     TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         u"<test>\n"
@@ -418,12 +418,12 @@ TSUNIT_DEFINE_TEST(BuildSections)
     TSUNIT_EQUAL(0, file.orphanSections().size());
 
     // Save files.
-    debug() << "SectionFileTest::testBuildSections: saving " << _temp_file_name_bin << std::endl;
+    Debug() << "SectionFileTest::testBuildSections: saving " << _temp_file_name_bin << std::endl;
     TSUNIT_ASSERT(!fs::exists(_temp_file_name_bin));
     TSUNIT_ASSERT(file.saveBinary(_temp_file_name_bin));
     TSUNIT_ASSERT(fs::exists(_temp_file_name_bin));
 
-    debug() << "SectionFileTest::testBuildSections: saving " << _temp_file_name_xml << std::endl;
+    Debug() << "SectionFileTest::testBuildSections: saving " << _temp_file_name_xml << std::endl;
     TSUNIT_ASSERT(!fs::exists(_temp_file_name_xml));
     TSUNIT_ASSERT(file.saveXML(_temp_file_name_xml));
     TSUNIT_ASSERT(fs::exists(_temp_file_name_xml));

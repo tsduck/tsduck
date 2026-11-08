@@ -75,7 +75,7 @@ namespace ts {
         bool              _signal_timeout_silent = false;
         cn::milliseconds  _receive_timeout {};
         DeliverySystemSet _delivery_systems {};
-        volatile bool     _aborted = false;   // Reception was aborted
+        std::atomic_bool  _aborted = false;   // Reception was aborted
         size_t            _sink_queue_size = DEFAULT_SINK_QUEUE_SIZE; // Media sample queue size
         TunerGraph        _graph {};          // The filter graph
 

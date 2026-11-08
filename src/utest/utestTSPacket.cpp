@@ -45,7 +45,7 @@ TSUNIT_DEFINE_TEST(Packet)
 {
     ts::TSPacket::SanityCheck();
 
-    ts::NullPacket.display(debug(), ts::TSPacket::DUMP_TS_HEADER | ts::TSPacket::DUMP_RAW);
+    ts::NullPacket.display(Debug(), ts::TSPacket::DUMP_TS_HEADER | ts::TSPacket::DUMP_RAW);
 
     ts::TSPacket packets[7];
     TS_ZERO(packets); // to avoid unreferenced or uninitialized warning
@@ -510,7 +510,7 @@ TSUNIT_DEFINE_TEST(BitRate)
 
     ts::BitRate br = 14'800'000;
     ts::PacketCounter pk = 200;
-    debug() << "TSPacketTest::testBitRate: intervals: "
+    Debug() << "TSPacketTest::testBitRate: intervals: "
             << ts::PacketInterval<ts::PCR>(br, pk).count() << "  "
             << ts::PacketInterval(br, pk).count()
             << std::endl;

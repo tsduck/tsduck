@@ -193,13 +193,13 @@ namespace ts {
     private:
         InputMode        _in_mode = STDIN_NONE;           // Input mode for the created process.
         OutputMode       _out_mode = KEEP_BOTH;           // Output mode for the created process.
-        volatile bool    _is_open = false;                // Open and running.
+        std::atomic_bool _is_open = false;                // Open and running.
         WaitMode         _wait_mode = ASYNCHRONOUS;       // How to wait for child process termination in close().
         bool             _in_pipe = false;                // The process uses an input pipe.
         bool             _out_pipe = false;               // The process uses an output pipe.
         bool             _ignore_abort = false;           // Ignore early termination of child process.
-        volatile bool    _broken_pipe = false;            // Output pipe is broken, do not attempt to write.
-        volatile bool    _eof = false;                    // Got end of file on input pipe.
+        std::atomic_bool _broken_pipe = false;            // Output pipe is broken, do not attempt to write.
+        std::atomic_bool _eof = false;                    // Got end of file on input pipe.
         SysHandleType    _read_hfd = SYS_HANDLE_INVALID;  // File descriptor to read (output of process).
         SysHandleType    _write_hfd = SYS_HANDLE_INVALID; // File descriptor to write (input of process).
         SysProcessIdType _fpid = SYS_PROCESS_ID_INVALID;  // Forked process id.

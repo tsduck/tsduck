@@ -38,10 +38,10 @@ void Xoshiro256ssTest::testRead(ts::RandomGenerator& prng, const ts::ByteBlock& 
 {
     ts::ByteBlock generated;
     TSUNIT_ASSERT(prng.readByteBlock(generated, expected.size()));
-    // debug() << "Xoshiro256ssTest: " << ts::UString::Dump(generated, ts::UString::SINGLE_LINE | ts::UString::C_STYLE) << std::endl;
+    // Debug() << "Xoshiro256ssTest: " << ts::UString::Dump(generated, ts::UString::SINGLE_LINE | ts::UString::C_STYLE) << std::endl;
 
     if (expected != generated) {
-        debug() << "Xoshiro256ssTest: readByteBlock failed" << std::endl
+        Debug() << "Xoshiro256ssTest: readByteBlock failed" << std::endl
                 << "  Expected: " << ts::UString::Dump(expected, ts::UString::SINGLE_LINE) << std::endl
                 << "  Returned: " << ts::UString::Dump(generated, ts::UString::SINGLE_LINE) << std::endl;
     }

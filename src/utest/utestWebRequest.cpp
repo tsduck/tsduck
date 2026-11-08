@@ -76,7 +76,7 @@ void WebRequestTest::afterTest()
 
 ts::Report& WebRequestTest::report()
 {
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         CERR.setMaxSeverity(ts::Severity::Debug);
         return CERR;
     }
@@ -94,13 +94,13 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
 {
     ts::WebRequest request(&report());
 
-    debug() << "WebRequestTest::testURL: Test binary download: " << url << std::endl;
+    Debug() << "WebRequestTest::testURL: Test binary download: " << url << std::endl;
 
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(url, data));
     TSUNIT_ASSERT(data != nullptr);
 
-    debug() << "WebRequestTest::testURL:" << std::endl
+    Debug() << "WebRequestTest::testURL:" << std::endl
             << "    Original URL: " << request.status().originalURL() << std::endl
             << "    Final URL: " << request.status().finalURL() << std::endl
             << "    HTTP status: " << request.status().httpStatus() << std::endl
@@ -116,14 +116,14 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         TSUNIT_ASSERT(request.status().finalURL().starts_with(u"https:"));
     }
 
-    debug() << "WebRequestTest::testURL: Test text download" << std::endl;
+    Debug() << "WebRequestTest::testURL: Test text download" << std::endl;
 
     if (expectTextContent) {
         ts::UString text;
         TSUNIT_ASSERT(request.downloadTextContent(url, text));
 
         if (text.size() < 2048) {
-            debug() << "WebRequestTest::testURL: downloaded text: " << text << std::endl;
+            Debug() << "WebRequestTest::testURL: downloaded text: " << text << std::endl;
         }
 
         TSUNIT_ASSERT(!text.empty());
@@ -137,7 +137,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
         }
     }
 
-    debug() << "WebRequestTest::testURL: Test file download" << std::endl;
+    Debug() << "WebRequestTest::testURL: Test file download" << std::endl;
 
     TSUNIT_ASSERT(!fs::exists(_temp_file_name));
     TSUNIT_ASSERT(request.downloadFile(url, _temp_file_name));
@@ -154,7 +154,7 @@ void WebRequestTest::testURL(const ts::UString& url, bool expectRedirection, boo
     // Load downloaded file.
     ts::ByteBlock fileContent;
     TSUNIT_ASSERT(fileContent.loadFromFile(_temp_file_name, 10000000, &report()));
-    debug() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
+    Debug() << "WebRequestTest::testURL: downloaded file size: " << fileContent.size() << std::endl;
     TSUNIT_ASSERT(!fileContent.empty());
     if (expectInvariant) {
         TSUNIT_ASSERT(fileContent == *data);
@@ -201,13 +201,13 @@ TSUNIT_DEFINE_TEST(NoRedirection)
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(request.downloadBinaryContent(u"http://www.github.com/", data));
 
-    debug() << "WebRequestTest::testNoRedirection:" << std::endl
+    Debug() << "WebRequestTest::testNoRedirection:" << std::endl
             << "    Original URL: " << request.status().originalURL() << std::endl
             << "    Final URL: " << request.status().finalURL() << std::endl
             << "    HTTP status: " << request.status().httpStatus() << std::endl
             << "    Content size: " << request.status().contentSize() << std::endl;
     for (const auto& h : request.status().responseHeaders()) {
-        debug() << "    Header: " << h.first << " -> " << h.second << std::endl;
+        Debug() << "    Header: " << h.first << " -> " << h.second << std::endl;
     }
 
     TSUNIT_EQUAL(3, request.status().httpStatus() / 100);
@@ -223,7 +223,7 @@ TSUNIT_DEFINE_TEST(NonExistentHost)
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://non.existent.fake-domain/", data));
 
-    debug() << "WebRequestTest::testNonExistentHost: " << rep.messages() << std::endl;
+    Debug() << "WebRequestTest::testNonExistentHost: " << rep.messages() << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(InvalidURL)
@@ -234,7 +234,7 @@ TSUNIT_DEFINE_TEST(InvalidURL)
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"pouette://tagada/tsoin/tsoin", data));
 
-    debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;
+    Debug() << "WebRequestTest::testInvalidURL: " << rep.messages() << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(Post)
@@ -252,7 +252,7 @@ TSUNIT_DEFINE_TEST(Post)
     ts::UString response;
     TSUNIT_ASSUME(request.downloadTextContent(url, response));
 
-    debug() << "WebRequestTest::testPost:" << std::endl
+    Debug() << "WebRequestTest::testPost:" << std::endl
             << "    Original URL: " << request.status().originalURL() << std::endl
             << "    Final URL: " << request.status().finalURL() << std::endl
             << "    HTTP status: " << request.status().httpStatus() << std::endl
@@ -273,7 +273,7 @@ TSUNIT_DEFINE_TEST(Post)
             TSUNIT_EQUAL(post, jv->value(u"data").toString());
         }
         else {
-            debug() << "WebRequestTest::testPost: incorrect JSON response from " << url << std::endl
+            Debug() << "WebRequestTest::testPost: incorrect JSON response from " << url << std::endl
                     << response << std::endl;
         }
     }
@@ -288,7 +288,7 @@ TSUNIT_DEFINE_TEST(MaxSize)
 
     ts::ByteBlockPtr data;
     TSUNIT_ASSERT(!request.downloadBinaryContent(u"http://www.github.com/", data));
-    debug() << "WebRequestTest::testLMaxSize: " << rep.messages() << std::endl;
+    Debug() << "WebRequestTest::testLMaxSize: " << rep.messages() << std::endl;
 
     ts::UStringVector lines;
     rep.messages().splitLines(lines, ts::NPOS);
@@ -318,20 +318,20 @@ namespace {
 
         virtual void handleWebOpen(ts::ReactiveWebRequest& request, int error_code, const ts::ObjectPtr& user_data) override
         {
-            tsunit::Test::debug() << "TestWebRequest::Reactive::handleWebOpen, error code: " << error_code << std::endl;
+            tsunit::Test::Debug() << "TestWebRequest::Reactive::handleWebOpen, error code: " << error_code << std::endl;
             open_called = true;
             TSUNIT_ASSERT(&request == &_request);
             TSUNIT_ASSERT(ts::SysSuccess(error_code));
 
-            tsunit::Test::debug() << "    HTTP status: " << request.status().httpStatus() << std::endl;
-            tsunit::Test::debug() << "    Original URL: \"" << request.status().originalURL() << "\"" << std::endl;
-            tsunit::Test::debug() << "    Final URL: \"" << request.status().finalURL() << "\"" << std::endl;
-            tsunit::Test::debug() << "    Announced content size: " << request.status().announcedContentSize() << std::endl;
-            tsunit::Test::debug() << "    Content size: " << request.status().contentSize() << std::endl;
-            tsunit::Test::debug() << "    MIME type: \"" << request.status().mimeType() << "\"" << std::endl;
-            tsunit::Test::debug() << "    Header count: " << request.status().responseHeaders().size() << std::endl;
+            tsunit::Test::Debug() << "    HTTP status: " << request.status().httpStatus() << std::endl;
+            tsunit::Test::Debug() << "    Original URL: \"" << request.status().originalURL() << "\"" << std::endl;
+            tsunit::Test::Debug() << "    Final URL: \"" << request.status().finalURL() << "\"" << std::endl;
+            tsunit::Test::Debug() << "    Announced content size: " << request.status().announcedContentSize() << std::endl;
+            tsunit::Test::Debug() << "    Content size: " << request.status().contentSize() << std::endl;
+            tsunit::Test::Debug() << "    MIME type: \"" << request.status().mimeType() << "\"" << std::endl;
+            tsunit::Test::Debug() << "    Header count: " << request.status().responseHeaders().size() << std::endl;
             for (const auto& h : request.status().responseHeaders()) {
-                tsunit::Test::debug() << "    - " << h.first << ": " << h.second << std::endl;
+                tsunit::Test::Debug() << "    - " << h.first << ": " << h.second << std::endl;
             }
         }
 
@@ -341,13 +341,13 @@ namespace {
             TSUNIT_ASSERT(&request == &_request);
             if (error_code == ts::SYS_EOF) {
                 // End of transfer.
-                tsunit::Test::debug() << "TestWebRequest::Reactive::handleWebReceive, end of session" << std::endl;
-                tsunit::Test::debug() << "    Content size: " << request.status().contentSize() << std::endl;
+                tsunit::Test::Debug() << "TestWebRequest::Reactive::handleWebReceive, end of session" << std::endl;
+                tsunit::Test::Debug() << "    Content size: " << request.status().contentSize() << std::endl;
                 request.reactor().exitEventLoop();
             }
             else {
                 TSUNIT_ASSERT(data != nullptr);
-                tsunit::Test::debug() << "TestWebRequest::Reactive::handleWebReceive, error code: " << error_code << ", size: " << data->size() << std::endl;
+                tsunit::Test::Debug() << "TestWebRequest::Reactive::handleWebReceive, error code: " << error_code << ", size: " << data->size() << std::endl;
                 TSUNIT_EQUAL(ts::SYS_SUCCESS, error_code);
             }
         }
@@ -362,7 +362,7 @@ TSUNIT_DEFINE_TEST(Reactive)
 
     const ts::UString url(ts::GetEnvironment(u"TSUNIT_REACTIVE_WEB_URL", u"http://tsduck.io"));
     const size_t buffer_size = ts::GetIntEnvironment(u"TSUNIT_REACTIVE_WEB_BUFFER_SIZE", ts::Device::DEFAULT_RECEIVE_BUFFER_SIZE);
-    debug() << "WebRequestTest::Reactive: downloading " << url << ", buffer size: " << buffer_size << std::endl;
+    Debug() << "WebRequestTest::Reactive: downloading " << url << ", buffer size: " << buffer_size << std::endl;
 
     TSUNIT_ASSERT(!reactor.isOpen());
     TSUNIT_ASSERT(reactor.open());

@@ -36,8 +36,8 @@ TSUNIT_DEFINE_TEST(Size)
     ts::TSPacketMetadataVector vec(10);
     ts::PacketMetadataBuffer buf(10);
 
-    ts::TSPacketMetadata::DisplayLayout(debug(), "TSPacketMetadataTest::testSize: ");
-    debug() << "TSPacketMetadataTest::testSize: sizeof(ts::TSPacketLabelSet): " << sizeof(ts::TSPacketLabelSet) << " bytes" << std::endl
+    ts::TSPacketMetadata::DisplayLayout(Debug(), "TSPacketMetadataTest::testSize: ");
+    Debug() << "TSPacketMetadataTest::testSize: sizeof(ts::TSPacketLabelSet): " << sizeof(ts::TSPacketLabelSet) << " bytes" << std::endl
             << "TSPacketMetadataTest::testSize: in array: " << (reinterpret_cast<char*>(&arr[1]) - reinterpret_cast<char*>(&arr[0])) << " bytes" << std::endl
             << "TSPacketMetadataTest::testSize: in vector: " << (reinterpret_cast<char*>(&vec[1]) - reinterpret_cast<char*>(&vec[0])) << " bytes" << std::endl
             << "TSPacketMetadataTest::testSize: in resident buffer: " << (reinterpret_cast<char*>(&buf.base()[1]) - reinterpret_cast<char*>(&buf.base()[0])) << " bytes"

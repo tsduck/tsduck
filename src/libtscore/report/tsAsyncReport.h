@@ -123,9 +123,9 @@ namespace ts {
         using LogMessagePtr = LogMessageQueue::MessagePtr;
 
         // Private members:
-        LogMessageQueue _log_queue {};
-        volatile bool   _time_stamp = false;
-        volatile bool   _synchronous = false;
-        volatile bool   _terminated = false;
+        LogMessageQueue  _log_queue {};
+        std::atomic_bool _time_stamp = false;
+        std::atomic_bool _synchronous = false;
+        std::atomic_bool _terminated = false;
     };
 }

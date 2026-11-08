@@ -2366,8 +2366,8 @@ bool ts::UString::scanHelper(size_t& extracted_count, size_type& end_index, cons
 // Debugging support for Format and Scan.
 //----------------------------------------------------------------------------
 
-volatile bool ts::UString::ArgMixContext::_debug_on = false;
-volatile bool ts::UString::ArgMixContext::_debug_valid = false;
+std::atomic_bool ts::UString::ArgMixContext::_debug_on = false;
+std::atomic_bool ts::UString::ArgMixContext::_debug_valid = false;
 
 ts::UString::ArgMixContext::ArgMixContext(const UChar* fmt, bool output) :
     _fmt(fmt),

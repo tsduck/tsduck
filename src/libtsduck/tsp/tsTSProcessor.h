@@ -90,7 +90,7 @@ namespace ts {
 
         Report&               _report;                     // Common log object.
         std::recursive_mutex  _global_mutex {};            // Global mutex.
-        volatile bool         _terminating = false;        // In the process of terminating everything.
+        std::atomic_bool      _terminating = false;        // In the process of terminating everything.
         TSProcessorArgs       _args {};                    // Processing options.
         tsp::InputExecutor*   _input = nullptr;            // Input processor execution thread.
         tsp::OutputExecutor*  _output = nullptr;           // Output processor execution thread.

@@ -44,7 +44,7 @@ TSUNIT_REGISTER(HFBandTest);
 
 ts::Report& HFBandTest::report()
 {
-    if (tsunit::Test::debugMode()) {
+    if (Debug::On()) {
         return CERR;
     }
     else {
@@ -59,7 +59,7 @@ ts::Report& HFBandTest::report()
 
 TSUNIT_DEFINE_TEST(DefaultRegion)
 {
-    debug() << "HFBandTest::testDefaultRegion: default region: \"" << ts::HFBand::DefaultRegion(report()) << "\"" << std::endl;
+    Debug() << "HFBandTest::testDefaultRegion: default region: \"" << ts::HFBand::DefaultRegion(report()) << "\"" << std::endl;
     TSUNIT_ASSERT(!ts::HFBand::DefaultRegion(report()).empty());
 }
 

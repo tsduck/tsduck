@@ -93,7 +93,7 @@ namespace ts {
         void abort();
 
     private:
-        volatile bool       _aborted = true;          // Set when abortInput() is set.
+        std::atomic_bool    _aborted = true;          // Set when abortInput() is set.
         bool                _interleave = false;      // Read all files simultaneously with interleaving.
         bool                _first_terminate = false; // With _interleave, terminate when the first file terminates.
         size_t              _interleave_chunk = 0;    // Number of packets per chunk when _interleave.

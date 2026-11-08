@@ -42,8 +42,8 @@ TSUNIT_DEFINE_TEST(DataTypes)
     TSUNIT_ASSUME(sizeof(ts::EDID) == 8);
 
     // Dump PSI Repository internal state in debug mode.
-    if (debugMode()) {
-        ts::PSIRepository::Instance().dumpInternalState(debug());
+    if (Debug::On()) {
+        ts::PSIRepository::Instance().dumpInternalState(Debug());
     }
 }
 
@@ -52,14 +52,14 @@ TSUNIT_DEFINE_TEST(Registrations)
     ts::UStringList names;
 
     ts::PSIRepository::Instance().getRegisteredTableNames(names);
-    debug() << "PSIRepositoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
+    Debug() << "PSIRepositoryTest::testRegistrations: table names: " << ts::UString::Join(names) << std::endl;
 
     TSUNIT_ASSERT(!names.empty());
     TSUNIT_ASSERT(ts::UString(u"PAT").isContainedSimilarIn(names));
     TSUNIT_ASSERT(ts::UString(u"PMT").isContainedSimilarIn(names));
 
     ts::PSIRepository::Instance().getRegisteredDescriptorNames(names);
-    debug() << "PSIRepositoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
+    Debug() << "PSIRepositoryTest::testRegistrations: descriptor names: " << ts::UString::Join(names) << std::endl;
 
     TSUNIT_ASSERT(!names.empty());
     TSUNIT_ASSERT(ts::UString(u"ca_descriptor").isContainedSimilarIn(names));

@@ -290,7 +290,7 @@ bool ts::SpliceInjectPlugin::start()
     if (_wait_first_batch) {
         verbose(u"waiting for first batch of commands");
         std::unique_lock<std::mutex> lock(_wfb_mutex);
-        _wfb_condition.wait(lock, [this]() { return _wfb_received; });
+        _wfb_condition.wait(lock, [this]() { return _wfb_received.load(); });
         verbose(u"received first batch of commands");
     }
 

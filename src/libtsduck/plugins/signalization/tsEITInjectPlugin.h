@@ -54,7 +54,7 @@ namespace ts {
         private:
             EITInjectPlugin* const _plugin;
             PollFiles              _poller;
-            volatile bool          _terminate;
+            std::atomic_bool       _terminate;
 
             // Implementation of Thread.
             virtual void main() override;
@@ -81,16 +81,16 @@ namespace ts {
         EITRepetitionProfile _eit_profile {};
 
         // Working data.
-        FileListener  _file_listener {this};
-        EITGenerator  _eit_gen {duck, PID_EIT};
-        volatile bool _check_files = false;    // there are files in _polled_files
-        std::mutex    _polled_files_mutex {};  // exclusive access to _polled_files
-        UStringList   _polled_files {};        // accessed by two threads, protected by mutex above.
+        FileListener     _file_listener {this};
+        EITGenerator     _eit_gen {duck, PID_EIT};
+        std::atomic_bool _check_files = false;    // there are files in _polled_files
+        std::mutex       _polled_files_mutex {};  // exclusive access to _polled_files
+        UStringList      _polled_files {};        // accessed by two threads, protected by mutex above.
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
-        volatile bool _wfb_received = false;   // First batch was received.
-        std::mutex    _wfb_mutex {};           // Mutex waiting for _wfb_received.
-        std::condition_variable _wfb_cond {};  // Condition waiting for _wfb_received.
+        std::atomic_bool _wfb_received = false;   // First batch was received.
+        std::mutex       _wfb_mutex {};           // Mutex waiting for _wfb_received.
+        std::condition_variable _wfb_cond {};     // Condition waiting for _wfb_received.
 
         // Load files in the context of the plugin thread.
         void loadFiles();

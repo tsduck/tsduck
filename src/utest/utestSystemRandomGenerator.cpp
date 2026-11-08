@@ -69,7 +69,7 @@ void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
     const size_t zero1 = std::count(data1.begin(), data1.end(), 0);
     const size_t zero2 = std::count(data2.begin(), data2.end(), 0);
 
-    debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: " << zero1 << ", " << zero2 << std::endl;
+    Debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: " << zero1 << ", " << zero2 << std::endl;
 
     TSUNIT_ASSERT(zero1 < data1.size() / 10);
     TSUNIT_ASSERT(zero2 < data2.size() / 10);
@@ -100,7 +100,7 @@ void SystemRandomGeneratorTest::testRandomRange(ts::RandomGenerator& prng, int64
     for (int i = 0; i < 100; i++) {
         TSUNIT_ASSERT(prng.readInt(val, min, max));
         if (val < min || val > max) {
-            debug() << "SystemRandomGeneratorTest: min: " << min << ", max: " << max << ", value: " << val << std::endl;
+            Debug() << "SystemRandomGeneratorTest: min: " << min << ", max: " << max << ", value: " << val << std::endl;
         }
         TSUNIT_ASSERT(val >= min);
         TSUNIT_ASSERT(val <= max);

@@ -788,7 +788,7 @@ TSUNIT_DEFINE_TEST(Query)
     TSUNIT_EQUAL(2, root.query(u"foo1.foo2.foo3").size());
     TSUNIT_ASSERT(root.query(u"foo1.foo2.foo3[1].bar4").isObject());
 
-    debug() << "JsonTest::testQuery:" << std::endl << root.printed() << std::endl;
+    Debug() << "JsonTest::testQuery:" << std::endl << root.printed() << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(RunningDocumentEmpty)

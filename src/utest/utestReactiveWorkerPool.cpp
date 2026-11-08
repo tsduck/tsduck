@@ -44,7 +44,7 @@ namespace {
     {
     public:
         Actor() = delete;
-        Actor(ts::ReactiveWorkerPool& wpool, std::ostream& debug);
+        Actor(ts::ReactiveWorkerPool& wpool);
         void start();
         virtual int executeWork(ts::ReactiveWorkerPool& pool, const ts::ObjectPtr& user_data) override;
         virtual void handleWorkerCompletion(ts::ReactiveWorkerPool& pool, int error_code, const ts::ObjectPtr& user_data) override;
@@ -55,12 +55,10 @@ namespace {
 
     private:
         ts::ReactiveWorkerPool& _wpool;
-        std::ostream& _debug;
     };
 
-    Actor::Actor(ts::ReactiveWorkerPool& wpool, std::ostream& debug) :
-        _wpool(wpool),
-        _debug(debug)
+    Actor::Actor(ts::ReactiveWorkerPool& wpool) :
+        _wpool(wpool)
     {
     }
 
@@ -92,8 +90,8 @@ namespace {
     {
         auto data = std::dynamic_pointer_cast<Value>(user_data);
         TSUNIT_ASSERT(data != nullptr);
-        _debug << "Actor::handleWorkerCompletion: error_code: " << error_code << ", data: " << data->value
-               << ", threads: " << _wpool.currentThreads() << ", busy: " << _wpool.currentBusyThreads() << std::endl;
+        tsunit::Debug() << "Actor::handleWorkerCompletion: error_code: " << error_code << ", data: " << data->value
+                        << ", threads: " << _wpool.currentThreads() << ", busy: " << _wpool.currentBusyThreads() << std::endl;
         TSUNIT_EQUAL(error_code, data->value);
         {
             std::lock_guard<std::mutex> lock(mutex);
@@ -122,7 +120,7 @@ TSUNIT_DEFINE_TEST(Worker)
 {
     ts::Reactor reactor(&CERR);
     ts::ReactiveWorkerPool wpool(reactor);
-    Actor actor(wpool, debug());
+    Actor actor(wpool);
 
     TSUNIT_ASSERT(reactor.open());
 

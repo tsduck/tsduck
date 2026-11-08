@@ -94,7 +94,7 @@ bool DemuxTest::checkSections(const char* test_name, const char* table_name, con
         total_size += table.sectionAt(si)->size();
     }
     if (total_size != ref_sections_size) {
-        debug() << "DemuxTest: " << test_name << ", " << table_name
+        Debug() << "DemuxTest: " << test_name << ", " << table_name
                      << ": total size of " << table.sectionCount() << " sections is "
                      << total_size << " bytes, expected " << ref_sections_size << " bytes"
                      << std::endl
@@ -103,7 +103,7 @@ bool DemuxTest::checkSections(const char* test_name, const char* table_name, con
                      << "DemuxTest: " << table_name << std::endl;
         for (size_t si = 0; si < table.sectionCount(); ++si) {
             const ts::Section& sect(*table.sectionAt(si));
-            debug() << "DemuxTest: " << ts::UString::Dump(sect.content(), sect.size(), ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2);
+            Debug() << "DemuxTest: " << ts::UString::Dump(sect.content(), sect.size(), ts::UString::HEXA | ts::UString::OFFSET | ts::UString::ASCII, 2);
         }
         return false;
     }
@@ -118,7 +118,7 @@ bool DemuxTest::checkSections(const char* test_name, const char* table_name, con
         sections_offset += size;
         for (size_t i = 0; i < size; ++i) {
             if (sec[i] != ref[i]) {
-                debug() << "DemuxTest: " << test_name << ", " << table_name
+                Debug() << "DemuxTest: " << test_name << ", " << table_name
                              << ": difference at offset " << i << " in section " << si
                              << std::endl
                              << "DemuxTest: Reference section:" << std::endl
@@ -137,7 +137,7 @@ bool DemuxTest::checkPackets(const char* test_name, const char* table_name, cons
 {
     // First, compute and compare total size of the table
     if (packets.size() != ref_packets_size / ts::PKT_SIZE) {
-        debug() << "DemuxTest: " << test_name << ", " << table_name
+        Debug() << "DemuxTest: " << test_name << ", " << table_name
                      << ": rebuilt " << packets.size() << " packets, expected " << (ref_packets_size / ts::PKT_SIZE)
                      << std::endl
                      << "DemuxTest: Reference packets:" << std::endl
@@ -153,7 +153,7 @@ bool DemuxTest::checkPackets(const char* test_name, const char* table_name, cons
         const uint8_t* pkt = packets[pi].b;
         for (size_t i = 0; i < ts::PKT_SIZE; ++i) {
             if (pkt[i] != ref[i]) {
-                debug() << "DemuxTest: " << test_name << ", " << table_name
+                Debug() << "DemuxTest: " << test_name << ", " << table_name
                              << ": difference at offset " << i << " in packet " << pi
                              << std::endl
                              << "DemuxTest: Reference packet:" << std::endl
@@ -173,7 +173,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     ts::DuckContext duck;
 
     TSUNIT_ASSERT(ref_packets_size % ts::PKT_SIZE == 0);
-    debug() << "DemuxTest: Testing " << name << std::endl;
+    Debug() << "DemuxTest: Testing " << name << std::endl;
 
     // Analyze TS packets. We expect only one table
 
@@ -188,7 +188,7 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
     // Compare contents of reference sections and demuxed sections.
 
     const ts::BinaryTable& table1(*demux.tables().front());
-    debug() << "DemuxTest: " << ts::UString::Format(u"  PID %n", table1.sourcePID()) << std::endl;
+    Debug() << "DemuxTest: " << ts::UString::Format(u"  PID %n", table1.sourcePID()) << std::endl;
     TSUNIT_ASSERT(checkSections(name, "demuxed table", table1, ref_sections, ref_sections_size));
 
     // Table-specific tests.
@@ -367,8 +367,8 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
 
     const ts::BinaryTable& table3(*demux2.tables().front());
     if (table2 != table3) {
-        debug() << "DemuxTest: " << name << ": rebuilt tables differ" << std::endl;
-        debug() << "DemuxTest:   Re-serialized table: " << ts::TIDName(duck, table2.tableId())
+        Debug() << "DemuxTest: " << name << ": rebuilt tables differ" << std::endl;
+        Debug() << "DemuxTest:   Re-serialized table: " << ts::TIDName(duck, table2.tableId())
                 << ", " << table2.sectionCount() << " sections" << std::endl
                 << "  Re-packetized table: " << ts::TIDName(duck, table3.tableId())
                 << ", " << table3.sectionCount() << " sections" << std::endl;

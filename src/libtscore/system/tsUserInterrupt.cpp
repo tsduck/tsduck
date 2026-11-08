@@ -45,7 +45,7 @@ void ts::UserInterrupt::sysHandler(int sig)
     }
 
     // Atomic set
-    ui->_got_sigint = 1;
+    ui->_got_sigint = true;
 
     // Note that sem_post is the only known-synchronization mechanism which is
     // allowed in a signal handler. This is the reason why we use a semaphore
@@ -67,14 +67,14 @@ void ts::UserInterrupt::sysHandler(int sig)
 #if defined(TS_UNIX)
 void ts::UserInterrupt::main()
 {
-    while (_terminate == 0) {
+    while (!_terminate) {
         // Wait for the semaphore to be signaled
         if (::sem_wait(SEM_PARAM(this)) < 0 && errno != EINTR) {
             ::perror("sem_wait");
             std::exit(EXIT_FAILURE);
         }
-        if (_got_sigint != 0) {
-            _got_sigint = 0;
+        if (_got_sigint) {
+            _got_sigint = false;
             // Set interrupted state
             _interrupted = true;
             // Notify the application handler
@@ -195,7 +195,7 @@ void ts::UserInterrupt::activate()
 #elif defined(TS_UNIX)
 
     _terminate = false;
-    _got_sigint = 0;
+    _got_sigint = false;
 
     // Initialize the semaphore.
 #if defined(TS_MAC)
@@ -277,7 +277,7 @@ void ts::UserInterrupt::deactivate()
     }
 
     // Signal the semaphore to unlock the monitor thread
-    _terminate = 1;
+    _terminate = true;
     if (::sem_post(SEM_PARAM(this)) < 0) {
         ::perror("sem_post error in SIGINT handler");
         std::exit(EXIT_FAILURE);

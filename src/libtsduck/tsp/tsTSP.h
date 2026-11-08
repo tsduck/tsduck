@@ -194,8 +194,8 @@ namespace ts {
         bool              _use_realtime = false;     //!< The plugin should use realtime defaults.
         BitRate           _tsp_bitrate = 0;          //!< TSP input bitrate.
         BitRateConfidence _tsp_bitrate_confidence = BitRateConfidence::LOW;  //!< TSP input bitrate confidence.
-        cn::milliseconds  _tsp_timeout = cn::milliseconds(-1); //!< Timeout when waiting for packets, infinite if negative.
-        volatile bool     _tsp_aborting = false;     //!< TSP is currently aborting.
+        cn::milliseconds  _tsp_timeout = cn::milliseconds(-1);  //!< Timeout when waiting for packets, infinite if negative.
+        std::atomic_bool  _tsp_aborting = false;     //!< TSP is currently aborting.
 
         //!
         //! Constructor for subclasses.

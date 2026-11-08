@@ -173,19 +173,19 @@ namespace ts {
         virtual bool allowSetNonBlocking() const override;
 
     private:
-        fs::path      _filename {};          // Input file name.
-        size_t        _repeat_input = 0;     // Repeat count (0 means infinite)
-        size_t        _input_counter = 0;    // Current repeat count
-        uint64_t      _start_offset = 0;     // Initial byte offset in file
-        volatile bool _is_open = false;      // Check if file is actually open
-        OpenFlags     _flags = NONE;         // Flags which were specified at open
-        volatile bool _at_eof = false;       // End of file has been reached
-        volatile bool _aborted = false;      // Operation has been aborted, no operation available
-        bool          _rewindable = false;   // Opened in rewindable mode
-        bool          _regular = false;      // Is a regular file (ie. not a pipe or special device)
-        bool          _std_inout = false;    // File is standard input or output.
-        SysHandleType _hfd = SYS_HANDLE_INVALID;  // File handle / file descriptor.
-        uint64_t      _position = 0;         // Current position in the file. Must be maintained for asynchronous I/O on Windows.
+        fs::path         _filename {};               // Input file name.
+        size_t           _repeat_input = 0;          // Repeat count (0 means infinite)
+        size_t           _input_counter = 0;         // Current repeat count
+        uint64_t         _start_offset = 0;          // Initial byte offset in file
+        std::atomic_bool _is_open = false;           // Check if file is actually open
+        OpenFlags        _flags = NONE;              // Flags which were specified at open
+        std::atomic_bool _at_eof = false;            // End of file has been reached
+        std::atomic_bool _aborted = false;           // Operation has been aborted, no operation available
+        bool             _rewindable = false;        // Opened in rewindable mode
+        bool             _regular = false;           // Is a regular file (ie. not a pipe or special device)
+        bool             _std_inout = false;         // File is standard input or output.
+        SysHandleType    _hfd = SYS_HANDLE_INVALID;  // File handle / file descriptor.
+        uint64_t         _position = 0;              // Current position in the file. Must be maintained for asynchronous I/O on Windows.
 
         // Common code.
         bool openInternal(bool reopen);

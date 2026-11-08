@@ -52,18 +52,18 @@ namespace ts {
         static constexpr size_t OVERFLOW_MSG_GROUP_COUNT = 1000;
 
         // Command line options.
-        PID        _mpe_pid = PID_NULL;     // PID into insert the MPE datagrams.
-        bool       _replace = false;        // Replace incoming PID if it exists.
-        bool       _pack_sections = false;  // Packet DSM-CC section, without stuffing in TS packets.
+        PID        _mpe_pid = PID_NULL;       // PID into insert the MPE datagrams.
+        bool       _replace = false;          // Replace incoming PID if it exists.
+        bool       _pack_sections = false;    // Packet DSM-CC section, without stuffing in TS packets.
         size_t     _max_queued = DEFAULT_MAX_QUEUED_SECTION; // Max number of queued sections.
-        MACAddress _default_mac {};         // Default MAC address in MPE section for unicast packets.
-        UDPReceiverArgsList _recv_args {};  // Receiver options.
+        MACAddress _default_mac {};           // Default MAC address in MPE section for unicast packets.
+        UDPReceiverArgsList _recv_args {};    // Receiver options.
 
         // Working data.
-        volatile bool  _terminate = false;  // Force termination flag for thread.
-        SectionQueue   _section_queue {DEFAULT_MAX_QUEUED_SECTION};  // Queue of datagrams between the UDP server and the MPE inserter.
-        Packetizer     _packetizer {duck, PID_NULL, this};           // Packetizer for MPE sections.
-        ReceiverVector _receivers {};       // UDP receiver threads.
+        std::atomic_bool _terminate = false;  // Force termination flag for thread.
+        SectionQueue     _section_queue {DEFAULT_MAX_QUEUED_SECTION};  // Queue of datagrams between the UDP server and the MPE inserter.
+        Packetizer       _packetizer {duck, PID_NULL, this};           // Packetizer for MPE sections.
+        ReceiverVector   _receivers {};       // UDP receiver threads.
 
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;

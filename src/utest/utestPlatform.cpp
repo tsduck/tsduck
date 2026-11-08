@@ -66,7 +66,7 @@ TSUNIT_DEFINE_TEST(Endianness)
 // Test case: predefined integer types.
 TSUNIT_DEFINE_TEST(IntegerTypes)
 {
-    debug() << "PlatformTest: sizeof(int) = " << sizeof(int)
+    Debug() << "PlatformTest: sizeof(int) = " << sizeof(int)
             << ", sizeof(long) = " << sizeof(long)
             << ", sizeof(long long) = " << sizeof(long long)
             << ", sizeof(void*) = " << sizeof(void*) << std::endl
@@ -182,7 +182,7 @@ TSUNIT_DEFINE_TEST(64bitLiterals)
 // Test case: Lock on atomic types.
 TSUNIT_DEFINE_TEST(Atomic)
 {
-    debug() << "PlatformTest: std::atomic_bool().is_lock_free() = " << std::atomic_bool().is_lock_free() << std::endl
+    Debug() << "PlatformTest: std::atomic_bool().is_lock_free() = " << std::atomic_bool().is_lock_free() << std::endl
             << "PlatformTest: std::atomic_bool::is_always_lock_free = " << std::atomic_bool::is_always_lock_free << std::endl
             << "PlatformTest: std::atomic_int().is_lock_free() = " << std::atomic_int().is_lock_free() << std::endl
             << "PlatformTest: std::atomic_int::is_always_lock_free = " << std::atomic_int::is_always_lock_free << std::endl
@@ -211,7 +211,7 @@ TSUNIT_DEFINE_TEST(Stringify)
 // Test case: version string
 TSUNIT_DEFINE_TEST(Version)
 {
-    debug() << "PlatformTest: GetVersion(VERSION_SHORT) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) << "\"" << std::endl
+    Debug() << "PlatformTest: GetVersion(VERSION_SHORT) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) << "\"" << std::endl
             << "PlatformTest: GetVersion(VERSION_LONG) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::LONG) << "\"" << std::endl
             << "PlatformTest: GetVersion(VERSION_DATE) = \"" << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::DATE) << "\"" << std::endl;
 
@@ -223,7 +223,7 @@ TSUNIT_DEFINE_TEST(Version)
 // Test case: std::chrono::duration
 TSUNIT_DEFINE_TEST(Chrono)
 {
-    debug() << "PlatformTest: cn::nanoseconds: " << sizeof(cn::nanoseconds) << " bytes, rep: " << sizeof(cn::nanoseconds::rep) << " bytes" << std::endl
+    Debug() << "PlatformTest: cn::nanoseconds: " << sizeof(cn::nanoseconds) << " bytes, rep: " << sizeof(cn::nanoseconds::rep) << " bytes" << std::endl
             << "PlatformTest: cn::microseconds: " << sizeof(cn::microseconds) << " bytes, rep: " << sizeof(cn::microseconds::rep) << " bytes" << std::endl
             << "PlatformTest: cn::milliseconds: " << sizeof(cn::milliseconds) << " bytes, rep: " << sizeof(cn::milliseconds::rep) << " bytes" << std::endl
             << "PlatformTest: cn::seconds: " << sizeof(cn::seconds) << " bytes, rep: " << sizeof(cn::seconds::rep) << " bytes" << std::endl
@@ -264,18 +264,18 @@ TSUNIT_DEFINE_TEST(SharedPtr)
     using Ptr = std::shared_ptr<uint64_t>;
     Ptr ptr1 = std::make_shared<uint64_t>(0x0123456789ABCDEF);
 
-    if (debugMode()) {
+    if (Debug::On()) {
         // May trigger memory errors depending on implementations.
-        debug() << "PlatformTest: sizeof shared_ptr: " << sizeof(ptr1) << " bytes" << std::endl
+        Debug() << "PlatformTest: sizeof shared_ptr: " << sizeof(ptr1) << " bytes" << std::endl
                 << "   share_ptr instance: " << ts::UString::Dump(&ptr1, sizeof(ptr1), ts::UString::SINGLE_LINE) << std::endl;
         void** base = reinterpret_cast<void**>(&ptr1);
         const size_t count = sizeof(ptr1) / sizeof(void*);
         for (size_t i = 0; i < count; i++) {
-            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", 2*sizeof(void*), ptrdiff_t(base[i]));
+            Debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", 2*sizeof(void*), ptrdiff_t(base[i]));
             if (base[i] != nullptr) {
-                    debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
+                    Debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
             }
-            debug() << std::endl;
+            Debug() << std::endl;
         }
     }
 
@@ -291,18 +291,18 @@ TSUNIT_DEFINE_TEST(SharedPtr)
     TSUNIT_EQUAL(2, ptr1.use_count());
     TSUNIT_EQUAL(2, ptr2.use_count());
 
-    if (debugMode()) {
+    if (Debug::On()) {
         // May trigger memory errors depending on implementations.
-        debug() << "PlatformTest: sizeof shared_ptr: " << sizeof(ptr1) << " bytes" << std::endl
+        Debug() << "PlatformTest: sizeof shared_ptr: " << sizeof(ptr1) << " bytes" << std::endl
                 << "   share_ptr instance: " << ts::UString::Dump(&ptr1, sizeof(ptr1), ts::UString::SINGLE_LINE) << std::endl;
         void** base = reinterpret_cast<void**>(&ptr1);
         const size_t count = sizeof(ptr1) / sizeof(void*);
         for (size_t i = 0; i < count; i++) {
-            debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", 2*sizeof(void*), ptrdiff_t(base[i]));
+            Debug() << "    ptr[" << i << "]: " << ts::UString::Format(u"%0*X", 2*sizeof(void*), ptrdiff_t(base[i]));
             if (base[i] != nullptr) {
-                debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
+                Debug() << " -> " << ts::UString::Dump(base[i], 2 * sizeof(void*), ts::UString::SINGLE_LINE);
             }
-            debug() << std::endl;
+            Debug() << std::endl;
         }
     }
 }

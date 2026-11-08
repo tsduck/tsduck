@@ -40,7 +40,7 @@ TSUNIT_DEFINE_TEST(Integer)
     stat.feed(13);
     stat.feed(14);
 
-    debug() << "SingleDataStatTest::testInteger(): mean: " << stat.meanString()
+    Debug() << "SingleDataStatTest::testInteger(): mean: " << stat.meanString()
             << ", var: " << stat.varianceString()
             << ", dev: " << stat.standardDeviationString()
             << std::endl;
@@ -64,7 +64,7 @@ TSUNIT_DEFINE_TEST(Chrono)
     stat.feed(cn::microseconds(13'000'000));
     stat.feed(cn::nanoseconds(14'000'000'000));
 
-    debug() << "SingleDataStatTest::testChrono(): mean: " << stat.meanString()
+    Debug() << "SingleDataStatTest::testChrono(): mean: " << stat.meanString()
             << ", var: " << stat.varianceString()
             << ", dev: " << stat.standardDeviationString()
             << std::endl;

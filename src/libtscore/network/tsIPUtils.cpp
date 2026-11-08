@@ -23,7 +23,7 @@ bool ts::IPInitialize(Report& report)
 {
 #if defined(TS_WINDOWS)
     // Execute only once (except - harmless - race conditions during startup).
-    static volatile bool done = false;
+    static std::atomic_bool done = false;
     if (!done) {
         // Request version 2.2 of Winsock
         ::WSADATA data;

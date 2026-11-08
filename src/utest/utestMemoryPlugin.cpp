@@ -56,7 +56,7 @@ namespace {
             _buffer.append(ts::LINE_FEED);
         }
         _buffer.append(message);
-        tsunit::Test::debug() << message << std::endl;
+        tsunit::Test::Debug() << message << std::endl;
     }
 }
 

@@ -33,7 +33,7 @@ TSUNIT_REGISTER(DVBCharsetTest);
 
 TSUNIT_DEFINE_TEST(Repository)
 {
-    debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::Charset::GetAllNames()) << std::endl;
+    Debug() << "DVBCharsetTest::testRepository: charsets: " << ts::UString::Join(ts::Charset::GetAllNames()) << std::endl;
     TSUNIT_EQUAL(40, ts::Charset::GetAllNames().size());
 
     // ARIB, ARIB-STD-B24,

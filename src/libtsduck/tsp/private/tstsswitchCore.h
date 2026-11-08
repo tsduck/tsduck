@@ -174,7 +174,7 @@ namespace ts::tsswitch {
         std::condition_variable_any _got_input {};      // Signaled each time an input plugin reports new packets.
         size_t                      _cur_plugin = 0;    // Index of current input plugin.
         size_t                      _cur_cycle = 0;     // Current input cycle number.
-        volatile bool               _terminate = false; // Terminate complete processing.
+        std::atomic_bool            _terminate = false; // Terminate complete processing.
         ActionQueue                 _actions {};        // Sequential queue list of actions to execute.
         ActionSet                   _events {};         // Pending events, waiting to be cleared.
 

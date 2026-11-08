@@ -126,6 +126,13 @@ std::string tsunit::convertFromUTF16(const std::u16string& u16)
 }
 
 //---------------------------------------------------------------------------------
+// Access to the debug stream.
+//---------------------------------------------------------------------------------
+
+std::ofstream tsunit::Debug::_nul_device;
+std::mutex tsunit::Debug::_mutex;
+
+//---------------------------------------------------------------------------------
 // Base class for all user tests.
 //---------------------------------------------------------------------------------
 
@@ -147,21 +154,6 @@ void tsunit::Test::beforeTest()
 
 void tsunit::Test::afterTest()
 {
-}
-
-// The null device is initialized by Main when no debug is allowed.
-std::ofstream tsunit::Test::_nul_device;
-
-// Stream where the unitary tests send debug messages.
-std::ostream& tsunit::Test::debug()
-{
-    return _nul_device.is_open() ? _nul_device : std::cerr;
-}
-
-// This static method checks if debug mode is enabled.
-bool tsunit::Test::debugMode()
-{
-    return !_nul_device.is_open();
 }
 
 //---------------------------------------------------------------------------------
@@ -433,7 +425,7 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
     bool ok = true;
     if (suite == nullptr) {
         // Run all test suites.
-        Test::debug() << "====== Running all test suites" << std::endl;
+        Debug() << "====== Running all test suites" << std::endl;
         std::list<std::string> names;
         TestRepository* repo = TestRepository::instance();
         repo->getAllTestSuiteNames(names);
@@ -452,7 +444,7 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
         if (ok) {
             if (test == nullptr) {
                 // Run all tests in one test suite.
-                Test::debug() << "==== Running test suite " << suite->getName() << std::endl;
+                Debug() << "==== Running test suite " << suite->getName() << std::endl;
                 std::list<std::string> names;
                 suite->getAllTestNames(names);
                 for (const auto& it : names) {
@@ -465,7 +457,7 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test, bool prepost)
             else {
                 // Run one test
                 _current_test_name = suite->getName() + "::" + test->getName();
-                Test::debug() << "== Running test " << _current_test_name << std::endl;
+                Debug() << "== Running test " << _current_test_name << std::endl;
                 // Run pre-test
                 ok = suite->runBeforeTest(test);
                 // Run test if pre-test succeeded.
@@ -703,11 +695,11 @@ int tsunit::Main::run()
         #else
             const char nul[] = "/dev/null";
         #endif
-        if (Test::_nul_device.is_open()) {
-            Test::_nul_device.close();
+        if (Debug::_nul_device.is_open()) {
+            Debug::_nul_device.close();
         }
-        Test::_nul_device.open(nul);
-        if (!Test::_nul_device) {
+        Debug::_nul_device.open(nul);
+        if (!Debug::_nul_device) {
             std::cerr << _argv0 << ": error opening " << nul << std::endl;
             return EXIT_FAILURE;
         }
@@ -719,8 +711,8 @@ int tsunit::Main::run()
     success = runner.run(testSuite, testCase);
 
     // Cleanup resources
-    if (Test::_nul_device.is_open()) {
-        Test::_nul_device.close();
+    if (Debug::_nul_device.is_open()) {
+        Debug::_nul_device.close();
     }
 
     // Print report.

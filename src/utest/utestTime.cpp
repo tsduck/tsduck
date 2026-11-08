@@ -51,7 +51,7 @@ TSUNIT_DEFINE_TEST(Time)
 {
     ts::Time t1;
     cn::milliseconds ms;
-    debug() << "TimeTest: sizeof(Time): " << sizeof(ts::Time) << ", sizeof(instance): " << sizeof(t1) << std::endl
+    Debug() << "TimeTest: sizeof(Time): " << sizeof(ts::Time) << ", sizeof(instance): " << sizeof(t1) << std::endl
             << "TimeTest: sizeof(cn::milliseconds): " << sizeof(cn::milliseconds) << ", sizeof(instance): " << sizeof(ms) << std::endl
             << "TimeTest: Default constructor: " << t1 << std::endl;
     TSUNIT_ASSERT(t1 == ts::Time::Epoch);
@@ -118,10 +118,10 @@ TSUNIT_DEFINE_TEST(LocalTime)
     const ts::Time nowUtc(ts::Time::CurrentUTC());
     const ts::Time nowLocal(ts::Time::CurrentLocalTime());
 
-    debug() << "TimeTest: Current local time: " << nowLocal << std::endl;
-    debug() << "TimeTest: Current UTC time: " << nowUtc << std::endl;
-    debug() << "TimeTest: Local time offset: " << ts::UString::Chrono(cn::duration_cast<cn::seconds>(nowLocal - nowUtc)) << std::endl;
-    debug() << "TimeTest: Julian Epoch offset: " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::JulianEpochOffset)) << std::endl;
+    Debug() << "TimeTest: Current local time: " << nowLocal << std::endl;
+    Debug() << "TimeTest: Current UTC time: " << nowUtc << std::endl;
+    Debug() << "TimeTest: Local time offset: " << ts::UString::Chrono(cn::duration_cast<cn::seconds>(nowLocal - nowUtc)) << std::endl;
+    Debug() << "TimeTest: Julian Epoch offset: " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::JulianEpochOffset)) << std::endl;
 
     TSUNIT_ASSERT(nowUtc > ts::Time::Epoch);
     TSUNIT_ASSERT(nowUtc < ts::Time::Apocalypse);
@@ -233,20 +233,19 @@ TSUNIT_DEFINE_TEST(Epoch)
 {
     TSUNIT_EQUAL(u"1970/01/01 00:00:00.000", ts::Time::UnixEpoch.format());
 
-    debug() << "TimeTest: Epoch:            " << ts::Time::Epoch << std::endl;
-    debug() << "TimeTest: Epoch + 1ms:      " << (ts::Time::Epoch + cn::milliseconds(1)) << std::endl;
-    debug() << "TimeTest: Apocalypse - 1ms: " << (ts::Time::Apocalypse - cn::milliseconds(1)) << std::endl;
-    debug() << "TimeTest: Apocalypse:       " << ts::Time::Apocalypse << std::endl;
+    Debug() << "TimeTest: Epoch:            " << ts::Time::Epoch << std::endl;
+    Debug() << "TimeTest: Epoch + 1ms:      " << (ts::Time::Epoch + cn::milliseconds(1)) << std::endl;
+    Debug() << "TimeTest: Apocalypse - 1ms: " << (ts::Time::Apocalypse - cn::milliseconds(1)) << std::endl;
+    Debug() << "TimeTest: Apocalypse:       " << ts::Time::Apocalypse << std::endl;
 }
 
 TSUNIT_DEFINE_TEST(UnixTime)
 {
-    debug()
-        << "TimeTest: UNIX Epoch at " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::UnixEpoch - ts::Time::Epoch)) << " from Epoch" << std::endl
-        << "TimeTest: UNIX Epoch: " << ts::Time::UnixEpoch << std::endl
-        << "TimeTest: " << ts::Time(2018, 4, 13, 12, 54, 34) << " is "
-        << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time(2018, 4, 13, 12, 54, 34) - ts::Time::Epoch)) << " from Epoch" << std::endl
-        << "          and " <<(1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
+    Debug() << "TimeTest: UNIX Epoch at " << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time::UnixEpoch - ts::Time::Epoch)) << " from Epoch" << std::endl
+            << "TimeTest: UNIX Epoch: " << ts::Time::UnixEpoch << std::endl
+            << "TimeTest: " << ts::Time(2018, 4, 13, 12, 54, 34) << " is "
+            << ts::UString::Chrono(cn::duration_cast<cn::days>(ts::Time(2018, 4, 13, 12, 54, 34) - ts::Time::Epoch)) << " from Epoch" << std::endl
+            << "          and " <<(1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
 
     TSUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
     TSUNIT_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074).format());
@@ -438,7 +437,7 @@ TSUNIT_DEFINE_TEST(MJD)
     // Limit values after March 2025 trick to extend dates after 2038.
     // UNIX systems cannot represent dates before 1970.
     if (ts::Time::JulianEpochOffset >= cn::milliseconds::zero()) {
-        debug() << "TimeTest::MJD: testing lower limit in 1948" << std::endl;
+        Debug() << "TimeTest::MJD: testing lower limit in 1948" << std::endl;
 
         ts::PutUInt40(mjd, 0x8000'000000);
         TSUNIT_ASSERT(ts::DecodeMJD(mjd, ts::MJD_FULL, time));

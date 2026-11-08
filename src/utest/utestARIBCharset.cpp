@@ -89,24 +89,24 @@ TSUNIT_REGISTER(ARIBCharsetTest);
 
 
 //----------------------------------------------------------------------------
-// Dump routines in debug mode.
+// Dump routines in Debug mode.
 //----------------------------------------------------------------------------
 
 void ARIBCharsetTest::dump(const ts::UString& title, const ts::ByteBlock& bb)
 {
-    if (debugMode()) {
-        debug() << title.toJustifiedLeft(10) << ts::UString::Dump(bb, ts::UString::SINGLE_LINE | (_c_syntax_debug ? ts::UString::C_STYLE : 0)) << std::endl;
+    if (Debug::On()) {
+        Debug() << title.toJustifiedLeft(10) << ts::UString::Dump(bb, ts::UString::SINGLE_LINE | (_c_syntax_debug ? ts::UString::C_STYLE : 0)) << std::endl;
     }
 }
 
 void ARIBCharsetTest::dump(const ts::UString& title, const ts::UString& str)
 {
-    if (debugMode()) {
-        debug() << title.toJustifiedLeft(10) << '"' << str << '"' << std::endl << "UTF-16:  ";
+    if (Debug::On()) {
+        Debug() << title.toJustifiedLeft(10) << '"' << str << '"' << std::endl << "UTF-16:  ";
         for (size_t i = 0; i < str.size(); ++i) {
-            debug() << ts::UString::Format(u" %s%X%s", _c_syntax_debug ? u"0x" : u"", uint16_t(str[i]), _c_syntax_debug ? u"," : u"");
+            Debug() << ts::UString::Format(u" %s%X%s", _c_syntax_debug ? u"0x" : u"", uint16_t(str[i]), _c_syntax_debug ? u"," : u"");
         }
-        debug() << std::endl;
+        Debug() << std::endl;
     }
 }
 
@@ -136,13 +136,13 @@ TSUNIT_DEFINE_TEST(CanEncode)
 #define B(...) const ts::ByteBlock b24({__VA_ARGS__})
 #define U(...) const ts::UString   u16({__VA_ARGS__})
 #define T(success)             \
-    debug() << std::endl;      \
+    Debug() << std::endl;      \
     dump(u"Input:", b24);      \
     ts::UString dec;           \
     const bool ok = ts::ARIBCharset::B24.decode(dec, b24.data(), b24.size()); \
     dump(u"Decoded:", dec);    \
     dump(u"Expected:", u16);   \
-    debug() << std::endl;      \
+    Debug() << std::endl;      \
     TSUNIT_EQUAL(success, ok); \
     TSUNIT_EQUAL(u16, dec)
 
@@ -409,7 +409,7 @@ TSUNIT_DEFINE_TEST(Decode26)
 #define U(...) const ts::UString   u16({__VA_ARGS__})
 #define B(...) const ts::ByteBlock b24({__VA_ARGS__})
 #define T(success)             \
-    debug() << std::endl;      \
+    Debug() << std::endl;      \
     dump(u"Input:", u16);      \
     dump(u"Expected:", b24);   \
     const ts::ByteBlock enc(ts::ARIBCharset::B24.encoded(u16)); \
@@ -417,7 +417,7 @@ TSUNIT_DEFINE_TEST(Decode26)
     ts::UString dec;           \
     const bool ok = ts::ARIBCharset::B24.decode(dec, enc.data(), enc.size()); \
     dump(u"Decoded:", dec);    \
-    debug() << std::endl;      \
+    Debug() << std::endl;      \
     TSUNIT_ASSERT(b24 == enc); \
     TSUNIT_EQUAL(success, ok); \
     TSUNIT_EQUAL(u16, dec)

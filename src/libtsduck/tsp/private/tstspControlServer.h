@@ -56,8 +56,8 @@ namespace ts::tsp {
         void close();
 
     private:
-        volatile bool         _is_open = false;
-        volatile bool         _terminate = false;
+        std::atomic_bool      _is_open = false;
+        std::atomic_bool      _terminate = false;
         TSProcessorArgs&      _options;
         Report                _log;
         TSPControlCommand     _reference {_log};

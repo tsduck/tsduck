@@ -13,7 +13,7 @@
 // Default operating system priorities
 //----------------------------------------------------------------------------
 
-volatile bool ts::ThreadAttributes::_priority_initialized = false;
+std::atomic_bool ts::ThreadAttributes::_priority_initialized = false;
 int ts::ThreadAttributes::_minimum_priority = 0;
 int ts::ThreadAttributes::_low_priority = 0;
 int ts::ThreadAttributes::_normal_priority = 0;

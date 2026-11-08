@@ -109,7 +109,7 @@ TSUNIT_DEFINE_TEST(M2TS)
     ts::TSPacket packet;
     ts::TSPacketMetadata mdata;
 
-    debug() << "TSFileTest::testM2TS: TS file: " << _temp_file_name << std::endl;
+    Debug() << "TSFileTest::testM2TS: TS file: " << _temp_file_name << std::endl;
     TSUNIT_ASSERT(!fs::exists(_temp_file_name));
     TSUNIT_ASSERT(file.open(_temp_file_name, ts::TSFile::WRITE, ts::TSPacketFormat::M2TS));
 
@@ -161,7 +161,7 @@ TSUNIT_DEFINE_TEST(Duck)
     ts::TSPacket packet;
     ts::TSPacketMetadata mdata;
 
-    debug() << "TSFileTest::testDuck: TS file: " << _temp_file_name << std::endl;
+    Debug() << "TSFileTest::testDuck: TS file: " << _temp_file_name << std::endl;
     TSUNIT_ASSERT(!fs::exists(_temp_file_name));
     TSUNIT_ASSERT(file.open(_temp_file_name, ts::TSFile::WRITE, ts::TSPacketFormat::DUCK));
 

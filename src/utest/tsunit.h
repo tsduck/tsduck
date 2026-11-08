@@ -82,6 +82,102 @@
 //!
 namespace tsunit {
     //!
+    //! This class acts as an output stream which can be used by unitary tests to log debug messages.
+    //!
+    //! A unitary test typically does not display anything. It simply performs assertions. A complete
+    //! set of unitary test suites reports successes or failures using TSUnit.
+    //!
+    //! However, there are cases where the unitary test may want to issue trace, log or Debug messages.
+    //! Such messages should be sent to this output stream.
+    //!
+    //! By default, the debug messages are discarded. However, when the option -d (Debug) is specified
+    //! on the command line of the unitary test driver, these messages are reported on the standard
+    //! error stream.
+    //!
+    //! An instance of this class is a temporary object which lives during an expression such as this:
+    //! @code
+    //! Debug() << "value: " << i << std::endl;
+    //! @endcode
+    //!
+    //! The constructor and destructor locks and unlocks access to the actual stream. Thus, a complete
+    //! set of expressions is executed without interference with other such expressions in another thread.
+    //!
+    class Debug
+    {
+    public:
+        //!
+        //! Constructor: lock access to the shared debug stream.
+        //!
+        Debug()
+        {
+            _mutex.lock();
+        }
+        //!
+        //! Destructor: flush and unlock access to the shared debug stream.
+        //!
+        ~Debug()
+        {
+            stream() << std::flush; _mutex.unlock();
+        }
+        //!
+        //! This static method checks if debug mode is enabled.
+        //! @return True if debug mode is enabled.
+        //!
+        static bool On()
+        {
+            return !_nul_device.is_open();
+        }
+        //!
+        //! Conversion operator to a reference to a std::stream.
+        //! @return A reference to the actual debug stream.
+        //!
+        operator std::ostream&()
+        {
+            return stream();
+        }
+        //!
+        //! Output operator for data types.
+        //!
+        template <typename T>
+        std::ostream& operator<<(const T& value)
+        {
+            return stream() << value;
+        }
+        //!
+        //! Output operator for manipulators such as std::endl, std::flush, std::ends.
+        //!
+        std::ostream& operator<<(std::ostream& (*manip)(std::ostream&))
+        {
+            return stream() << manip;
+        }
+        //!
+        //! Output operator for manipulators such as std::hex, std::dec, std::boolalpha.
+        //!
+        std::ostream& operator<<(std::ios_base& (*manip)(std::ios_base&))
+        {
+            return stream() << manip;
+        }
+        //!
+        //! Output operator for manipulators acting on basic_ios (rare, for completeness).
+        //!
+        std::ostream& operator<<(std::ios& (*manip)(std::ios&))
+        {
+            return stream() << manip;
+        }
+
+    private:
+        static std::mutex _mutex;           // Lock access to shared debug stream.
+        static std::ofstream _nul_device;   // Used as debug device when debuf is off.
+        friend class Main;                  // Class Main opens and closes _nul_device.
+
+        // Get a reference to the actual debug stream (the null device if debug is off).
+        std::ostream& stream()
+        {
+            return On() ? std::cerr : static_cast<std::ostream&>(_nul_device);
+        }
+    };
+
+    //!
     //! Base class for all user tests.
     //!
     class Test
@@ -108,34 +204,9 @@ namespace tsunit {
         //!
         virtual void afterTest();
         //!
-        //! This static method returns a reference to an output stream
-        //! which can be used by unitary tests to log debug messages.
+        //! Make Debug() directly visible to user tests (subclasses of Test).
         //!
-        //! A unitary test typically does not display anything. It simply
-        //! performs assertions. A complete set of unitary test suites
-        //! reports successes or failures using TSUnit.
-        //!
-        //! However, there are cases where the unitary test may want to
-        //! issue trace, log or debug messages. Such messages should be
-        //! sent to this output stream.
-        //!
-        //! By default, these messages are discarded. However, when the
-        //! option -d (debug) is specified on the command line of the
-        //! unitary test driver, these messages are reported on the
-        //! standard error stream.
-        //!
-        //! @return A reference to an output stream used to report debug messages.
-        //!
-        static std::ostream& debug();
-        //!
-        //! This static method checks if debug mode is enabled.
-        //! @return True if debug mode is enabled.
-        //!
-        static bool debugMode();
-
-    private:
-        friend class Main;
-        static std::ofstream _nul_device;
+        using Debug = tsunit::Debug;
     };
 
     //!

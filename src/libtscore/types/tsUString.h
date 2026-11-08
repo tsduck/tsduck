@@ -2838,7 +2838,7 @@ namespace ts {
             //! @return True if debug is active.
             //!
             static inline bool debugActive() {
-                return _debug_valid ? _debug_on : debugInit();
+                return _debug_valid.load() ? _debug_on.load() : debugInit();
             }
 
             //!
@@ -2850,13 +2850,13 @@ namespace ts {
             void debug(const UString& message, UChar cmd = CHAR_NULL) const;
 
         protected:
-            const UChar* _fmt;                 //!< Current pointer into format string.
+            const UChar* _fmt;                    //!< Current pointer into format string.
         private:
-            const UChar* const _format;        //!< Format string.
-            const bool _output;                //!< Output context (Format), not input (Scan).
-            static volatile bool _debug_on;    //!< Check if debugging is on.
-            static volatile bool _debug_valid; //!< Check if _debug_on is valid.
-            static bool debugInit();           //!< Set _debug_on, normally executed only once.
+            const UChar* const _format;           //!< Format string.
+            const bool _output;                   //!< Output context (Format), not input (Scan).
+            static std::atomic_bool _debug_on;    //!< Check if debugging is on.
+            static std::atomic_bool _debug_valid; //!< Check if _debug_on is valid.
+            static bool debugInit();              //!< Set _debug_on, normally executed only once.
         };
 
         //!

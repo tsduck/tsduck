@@ -138,7 +138,7 @@ void UStringTest::afterTest()
     ts::UStringVector tempFiles;
     ts::ExpandWildcard(tempFiles, _temp_file_prefix + u"*");
     for (const auto& file : tempFiles) {
-        debug() << "UStringTest: deleting temporary file \"" << file << "\"" << std::endl;
+        Debug() << "UStringTest: deleting temporary file \"" << file << "\"" << std::endl;
         fs::remove(file, &ts::ErrCodeReport(CERR, u"error deleting", file));
     }
     _next_file_index = 0;
@@ -233,7 +233,7 @@ TSUNIT_DEFINE_TEST(UTF)
     ts::UString s3(ts::UString::FromUTF8(reinterpret_cast<const char*>(utf8_bytes)));
     ts::UString s4(ts::UString::FromUTF8(reinterpret_cast<const char*>(utf8_bytes), utf8_count));
 
-    debug() << "UStringTest::testUTF: utf16_count = " << utf16_count << ", s1.length() = " << s1.length() << std::endl;
+    Debug() << "UStringTest::testUTF: utf16_count = " << utf16_count << ", s1.length() = " << s1.length() << std::endl;
 
     TSUNIT_EQUAL(s1.length(), s1.size());
     TSUNIT_EQUAL(s2.length(), s2.size());
@@ -262,7 +262,7 @@ TSUNIT_DEFINE_TEST(Surrogate)
 {
     static const ts::UString ab {MATH_A1, MATH_A2, MATH_B1, MATH_B2};
     // Displayed string may be screwed up, depending of the terminal...
-    debug() << "UStringTest::testSurrogate: '" << ab << "'" << std::endl;
+    Debug() << "UStringTest::testSurrogate: '" << ab << "'" << std::endl;
 
     TSUNIT_ASSERT(!ts::IsLeadingSurrogate(ts::UChar('A')));
     TSUNIT_ASSERT(!ts::IsTrailingSurrogate(ts::UChar('A')));
