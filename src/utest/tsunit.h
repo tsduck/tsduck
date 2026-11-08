@@ -59,23 +59,23 @@
 #pragma clang diagnostic ignored "-Wmissing-noreturn"       // Test cases with expected exception may be detected as [[noreturn]]
 #pragma clang diagnostic ignored "-Wused-but-marked-unused" // 'snprintf' was marked unused but was used (with _FORTIFY_SOURCE)
 #pragma clang diagnostic ignored "-Wlifetime-safety-cross-tu-suggestions" // Parameters and result lifetime checks are too aggressive, too many false positive
-
 #endif
 
-#include <limits>
-#include <map>
-#include <list>
-#include <vector>
-#include <string>
+#include <atomic>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <exception>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
+#include <list>
+#include <map>
+#include <mutex>
+#include <string>
 #include <typeindex>
-#include <filesystem>
-#include <exception>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <atomic>
+#include <vector>
 
 //!
 //! Unitary tests namespace.

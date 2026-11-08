@@ -57,7 +57,7 @@ void DirectShowTest::afterTest()
 
 TSUNIT_DEFINE_TEST(Devices)
 {
-    ts::DirectShowTest test(debug(), CERR);
+    ts::DirectShowTest test(Debug(), CERR);
     test.runTest(ts::DirectShowTest::ENUMERATE_DEVICES);
 }
 

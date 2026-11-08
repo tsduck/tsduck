@@ -17,7 +17,7 @@
 #endif
 
 #if defined(__llvm__)
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // wstring_convert
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations" // wstring_convert
 #endif
 
 //---------------------------------------------------------------------------------
