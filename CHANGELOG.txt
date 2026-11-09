@@ -41,8 +41,8 @@ VERSION 3.46-4911 (November 2026)
     input  stream  on  multistream  carriers  and the Physical Layer Scrambling
     (PLS) code. PLS codes other than the default one require Dektec SDK 2026.09
     or higher.
-  * The pkg-config file tsduck.pc now defines the variable "plugindir", the
-    directory from which tsp loads its plugins, for extensions which install
+  * The pkg-config file tsduck.pc now defines  the  variable  "plugindir",  the
+    directory from which tsp loads its plugins,  for  extensions  which install
     their own plugins: pkg-config --variable=plugindir tsduck.
   * Changed or removed options in existing commands and plugins:
     - Option --ffs has been renamed as --fc in  plugins "srt"  for  consistency
@@ -54,9 +54,9 @@ VERSION 3.46-4911 (November 2026)
     - Option --max-encrypted-segment-size in input plugin "hls".
     - Option --allow-emulator-pipes in "tsscan" and input plugin "dvb".
     - Options --isi, --pls-code, --pls-mode in input plugin "dektec".
-    - Option --serial in input and output plugins "dektec" and in command
-      "tsdektec", to select a Dektec device by its serial number instead of
-      its index. The serial number is now displayed in decimal by "tsdektec -v".
+    - Option --serial in input and  output  plugins  "dektec"  and  in  command
+      "tsdektec",  to  select  a  Dektec device by its serial number instead of
+      its index.  The serial number is now displayed in decimal by tsdektec -v.
 
 [BUG] Bug fixes:
 
