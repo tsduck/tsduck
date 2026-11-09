@@ -31,6 +31,7 @@ public:
     bool   _list_all = false;          // List all Dektec devices
     bool   _normalized = false;        // List in "normalized" format
     size_t _devindex = 0;              // Dektec device
+    int64_t _serial = -1;              // Dektec device serial number (-1: use _devindex)
     bool   _reset = false;             // Reset the device
     bool   _set_led = false;           // Change LED state
     int    _led_state = 0;             // State of the LED (one of DTAPI_LED_*)
@@ -118,6 +119,12 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     option(u"reset", 'r');
     help(u"reset", u"Reset the device.");
 
+    option(u"serial", 's', UNSIGNED);
+    help(u"serial",
+         u"Serial number of the device to control, as displayed by \"tsdektec -a -v\" or in "
+         u"the JSON output of \"tsdektec -a -j\". The device index parameter and --serial "
+         u"are mutually exclusive.");
+
     option<cn::seconds>(u"wait", 'w');
     help(u"wait",
          u"Wait the specified number of seconds before exiting. The default "
@@ -126,6 +133,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     analyze(argc, argv);
 
     getIntValue(_guts->_devindex, u"", 0);
+    getIntValue(_guts->_serial, u"serial", -1);
     _guts->_normalized = present(u"normalized");
     _guts->_list_all = present(u"all");
     _guts->_set_led = present(u"led");
@@ -139,6 +147,9 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
 
     if (_guts->_json.useFile() && _guts->_normalized) {
         error(u"options --json and --normalized are mutually exclusive");
+    }
+    if (present(u"") && present(u"serial")) {
+        error(u"the device index parameter and --serial are mutually exclusive");
     }
 
     exitOnError();
@@ -176,6 +187,18 @@ int ts::DektecControl::execute()
     }
     else {
         // List only one device
+        if (_guts->_serial >= 0) {
+            // Select the device by serial number.
+            size_t di = 0;
+            while (di < devices.size() && devices[di].desc.m_Serial != _guts->_serial) {
+                di++;
+            }
+            if (di >= devices.size()) {
+                error(u"no Dektec device with serial number %d", _guts->_serial);
+                return EXIT_FAILURE;
+            }
+            _guts->_devindex = di;
+        }
         if (_guts->_devindex >= devices.size()) {
             // Invalid device index specified
             error(u"invalid device index: %d", _guts->_devindex);
@@ -245,7 +268,7 @@ int ts::DektecControl::Guts::listDevices(const DektecDeviceVector& devices)
                       << UString::Format(u"  Subsystem vendor id: 0x%04X", device.desc.m_SubVendorId) << std::endl
                       << UString::Format(u"  Device id: 0x%04X", device.desc.m_DeviceId) << std::endl
                       << UString::Format(u"  Vendor id: 0x%04X", device.desc.m_VendorId) << std::endl
-                      << UString::Format(u"  Serial number: %016X", device.desc.m_Serial) << std::endl
+                      << UString::Format(u"  Serial number: %d", device.desc.m_Serial) << std::endl
                       << UString::Format(u"  Firmware version: %d (0x%08X)", device.desc.m_FirmwareVersion, device.desc.m_FirmwareVersion) << std::endl
                       << UString::Format(u"  Firmware variant: %d (0x%08X)", device.desc.m_FirmwareVariant, device.desc.m_FirmwareVariant) << std::endl;
 

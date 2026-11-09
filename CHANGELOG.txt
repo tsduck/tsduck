@@ -54,6 +54,9 @@ VERSION 3.46-4911 (November 2026)
     - Option --max-encrypted-segment-size in input plugin "hls".
     - Option --allow-emulator-pipes in "tsscan" and input plugin "dvb".
     - Options --isi, --pls-code, --pls-mode in input plugin "dektec".
+    - Option --serial in input and output plugins "dektec" and in command
+      "tsdektec", to select a Dektec device by its serial number instead of
+      its index. The serial number is now displayed in decimal by "tsdektec -v".
 
 [BUG] Bug fixes:
 

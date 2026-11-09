@@ -29,6 +29,7 @@ public:
     Guts() = default;                          // Constructor.
     bool                is_started = false;    // Device started
     int                 dev_index = -1;        // Dektec device index
+    int64_t             serial = -1;           // Dektec device serial number (-1: not specified)
     int                 chan_index = -1;       // Device input channel index
     int                 timeout_ms = -1;       // Receive timeout in milliseconds.
     int                 iostd_value = -1;      // Value parameter for SetIoConfig on I/O standard.
@@ -139,6 +140,12 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
          u"in the system). Use the command \"tsdektec -a [-v]\" to have a "
          u"complete list of devices in the system. By default, use the first "
          u"input Dektec device.");
+
+    option(u"serial", 0, UNSIGNED);
+    help(u"serial",
+         u"Serial number of the Dektec device to use, as displayed by \"tsdektec -a -v\" "
+         u"or in the JSON output of \"tsdektec -a -j\". The options --device and --serial "
+         u"are mutually exclusive. By default, use the first input Dektec device.");
 
     option(u"dvbt-bandwidth", 0, Names {
         {u"1.7", DTAPI_DVBT2_1_7MHZ},
@@ -365,6 +372,7 @@ ts::DektecInputPlugin::~DektecInputPlugin()
 bool ts::DektecInputPlugin::getOptions()
 {
     getIntValue(_guts->dev_index, u"device", -1);
+    getIntValue(_guts->serial, u"serial", -1);
     getIntValue(_guts->chan_index, u"channel", -1);
     getIntValue(_guts->timeout_ms, u"receive-timeout", _guts->timeout_ms); // preserve previous value
     getIntValue(_guts->sat_number, u"satellite-number", 0);
@@ -378,6 +386,11 @@ bool ts::DektecInputPlugin::getOptions()
 
     bool success = GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue) &&
                    GetDektecIPArgs(*this, true, _guts->ip_pars);
+
+    if (present(u"device") && present(u"serial")) {
+        error(u"options --device and --serial are mutually exclusive");
+        success = false;
+    }
 
     // Compute carrier frequency
     if (present(u"frequency") && present(u"satellite-frequency")) {
@@ -615,7 +628,7 @@ bool ts::DektecInputPlugin::start()
     }
 
     // Locate the device
-    if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, true, *tsp)) {
+    if (!_guts->device.getDevice(_guts->dev_index, _guts->chan_index, true, _guts->serial, *tsp)) {
         return false;
     }
 

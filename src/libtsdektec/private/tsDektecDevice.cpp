@@ -261,7 +261,7 @@ bool ts::DektecDevice::GetAllDevices(DektecDeviceVector& devices, Report& report
 // Get a Dektec device description. Return true on success.
 //-----------------------------------------------------------------------------
 
-bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input, Report& report)
+bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input, int64_t serial, Report& report)
 {
     const UChar* direction = is_input ? u"input" : u"output";
 
@@ -272,7 +272,21 @@ bool ts::DektecDevice::getDevice(int& dev_index, int& chan_index, bool is_input,
     }
 
     // Check device validity
-    if (dev_index < 0) {
+    if (serial >= 0) {
+        // A serial number is specified, look for that device.
+        dev_index = -1;
+        for (size_t di = 0; di < devlist.size(); di++) {
+            if (devlist[di].desc.m_Serial == serial) {
+                dev_index = int(di);
+                break;
+            }
+        }
+        if (dev_index < 0) {
+            report.error(u"no Dektec device with serial number %d", serial);
+            return false;
+        }
+    }
+    else if (dev_index < 0) {
         // No device is specified, look for the first device with specified capability.
         for (size_t di = 0; di < devlist.size(); di++) {
             const DektecDevice& dev(devlist[di]);

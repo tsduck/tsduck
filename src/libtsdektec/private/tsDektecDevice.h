@@ -65,10 +65,13 @@ namespace ts {
         //! as specified by @a is_input and update @a chan_index.
         //! @param [in] is_input If true, make sure the channel has input capability.
         //! If false, make sure it has output capability.
+        //! @param [in] serial Serial number of the Dektec device to load. If non-negative,
+        //! the device is selected by serial number, @a dev_index is ignored on input and
+        //! updated with the index of the selected device.
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool getDevice(int& dev_index, int& chan_index, bool is_input, Report& report = CERR);
+        bool getDevice(int& dev_index, int& chan_index, bool is_input, int64_t serial = -1, Report& report = CERR);
 
         // Get the list of all Dektec devices in the system.
         // Return true in case of success, false on error.

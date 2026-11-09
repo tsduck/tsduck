@@ -39,6 +39,7 @@ The default is 0, the first device.
 
 [.optdoc]
 Use option `--list-all` (or `-a`) to have a complete list of devices in the system.
+The device can also be selected by its serial number using option `--serial`.
 
 [.usage]
 Options
@@ -101,6 +102,14 @@ Must be one of `high-quality`, `low-power`.
 
 [.optdoc]
 Reset the device.
+
+[.opt]
+*-s* _value_ +
+*--serial* _value_
+
+[.optdoc]
+Serial number of the device to control, as displayed by `tsdektec -a -v` or in the JSON output of `tsdektec -a -j`.
+The device index parameter and `--serial` are mutually exclusive.
 
 [.opt]
 *-w* _seconds_ +

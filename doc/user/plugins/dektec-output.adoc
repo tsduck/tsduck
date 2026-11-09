@@ -238,6 +238,16 @@ There is no default value, and the valid range is 100-100000.
 Percentage of size of FIFO to preload prior to starting transmission (default: 80%).
 
 [.opt]
+*--serial* _value_
+
+[.optdoc]
+Serial number of the Dektec device to use, as displayed by `tsdektec -a -v` or in the JSON output of `tsdektec -a -j`.
+The options `--device` and `--serial` are mutually exclusive.
+
+[.optdoc]
+By default, use the first output Dektec device.
+
+[.opt]
 *-s +
 *--stuffing*
 
