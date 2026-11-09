@@ -1,5 +1,6 @@
 prefix={{PREFIX}}
 libdir={{LIBDIR}}
+plugindir=${libdir}/tsduck
 
 Name: TSDuck
 Description: MPEG Transport Stream Toolkit

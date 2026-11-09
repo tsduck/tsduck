@@ -747,6 +747,14 @@ It is probably a good idea to add this `bin` directory in your `PATH` environmen
 Applications may use the `pkgconfig` utility to reference the TSDuck library.
 A file named `tsduck.pc` is installed in the appropriate directory.
 
+The variable `plugindir` in this file is the directory from which `tsp` loads its plugins,
+where extensions install their `tsplugin_xxx.so` files (the same value as `tsconfig --plugin`):
+
+[source,shell]
+----
+$ pkg-config --variable=plugindir tsduck
+----
+
 However, `pkgconfig` has its own limitations, specifically regarding the configured compilation options.
 
 TSDuck is a {cpp} library which requires a minimum revision of the language.
