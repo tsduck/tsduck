@@ -52,7 +52,7 @@ bool ts::UDPReceiver::openImplementation(IP gen)
 
     // If a destination address is specified, it must be a multicast address.
     if (_args.destination.hasAddress() && !_args.destination.isMulticast()) {
-        report().error(u"address %s is not multicast", _args.destination);
+        report().error(u"address %s is not multicast; to receive unicast packets, specify the port only and the local address with --local-address", _args.destination);
         return false;
     }
 
