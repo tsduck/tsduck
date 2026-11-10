@@ -70,11 +70,37 @@ namespace ts {
         virtual void immediateResetPID(PID pid) override;
 
     private:
+        // A string of bits, most significant bit first in each byte.
+        // The DFL and SYNCD of a DVB-T2 BBFRAME are in bits. The user packets are consequently not always
+        // byte-aligned in the data field (in-band signalling, collection-window allocation), see ETSI EN
+        // 302 755, section 5.1.7. The unused bits in the last byte, if any, are always zero.
+        class BitBlock
+        {
+        public:
+            // Default constructor.
+            BitBlock() = default;
+
+            // Size in bits, address of first byte, access to one byte.
+            size_t sizeBits() const { return _bits; }
+            const uint8_t* data() const { return _data.data(); }
+            uint8_t operator[](size_t index) const { return _data[index]; }
+
+            // Remove all bits.
+            void clear();
+
+            // Append 'count' bits from 'src', starting at bit 'src_bit' (zero is the MSB of the first byte).
+            void append(const uint8_t* src, size_t src_bit, size_t count);
+
+        private:
+            ByteBlock _data {};
+            size_t    _bits = 0;
+        };
+
         // Analysis context for one PLP inside one T2-MI stream.
         struct PLPContext
         {
-            bool      sync;  // We are synchronous on the user packets of this PLP.
-            ByteBlock up;    // Start of a user packet which continues in the next baseband frame.
+            bool     sync;  // We are synchronous on the user packets of this PLP.
+            BitBlock up;    // Start of a user packet which continues in the next baseband frame.
 
             // Default constructor
             PLPContext();

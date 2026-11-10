@@ -31,6 +31,55 @@ namespace {
         }
         return crc;
     }
+
+    // Get up to 8 bits at any bit offset in a memory area, MSB first, right-justified (1 <= count <= 8).
+    // Never read beyond the last byte which contains a requested bit.
+    uint8_t GetBits8(const uint8_t* src, size_t bit, size_t count)
+    {
+        const size_t offset = bit % 8;
+        src += bit / 8;
+        uint16_t word = uint16_t(src[0] << 8);
+        if (offset + count > 8) {
+            word |= src[1];
+        }
+        return uint8_t(uint16_t(word << offset) >> (16 - count));
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// String of bits.
+//----------------------------------------------------------------------------
+
+void ts::T2MIDemux::BitBlock::clear()
+{
+    _data.clear();
+    _bits = 0;
+}
+
+void ts::T2MIDemux::BitBlock::append(const uint8_t* src, size_t src_bit, size_t count)
+{
+    // New bytes are zeroed, bits are then only set, never cleared.
+    _data.resize((_bits + count + 7) / 8, 0);
+
+    // When source and destination are both byte-aligned, bulk copy all complete bytes.
+    if (_bits % 8 == 0 && src_bit % 8 == 0 && count >= 8) {
+        const size_t bytes = count / 8;
+        MemCopy(&_data[_bits / 8], src + src_bit / 8, bytes);
+        _bits += 8 * bytes;
+        src_bit += 8 * bytes;
+        count -= 8 * bytes;
+    }
+
+    // Otherwise, and for trailing bits, fill each destination byte in turn.
+    while (count > 0) {
+        const size_t room = 8 - _bits % 8;  // free bits in current destination byte
+        const size_t n = std::min(room, count);
+        _data[_bits / 8] |= uint8_t(GetBits8(src, src_bit, n) << (room - n));
+        _bits += n;
+        src_bit += n;
+        count -= n;
+    }
 }
 
 
@@ -300,54 +349,52 @@ void ts::T2MIDemux::demuxTS(PID pid, PIDContext& pc, const T2MIPacket& pkt)
         return;
     }
 
-    // Data Field Length in bytes.
-    size_t dfl = (GetUInt16(data + 4) + 7) / 8;
-
-    // Synchronization distance in bits.
+    // Data Field Length and synchronization distance, in bits (ETSI EN 302 755, section 5.1.7).
+    size_t dfl = GetUInt16(data + 4);
     size_t syncd = GetUInt16(data + 7);
+    const size_t up_bits = up_size * 8;
 
     // Now skip baseband header.
     data += T2_BBHEADER_SIZE;
     size -= T2_BBHEADER_SIZE;
 
     // Adjust invalid DFL (should not happen).
-    if (dfl > size) {
-        dfl = size;
-    }
+    dfl = std::min(dfl, size * 8);
 
     if (syncd == 0xFFFF) {
         // No user packet starts in data field, the current one continues.
         if (plpp->sync) {
-            plpp->up.append(data, dfl);
-            if (plpp->up.size() > up_size) {
+            plpp->up.append(data, 0, dfl);
+            if (plpp->up.sizeBits() > up_bits) {
                 plpp->lostSync();
             }
         }
     }
     else {
-        // Synchronization distance in bytes, bounded by data field size.
-        syncd = std::min(syncd / 8, dfl);
+        // Synchronization distance bounded by data field size.
+        syncd = std::min(syncd, dfl);
 
         // Process end of previous packet. Drop it when its size is wrong (lost or inconsistent baseband frames).
         if (plpp->sync) {
-            plpp->up.append(data, syncd);
-            if (plpp->up.size() == up_size) {
+            plpp->up.append(data, 0, syncd);
+            if (plpp->up.sizeBits() == up_bits) {
                 outputTS(pkt, plpp->up.data() + up_crc, npd ? plpp->up[up_size - 1] : 0);
             }
         }
         plpp->sync = true;
-        data += syncd;
-        dfl -= syncd;
 
-        // Process subsequent complete packets.
-        while (dfl >= up_size) {
-            outputTS(pkt, data + up_crc, npd ? data[up_size - 1] : 0);
-            data += up_size;
-            dfl -= up_size;
+        // Process subsequent complete packets, from bit 'pos' of the data field.
+        // Each one is realigned on a byte boundary in the user packet buffer.
+        size_t pos = syncd;
+        for (; dfl - pos >= up_bits; pos += up_bits) {
+            plpp->up.clear();
+            plpp->up.append(data, pos, up_bits);
+            outputTS(pkt, plpp->up.data() + up_crc, npd ? plpp->up[up_size - 1] : 0);
         }
 
         // Keep optional trailing truncated packet.
-        plpp->up.copy(data, dfl);
+        plpp->up.clear();
+        plpp->up.append(data, pos, dfl - pos);
     }
 }
 
