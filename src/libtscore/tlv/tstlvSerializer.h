@@ -28,7 +28,7 @@ namespace ts::tlv {
     private:
         // Private members:
         ByteBlockPtr _bb {};      // Associated binary block
-        int _length_offset {-1};  // Location of TLV "length" field
+        int _length_offset = -1;  // Location of TLV "length" field
 
     public:
         //!
@@ -83,105 +83,105 @@ namespace ts::tlv {
         //! Insert an unsigned 8-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt8(uint8_t i) {_bb->appendUInt8 (i);}
+        void putUInt8(uint8_t i) { _bb->appendUInt8 (i); }
 
         //!
         //! Insert an unsigned 16-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt16(uint16_t i) {_bb->appendUInt16(i);}
+        void putUInt16(uint16_t i) { _bb->appendUInt16(i); }
 
         //!
         //! Insert an unsigned 16-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt32(uint32_t i) {_bb->appendUInt32(i);}
+        void putUInt32(uint32_t i) { _bb->appendUInt32(i); }
 
         //!
         //! Insert an unsigned 64-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt64(uint64_t i) {_bb->appendUInt64(i);}
+        void putUInt64(uint64_t i) { _bb->appendUInt64(i); }
 
         //!
         //! Insert a signed 8-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt8(int8_t i) {_bb->appendInt8 (i);}
+        void putInt8(int8_t i) { _bb->appendInt8 (i); }
 
         //!
         //! Insert a signed 16-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt16(int16_t i) {_bb->appendInt16(i);}
+        void putInt16(int16_t i) { _bb->appendInt16(i); }
 
         //!
         //! Insert a signed 32-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt32(int32_t i) {_bb->appendInt32(i);}
+        void putInt32(int32_t i) { _bb->appendInt32(i); }
 
         //!
         //! Insert a signed 64-bit integer value in the stream.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt64(int64_t i) {_bb->appendInt64(i);}
+        void putInt64(int64_t i) { _bb->appendInt64(i); }
 
         //!
         //! Insert a TLV field containing an unsigned 8-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt8(TAG tag, uint8_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(1); _bb->appendUInt8 (i);}
+        void putUInt8(TAG tag, uint8_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(1); _bb->appendUInt8 (i); }
 
         //!
         //! Insert a TLV field containing an unsigned 16-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt16(TAG tag, uint16_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(2); _bb->appendUInt16(i);}
+        void putUInt16(TAG tag, uint16_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(2); _bb->appendUInt16(i); }
 
         //!
         //! Insert a TLV field containing an unsigned 32-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt32(TAG tag, uint32_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(4); _bb->appendUInt32(i);}
+        void putUInt32(TAG tag, uint32_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(4); _bb->appendUInt32(i); }
 
         //!
         //! Insert a TLV field containing an unsigned 64-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putUInt64(TAG tag, uint64_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(8); _bb->appendUInt64(i);}
+        void putUInt64(TAG tag, uint64_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(8); _bb->appendUInt64(i); }
 
         //!
         //! Insert a TLV field containing a signed 8-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt8(TAG tag, int8_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(1); _bb->appendInt8 (i);}
+        void putInt8(TAG tag, int8_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(1); _bb->appendInt8 (i); }
 
         //!
         //! Insert a TLV field containing a signed 16-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt16(TAG tag, int16_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(2); _bb->appendInt16(i);}
+        void putInt16(TAG tag, int16_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(2); _bb->appendInt16(i); }
 
         //!
         //! Insert a TLV field containing a signed 32-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt32(TAG tag, int32_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(4); _bb->appendInt32(i);}
+        void putInt32(TAG tag, int32_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(4); _bb->appendInt32(i); }
 
         //!
         //! Insert a TLV field containing a signed 64-bit integer value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] i Integer value to insert.
         //!
-        void putInt64(TAG tag, int64_t i) {_bb->appendUInt16(tag); _bb->appendUInt16(8); _bb->appendInt64(i);}
+        void putInt64(TAG tag, int64_t i) { _bb->appendUInt16(tag); _bb->appendUInt16(8); _bb->appendInt64(i); }
 
         //!
         //! Insert a TLV field containing a vector of unsigned 8-bit integer values in the stream.
@@ -243,14 +243,14 @@ namespace ts::tlv {
         //! Insert a boolean value in the stream.
         //! @param [in] val Boolean value to insert.
         //!
-        void putBool(bool val) {putUInt8(val ? 1 : 0);}
+        void putBool(bool val) { putUInt8(val ? 1 : 0); }
 
         //!
         //! Insert a TLV field containing a boolean value in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] val Boolean value to insert.
         //!
-        void putBool(TAG tag, bool val) {putUInt8(tag, val ? 1 : 0);}
+        void putBool(TAG tag, bool val) { putUInt8(tag, val ? 1 : 0); }
 
         //!
         //! Insert a TLV field containing a vector of boolean values in the stream.
@@ -265,7 +265,7 @@ namespace ts::tlv {
         //! @param [in] i Integer value to insert.
         //!
         template <typename INT> requires std::integral<INT>
-        void put(INT i) {_bb->append<INT>(i);}
+        void put(INT i) { _bb->append<INT>(i); }
 
         //!
         //! Insert a TLV field containing an integer value in the stream (template variant).
@@ -274,7 +274,7 @@ namespace ts::tlv {
         //! @param [in] i Integer value to insert.
         //!
         template <typename INT> requires std::integral<INT>
-        void put(TAG tag, INT i) {_bb->appendUInt16(tag); _bb->appendUInt16(sizeof(INT)); _bb->append<INT>(i);}
+        void put(TAG tag, INT i) { _bb->appendUInt16(tag); _bb->appendUInt16(sizeof(INT)); _bb->append<INT>(i); }
 
         //!
         //! Insert a TLV field containing a vector of integer values in the stream (template variant).
@@ -294,22 +294,14 @@ namespace ts::tlv {
         //! Insert a string in the stream.
         //! @param [in] val String to insert.
         //!
-        void put(const std::string& val)
-        {
-            put(val.data(), val.size());
-        }
+        void put(const std::string& val) { put(val.data(), val.size()); }
 
         //!
         //! Insert a TLV field containing a string in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] val String to insert.
         //!
-        void put(TAG tag, const std::string& val)
-        {
-            _bb->appendUInt16(tag);
-            _bb->appendUInt16(uint16_t(val.size()));
-            _bb->append(val.data(), val.size());
-        }
+        void put(TAG tag, const std::string& val) { put(tag, val.data(), val.size()); }
 
         //!
         //! Insert a TLV field containing a vector of strings in the stream.
@@ -322,32 +314,21 @@ namespace ts::tlv {
         //! Insert a byte block in the stream.
         //! @param [in] bl Byte block to insert.
         //!
-        void put(const ByteBlock& bl)
-        {
-            _bb->append(bl.data(), bl.size());
-        }
+        void put(const ByteBlock& bl) { _bb->append(bl.data(), bl.size()); }
 
         //!
         //! Insert a TLV field containing a byte block in the stream.
         //! @param [in] tag Message or parameter tag.
         //! @param [in] bl Byte block to insert.
         //!
-        void put(TAG tag, const ByteBlock& bl)
-        {
-            _bb->appendUInt16(tag);
-            _bb->appendUInt16(uint16_t(bl.size()));
-            _bb->append(bl.data(), bl.size());
-        }
+        void put(TAG tag, const ByteBlock& bl) { put(tag, bl.data(), bl.size()); }
 
         //!
         //! Insert raw data in the stream.
         //! @param [in] pval Address of data to insert.
         //! @param [in] len Length of data to insert.
         //!
-        void put(const void *pval, size_t len)
-        {
-            _bb->append(pval, len);
-        }
+        void put(const void *pval, size_t len) { _bb->append(pval, len); }
 
         //!
         //! Insert a TLV field containing raw data in the stream.
@@ -355,12 +336,7 @@ namespace ts::tlv {
         //! @param [in] pval Address of data to insert.
         //! @param [in] len Length of data to insert.
         //!
-        void put(TAG tag, const void *pval, size_t len)
-        {
-            _bb->appendUInt16(tag);
-            _bb->appendUInt16(uint16_t(len));
-            _bb->append(pval, len);
-        }
+        void put(TAG tag, const void *pval, size_t len);
 
         //!
         //! Convert to a string (for debug purpose).

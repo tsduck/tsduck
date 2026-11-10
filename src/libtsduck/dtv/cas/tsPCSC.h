@@ -173,17 +173,17 @@ namespace ts {
         //! @param [in] timeout_ms The timeout is given in milliseconds (or use INFINITE).
         //! @return A PC/SC status.
         //!
-        TSDUCKDLL ::LONG SearchSmartCard(::SCARDCONTEXT  context,
-                                         UString&        reader_name,
-                                         const uint8_t*  atr = nullptr,
-                                         size_t          atr_size = 0,
-                                         const uint8_t*  atr_mask = nullptr,
-                                         size_t          atr_mask_size = 0,
-                                         const uint8_t*  pwr = nullptr,
-                                         size_t          pwr_size = 0,
-                                         const uint8_t*  pwr_mask = nullptr,
-                                         size_t          pwr_mask_size = 0,
-                                         uint32_t        timeout_ms = INFINITE);
+        TSDUCKDLL ::LONG SearchSmartCard(::SCARDCONTEXT context,
+                                         UString&       reader_name,
+                                         const uint8_t* atr = nullptr,
+                                         size_t         atr_size = 0,
+                                         const uint8_t* atr_mask = nullptr,
+                                         size_t         atr_mask_size = 0,
+                                         const uint8_t* pwr = nullptr,
+                                         size_t         pwr_size = 0,
+                                         const uint8_t* pwr_mask = nullptr,
+                                         size_t         pwr_mask_size = 0,
+                                         uint32_t       timeout_ms = INFINITE);
 
         //!
         //! Transmit an APDU to smartcard and read response.

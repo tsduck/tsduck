@@ -277,6 +277,11 @@ bool ts::TLSContext::initClient(const TLSConnectionBase& params)
         // Accept only TLS 1.2 and 1.3, others are obsolete.
         SSL_CTX_set_min_proto_version(_guts->ssl_ctx, TLS1_2_VERSION);
 
+        // Enforce a minimum level of security. Level 2 means 112-bit security. This is the standard default
+        // level in most OpenSSL builds. Level 3 means 128-bit security, i.e. RSA-3072. This would be better
+        // but the risk to fail with RSA-2048 servers is too expensive.
+        SSL_CTX_set_security_level(_guts->ssl_ctx, 2);
+
         // Check if the peer shall be verified.
         SSL_CTX_set_verify(_guts->ssl_ctx, params.verifyPeer() ? SSL_VERIFY_PEER : SSL_VERIFY_NONE, nullptr);
 

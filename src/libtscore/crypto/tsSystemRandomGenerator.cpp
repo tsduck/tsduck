@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSystemRandomGenerator.h"
+#include "tsSysUtils.h"
 
 
 //----------------------------------------------------------------------------
@@ -22,9 +23,10 @@ ts::SystemRandomGenerator::SystemRandomGenerator()
         _prov = 0;
     }
 #else
-    if ((_fd = ::open("/dev/urandom", O_RDONLY)) < 0) {  // Flawfinder: ignore: open()
-        _fd = ::open("/dev/random", O_RDONLY);           // Flawfinder: ignore: open()
+    if ((_fd = ::open("/dev/urandom", O_RDONLY | O_CLOEXEC)) < 0) {
+        _fd = ::open("/dev/random", O_RDONLY | O_CLOEXEC);
     }
+    AddCloseOnForkExec(_fd, false);
 #endif
 }
 
@@ -38,6 +40,7 @@ ts::SystemRandomGenerator::~SystemRandomGenerator()
     }
 #else
     if (_fd >= 0) {
+        RemoveCloseOnForkExec(_fd);
         ::close(_fd);
         _fd = -1;
     }
@@ -100,7 +103,8 @@ bool ts::SystemRandomGenerator::read(void* buffer, size_t size)
     char* data = reinterpret_cast<char*>(buffer);
     while (ok && size > 0) {
         ssize_t insize = ::read(_fd, data, size);
-        if ((ok = insize > 0)) {
+        ok = insize > 0 || errno == EINTR;
+        if (insize > 0) {
             assert(size_t(insize) <= size);
             size -= insize;
             data += insize;

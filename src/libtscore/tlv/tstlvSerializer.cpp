@@ -37,15 +37,20 @@ void ts::tlv::Serializer::openTLV(TAG tag)
 
 void ts::tlv::Serializer::closeTLV()
 {
-    // Bug if no TLV open
-    assert(_length_offset >= 0);
+    // Only if TLV is open.
+    if (_length_offset >= 0 && _length_offset + sizeof(LENGTH) <= _bb->size()) {
 
-    // Compute actual length of TLV "value" field
-    int length = int(_bb->size() - _length_offset - sizeof(LENGTH));
-    assert(length >= 0);
+        // Payload length.
+        size_t length = int(_bb->size() - _length_offset - sizeof(LENGTH));
+        if (length > 0xFFFF) {
+            // Payload too large, truncate it.
+            length = 0xFFFF;
+            _bb->resize(_length_offset + sizeof(LENGTH) + length);
+        }
 
-    // Rewrite length in previously saved location
-    PutUInt16(_bb->data() + _length_offset, uint16_t(length));
+        // Rewrite length in previously saved location
+        PutUInt16(_bb->data() + _length_offset, uint16_t(length));
+    }
 
     // Mark TLV as closed.
     _length_offset = -1;
@@ -114,7 +119,7 @@ void ts::tlv::Serializer::putInt64(TAG tag, const std::vector<int64_t>& val)
 
 
 //----------------------------------------------------------------------------
-// Insert a vector of booleans as TLV structures
+// Insert vectors as TLV structures
 //----------------------------------------------------------------------------
 
 void ts::tlv::Serializer::putBool(TAG tag, const std::vector<bool>& val)
@@ -124,16 +129,24 @@ void ts::tlv::Serializer::putBool(TAG tag, const std::vector<bool>& val)
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Insert a vector of strings as TLV structures
-//----------------------------------------------------------------------------
-
 void ts::tlv::Serializer::put(TAG tag, const std::vector<std::string>& val)
 {
     for (const auto& i : val) {
         put(tag, i);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Insert TLV structure with size cap.
+//----------------------------------------------------------------------------
+
+void ts::tlv::Serializer::put(TAG tag, const void *pval, size_t len)
+{
+    const size_t size = std::min<size_t>(0xFFFF, len);
+    _bb->appendUInt16(tag);
+    _bb->appendUInt16(uint16_t(size));
+    _bb->append(pval, size);
 }
 
 

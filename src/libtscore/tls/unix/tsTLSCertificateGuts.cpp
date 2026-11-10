@@ -150,6 +150,10 @@ bool ts::TLSCertificate::SystemGuts::initServerContext()
 
     // Accept only TLS 1.2 and 1.3, others are obsolete.
     SSL_CTX_set_min_proto_version(ssl_ctx, TLS1_2_VERSION);
+
+    // Enforce a minimum level of security. Level 2 means 112-bit security, i.e. RSA-2048 minimum.
+    SSL_CTX_set_security_level(ssl_ctx, 2);
+
     return true;
 }
 

@@ -13,9 +13,9 @@
 
 // Operations on 64-bit areas.
 
-#define clear_8(x)        (*(ts::uint64_ptr(x)) = 0)
-#define memcpy_8(dst,src) (*(ts::uint64_ptr(dst)) = *(ts::const_uint64_ptr(src)))
-#define xor_8(res,a,b)    (*(ts::uint64_ptr(res)) = *(ts::const_uint64_ptr(a)) ^ *(ts::const_uint64_ptr(b)))
+#define clear_8(x)        (*(ts::unaligned_uint64_ptr(x)) = 0)
+#define memcpy_8(dst,src) (*(ts::unaligned_uint64_ptr(dst)) = *(ts::const_unaligned_uint64_ptr(src)))
+#define xor_8(res,a,b)    (*(ts::unaligned_uint64_ptr(res)) = *(ts::const_unaligned_uint64_ptr(a)) ^ *(ts::const_unaligned_uint64_ptr(b)))
 
 TS_LLVM_NOWARNING(cast-align) // Because of casts to uint64_ptr
 

@@ -122,7 +122,10 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     }
     const auto csp = std::dynamic_pointer_cast<ecmgscs::ChannelStatus>(msg);
     assert(csp != nullptr);
-    channel_status = _channel_status = *csp;
+    {
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        channel_status = _channel_status = *csp;
+    }
 
     // Send a stream_setup message to ECMG
     ecmgscs::StreamSetup stream_setup(_protocol);
@@ -143,11 +146,11 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     }
     const auto ssp = std::dynamic_pointer_cast<ecmgscs::StreamStatus>(msg);
     assert(ssp != nullptr);
-    stream_status = _stream_status = *ssp;
 
     // ECM stream now established
     {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
+        stream_status = _stream_status = *ssp;
         _state = CONNECTED;
     }
 
@@ -172,7 +175,7 @@ bool ts::ECMGClient::isConnected() const
 
 bool ts::ECMGClient::disconnect()
 {
-    // Mark disconnection in progress
+    // Mark disconnection in progress.
     State previous_state;
     {
         std::lock_guard<std::recursive_mutex> lock(_mutex);
@@ -182,28 +185,30 @@ bool ts::ECMGClient::disconnect()
         }
     }
 
-    // Disconnection sequence
+    // Disconnection sequence.
     bool ok = previous_state == CONNECTED;
     if (ok) {
-        // Politely send a stream_close_request
-        ecmgscs::StreamCloseRequest req(_protocol);
-        req.channel_id = _stream_status.channel_id;
-        req.stream_id = _stream_status.stream_id;
+        // Politely send a stream_close_request.
+        ecmgscs::StreamCloseRequest close_request(_protocol);
+        ecmgscs::ChannelClose channel_close(_protocol);
+        {
+            std::lock_guard<std::recursive_mutex> lock(_mutex);
+            close_request.channel_id = _stream_status.channel_id;
+            close_request.stream_id = _stream_status.stream_id;
+            channel_close.channel_id = _channel_status.channel_id;
+        }
+        // Politely send a stream_close_request and wait for a stream_close_response.
         tlv::MessagePtr resp;
-        // Politely send a stream_close_request
-        // and wait for a stream_close_response
-        ok = _tlv_client.sendMessage(req) &&
+        ok = _tlv_client.sendMessage(close_request) &&
              _response_queue.dequeue(resp, RESPONSE_TIMEOUT) &&
              resp->tag() == ecmgscs::Tags::stream_close_response;
         // If we get a polite reply, send a channel_close
         if (ok) {
-            ecmgscs::ChannelClose cc(_protocol);
-            cc.channel_id = _channel_status.channel_id;
-            ok = _tlv_client.sendMessage(cc);
+            ok = _tlv_client.sendMessage(channel_close);
         }
     }
 
-    // TCP disconnection
+    // TCP disconnection.
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     if (previous_state == CONNECTING || previous_state == CONNECTED) {
         _state = DISCONNECTED;
@@ -227,8 +232,11 @@ void ts::ECMGClient::buildCWProvision(ecmgscs::CWProvision& msg,
                                       const ByteBlock& ac,
                                       const ts::deciseconds& cp_duration)
 {
-    msg.channel_id = _stream_status.channel_id;
-    msg.stream_id = _stream_status.stream_id;
+    {
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        msg.channel_id = _stream_status.channel_id;
+        msg.stream_id = _stream_status.stream_id;
+    }
     msg.CP_number = cp_number;
     msg.has_CW_encryption = false;
     msg.has_CP_duration = cp_duration.count() != 0;
@@ -267,7 +275,11 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
     }
 
     // Compute ECM generation timeout (very conservative)
-    cn::milliseconds timeout = cn::milliseconds(2 * cn::milliseconds::rep(_channel_status.max_comp_time));
+    cn::milliseconds timeout;
+    {
+        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        timeout = cn::milliseconds(2 * cn::milliseconds::rep(_channel_status.max_comp_time));
+    }
     if (timeout < RESPONSE_TIMEOUT) {
         timeout = RESPONSE_TIMEOUT;
     }
@@ -373,13 +385,23 @@ void ts::ECMGClient::main()
             bool enqueue_msg = false;
             switch (msg->tag()) {
                 case ecmgscs::Tags::channel_test: {
-                    // Automatic reply to channel_test
-                    ok = _tlv_client.sendMessage(_channel_status);
+                    // Automatic reply to channel_test.
+                    ecmgscs::ChannelStatus status(_protocol);
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(_mutex);
+                        status = _channel_status;
+                    }
+                    ok = _tlv_client.sendMessage(status);
                     break;
                 }
                 case ecmgscs::Tags::stream_test: {
-                    // Automatic reply to stream_test
-                    ok = _tlv_client.sendMessage(_stream_status);
+                    // Automatic reply to stream_test.
+                    ecmgscs::StreamStatus status(_protocol);
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(_mutex);
+                        status = _stream_status;
+                    }
+                    ok = _tlv_client.sendMessage(status);
                     break;
                 }
                 case ecmgscs::Tags::ECM_response: {

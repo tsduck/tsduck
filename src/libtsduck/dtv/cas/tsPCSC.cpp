@@ -31,7 +31,6 @@ TS_REGISTER_FEATURE(u"pcsc", u"PC/SC", ts::Features::SUPPORTED, nullptr);
 
 //----------------------------------------------------------------------------
 // Check a PC/SC status. In case of error, report an error message.
-// Return true is status is success, false if error.
 //----------------------------------------------------------------------------
 
 bool ts::pcsc::Success(::LONG status, Report& report)
@@ -48,52 +47,47 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 
 //----------------------------------------------------------------------------
 // Get the list of all smartcard readers in the system.
-// Return a PC/SC status.
 //----------------------------------------------------------------------------
 
 ::LONG ts::pcsc::ListReaders(::SCARDCONTEXT context, UStringVector& readers)
 {
-    // Clear result
-
     readers.clear();
 
-    // Get the required size of the name buffer
-
+    // Get the required size of the name buffer.
     ::DWORD names_size = 0;
     ::LONG status = ::SCardListReaders(context, nullptr, nullptr, &names_size);
-
     if (status != SCARD_S_SUCCESS && status != ::LONG(SCARD_E_INSUFFICIENT_BUFFER)) {
         return status;
     }
 
-    // Get the list of smartcard readers
+    // Get the list of smartcard readers.
+    std::vector<char> names(names_size);
+    status = ::SCardListReaders(context, nullptr, names.data(), &names_size);
 
-    char* names = new char[names_size];
-    status = ::SCardListReaders(context, nullptr, names, &names_size);
-
-    // Build the string vector
-
+    // Build the string vector.
     if (status == SCARD_S_SUCCESS) {
-        size_t len;
-        for (const char* p = names; (len = std::strlen(p)) != 0; p += len + 1) {
-            readers.push_back(UString::FromUTF8(p));
+        const char* const end = names.data() + names_size;
+        size_t len = 0;
+        for (const char* start = names.data(); start < end; start += len + 1) {
+            for (len = 0; start + len < end && start[len] != 0; len++) {
+            }
+            if (len > 0) {
+                readers.push_back(UString::FromUTF8(start, len));
+            }
         }
     }
 
-    delete[] names;
     return status;
 }
 
 
 //----------------------------------------------------------------------------
 // Get the state change of all smartcard readers in the system.
-// Return a PC/SC status.
 //----------------------------------------------------------------------------
 
 ::LONG ts::pcsc::GetStatesChange(::SCARDCONTEXT context, ReaderStateVector& states, uint32_t timeout_ms)
 {
-    // Allocate and initializes a structure array
-
+    // Allocate and initializes a structure array.
     ::SCARD_READERSTATE* c_states = new ::SCARD_READERSTATE[states.size()];
     std::vector<std::string> utf8_names(states.size());
 
@@ -106,7 +100,7 @@ bool ts::pcsc::Success(::LONG status, Report& report)
         MemCopy(c_states[i].rgbAtr, states[i].atr.data(), c_states[i].cbAtr);
     }
 
-    // Check status of all smartcard readers
+    // Check status of all smartcard readers.
     ::LONG status = ::SCardGetStatusChange(context, ::DWORD(timeout_ms), c_states, ::DWORD(states.size()));
 
     if (status == SCARD_S_SUCCESS) {
@@ -123,7 +117,6 @@ bool ts::pcsc::Success(::LONG status, Report& report)
 
 //----------------------------------------------------------------------------
 // Get the state of all smartcard readers in the system.
-// Return a PC/SC status.
 //----------------------------------------------------------------------------
 
 ::LONG ts::pcsc::GetStates(::SCARDCONTEXT context, ReaderStateVector& states, uint32_t timeout_ms)
@@ -172,17 +165,17 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
 // Return a PC/SC status.
 //----------------------------------------------------------------------------
 
-::LONG ts::pcsc::SearchSmartCard(::SCARDCONTEXT  context,
-                                 UString&        reader_name, // out
-                                 const uint8_t*  atr,
-                                 size_t          atr_size,
-                                 const uint8_t*  atr_mask,
-                                 size_t          atr_mask_size,
-                                 const uint8_t*  pwr,
-                                 size_t          pwr_size,
-                                 const uint8_t*  pwr_mask,
-                                 size_t          pwr_mask_size,
-                                 uint32_t        timeout_ms)
+::LONG ts::pcsc::SearchSmartCard(::SCARDCONTEXT context,
+                                 UString&       reader_name, // out
+                                 const uint8_t* atr,
+                                 size_t         atr_size,
+                                 const uint8_t* atr_mask,
+                                 size_t         atr_mask_size,
+                                 const uint8_t* pwr,
+                                 size_t         pwr_size,
+                                 const uint8_t* pwr_mask,
+                                 size_t         pwr_mask_size,
+                                 uint32_t       timeout_ms)
 {
     reader_name.clear();
 
@@ -199,7 +192,8 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
         if ((it.event_state & SCARD_STATE_PRESENT) != 0 && // card present
             (atr == nullptr || // don't check ATR
              MatchATR(it.atr.data(), it.atr.size(), atr, atr_size, atr_mask, atr_mask_size) ||
-             MatchATR(it.atr.data(), it.atr.size(), pwr, pwr_size, pwr_mask, pwr_mask_size))) {
+             MatchATR(it.atr.data(), it.atr.size(), pwr, pwr_size, pwr_mask, pwr_mask_size)))
+        {
             // Found
             reader_name = it.reader;
             return SCARD_S_SUCCESS;

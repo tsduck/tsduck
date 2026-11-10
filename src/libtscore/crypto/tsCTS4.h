@@ -16,16 +16,16 @@
 
 namespace ts {
     //!
-    //!  Cipher text Stealing (CTS) mode, alternative 4.
-    //!  @ingroup libtscore crypto
+    //! Cipher text Stealing (CTS) mode, alternative 4.
+    //! @ingroup libtscore crypto
     //!
-    //!  Several incompatible designs of CTS exist. This one implements the
-    //!  weird STMicroelectronics STi71xx ECB-CTS implementation.
+    //! Several incompatible designs of CTS exist. This one implements the
+    //! weird STMicroelectronics STi71xx ECB-CTS implementation.
     //!
-    //!  CTS can process a residue. The plain text and cipher text sizes must be
-    //!  greater than the block size of the underlying block cipher.
+    //! CTS can process a residue. The plain text and cipher text sizes must be
+    //! greater than the block size of the underlying block cipher.
     //!
-    //!  @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
+    //! @tparam CIPHER A subclass of ts::BlockCipher, the underlying block cipher.
     //!
     template<class CIPHER> requires std::derived_from<CIPHER, ts::BlockCipher>
     class CTS4: public CIPHER
@@ -79,7 +79,7 @@ bool ts::CTS4<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void*
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
 
-    if (plain_length < bsize || cipher_maxsize < plain_length) {
+    if (plain_length <= bsize || cipher_maxsize < plain_length) {
         return false;
     }
     if (cipher_length != nullptr) {
@@ -130,7 +130,7 @@ bool ts::CTS4<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, voi
     const size_t bsize = this->properties.block_size;
     uint8_t* work1 = this->work.data();
 
-    if (cipher_length < bsize || plain_maxsize < cipher_length) {
+    if (cipher_length <= bsize || plain_maxsize < cipher_length) {
         return false;
     }
     if (plain_length != nullptr) {

@@ -151,10 +151,10 @@ namespace ts {
         const AbortInterface*        _abort = nullptr;
         TCPConnection                _tcp_client {&_logger};         // connection with ECMG server
         TLVStream                    _tlv_client {_logger, _protocol, _tcp_client, true, 3};
-        ecmgscs::ChannelStatus       _channel_status {_protocol};   // initial response to channel_setup
-        ecmgscs::StreamStatus        _stream_status {_protocol};    // initial response to stream_setup
         mutable std::recursive_mutex _mutex {};                     // exclusive access to protected fields
         std::condition_variable_any  _work_to_do {};                // notify receiver thread to do some work
+        ecmgscs::ChannelStatus       _channel_status {_protocol};   // initial response to channel_setup
+        ecmgscs::StreamStatus        _stream_status {_protocol};    // initial response to stream_setup
         AsyncRequests                _async_requests {};
         MessageQueue<tlv::Message>   _response_queue {RESPONSE_QUEUE_SIZE};
 

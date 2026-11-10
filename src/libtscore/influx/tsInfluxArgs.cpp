@@ -246,7 +246,7 @@ bool ts::InfluxArgs::loadArgs(Args& args, bool required)
     }
 
     args.debug(u"InfluxDB host: %s", host_url);
-    args.debug(u"InfluxDB token: %s", token);
+    args.log(2, u"InfluxDB token: %s", token); // token is slightly more sensitive, reserve to "deep debug"
     args.debug(u"InfluxDB org: %s", org);
     args.debug(u"InfluxDB org id: %s", org_id);
     args.debug(u"InfluxDB bucket: %s", bucket);

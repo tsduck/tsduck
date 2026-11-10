@@ -97,14 +97,14 @@ void ts::CRC32::addAccel(const void* data, size_t size)
 #if defined(TS_ARM_CRC32_INSTRUCTIONS)
     // Add 8-bit values until an address aligned on 8 bytes.
     const uint8_t* cp8 = reinterpret_cast<const uint8_t*>(data);
-    while (size != 0 && (uint64_t(cp8) & 0x03) != 0) {
+    while (size != 0 && (uint64_t(cp8) & 0x07) != 0) {
         crcAdd8(_fcs, *cp8++);
         --size;
     }
 
     // Add 64-bit values until an address aligned on 64 bytes.
     const uint64_t* cp64 = reinterpret_cast<const uint64_t*>(cp8);
-    while (size >= 8 && (uint64_t(cp64) & 0x07) != 0) {
+    while (size >= 8 && (uint64_t(cp64) & 0x3F) != 0) {
         crcAdd64(_fcs, *cp64++);
         size -= 8;
     }

@@ -155,6 +155,7 @@ bool ts::KeyTable::parseXML(xml::Document& doc, bool replace, size_t id_size, si
         }
         else if (!value.hexaDecode(bvalue) || (value_size != 0 && bvalue.size() != value_size)) {
             doc.report().error(u"invalid value in <%s> at line %d", k->name(), k->lineNumber());
+            success = false;
         }
         else if (replace || !hasKey(bid)) {
             _keys[bid] = std::move(bvalue);

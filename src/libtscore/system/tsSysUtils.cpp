@@ -581,6 +581,7 @@ namespace {
         for (int fd : list) {
             ::close(fd);
         }
+        list.clear();
     }
 }
 #endif
@@ -589,18 +590,20 @@ namespace {
 void ts::AddCloseOnForkExec(int fd, bool cloexec)
 {
 #if defined(TS_UNIX)
-    // Register the fork() handler the first time.
-    static std::once_flag CloseOnForkExecOnceFlag;
-    std::call_once(CloseOnForkExecOnceFlag, ::pthread_atfork, nullptr, nullptr, CloseOnForkExecHandler);
+    if (fd >= 0) {
+        // Register the fork() handler the first time.
+        static std::once_flag CloseOnForkExecOnceFlag;
+        std::call_once(CloseOnForkExecOnceFlag, ::pthread_atfork, nullptr, nullptr, CloseOnForkExecHandler);
 
-    // Also set CLOEXEC flag on the file descriptor.
-    if (cloexec) {
-        ::fcntl(fd, F_SETFD, ::fcntl(fd, F_GETFD) | FD_CLOEXEC);
+        // Also set CLOEXEC flag on the file descriptor.
+        if (cloexec) {
+            ::fcntl(fd, F_SETFD, ::fcntl(fd, F_GETFD) | FD_CLOEXEC);
+        }
+
+        // Store the file descriptor in the list.
+        std::lock_guard<std::mutex> lock(CloseOnForkExecMutex());
+        CloseOnForkExecList().insert(fd);
     }
-
-    // Store the file descriptor in the list.
-    std::lock_guard<std::mutex> lock(CloseOnForkExecMutex());
-    CloseOnForkExecList().insert(fd);
 #endif
 }
 

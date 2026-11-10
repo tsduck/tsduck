@@ -1272,6 +1272,7 @@ namespace ts {
     using uint16_ptr = uint16_t*;              //!< Pointer to @c uint16_t @ingroup cpp
     using uint32_ptr = uint32_t*;              //!< Pointer to @c uint32_t @ingroup cpp
     using uint64_ptr = uint64_t*;              //!< Pointer to @c uint64_t @ingroup cpp
+
     using const_char_ptr = const char*;        //!< Pointer to @c const char @ingroup cpp
     using const_int8_ptr = const int8_t*;      //!< Pointer to @c const int8_t @ingroup cpp
     using const_int16_ptr = const int16_t*;    //!< Pointer to @c const int16_t @ingroup cpp
@@ -1289,6 +1290,20 @@ namespace ts {
     using unaligned_uint16_t = uint16_t TS_UNALIGNED;  //!< Unaligned @c uint16_t @ingroup cpp
     using unaligned_uint32_t = uint32_t TS_UNALIGNED;  //!< Unaligned @c uint32_t @ingroup cpp
     using unaligned_uint64_t = uint64_t TS_UNALIGNED;  //!< Unaligned @c uint64_t @ingroup cpp
+
+    using unaligned_int16_ptr = unaligned_int16_t*;    //!< Pointer to unaligned @c int16_t @ingroup cpp
+    using unaligned_int32_ptr = unaligned_int32_t*;    //!< Pointer to unaligned @c int32_t @ingroup cpp
+    using unaligned_int64_ptr = unaligned_int64_t*;    //!< Pointer to unaligned @c int64_t @ingroup cpp
+    using unaligned_uint16_ptr = unaligned_uint16_t*;  //!< Pointer to unaligned @c uint16_t @ingroup cpp
+    using unaligned_uint32_ptr = unaligned_uint32_t*;  //!< Pointer to unaligned @c uint32_t @ingroup cpp
+    using unaligned_uint64_ptr = unaligned_uint64_t*;  //!< Pointer to unaligned @c uint64_t @ingroup cpp
+
+    using const_unaligned_int16_ptr = const unaligned_int16_t*;    //!< Pointer to const unaligned @c int16_t @ingroup cpp
+    using const_unaligned_int32_ptr = const unaligned_int32_t*;    //!< Pointer to const unaligned @c int32_t @ingroup cpp
+    using const_unaligned_int64_ptr = const unaligned_int64_t*;    //!< Pointer to const unaligned @c int64_t @ingroup cpp
+    using const_unaligned_uint16_ptr = const unaligned_uint16_t*;  //!< Pointer to const unaligned @c uint16_t @ingroup cpp
+    using const_unaligned_uint32_ptr = const unaligned_uint32_t*;  //!< Pointer to const unaligned @c uint32_t @ingroup cpp
+    using const_unaligned_uint64_ptr = const unaligned_uint64_t*;  //!< Pointer to const unaligned @c uint64_t @ingroup cpp
 
     //!
     //! Constant meaning "no size", "not found" or "do not resize".
