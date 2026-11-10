@@ -78,6 +78,10 @@ VERSION 3.46-4911 (November 2026)
   * Plugin "t2mi": with --log,  the frame index is displayed only for the T2-MI
     packet types which have one, and the FEF index for the FEF packets. Before,
     the first payload byte was always displayed as frame index.
+  * Output plugin "dektec":  with --wait-detach,  modulators were  muted before
+    the transmit  FIFO  was sent,  so  the end  of the stream  (up to the  FIFO
+    preload, several  seconds at low  bitrates) was never transmitted. The FIFO
+    is now sent before muting, even when the stream ends during the preload.
   * A complete security audit of the code was conducted using  Claude Opus 5.5.
     Total findings: 1 critical, 26 high, 56 medium, 133 low, 140 informational.
     All  critical,  high,  medium  issues  were fixed,  as well as most low and

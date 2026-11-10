@@ -1580,6 +1580,12 @@ bool ts::DektecOutputPlugin::stop()
     if (_guts->is_started) {
         verbose(u"terminating %s output", _guts->device.model);
 
+        // With --wait-detach, the FIFO must be sent before muting the modulator.
+        // Detach(DTAPI_WAIT_UNTIL_SENT) would send it after muting.
+        if ((_guts->detach_mode & DTAPI_WAIT_UNTIL_SENT) != 0) {
+            waitFifoSent();
+        }
+
         // Mute output signal for modulators which support this
         if (_guts->mute_on_stop) {
             debug(u"SetRfMode(%d)", DTAPI_UPCONV_MUTE);
@@ -1589,9 +1595,11 @@ bool ts::DektecOutputPlugin::stop()
             }
         }
 
-        // Detach the channel and the device
-        debug(u"detach channel, mode: %d", _guts->detach_mode);
-        _guts->chan.Detach(_guts->detach_mode);
+        // Detach the channel and the device. With --wait-detach, the FIFO is already sent
+        // and waiting again in Detach() would hang if waitFifoSent() gave up.
+        const int detach_mode = _guts->detach_mode & ~DTAPI_WAIT_UNTIL_SENT;
+        debug(u"detach channel, mode: %d", detach_mode);
+        _guts->chan.Detach(detach_mode);
         debug(u"detach device");
         _guts->dtdev.Detach();
 
@@ -1599,6 +1607,61 @@ bool ts::DektecOutputPlugin::stop()
         verbose(u"%s output terminated", _guts->device.model);
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Wait until all data in the transmit FIFO are sent.
+//----------------------------------------------------------------------------
+
+void ts::DektecOutputPlugin::waitFifoSent()
+{
+    Dtapi::DTAPI_RESULT status = DTAPI_OK;
+
+    // The stream may end before the FIFO preload is complete, or while the preload is maintained:
+    // the transmission is on hold and the FIFO would never be sent.
+    if (_guts->starting) {
+        verbose(u"end of stream before the end of FIFO preload, starting transmission");
+        status = _guts->chan.SetTxControl(DTAPI_TXCTRL_SEND);
+        if (status != DTAPI_OK) {
+            error(u"output device start send error: %s", DektecStrError(status));
+            return;
+        }
+        _guts->starting = false;
+    }
+
+    // Poll the FIFO load until it is empty. Give up when it no longer decreases.
+    constexpr cn::milliseconds poll_interval = cn::milliseconds(20);
+    constexpr cn::milliseconds stall_timeout = cn::seconds(5);
+    cn::milliseconds stalled = cn::milliseconds::zero();
+    int previous_load = -1;
+    for (;;) {
+        int fifo_load = 0;
+        status = _guts->chan.GetFifoLoad(fifo_load);
+        if (status != DTAPI_OK) {
+            error(u"error getting output fifo load: %s", DektecStrError(status));
+            return;
+        }
+        if (fifo_load <= 0) {
+            break;
+        }
+        if (previous_load < 0) {
+            verbose(u"waiting for %'d bytes in %s output FIFO to be sent", fifo_load, _guts->device.model);
+        }
+        if (previous_load >= 0 && fifo_load >= previous_load) {
+            stalled += poll_interval;
+            if (stalled >= stall_timeout) {
+                warning(u"%s output FIFO not sent, %'d bytes remaining", _guts->device.model, fifo_load);
+                return;
+            }
+        }
+        else {
+            stalled = cn::milliseconds::zero();
+            previous_load = fifo_load;
+        }
+        std::this_thread::sleep_for(poll_interval);
+    }
+    debug(u"output FIFO sent");
 }
 
 
