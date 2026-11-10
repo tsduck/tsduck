@@ -60,6 +60,10 @@ namespace ts {
         // false otherwise.
         bool setPreloadFIFOSizeBasedOnDelay();
 
+        // At end of stream, wait until all data in the transmit FIFO are sent (--wait-detach).
+        // If the transmission was not yet started (FIFO preload not complete), start it first.
+        void waitFifoSent();
+
         // Checks whether calculated parameters for dvb-t do not override user specified params
         bool ParamsMatchUserOverrides(const ts::BitrateDifferenceDVBT& params);
     };

@@ -267,6 +267,10 @@ Some Dektec devices may hang on detach in that case.
 You should try first.
 
 [.optdoc]
+If the stream ends before the FIFO preload is complete, the transmission is started first.
+Modulators are muted only after the FIFO is sent.
+
+[.optdoc]
 The options `--instant-detach` and `--wait-detach` are mutually exclusive.
 
 [.usage]
