@@ -19,6 +19,7 @@
 #include "tsSubtitlingDescriptor.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsTeletextDescriptor.h"
+#include "tsTTMLSubtitlingDescriptor.h"
 #include "tsISDBTInformation.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
@@ -1051,6 +1052,18 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                                 // The presence of this descriptor indicates an DTS-Neural audio track.
                                 ps->description = u"DTS Neural Surround Audio";
                                 ps->carry_audio = true;
+                            }
+                            break;
+                        }
+                        case XDID_DVB_TTML_SUBTITLING: {
+                            if (ps != nullptr) {
+                                // The presence of this descriptor indicates a DVB-TTML subtitle track.
+                                ps->description = u"TTML Subtitles";
+                                const TTMLSubtitlingDescriptor desc(_duck, bindesc);
+                                if (desc.isValid()) {
+                                    AppendUnique(ps->languages, desc.language_code);
+                                    ps->addAttribute(NameFromSection(u"dtv", u"TTML_subtitling_descriptor.subtitle_purpose", desc.subtitle_purpose));
+                                }
                             }
                             break;
                         }

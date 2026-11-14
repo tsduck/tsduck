@@ -1,0 +1,14 @@
+# ETSI EN 303 560, table 2
+[TTML_subtitling_descriptor.subtitle_purpose]
+Bits = 6
+0x00 = same-lang-dialogue
+0x01 = other-lang-dialogue
+0x02 = all-dialogue
+0x03-0x0F = reserved for future use
+0x10 = hard-of-hearing
+0x11 = other-lang-dialogue-with-hard-of-hearing
+0x12 = all-dialogue-with-hard-of-hearing
+0x13-0x2F = reserved for future use
+0x30 = audio-description
+0x31 = content-related-commentary
+0x32-0x3F = reserved for future use
