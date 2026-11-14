@@ -2,6 +2,7 @@ The following people are contributing or have contributed to TSDuck:
 
 George Adams
 Moritz Barsnick
+Tijmen Brommet
 Richie Chang
 Amos Cheung
 Ruben Chiavone

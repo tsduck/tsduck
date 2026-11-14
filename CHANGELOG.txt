@@ -44,6 +44,9 @@ VERSION 3.46-4911 (November 2026)
   * The pkg-config file tsduck.pc now defines  the  variable  "plugindir",  the
     directory from which tsp loads its plugins,  for  extensions  which install
     their own plugins: pkg-config --variable=plugindir tsduck.
+  * Command  "tsanalyze"  and  plugin  "analyze" now identify DVB-TTML subtitle
+    PID's  (ETSI EN 303 560)  as  "TTML Subtitles",  with  their  language  and
+    subtitle purpose.
   * Changed or removed options in existing commands and plugins:
     - Option --ffs has been renamed as --fc in  plugins "srt"  for  consistency
       with the libsrt options.
