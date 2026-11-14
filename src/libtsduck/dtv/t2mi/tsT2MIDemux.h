@@ -73,11 +73,11 @@ namespace ts {
         // Analysis context for one PLP inside one T2-MI stream.
         struct PLPContext
         {
-            bool      sync;  // We are synchronous on the user packets of this PLP.
-            ByteBlock up;    // Start of a user packet which continues in the next baseband frame.
+            bool      sync = false;  // We are synchronous on the user packets of this PLP.
+            ByteBlock up {};         // Start of a user packet which continues in the next baseband frame.
 
             // Default constructor
-            PLPContext();
+            PLPContext() = default;
 
             // Reset after lost of synchronization.
             void lostSync();
@@ -90,13 +90,13 @@ namespace ts {
         // Analysis context for one PID.
         struct PIDContext
         {
-            uint8_t       continuity;  // Last continuity counter
-            bool          sync;        // We are synchronous in this PID
-            ByteBlock     t2mi;        // Buffer containing the T2-MI data.
-            PLPContextMap plps;        // Map of PLP context per PID.
+            uint8_t       continuity = 0;  // Last continuity counter
+            bool          sync = false;    // We are synchronous in this PID
+            ByteBlock     t2mi {};         // Buffer containing the T2-MI data.
+            PLPContextMap plps {};         // Map of PLP context per PID.
 
             // Default constructor
-            PIDContext();
+            PIDContext() = default;
 
             // Reset after lost of synchronization.
             void lostSync();
@@ -121,9 +121,13 @@ namespace ts {
         // Process a PMT.
         void processPMT(const PMT& pmt);
 
+        // CRC-8 of the first 9 bytes of a DVB-T2 BBHEADER, see ETSI EN 302 755, annex F.
+        // Generator polynomial X^8+X^7+X^6+X^4+X^2+1, register initialized to zero.
+        static uint8_t BBHeaderCRC8(const uint8_t* bbh);
+
         // Private members:
-        T2MIHandlerInterface* _handler;    // Application-defined handler
-        PIDContextMap         _pids;       // Map of PID contexts.
-        SectionDemux          _psi_demux;  // Demux for PSI parsing.
+        T2MIHandlerInterface* _handler = nullptr;         // Application-defined handler
+        PIDContextMap         _pids {};                   // Map of PID contexts.
+        SectionDemux          _psi_demux {duck(), this};  // Demux for PSI parsing.
     };
 }

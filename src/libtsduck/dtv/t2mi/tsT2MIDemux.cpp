@@ -13,52 +13,34 @@
 #include "tsPAT.h"
 #include "tsMemory.h"
 
-namespace {
-    // Values of the MODE field in a DVB-T2 BBHEADER, see ETSI EN 302 755, section 5.1.7.
-    constexpr uint8_t T2_MODE_NM  = 0;  // Normal Mode
-    constexpr uint8_t T2_MODE_HEM = 1;  // High Efficiency Mode
 
-    // CRC-8 of the first 9 bytes of a DVB-T2 BBHEADER, see ETSI EN 302 755, annex F.
-    // Generator polynomial X^8+X^7+X^6+X^4+X^2+1, register initialized to zero.
-    uint8_t BBHeaderCRC8(const uint8_t* bbh)
-    {
-        uint8_t crc = 0;
-        for (size_t i = 0; i < ts::T2_BBHEADER_SIZE - 1; ++i) {
-            crc ^= bbh[i];
-            for (int bit = 0; bit < 8; ++bit) {
-                crc = (crc & 0x80) != 0 ? uint8_t((crc << 1) ^ 0xD5) : uint8_t(crc << 1);
-            }
+//----------------------------------------------------------------------------
+// CRC-8 of the first 9 bytes of a DVB-T2 BBHEADER, see ETSI EN 302 755, annex F.
+// Generator polynomial X^8+X^7+X^6+X^4+X^2+1, register initialized to zero.
+//----------------------------------------------------------------------------
+
+uint8_t ts::T2MIDemux::BBHeaderCRC8(const uint8_t* bbh)
+{
+    uint8_t crc = 0;
+    for (size_t i = 0; i < ts::T2_BBHEADER_SIZE - 1; ++i) {
+        crc ^= bbh[i];
+        for (int bit = 0; bit < 8; ++bit) {
+            crc = (crc & 0x80) != 0 ? uint8_t((crc << 1) ^ 0xD5) : uint8_t(crc << 1);
         }
-        return crc;
     }
+    return crc;
 }
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
-
-ts::T2MIDemux::PLPContext::PLPContext() :
-    sync(false),
-    up()
-{
-}
-
-ts::T2MIDemux::PIDContext::PIDContext() :
-    continuity(0),
-    sync(false),
-    t2mi(),
-    plps()
-{
-}
 
 ts::T2MIDemux::T2MIDemux(DuckContext& duck, T2MIHandlerInterface* t2mi_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
-    _handler(t2mi_handler),
-    _pids(),
-    _psi_demux(duck, this)
+    _handler(t2mi_handler)
 {
-    // No virtual dispatch in constructor, use explicit dispatch.
+    // No virtual dispatch for subclass in constructor, use explicit dispatch.
     T2MIDemux::immediateReset();
 }
 

@@ -46,4 +46,13 @@ namespace ts {
     //! See ETSI EN 302 765, section 5.1.7.
     //!
     constexpr size_t T2_BBHEADER_SIZE = 10;
+
+    //!
+    //! Values of the MODE field in a DVB-T2 BBHEADER.
+    //! @see ETSI EN 302 755, section 5.1.7
+    //!
+    enum : uint8_t {
+        T2_MODE_NM  = 0,  //!< Normal Mode.
+        T2_MODE_HEM = 1,  //!< High Efficiency Mode.
+    };
 }
