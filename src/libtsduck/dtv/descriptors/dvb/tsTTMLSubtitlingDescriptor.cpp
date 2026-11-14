@@ -155,21 +155,7 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali) {
 
 
 ts::UString ts::TTMLSubtitlingDescriptor::TTML_subtitle_purpose(uint8_t purpose) {
-    // EN 303 560 table 2
-    ts::UString res(ts::UString::Format(u"0x%X (", purpose));
-    switch (purpose) {
-        case 0x00: res += u"same-lang-dialogue"; break;
-        case 0x01: res += u"other-lang-dialogue"; break;
-        case 0x02: res += u"all-dialogue"; break;
-        case 0x10: res += u"hard-of-hearing"; break;
-        case 0x11: res += u"other-lang-dialogue-with-hard-of-hearing"; break;
-        case 0x12: res += u"all-dialogue-with-hard-of-hearing"; break;
-        case 0x30: res += u"audio-description"; break;
-        case 0x31: res += u"content-related-commentary"; break;
-        default: res += u"reserved for future use";
-    }
-    res += u")";
-    return res;
+    return DataName(MY_XML_NAME, u"subtitle_purpose", purpose, NamesFlags::HEX_VALUE_NAME);
 }
 
 ts::UString ts::TTMLSubtitlingDescriptor::TTML_suitability(uint8_t suitability) {
