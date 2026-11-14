@@ -7,24 +7,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsPCRRegulator.h"
-#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructor.
 //----------------------------------------------------------------------------
-
-ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
-    ReporterBase(report),
-    _log_level(log_level)
-{
-}
-
-ts::PCRRegulator::PCRRegulator(ReporterBase* delegate, int log_level) :
-    ReporterBase(delegate),
-    _log_level(log_level)
-{
-}
 
 ts::PCRRegulator::~PCRRegulator()
 {
@@ -49,11 +36,12 @@ void ts::PCRRegulator::setReferencePID(PID pid)
 // Re-initialize state.
 //----------------------------------------------------------------------------
 
-void ts::PCRRegulator::reset()
+bool ts::PCRRegulator::reset()
 {
     _pid = _user_pid;
     _burst_pkt_cnt = 0;
     _started = false;
+    return true;
 }
 
 
@@ -61,7 +49,7 @@ void ts::PCRRegulator::reset()
 // Regulate the flow, to be called at each packet.
 //----------------------------------------------------------------------------
 
-bool ts::PCRRegulator::regulate(const TSPacket& pkt)
+void ts::PCRRegulator::regulate(TSPacket& pkt, TSPacketMetadata& mdata, const BitRate& current_bitrate)
 {
     const PID pid = pkt.getPID();
     const bool has_pcr = pkt.hasPCR();
@@ -101,8 +89,8 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             _pcr_first = pcr;
             _pcr_offset = 0;
 
-            // Compute minimum wait is none is set.
-            if (_wait_min <= cn::microseconds::zero()) {
+            // Compute minimum wait if none is set.
+            if (_minimum_wait <= cn::microseconds::zero()) {
                 setMinimimWait(DEFAULT_MIN_WAIT);
             }
         }
@@ -124,7 +112,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             const monotonic_time clock_due(_clock_first + cn::duration_cast<monotonic_time::duration>(pcru));
 
             // Do not wait less than the user-specified minimum.
-            if (clock_due - _clock_last >= _wait_min) {
+            if (clock_due - _clock_last >= _minimum_wait) {
                 // Wait until system time for current PCR.
                 _clock_last = clock_due;
                 std::this_thread::sleep_until(_clock_last);
@@ -138,7 +126,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
     }
 
     // One more packet in current burst.
-    if (++_burst_pkt_cnt >= _opt_burst) {
+    if (++_burst_pkt_cnt >= _requested_burst) {
         flush = true;
     }
 
@@ -147,6 +135,6 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         _burst_pkt_cnt = 0;
     }
 
-    // Return true when packets should be flushed to next plugin.
-    return flush;
+    // Set when packets should be flushed to next plugin.
+    mdata.setFlush(flush);
 }

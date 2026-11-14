@@ -12,18 +12,18 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsReporterBase.h"
-#include "tsTS.h"
+#include "tsAbstractRegulator.h"
 
 namespace ts {
     //!
     //! Regulate execution speed based on a bitrate.
     //! @ingroup libtsduck mpeg
     //! @see PCRRegulator
+    //! @see TimeStampRegulator
     //!
-    class TSDUCKDLL BitRateRegulator: public ReporterBase
+    class TSDUCKDLL BitRateRegulator: public AbstractRegulator
     {
-         TS_NOBUILD_NOCOPY(BitRateRegulator);
+        TS_NOBUILD_NOCOPY(BitRateRegulator);
     public:
         //!
         //! Constructor.
@@ -31,52 +31,23 @@ namespace ts {
         //! exists or setReport() is used with another Report object. If @a report is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
         //!
-        explicit BitRateRegulator(Report* report, int log_level = Severity::Verbose);
+        explicit BitRateRegulator(Report* report, int log_level = Severity::Verbose) : AbstractRegulator(report, log_level) {}
 
         //!
         //! Constructor.
         //! @param [in] delegate Use the report of another ReporterBase. If @a delegate is null, log messages are discarded.
         //! @param [in] log_level Severity level for information messages.
         //!
-        explicit BitRateRegulator(ReporterBase* delegate, int log_level = Severity::Verbose);
+        explicit BitRateRegulator(ReporterBase* delegate, int log_level = Severity::Verbose) : AbstractRegulator(delegate, log_level) {}
 
         //!
         //! Destructor.
         //!
         virtual ~BitRateRegulator() override;
 
-        //!
-        //! Set the number of packets to burst at a time.
-        //! @param [in] count Number of packets to burst at a time.
-        //!
-        void setBurstPacketCount(PacketCounter count) { _opt_burst = count; }
-
-        //!
-        //! Set a fixed bitrate for regulation, ignore current bitrate.
-        //! @param [in] bitrate Fixed bitrate to use. When zero, use current bitrate.
-        //!
-        void setFixedBitRate(const BitRate& bitrate) { _opt_bitrate = bitrate; }
-
-        //!
-        //! Start regulation, initialize all timers.
-        //!
-        void start();
-
-        //!
-        //! Regulate the flow, to be called at each packet.
-        //! Suspend the process when necessary.
-        //! @param [in] current_bitrate Current bitrate. Ignored if a fixed bitrate was set.
-        //! @param [out] flush Set to true if all previously processed and buffered packets should be flushed.
-        //! @param [out] bitrate_changed Set to true if the bitrate has changed.
-        //!
-        void regulate(const BitRate& current_bitrate, bool& flush, bool& bitrate_changed);
-
-        //!
-        //! Regulate the flow, to be called at each packet.
-        //! Suspend the process when necessary.
-        //! This version is suitable for fixed bitrate.
-        //!
-        void regulate();
+        // Inherited methods.
+        virtual bool reset() override;
+        virtual void regulate(TSPacket& pkt, TSPacketMetadata& mdata, const BitRate& current_bitrate) override;
 
     private:
         // We accumulate the amount of passed bits over the last few seconds to evaluate if we have
@@ -92,11 +63,8 @@ namespace ts {
         };
 
         // Private members.
-        int             _log_level = Severity::Info;
         bool            _starting = false;    // Starting, no packet processed so far
         bool            _regulated = false;   // Currently regulated at known bitrate
-        PacketCounter   _opt_burst = 0;       // Number of packets to burst at a time
-        BitRate         _opt_bitrate = 0;     // Bitrate option, zero means use input
         BitRate         _cur_bitrate = 0;     // Current bitrate
         cn::nanoseconds _burst_min {0};       // Minimum delay between two bursts
         cn::nanoseconds _burst_duration {0};  // Delay between two bursts

@@ -27,23 +27,28 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
 
     option(u"packet-burst", 'p', POSITIVE);
     help(u"packet-burst",
-         u"Number of packets to burst at a time. Does not modify the average "
-         u"output bitrate but influence smoothing and CPU load. The default "
-         u"is " + UString::Decimal(DEFAULT_PACKET_BURST) + u" packets.");
+         u"Number of packets to burst at a time. "
+         u"Does not modify the average output bitrate but influence smoothing and CPU load. "
+         u"The default is " + UString::Decimal(DEFAULT_PACKET_BURST) + u" packets.");
 
     option(u"pcr-synchronous");
     help(u"pcr-synchronous",
-         u"Regulate the flow based on the Program Clock Reference from the transport "
-         u"stream. By default, use a bitrate, not PCR's.");
+         u"Regulate the flow based on the Program Clock Reference from the transport stream. "
+         u"By default, use a bitrate, not PCR's.");
 
     option(u"pid-pcr", 0, PIDVAL);
     help(u"pid-pcr",
          u"With --pcr-synchronous, specify the reference PID for PCR's. By default, "
          u"use the first PID containing PCR's.");
 
+    option(u"timestamp-synchronous", 't');
+    help(u"timestamp-synchronous",
+         u"Regulate the flow based on input timestamps from the input plugin. "
+         u"By default, use a bitrate, not input timestamps.");
+
     option<cn::milliseconds>(u"wait-min", 'w');
     help(u"wait-min",
-         u"With --pcr-synchronous, specify the minimum wait time in milli-seconds. "
+         u"With --pcr-synchronous and --timestamp-synchronous, specify the minimum wait time in milli-seconds. "
          u"The default is " + UString::Chrono(PCRRegulator::DEFAULT_MIN_WAIT) + u"");
 }
 
@@ -59,9 +64,10 @@ bool ts::RegulatePlugin::getOptions()
     getChronoValue(_wait_min, u"wait-min", PCRRegulator::DEFAULT_MIN_WAIT);
     getIntValue(_pid_pcr, u"pid-pcr", PID_NULL);
     _pcr_synchronous = present(u"pcr-synchronous");
+    _timestamp_synchronous = present(u"timestamp-synchronous");
 
-    if (present(u"bitrate") && _pcr_synchronous) {
-        error(u"--bitrate cannot be used with --pcr-synchronous");
+    if (present(u"bitrate") + _pcr_synchronous + _timestamp_synchronous > 1) {
+        error(u"--bitrate, --pcr-synchronous, and --timestamp-synchronous are mutually exclusive");
         return false;
     }
     if (present(u"pid-pcr") && !_pcr_synchronous) {
@@ -78,21 +84,24 @@ bool ts::RegulatePlugin::getOptions()
 
 bool ts::RegulatePlugin::start()
 {
-    // Initialize the appropriate regulator.
     if (_pcr_synchronous) {
         debug(u"starting PCR-synchronous regulation");
-        _pcr_regulator.reset();
-        _pcr_regulator.setBurstPacketCount(_burst);
+        _regulator = &_pcr_regulator;
         _pcr_regulator.setReferencePID(_pid_pcr);
-        _pcr_regulator.setMinimimWait(_wait_min);
+    }
+    else if (_timestamp_synchronous) {
+        debug(u"starting timestamp-synchronous regulation");
+        _regulator = &_timestamp_regulator;
     }
     else {
         debug(u"starting bitrate-based regulation");
-        _bitrate_regulator.setBurstPacketCount(_burst);
-        _bitrate_regulator.setFixedBitRate(_bitrate);
-        _bitrate_regulator.start();
+        _regulator = &_bitrate_regulator;
     }
-    return true;
+
+    _regulator->setFixedBitRate(_bitrate);
+    _regulator->setMinimimWait(_wait_min);
+    _regulator->setBurstPacketCount(_burst);
+    return _regulator->reset();
 }
 
 
@@ -102,17 +111,6 @@ bool ts::RegulatePlugin::start()
 
 ts::PacketProcessStatus ts::RegulatePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    bool flush = false;
-    bool bitrate_changed = false;
-
-    if (_pcr_synchronous) {
-        flush = _pcr_regulator.regulate(pkt);
-    }
-    else {
-        _bitrate_regulator.regulate(tsp->bitrate(), flush, bitrate_changed);
-    }
-
-    pkt_data.setFlush(flush);
-    pkt_data.setBitrateChanged(bitrate_changed);
+    _regulator->regulate(pkt, pkt_data, tsp->bitrate());
     return TSP_OK;
 }

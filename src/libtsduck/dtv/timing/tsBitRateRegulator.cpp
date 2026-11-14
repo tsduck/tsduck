@@ -14,18 +14,6 @@
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
-    ReporterBase(report),
-    _log_level(log_level)
-{
-}
-
-ts::BitRateRegulator::BitRateRegulator(ReporterBase* delegate, int log_level) :
-    ReporterBase(delegate),
-    _log_level(log_level)
-{
-}
-
 ts::BitRateRegulator::~BitRateRegulator()
 {
 }
@@ -35,7 +23,7 @@ ts::BitRateRegulator::~BitRateRegulator()
 // Start regulation, initialize all timers.
 //----------------------------------------------------------------------------
 
-void ts::BitRateRegulator::start()
+bool ts::BitRateRegulator::reset()
 {
     // Compute the minimum delay between two bursts, in nano-seconds. This is a
     // limitation of the operating system. If we try to use wait on durations
@@ -55,6 +43,8 @@ void ts::BitRateRegulator::start()
     _burst_duration = cn::nanoseconds::zero();
     _cur_bitrate = 0;
     _cur_period = 0;
+
+    return true;
 }
 
 
@@ -67,7 +57,7 @@ void ts::BitRateRegulator::handleNewBitrate()
     assert(_cur_bitrate > 0);
 
     // Compute the number of packets per burst. Use the packets/burst from the command line or 1 by default.
-    PacketCounter burst_pkt_max = _opt_burst == 0 ? 1 : _opt_burst;
+    PacketCounter burst_pkt_max = _requested_burst == 0 ? 1 : _requested_burst;
 
     // Compute corresponding duration (in nano-seconds) between two bursts.
     assert(_cur_bitrate > 0);
@@ -136,29 +126,16 @@ void ts::BitRateRegulator::regulatePacket(bool& flush)
 
 //----------------------------------------------------------------------------
 // Regulate the flow, to be called at each packet.
-// This version is suitable for fixed bitrate.
 //----------------------------------------------------------------------------
 
-void ts::BitRateRegulator::regulate()
+void ts::BitRateRegulator::regulate(TSPacket& pkt, TSPacketMetadata& mdata, const BitRate& current_bitrate)
 {
     bool flush = false;
     bool bitrate_changed = false;
-    regulate(0, flush, bitrate_changed);
-}
-
-
-//----------------------------------------------------------------------------
-// Regulate the flow, to be called at each packet.
-//----------------------------------------------------------------------------
-
-void ts::BitRateRegulator::regulate(const BitRate& current_bitrate, bool& flush, bool& bitrate_changed)
-{
-    // Output parameters.
-    flush = bitrate_changed = false;
 
     // Compute old and new bitrate (most often the same)
     BitRate old_bitrate = _cur_bitrate;
-    _cur_bitrate = _opt_bitrate != 0 ? _opt_bitrate : current_bitrate;
+    _cur_bitrate = _fixed_bitrate != 0 ? _fixed_bitrate : current_bitrate;
 
     // Report initial or changed regulation state.
     if (_cur_bitrate != old_bitrate || _starting) {
@@ -205,4 +182,8 @@ void ts::BitRateRegulator::regulate(const BitRate& current_bitrate, bool& flush,
             regulatePacket(flush);
         }
     }
+
+    // Meta-data for next plugin.
+    mdata.setFlush(flush);
+    mdata.setBitrateChanged(bitrate_changed);
 }

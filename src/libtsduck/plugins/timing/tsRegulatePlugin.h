@@ -14,6 +14,7 @@
 #pragma once
 #include "tsProcessorPlugin.h"
 #include "tsBitRateRegulator.h"
+#include "tsTimeStampRegulator.h"
 #include "tsPCRRegulator.h"
 
 namespace ts {
@@ -33,17 +34,20 @@ namespace ts {
 
     private:
         // Default value for --packet-burst.
-        static constexpr PacketCounter DEFAULT_PACKET_BURST = 16;
+        static constexpr PacketCounter DEFAULT_PACKET_BURST = 14;
 
         // Command line options:
         bool             _pcr_synchronous = false;
+        bool             _timestamp_synchronous = false;
         BitRate          _bitrate = 0;
         PacketCounter    _burst = 0;
         cn::milliseconds _wait_min {};
         PID              _pid_pcr = PID_NULL;
 
         // Working data:
-        BitRateRegulator _bitrate_regulator {this, Severity::Verbose};
-        PCRRegulator     _pcr_regulator {this, Severity::Verbose};
+        BitRateRegulator   _bitrate_regulator {this, Severity::Verbose};
+        PCRRegulator       _pcr_regulator {this, Severity::Verbose};
+        TimeStampRegulator _timestamp_regulator {this, Severity::Verbose};
+        AbstractRegulator* _regulator = &_bitrate_regulator;
     };
 }
