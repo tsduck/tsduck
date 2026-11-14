@@ -44,7 +44,7 @@ void ts::BitRateRegulator::start()
     // keep what the operating system gives.
     _burst_min = cn::milliseconds(2);
     SetTimersPrecision(_burst_min);
-    report().log(_log_level, u"minimum packet burst duration is %s", _burst_min);
+    report().log(_log_level, u"minimum packet burst duration is %'s", _burst_min);
 
     // Initial measurement period is one second. Will be enlarged for extra-low bitrates.
     _period_duration = cn::seconds(1);

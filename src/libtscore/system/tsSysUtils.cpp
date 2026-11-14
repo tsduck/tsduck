@@ -23,6 +23,7 @@
 #elif defined(TS_LINUX)
     #include "tsBeforeStandardHeaders.h"
     #include <sys/resource.h>
+    #include <sys/prctl.h>
     #include <dlfcn.h>
     #include <signal.h>
     #include "tsAfterStandardHeaders.h"
@@ -33,6 +34,7 @@
     #include <mach/message.h>
     #include <mach/kern_return.h>
     #include <mach/task_info.h>
+    #include <mach/mach_time.h>
     #include <libproc.h>
     #include <dlfcn.h>
     #include <signal.h>
@@ -548,14 +550,53 @@ cn::nanoseconds::rep ts::_SetTimersPrecisionNanoSecond(cn::nanoseconds::rep requ
 
 #elif defined(TS_UNIX)
 
-    // POSIX implementation
+    // UNIX implementation: there is no precise system call anywhere to get the timer precision.
+    // We try various indicators, depending on the UNIX flavor, and we get the largest one.
+    // Note that we cannot change the precision, we can only try to read one. The returned
+    // value is higher than or equal to requested.
+    cn::nanoseconds::rep precision = requested;
 
-    // The timer precision cannot be changed. Simply get the smallest delay.
-    unsigned long jps = sysconf(_SC_CLK_TCK); // jiffies per second
-    if (jps <= 0) {
-        throw Exception(u"system error: cannot get clock tick");
+    // First, we get the resolution of the system CLOCK_MONOTONIC. It is supposed to be mapped on
+    // std::chrono::steady_clock in all or most C++ libraries. The result is typically 1 ns on
+    // Linux when high resolution clock is enabled. This is of course meaningless on all CPU since
+    // this is the order of magnitude of the execution time of one single instruction. On macOS,
+    // it returns 1000 ns, which is slightly more realistic.
+    ::timespec res {};
+    if (::clock_getres(CLOCK_MONOTONIC, &res) == 0) {
+        precision = std::max(precision, cn::nanoseconds::rep(res.tv_sec) * 1'000'000'000 + cn::nanoseconds::rep(res.tv_nsec));
     }
-    return std::max(requested, cn::nanoseconds::rep(std::nano::den / jps));
+
+    // On Linux, the "timer slack" is the maximum delay after the expiration of a timer.
+    // Because it is an additional delay, we take it into account. It is usually around 50,000 ns.
+#if defined(TS_LINUX)
+    const cn::nanoseconds::rep tslack = ::prctl(PR_GET_TIMERSLACK);
+    if (tslack > 0) {
+        precision = std::max(precision, tslack);
+    }
+#endif
+
+    // On macOS, the mach_timebase is the kernel time resolution.
+#if defined(TS_MAC)
+    ::mach_timebase_info_data_t tbase {};
+    if (::mach_timebase_info(&tbase) == KERN_SUCCESS && tbase.denom != 0) {
+        // Round to upper bound.
+        precision = std::max(precision, cn::nanoseconds::rep(tbase.numer + tbase.denom - 1) / cn::nanoseconds::rep(tbase.denom));
+    }
+#endif
+
+    // The old-school UNIX method is getting the "jiffies per second". However, it returns 100 (10 ms)
+    // on most systems. This is usually a deceptive indicator because most systems are more capable.
+    //
+    // const unsigned long jps = ::sysconf(_SC_CLK_TCK);
+    // if (jps > 0) {
+    //     precision = std::max(precision, cn::nanoseconds::rep(std::nano::den / jps));
+    // }
+
+    // On macOS and BSD, sysctl() for {CTL_KERN, KERN_CLOCKRATE} returns a clockinfo structure.
+    // However, it also returns the clock rate as 100 Hz, same as the jiffies per second. So,
+    // not very helpful either.
+
+    return precision;
 
 #else
     #error "Unimplemented operating system"
