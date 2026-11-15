@@ -75,15 +75,20 @@ namespace ts {
     }
 
     //!
+    //! Check if a character is a "control character" according to Unicode.
+    //! @ingroup cpp
+    //! @param [in] c A character.
+    //! @return True if @a c is a control character.
+    //!
+    TSCOREDLL bool IsControl(UChar c);
+
+    //!
     //! Check if a character is printable according to the current C locale.
     //! @ingroup cpp
     //! @param [in] c A character.
     //! @return True if @a c is a printable character.
     //!
-    TSCOREDLL inline bool IsPrintable(UChar c)
-    {
-        return (UCharacteristics(c) & CCHAR_PRINT) != 0;
-    }
+    TSCOREDLL bool IsPrintable(UChar c);
 
     //!
     //! Check if a character is a letter.
@@ -173,6 +178,15 @@ namespace ts {
     //! @return @a c converted to uppercase.
     //!
     TSCOREDLL UChar ToUpper(UChar c);
+
+    //!
+    //! Check if a character is an asian character (Chinese, Japanese, Korean).
+    //! This is a pragmatic test to check if a character is probably printable, although not formally listed.
+    //! @ingroup cpp
+    //! @param [in] c A character.
+    //! @return True if @a c is an asian character.
+    //!
+    TSCOREDLL bool IsAsian(UChar c);
 
     //!
     //! Check two characters match, case sensitive or insensitive.
@@ -1137,6 +1151,7 @@ namespace ts {
     static constexpr UChar THAI_DIGIT_NINE                             = UChar(0x0E59); //!< ISO-8859 Unicode character.
     static constexpr UChar THAI_CHARACTER_ANGKHANKHU                   = UChar(0x0E5A); //!< ISO-8859 Unicode character.
     static constexpr UChar THAI_CHARACTER_KHOMUT                       = UChar(0x0E5B); //!< ISO-8859 Unicode character.
+    static constexpr UChar OGHAM_SPACE_MARK                            = UChar(0x1680); //!< ISO-8859 Unicode character.
     static constexpr UChar LATIN_CAPITAL_LETTER_B_WITH_DOT_ABOVE       = UChar(0x1E02); //!< ISO-8859 Unicode character.
     static constexpr UChar LATIN_SMALL_LETTER_B_WITH_DOT_ABOVE         = UChar(0x1E03); //!< ISO-8859 Unicode character.
     static constexpr UChar LATIN_CAPITAL_LETTER_D_WITH_DOT_ABOVE       = UChar(0x1E0A); //!< ISO-8859 Unicode character.
@@ -1159,9 +1174,17 @@ namespace ts {
     static constexpr UChar LATIN_SMALL_LETTER_W_WITH_DIAERESIS         = UChar(0x1E85); //!< ISO-8859 Unicode character.
     static constexpr UChar LATIN_CAPITAL_LETTER_Y_WITH_GRAVE           = UChar(0x1EF2); //!< ISO-8859 Unicode character.
     static constexpr UChar LATIN_SMALL_LETTER_Y_WITH_GRAVE             = UChar(0x1EF3); //!< ISO-8859 Unicode character.
+    static constexpr UChar EN_QUAD                                     = UChar(0x2000); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar EM_QUAD                                     = UChar(0x2001); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar EN_SPACE                                    = UChar(0x2002); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar EM_SPACE                                    = UChar(0x2003); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar THREE_PER_EM_SPACE                          = UChar(0x2004); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar FOUR_PER_EM_SPACE                           = UChar(0x2005); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar SIX_PER_EM_SPACE                            = UChar(0x2006); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar FIGURE_SPACE                                = UChar(0x2007); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar PUNCTUATION_SPACE                           = UChar(0x2008); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar THIN_SPACE                                  = UChar(0x2009); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar HAIR_SPACE                                  = UChar(0x200A); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar ZERO_WIDTH_SPACE                            = UChar(0x200B); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar ZERO_WIDTH_NON_JOINER                       = UChar(0x200C); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar ZERO_WIDTH_JOINER                           = UChar(0x200D); //!< Non-ISO-8859 Unicode character.
@@ -1181,6 +1204,7 @@ namespace ts {
     static constexpr UChar DOUBLE_DAGGER                               = UChar(0x2021); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar BULLET                                      = UChar(0x2022); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar HORIZONTAL_ELLIPSIS                         = UChar(0x2026); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar NARROW_NO_BREAK_SPACE                       = UChar(0x202F); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar PER_MILLE_SIGN                              = UChar(0x2030); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar PRIME                                       = UChar(0x2032); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar DOUBLE_PRIME                                = UChar(0x2033); //!< Non-ISO-8859 Unicode character.
@@ -1188,6 +1212,7 @@ namespace ts {
     static constexpr UChar SINGLE_RIGHT_POINTING_ANGLE_QUOTATION_MARK  = UChar(0x203A); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar OVERLINE                                    = UChar(0x203E); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar FRACTION_SLASH                              = UChar(0x2044); //!< Non-ISO-8859 Unicode character.
+    static constexpr UChar MEDIUM_MATHEMATICAL_SPACE                   = UChar(0x205F); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar WORD_JOINER                                 = UChar(0x2060); //!< Non-ISO-8859 Unicode character.
     static constexpr UChar EURO_SIGN                                   = UChar(0x20AC); //!< ISO-8859 Unicode character.
     static constexpr UChar DRACHMA_SIGN                                = UChar(0x20AF); //!< ISO-8859 Unicode character.

@@ -1768,6 +1768,7 @@ namespace {
         {THAI_DIGIT_NINE,                            CCHAR_PRINT | CCHAR_THAI},
         {THAI_CHARACTER_ANGKHANKHU,                  CCHAR_PRINT | CCHAR_LETTER | CCHAR_THAI},
         {THAI_CHARACTER_KHOMUT,                      CCHAR_PRINT | CCHAR_LETTER | CCHAR_THAI},
+        {OGHAM_SPACE_MARK,                           CCHAR_PRINT | CCHAR_SPACE},
         {LATIN_CAPITAL_LETTER_B_WITH_DOT_ABOVE,      CCHAR_PRINT | CCHAR_LETTER | CCHAR_LATIN},
         {LATIN_SMALL_LETTER_B_WITH_DOT_ABOVE,        CCHAR_PRINT | CCHAR_LETTER | CCHAR_LATIN},
         {LATIN_CAPITAL_LETTER_D_WITH_DOT_ABOVE,      CCHAR_PRINT | CCHAR_LETTER | CCHAR_LATIN},
@@ -1790,9 +1791,18 @@ namespace {
         {LATIN_SMALL_LETTER_W_WITH_DIAERESIS,        CCHAR_PRINT | CCHAR_LETTER | CCHAR_LATIN},
         {LATIN_CAPITAL_LETTER_Y_WITH_GRAVE,          CCHAR_PRINT | CCHAR_LETTER | CCHAR_LATIN},
         {LATIN_SMALL_LETTER_Y_WITH_GRAVE,            CCHAR_PRINT | CCHAR_LETTER | CCHAR_LATIN},
+        {EN_QUAD,                                    CCHAR_PRINT | CCHAR_SPACE},
+        {EM_QUAD,                                    CCHAR_PRINT | CCHAR_SPACE},
         {EN_SPACE,                                   CCHAR_PRINT | CCHAR_SPACE},
         {EM_SPACE,                                   CCHAR_PRINT | CCHAR_SPACE},
+        {THREE_PER_EM_SPACE,                         CCHAR_PRINT | CCHAR_SPACE},
+        {FOUR_PER_EM_SPACE,                          CCHAR_PRINT | CCHAR_SPACE},
+        {SIX_PER_EM_SPACE,                           CCHAR_PRINT | CCHAR_SPACE},
+        {FIGURE_SPACE,                               CCHAR_PRINT | CCHAR_SPACE},
+        {PUNCTUATION_SPACE,                          CCHAR_PRINT | CCHAR_SPACE},
         {THIN_SPACE,                                 CCHAR_PRINT | CCHAR_SPACE},
+        {HAIR_SPACE,                                 CCHAR_PRINT | CCHAR_SPACE},
+        {ZERO_WIDTH_SPACE,                           0},
         {ZERO_WIDTH_NON_JOINER,                      0},
         {ZERO_WIDTH_JOINER,                          0},
         {LEFT_TO_RIGHT_MARK,                         CCHAR_CDIACRIT},
@@ -1811,6 +1821,7 @@ namespace {
         {DOUBLE_DAGGER,                              CCHAR_PRINT},
         {BULLET,                                     CCHAR_PRINT},
         {HORIZONTAL_ELLIPSIS,                        CCHAR_PRINT},
+        {NARROW_NO_BREAK_SPACE,                      CCHAR_PRINT | CCHAR_SPACE},
         {PER_MILLE_SIGN,                             CCHAR_PRINT},
         {PRIME,                                      CCHAR_PRINT},
         {DOUBLE_PRIME,                               CCHAR_PRINT},
@@ -1818,6 +1829,7 @@ namespace {
         {SINGLE_RIGHT_POINTING_ANGLE_QUOTATION_MARK, CCHAR_PRINT},
         {OVERLINE,                                   CCHAR_PRINT},
         {FRACTION_SLASH,                             CCHAR_PRINT},
+        {MEDIUM_MATHEMATICAL_SPACE,                  CCHAR_PRINT | CCHAR_SPACE},
         {EURO_SIGN,                                  CCHAR_PRINT},
         {DRACHMA_SIGN,                               CCHAR_PRINT},
         {BLACKLETTER_CAPITAL_I,                      CCHAR_PRINT | CCHAR_LETTER},
@@ -1886,6 +1898,7 @@ namespace {
         {BLACK_CLUB_SUIT,                            CCHAR_PRINT},
         {BLACK_HEART_SUIT,                           CCHAR_PRINT},
         {BLACK_DIAMOND_SUIT,                         CCHAR_PRINT},
+        {IDEOGRAPHIC_SPACE,                          CCHAR_PRINT | CCHAR_SPACE},
     } {}
 }
 
@@ -1900,6 +1913,52 @@ uint32_t ts::UCharacteristics(UChar c)
 //----------------------------------------------------------------------------
 // Character conversions.
 //----------------------------------------------------------------------------
+
+bool ts::IsControl(UChar c)
+{
+    // Make sure we don't need to check c >= 0.
+    static_assert(std::is_unsigned_v<UChar>);
+    return c <= 0x1F || (c >= 0x7F && c <= 0x9F);
+}
+
+bool ts::IsPrintable(UChar c)
+{
+    return (UCharacteristics(c) & CCHAR_PRINT) != 0 || IsAsian(c);
+}
+
+bool ts::IsAsian(UChar c)
+{
+    // See https://www.unicode.org/Public/UCD/latest/ucd/Blocks.txt
+    // All these unicodes are directly represented in UTF-16, no surrogate needed.
+    // 2E80..2EFF; CJK Radicals Supplement
+    // 2F00..2FDF; Kangxi Radicals
+    // 2FF0..2FFF; Ideographic Description Characters
+    // 3000..303F; CJK Symbols and Punctuation
+    // 3040..309F; Hiragana
+    // 30A0..30FF; Katakana
+    // 3100..312F; Bopomofo
+    // 3130..318F; Hangul Compatibility Jamo
+    // 3190..319F; Kanbun
+    // 31A0..31BF; Bopomofo Extended
+    // 31C0..31EF; CJK Strokes
+    // 31F0..31FF; Katakana Phonetic Extensions
+    // 3200..32FF; Enclosed CJK Letters and Months
+    // 3300..33FF; CJK Compatibility
+    // 3400..4DBF; CJK Unified Ideographs Extension A
+    // 4E00..9FFF; CJK Unified Ideographs
+    // F900..FAFF; CJK Compatibility Ideographs
+    // FE10..FE1F; Vertical Forms
+    // FE30..FE4F; CJK Compatibility Forms
+    // FF00..FFEF; Halfwidth and Fullwidth Forms
+
+    return (c >= 0x2E80 && c <= 0x2FDF) ||
+           (c >= 0x2FF0 && c <= 0x4DBF) ||
+           (c >= 0x4E00 && c <= 0x9FFF) ||
+           (c >= 0xF900 && c <= 0xFAFF) ||
+           (c >= 0xFE10 && c <= 0xFE1F) ||
+           (c >= 0xFE30 && c <= 0xFE4F) ||
+           (c >= 0xFF00 && c <= 0xFFEF);
+}
 
 int ts::ToDigit(UChar c, int base, int default_value)
 {

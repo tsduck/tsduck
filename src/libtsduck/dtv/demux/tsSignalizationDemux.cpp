@@ -8,6 +8,7 @@
 
 #include "tsSignalizationDemux.h"
 #include "tsDuckContext.h"
+#include "tsAlgorithm.h"
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
 #include "tsPESPacket.h"
@@ -827,9 +828,10 @@ void ts::SignalizationDemux::handleService(ServiceContext& srv, bool if_modified
         (!if_modified || srv.service.isModified()) &&
         (_full_filters || _filtered_srv_ids.contains(srv.service.getId())))
     {
-        _handler->handleService(_ts_id, srv.service, srv.pmt, removed);
         // Clear modification of the service when the application has been notified.
+        // Do it before calling the handler because it can modify the _services map, to which srv belongs.
         srv.service.clearModified();
+        _handler->handleService(_ts_id, srv.service, srv.pmt, removed);
     }
 }
 
@@ -887,17 +889,16 @@ void ts::SignalizationDemux::handlePAT(const PAT& pat, PID pid)
         _handler->handlePAT(pat, pid);
     }
 
-    // Remove all services which are no longer here.
-    for (auto srv_it = _services.begin(); srv_it != _services.end(); ) {
-        auto pat_it = pat.pmts.find(srv_it->first);
-        if (pat_it == pat.pmts.end()) {
+    // Remove all services which are no longer in the PAT. Because we call an application handler
+    // for each removed service, we cannot iterate over _services (the handler could modify it).
+    // So, we first get a set of all service ids and iterate over it.
+    for (uint16_t sid : MapKeysSet(_services)) {
+        // Check if this service id is still in the map (could have been deleted by a previous call to application handler).
+        const auto srv_it = _services.find(sid);
+        if (srv_it != _services.end() && !pat.pmts.contains(sid)) {
             // Service has an id which is not in the PAT => remove from the service list.
             handleService(*srv_it->second, false, true);
-            srv_it = _services.erase(srv_it);
-        }
-        else {
-            // Keep the service, move to next one.
-            ++srv_it;
+            _services.erase(sid);
         }
     }
 

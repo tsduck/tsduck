@@ -794,6 +794,23 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
 
 
 //----------------------------------------------------------------------------
+// Cleanup a name for normalized output.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TSAnalyzerReport::NormalizedString(const UString& name, bool last_field)
+{
+    UString s(name);
+    for (UChar& c : s) {
+        if (!IsPrintable(c) || (!last_field && (c == u':' || c == u'='))) {
+            c = u' ';
+        }
+    }
+    s.trim();
+    return s;
+}
+
+
+//----------------------------------------------------------------------------
 // This method displays a normalized report.
 //----------------------------------------------------------------------------
 
@@ -943,7 +960,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerArgs& opt, std::ostream& s
         }
         stm << ":";
         sv.isdb_layers.addNormalizedKeys(stm, u"isdbtlayers", true);
-        stm << "provider=" << sv.getProvider() << ":name=" << sv.getName() << std::endl;
+        stm << "provider=" << NormalizedString(sv.getProvider(), false) << ":name=" << NormalizedString(sv.getName(), true) << std::endl;
     }
 
     // Print one line per PID
@@ -1050,7 +1067,7 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerArgs& opt, std::ostream& s
         if (pc.first_dts != INVALID_DTS) {
             stm << "firstdts=" << pc.first_dts << ":lastdts=" << pc.last_dts << ":";
         }
-        stm << "description=" << pc.fullDescription(true) << std::endl;
+        stm << "description=" << NormalizedString(pc.fullDescription(true), true) << std::endl;
     }
 
     // Print one line per table

@@ -138,5 +138,9 @@ namespace ts {
 
         // Add a time as a JSON string if valid (not Epoch).
         static void AddTime(json::Value& parent, const UString& path, const Time&, const UString& country = UString());
+
+        // Cleanup a name for normalized output. Not printable or confusing characters are replaced with spaces.
+        // If 'last_field' is true, this is the last field of a line and ':' and '=' are left unmodified.
+        static UString NormalizedString(const UString& name, bool last_field);
     };
 }
