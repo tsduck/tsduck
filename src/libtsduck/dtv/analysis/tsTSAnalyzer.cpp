@@ -1062,7 +1062,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                                 const TTMLSubtitlingDescriptor desc(_duck, bindesc);
                                 if (desc.isValid()) {
                                     AppendUnique(ps->languages, desc.language_code);
-                                    ps->addAttribute(NameFromSection(u"dtv", u"TTML_subtitling_descriptor.subtitle_purpose", desc.subtitle_purpose));
+                                    ps->addAttribute(TTMLSubtitlingDescriptor::TTML_subtitle_purpose(desc.subtitle_purpose));
                                 }
                             }
                             break;

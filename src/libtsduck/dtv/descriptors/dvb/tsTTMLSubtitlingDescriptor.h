@@ -45,13 +45,30 @@ namespace ts {
         //!
         TTMLSubtitlingDescriptor(DuckContext& duck, const Descriptor& bin);
 
+        //!
+        //! Get a string representation of a TTML qualifier.
+        //! @param [in] qualifier The qualifier value from a TTML descriptor.
+        //! @return The corresponding string.
+        //!
+        static UString TTML_qualifier(uint32_t qualifier);
+
+        //!
+        //! Get a string representation of a TTML purpose.
+        //! @param [in] purpose The qualifier value from a TTML descriptor.
+        //! @param [in] flags Presentation flags.
+        //! @return The corresponding string.
+        //!
+        static UString TTML_subtitle_purpose(uint8_t purpose, NamesFlags flags = NamesFlags::NAME);
+
+        //!
+        //! Get a string representation of a TTML suitability.
+        //! @param [in] suitability The suitability value from a TTML descriptor.
+        //! @return The corresponding string.
+        //!
+        static UString TTML_suitability(uint8_t suitability);
+
         // Inherited methods
         DeclareDisplayDescriptor();
-
-    private:
-        static UString TTML_qualifier(uint32_t qualifier);
-        static UString TTML_subtitle_purpose(uint8_t purpose);
-        static UString TTML_suitability(uint8_t suitability);
 
     protected:
         // Inherited methods

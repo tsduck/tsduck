@@ -117,7 +117,8 @@ void ts::TTMLSubtitlingDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali) {
+ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali)
+{
     // EN 303 560 claise 5.2.1.3
     // note that the number of reserved bits is 18, not 26
     ts::UString res(u"size=");
@@ -154,11 +155,13 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali) {
 }
 
 
-ts::UString ts::TTMLSubtitlingDescriptor::TTML_subtitle_purpose(uint8_t purpose) {
-    return DataName(MY_XML_NAME, u"subtitle_purpose", purpose, NamesFlags::HEX_VALUE_NAME);
+ts::UString ts::TTMLSubtitlingDescriptor::TTML_subtitle_purpose(uint8_t purpose, NamesFlags flags)
+{
+    return DataName(MY_XML_NAME, u"subtitle_purpose", purpose, flags);
 }
 
-ts::UString ts::TTMLSubtitlingDescriptor::TTML_suitability(uint8_t suitability) {
+ts::UString ts::TTMLSubtitlingDescriptor::TTML_suitability(uint8_t suitability)
+{
     // EN 303 560 table 3
     ts::UString res(ts::UString::Format(u"0x%X (", suitability));
     switch (suitability) {
@@ -175,7 +178,7 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, const 
 {
     if (buf.canReadBytes(5)) {
         disp << margin << "ISO 639 language code: " << buf.getLanguageCode() << std::endl;
-        disp << margin << "Subtitle purpose: " << TTML_subtitle_purpose(buf.getBits<uint8_t>(6));
+        disp << margin << "Subtitle purpose: " << TTML_subtitle_purpose(buf.getBits<uint8_t>(6), NamesFlags::HEX_VALUE_NAME);
         disp << ", TTS suitability: " << TTML_suitability(buf.getBits<uint8_t>(2)) << std::endl;
         bool essential_font_usage_flag = buf.getBool();
         bool qualifier_present_flag = buf.getBool();
