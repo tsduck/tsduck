@@ -19,9 +19,16 @@
 ts::FetchBCryptAlgorithm::FetchBCryptAlgorithm(::LPCWSTR algo_id, ::LPCWSTR chain_mode)
 {
     if (::BCryptOpenAlgorithmProvider(&_algo, algo_id, nullptr, 0) >= 0) {
-        bool success = chain_mode == nullptr || ::BCryptSetProperty(_algo, BCRYPT_CHAINING_MODE, ::PUCHAR(chain_mode), sizeof(chain_mode), 0) >= 0;
+        bool success = true;
         ::DWORD length = 0;
         ::ULONG retsize = 0;
+        if (chain_mode != nullptr) {
+            // The documentation of BCryptSetProperty says: "When setting the value for the property BCRYPT_CHAINING_MODE, the pbInput
+            // parameter is unbounded by cbInput. The caller needs to ensure a valid null-terminated Unicode string is provided."
+            // This means that the size of the null-terminated string in chain_mode is ignored. We compute it anyway, just in case.
+            const size_t chain_mode_size = (::wcslen(chain_mode) + 1) * sizeof(::WCHAR);
+            success = ::BCryptSetProperty(_algo, BCRYPT_CHAINING_MODE, ::PUCHAR(chain_mode), ::ULONG(chain_mode_size), 0) >= 0;
+        }
         if (success) {
             success = ::BCryptGetProperty(_algo, BCRYPT_OBJECT_LENGTH, ::PUCHAR(&length), sizeof(length), &retsize, 0) >= 0 && retsize == sizeof(length);
         }

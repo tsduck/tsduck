@@ -68,6 +68,12 @@ namespace ts {
         //!
         SimulCryptDate(int year, int month, int day, int hour, int minute, int second, int hundredth);
 
+        //!
+        //! Check if the date is valid.
+        //! @return True if the date is valid, false otherwise.
+        //!
+        bool isValid() const;
+
         //! @cond nodoxygen
         auto operator<=>(const SimulCryptDate&) const = default;
         //! @endcond
@@ -208,7 +214,7 @@ namespace ts {
 
     private:
         // Private members
-        uint8_t _data[SIZE] {0, 0, 0, 0, 0, 0, 0, 0};
+        uint8_t _data[SIZE] {};
     };
 }
 

@@ -38,6 +38,22 @@ ts::SimulCryptDate::SimulCryptDate(int year, int month, int day, int hour, int m
 
 
 //----------------------------------------------------------------------------
+// Check if the date is valid.
+//----------------------------------------------------------------------------
+
+bool ts::SimulCryptDate::isValid() const
+{
+    return year() >= Time::FirstSafeSystemYear &&
+           month() >= 1 && month() <= 12 &&
+           day() >= 1 && day() <= 31 &&
+           hour() <= 23 &&
+           minute() <= 59 &&
+           second() <= 59 &&
+           hundredth() <= 99;
+}
+
+
+//----------------------------------------------------------------------------
 // Get from DVB SimulCrypt TLV messages
 //----------------------------------------------------------------------------
 
@@ -64,7 +80,7 @@ void ts::SimulCryptDate::get(const tlv::MessageFactory& mf, tlv::TAG tag)
 
 ts::SimulCryptDate::operator ts::Time() const
 {
-    return year() >= Time::FirstSafeSystemYear ? Time(Time::Fields(year(), month(), day(), hour(), minute(), second(), 10 * hundredth())) : Time::Epoch;
+    return isValid() ? Time(Time::Fields(year(), month(), day(), hour(), minute(), second(), 10 * hundredth())) : Time::Epoch;
 }
 
 
