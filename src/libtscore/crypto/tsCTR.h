@@ -127,7 +127,7 @@ void ts::CTR<CIPHER>::incrementCounter()
     bool carry = true; // initial increment.
 
     // The first work block contains the "input block" or counter to increment.
-    for (uint8_t* b = work1 + bsize - 1; carry && bits > 0 && b > work1; --b) {
+    for (uint8_t* b = work1 + bsize - 1; carry && bits > 0 && b >= work1; --b) {
         const size_t bits_in_byte = std::min<size_t>(bits, 8);
         bits -= bits_in_byte;
         const uint8_t mask = uint8_t(0xFF >> (8 - bits_in_byte));

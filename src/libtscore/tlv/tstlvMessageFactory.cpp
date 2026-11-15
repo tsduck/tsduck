@@ -108,13 +108,22 @@ void ts::tlv::MessageFactory::analyzeMessage()
     if (cmd_anl.endOfMessage() || !cmd_anl.valid()) {
         _error_status = InvalidMessage;
         _error_info_is_offset = true;
-        _error_info = uint16_t (header_size); // offset in message
+        _error_info = uint16_t(header_size); // offset in message
         return;
     }
 
     _command_tag = cmd_anl.tag();
     LENGTH params_length = cmd_anl.length();
     const void* params_list = cmd_anl.valueAddr();
+
+    // Check that there is no additional bytes after the message.
+    cmd_anl.next();
+    if (!cmd_anl.endOfMessage() || !cmd_anl.valid()) {
+        _error_status = InvalidMessage;
+        _error_info_is_offset = true;
+        _error_info = uint16_t(header_size + sizeof(TAG) + sizeof(LENGTH) + params_length); // offset in message
+        return;
+    }
 
     // Get an interator pointing to the definition of the command in the protocol description.
     auto cmd_it = _protocol._commands.find(_command_tag);
@@ -184,7 +193,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
         parm_anl.next();
     }
 
-    // Did we reach the end of parameter list without error ?
+    // Did we reach the end of parameter list without error?
     if (!parm_anl.valid()) {
         _error_status = InvalidMessage;
         _error_info_is_offset = true;

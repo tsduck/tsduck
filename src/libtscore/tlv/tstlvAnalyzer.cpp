@@ -41,7 +41,7 @@ void ts::tlv::Analyzer::next()
     _tlv_addr = _value_addr + _length;
 
     // Detect end of message
-    if (_tlv_addr == _end) {
+    if (_tlv_addr >= _end) {
         _eom = true;
         return;
     }
@@ -54,8 +54,8 @@ void ts::tlv::Analyzer::next()
     }
 
     // Get tag, length and value
-    _tag = GetUInt16 (_tlv_addr);
-    _length = GetUInt16 (_tlv_addr + sizeof(TAG));
+    _tag = GetUInt16(_tlv_addr);
+    _length = GetUInt16(_tlv_addr + sizeof(TAG));
     _value_addr = _tlv_addr + sizeof(TAG) + sizeof(LENGTH);
     _tlv_size = _value_addr + _length - _tlv_addr;
 
