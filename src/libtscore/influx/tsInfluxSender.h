@@ -37,6 +37,11 @@ namespace ts {
         explicit InfluxSender(Report* report);
 
         //!
+        //! Destructor.
+        //!
+        virtual ~InfluxSender() override;
+
+        //!
         //! Start the asynchronous sender.
         //! @param [in] args Connection parameters to the InfluxDB server.
         //! @return True on success, false on error.

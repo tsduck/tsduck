@@ -10,12 +10,18 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
 ts::InfluxSender::InfluxSender(Report* report) :
     ReporterBase(report)
 {
+}
+
+ts::InfluxSender::~InfluxSender()
+{
+    // Make sure that the thread is terminated.
+    stop();
 }
 
 
