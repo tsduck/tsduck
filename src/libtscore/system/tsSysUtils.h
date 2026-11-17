@@ -293,18 +293,22 @@ namespace ts {
     //! Ensure that writing to a broken pipe does not kill the current process.
     //! @ingroup system
     //!
-    //! On UNIX systems, writing to a <i>broken pipe</i>, i.e. a pipe with
-    //! no process reading from it, kills the current process. This may not
-    //! be what you want. This functions prevents this.
-    //!
-    //! <strong>UNIX Systems:</strong> This function ignores SIGPIPE.
-    //! Writing to a broken pipe will now return an error instead of killing
-    //! the process.
-    //!
-    //! <strong>Windows systems:</strong> This function does nothing (because
-    //! there is no need to do anything).
+    //! On UNIX systems, writing to a <i>broken pipe</i>, i.e. a pipe with no process reading from it,
+    //! kills the current process. This may not be what you want. This functions prevents this.
+    //! - UNIX Systems: This function ignores SIGPIPE. Writing to a broken pipe will now return an error
+    //!   instead of killing the process.
+    //! - Windows systems: This function does nothing (because there is no need to do anything).
     //!
     TSCOREDLL void IgnorePipeSignal();
+
+    //!
+    //! Restore the default behavior of writing to a broken pipe.
+    //! @ingroup system
+    //!
+    //! This function does the opposite of IgnorePipeSignal().
+    //! @see IgnorePipeSignal()
+    //!
+    TSCOREDLL void RestorePipeSignal();
 
     // Implementation of SetTimersPrecision() using nanoseconds.
     //! @cond nodoxygen

@@ -334,7 +334,7 @@ namespace ts {
     //! - Windows: @c \%APPDATA%\\tsduck
     //! - Unix: @c $HOME
     //!
-    TSCOREDLL UString UserConfigurationFileName(const UString& file_name, const UString& win_file_name = UString());
+    TSCOREDLL fs::path UserConfigurationFileName(const UString& file_name, const UString& win_file_name = UString());
 }
 
 

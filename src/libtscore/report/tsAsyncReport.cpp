@@ -47,7 +47,7 @@ void ts::AsyncReport::terminate()
         // Insert an "end of report" message in the queue.
         // This message will tell the logging thread to terminate.
         auto ptr = std::make_shared<LogMessage>(true, 0, UString());
-        _log_queue.forceEnqueue(ptr);
+        _log_queue.forceEnqueue(ptr, true);
 
         // Wait for termination of the logging thread
         _thread.waitForTermination();
@@ -66,9 +66,9 @@ void ts::AsyncReport::writeLog(int severity, const UString &msg)
     // On Windows, when TS_DEBUG_LOG is set, also send all messages to the debugger console.
     // If the environment variable TS_DEBUG_LOG is set during compilation, then the macro
     // TS_DEBUG_LOG is automatically defined and the debug logging is active.
-    UString msgNewLine(msg);
-    msgNewLine += u"\n";
-    ::OutputDebugStringW(msgNewLine.wc_str());
+    UString msg_new_line(msg);
+    msg_new_line += u"\n";
+    ::OutputDebugStringW(msg_new_line.wc_str());
 #endif
 
     if (!_terminated) {

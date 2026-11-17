@@ -325,7 +325,40 @@ fs::path ts::UserHomeDirectory()
 
 #else
 
-    return GetEnvironment(u"HOME");
+    // By default, start with $HOME.
+    fs::path home = GetEnvironment(u"HOME");
+
+    // If HOME is undefined or empty, fallback to getpwuid_r.
+    if (home.empty()) {
+        // We need a buffer to hold strings which are returned by getpwuid_r.
+        // On most operating systems, the required size is sysconf(_SC_GETPW_R_SIZE_MAX).
+        const long sys_bufsize = ::sysconf(_SC_GETPW_R_SIZE_MAX);
+        // In case of error, sysconf may return -1 or 0, depending on the system.
+        // Start with a buffer size of at least 1 kB.
+        std::vector<char> buf(size_t(std::max<long>(sys_bufsize, 1024)));
+        // Some systems don't return a valid value, or an undersized value. So, we start with it
+        // and double the size of the buffer in case of failure. Use a fool-proof limit of 512 kB.
+        for (;;) {
+            ::passwd pwd {};
+            ::passwd* result = nullptr;
+            const int status = ::getpwuid_r(::getuid(), &pwd, buf.data(), buf.size(), &result);
+            if (status == 0 && result != nullptr && result->pw_dir != nullptr) {
+                // Success, all there.
+                home = fs::path(result->pw_dir);
+                break;
+            }
+            else if (status != 0 && errno == ERANGE && buf.size() < 512 * 1024) {
+                // Documented error for buffer too small. Retry with a larger buffer.
+                buf.resize(2 * buf.size());
+            }
+            else {
+                // Other error, no need to retry.
+                break;
+            }
+        }
+    }
+
+    return home;
 
 #endif
 }
@@ -483,44 +516,44 @@ ts::UString ts::SearchConfigurationFile(const UString& file_name)
 
     // At this point, the file name has no directory and is not found in the current directory.
     // Build the list of directories to search. First, start with all directories from $TSPLUGINS_PATH.
-    UStringList dirList;
-    GetEnvironmentPathAppend(dirList, PLUGINS_PATH_ENVIRONMENT_VARIABLE);
+    UStringList dir_list;
+    GetEnvironmentPathAppend(dir_list, PLUGINS_PATH_ENVIRONMENT_VARIABLE);
 
     // Then, try in same directory as executable.
     const UString execDir(DirectoryName(ExecutableFile()));
-    dirList.push_back(execDir);
+    dir_list.push_back(execDir);
 
     // On Unix systens, try etc and lib directories.
 #if defined(TS_UNIX)
     const UString execParent(DirectoryName(execDir));
     const UString execGrandParent(DirectoryName(execParent));
-    dirList.push_back(execParent + u"/etc/tsduck");
-    dirList.push_back(execGrandParent + u"/etc/tsduck");
+    dir_list.push_back(execParent + u"/etc/tsduck");
+    dir_list.push_back(execGrandParent + u"/etc/tsduck");
     if constexpr (sizeof(void*) == 8) {
-        dirList.push_back(execParent + u"/lib64/tsduck");
+        dir_list.push_back(execParent + u"/lib64/tsduck");
     }
-    dirList.push_back(execParent + u"/lib/tsduck");
-    dirList.push_back(execParent + u"/share/tsduck");
+    dir_list.push_back(execParent + u"/lib/tsduck");
+    dir_list.push_back(execParent + u"/share/tsduck");
     // Try all directories from $LD_LIBRARY_PATH.
-    GetEnvironmentPathAppend(dirList, u"LD_LIBRARY_PATH");
+    GetEnvironmentPathAppend(dir_list, u"LD_LIBRARY_PATH");
 #endif
 
     // Finally try all directories from $PATH.
-    GetEnvironmentPathAppend(dirList, PATH_ENVIRONMENT_VARIABLE);
+    GetEnvironmentPathAppend(dir_list, PATH_ENVIRONMENT_VARIABLE);
 
     // Add default system locations of the configuration files. This is useful when the
     // application is not a TSDuck one but a third-party application which uses the
     // TSDuck library. In that case, relative paths from the executables are useless.
 #if defined(TS_WINDOWS)
     if (!DefaultPackageInstallationRoot().empty()) {
-        dirList.push_back(DefaultPackageInstallationRoot() + u"\\bin");
+        dir_list.push_back(DefaultPackageInstallationRoot() + u"\\bin");
     }
 #else
-    dirList.push_back(DefaultPackageInstallationRoot() + u"/share/tsduck");
+    dir_list.push_back(DefaultPackageInstallationRoot() + u"/share/tsduck");
 #endif
 
     // Search the file.
-    for (const auto& dir : dirList) {
+    for (const auto& dir : dir_list) {
         const UString path(dir + fs::path::preferred_separator + file_name);
         CERR.debug(u"looking for %s", path);
         if (fs::exists(path)) {
@@ -537,9 +570,10 @@ ts::UString ts::SearchConfigurationFile(const UString& file_name)
 // Build the name of a user-specific configuration file.
 //----------------------------------------------------------------------------
 
-ts::UString ts::UserConfigurationFileName(const UString& file_name, const UString& win_file_name)
+fs::path ts::UserConfigurationFileName(const UString& file_name, const UString& win_file_name)
 {
 #if defined(TS_WINDOWS)
+
     UString root(GetEnvironment(u"APPDATA"));
     if (root.empty()) {
         root = UserHomeDirectory();
@@ -548,7 +582,14 @@ ts::UString ts::UserConfigurationFileName(const UString& file_name, const UStrin
         root.append(u"\\tsduck");
     }
     return root + u"\\" + (win_file_name.empty() ? file_name : win_file_name);
+
 #else
-    return UserHomeDirectory() + u"/" + file_name;
+
+    fs::path file_path = UserHomeDirectory();
+    if (!file_path.empty()) {
+        file_path /= file_name;
+    }
+    return file_path;
+
 #endif
 }

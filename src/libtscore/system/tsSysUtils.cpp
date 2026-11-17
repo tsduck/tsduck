@@ -493,14 +493,20 @@ bool ts::ProcessIdExists(SysProcessIdType pid)
 
 
 //----------------------------------------------------------------------------
-// Ignore SIGPIPE. On UNIX systems: writing to a broken pipe returns an
-// error instead of killing the process. On Windows systems: does nothing.
+// Ignore and restore SIGPIPE processing.
 //----------------------------------------------------------------------------
 
 void ts::IgnorePipeSignal()
 {
 #if !defined(TS_WINDOWS)
     ::signal(SIGPIPE, SIG_IGN);
+#endif
+}
+
+void ts::RestorePipeSignal()
+{
+#if !defined(TS_WINDOWS)
+    ::signal(SIGPIPE, SIG_DFL);
 #endif
 }
 

@@ -209,7 +209,7 @@ ts::CommandStatus ts::CommandLine::processCommandFiles(const UStringVector& file
 {
     CommandStatus status = CommandStatus::SUCCESS;
     for (size_t i = 0; more(status, exit_on_error) && i < file_names.size(); ++i) {
-        status = processCommandFile(file_names[i]);
+        status = processCommandFile(file_names[i], exit_on_error, redirect);
     }
     return status;
 }

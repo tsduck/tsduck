@@ -83,13 +83,21 @@ namespace ts {
         size_t currentQueueSize();
 
         //!
+        //! Check if the queue has been closed after a forceEnqueue().
+        //! @return True if the queue has been closed.
+        //!
+        bool isClosed() const { return _closed; }
+
+        //!
         //! Insert a message in the queue.
         //! If the queue is full, the calling thread waits until some space becomes available in the queue.
         //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
         //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
-        //! a null pointer if the message was successfully enqueued.
+        //! a null pointer if the message was successfully enqueued. If the queue was previously
+        //! closed, @a msg is unchanged.
+        //! @return True on success, false on error (queue closed).
         //!
-        void enqueue(MessagePtr& msg);
+        bool enqueue(MessagePtr& msg);
 
         //!
         //! Insert a message in the queue.
@@ -97,9 +105,9 @@ namespace ts {
         //! available in the queue or the timeout expires.
         //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
         //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
-        //! a null pointer if the message was successfully enqueued (no timeout).
+        //! a null pointer if the message was successfully enqueued (no timeout, queue not closed).
         //! @param [in] timeout Maximum time to wait in milliseconds.
-        //! @return True on success, false on error (queue still full after timeout).
+        //! @return True on success, false on error (queue closed or still full after timeout).
         //!
         bool enqueue(MessagePtr& msg, cn::milliseconds timeout);
 
@@ -108,17 +116,18 @@ namespace ts {
         //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
         //! be owned by a safe pointer. When the message is successfully enqueued, the
         //! pointer becomes owned by a safe pointer and will be deallocated when no
-        //! longer used.
+        //! longer used. If the queue is closed, the message is immediately deallocated.
+        //! @return True on success, false on error (queue closed).
         //!
-        void enqueue(MSG* msg);
+        bool enqueue(MSG* msg);
 
         //!
         //! Insert a message in the queue.
         //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
         //! be owned by a safe pointer. When the message is successfully enqueued, the
         //! pointer becomes owned by a safe pointer and will be deallocated when no
-        //! longer used. In case of timeout, the object is not enqueued and immediately
-        //! deallocated.
+        //! longer used. In case of timeout or closed queue, the message is not enqueued
+        //! and immediately deallocated.
         //! @param [in] timeout Maximum time to wait in milliseconds.
         //! @return True on success, false on error (queue still full after timeout).
         //!
@@ -129,11 +138,13 @@ namespace ts {
         //! This method immediately inserts the message, even if the queue is full.
         //! This can be used to allow exceptional overflow of the queue with unique messages,
         //! to enqueue a message to instruct the consumer thread to terminate for instance.
-        //! @param [in,out] msg The message to enqueue. The ownership of the pointed object
-        //! is transfered to the message queue. Upon return, the @a msg safe pointer becomes
-        //! a null pointer.
+        //! @param [in,out] msg The message to enqueue. The ownership of the pointed object is transfered
+        //! to the message queue. Upon return, the @a msg safe pointer becomes a null pointer.
+        //! @param [in] close_queue When true, the queue is considered closed and no more messages will
+        //! be enqueued. All further enqueue operations will fail.
+        //! @return True on success, false on error (queue already closed).
         //!
-        void forceEnqueue(MessagePtr& msg);
+        bool forceEnqueue(MessagePtr& msg, bool close_queue = false);
 
         //!
         //! Insert a message in the queue, even if the queue is full.
@@ -143,8 +154,11 @@ namespace ts {
         //! @param [in] msg A pointer to the message to enqueue. This pointer shall not
         //! be owned by a safe pointer. When the message is enqueued, the pointer becomes
         //! owned by a safe pointer and will be deallocated when no longer used.
+        //! @param [in] close_queue When true, the queue is considered closed and no more messages will
+        //! be enqueued. All further enqueue operations will fail.
+        //! @return True on success, false on error (queue already closed).
         //!
-        void forceEnqueue(MSG* msg);
+        bool forceEnqueue(MSG* msg, bool close_queue = false);
 
         //!
         //! Remove a message from the queue.
@@ -174,6 +188,7 @@ namespace ts {
 
         //!
         //! Clear the content of the queue.
+        //! If the @a close_queue flags was set, it is cleared and the queue is no longer closed.
         //!
         void clear();
 
@@ -205,6 +220,7 @@ namespace ts {
         mutable std::condition_variable _dequeued {};       // Signaled when some message is removed
         size_t                          _max_messages = 0;  // Max number of messages in the queue
         MessageList                     _queue {};          // Actual message queue
+        std::atomic_bool                _closed = false;    // Queue was closed
 
         // Enqueue/dequeue a safe pointer in the list and signal the corresponding condition.
         // Dequeue returns false if the list is empty. Must be executed under the protection of the lock.
@@ -301,15 +317,16 @@ bool ts::MessageQueue<MSG>::dequeuePtr(MessagePtr& ptr)
 {
     const auto it = dequeuePlacement(_queue);
     if (it == _queue.end()) {
-        // Queue empty or nothing to dequeue, no message
+        // Queue empty or nothing to dequeue, no message.
+        ptr = nullptr;
         return false;
     }
     else {
-        // Queue not empty, remove a message
+        // Queue not empty, remove a message.
         ptr = *it;
         _queue.erase(it);
 
-        // Signal that a message has been dequeued
+        // Signal that a message has been dequeued.
         _dequeued.notify_all();
         return true;
     }
@@ -324,14 +341,14 @@ template <typename MSG>
 void ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock)
 {
     if (_max_messages != 0) {
-        _dequeued.wait(lock, [this]() { return _queue.size() < _max_messages; });
+        _dequeued.wait(lock, [this]() { return _queue.size() < _max_messages || _closed; });
     }
 }
 
 template <typename MSG>
 bool ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn::milliseconds timeout)
 {
-    return _max_messages == 0 || _dequeued.wait_for(lock, timeout, [this]() { return _queue.size() < _max_messages; });
+    return _max_messages == 0 || _dequeued.wait_for(lock, timeout, [this]() { return _queue.size() < _max_messages || _closed; });
 }
 
 
@@ -340,38 +357,20 @@ bool ts::MessageQueue<MSG>::waitFreeSpace(std::unique_lock<std::mutex>& lock, cn
 //----------------------------------------------------------------------------
 
 template <typename MSG>
-void ts::MessageQueue<MSG>::enqueue(MessagePtr& msg)
+bool ts::MessageQueue<MSG>::enqueue(MessagePtr& msg)
 {
     size_t size = 0;
     {
         std::unique_lock<std::mutex> lock(_mutex);
         waitFreeSpace(lock);
+        if (_closed) {
+            return false;
+        }
         enqueuePtr(msg);
         size = _queue.size();
     }
-    msg.reset();
 
-    // Notify all subscribers.
-    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
-        subs->handleMessageEnqueued(size);
-    });
-}
-
-template <typename MSG>
-bool ts::MessageQueue<MSG>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
-{
-    size_t size = 0;
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        if (waitFreeSpace(lock, timeout)) {
-            enqueuePtr(msg);
-            size = _queue.size();
-        }
-        else {
-            // Timeout, queue still full.
-            return false;
-        }
-    }
+    // Message is gone in the queued. Reset the caller's pointer.
     msg.reset();
 
     // Notify all subscribers.
@@ -382,20 +381,57 @@ bool ts::MessageQueue<MSG>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
 }
 
 template <typename MSG>
-void ts::MessageQueue<MSG>::enqueue(MSG* msg)
+bool ts::MessageQueue<MSG>::enqueue(MessagePtr& msg, cn::milliseconds timeout)
 {
     size_t size = 0;
     {
         std::unique_lock<std::mutex> lock(_mutex);
-        waitFreeSpace(lock);
-        enqueuePtr(MessagePtr(msg));
-        size = _queue.size();
+        if (waitFreeSpace(lock, timeout) && !_closed) {
+            enqueuePtr(msg);
+            size = _queue.size();
+        }
+        else {
+            // Timeout, queue still full, or queue closed.
+            return false;
+        }
     }
+
+    // Message is gone in the queued. Reset the caller's pointer.
+    msg.reset();
 
     // Notify all subscribers.
     callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
         subs->handleMessageEnqueued(size);
     });
+    return true;
+}
+
+template <typename MSG>
+bool ts::MessageQueue<MSG>::enqueue(MSG* msg)
+{
+    bool enqueued = false;
+    size_t size = 0;
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        waitFreeSpace(lock);
+        if (!_closed) {
+            enqueuePtr(MessagePtr(msg));
+            size = _queue.size();
+            enqueued = true;
+        }
+    }
+
+    if (enqueued) {
+        // Notify all subscribers.
+        callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+            subs->handleMessageEnqueued(size);
+        });
+    }
+    else {
+        // Queue closed. Deallocated the message.
+        delete msg;
+    }
+    return enqueued;
 }
 
 template <typename MSG>
@@ -405,7 +441,7 @@ bool ts::MessageQueue<MSG>::enqueue(MSG* msg, cn::milliseconds timeout)
     size_t size = 0;
     {
         std::unique_lock<std::mutex> lock(_mutex);
-        if (waitFreeSpace(lock, timeout)) {
+        if (waitFreeSpace(lock, timeout) && !_closed) {
             enqueuePtr(MessagePtr(msg));
             size = _queue.size();
             enqueued = true;
@@ -431,36 +467,55 @@ bool ts::MessageQueue<MSG>::enqueue(MSG* msg, cn::milliseconds timeout)
 //----------------------------------------------------------------------------
 
 template <typename MSG>
-void ts::MessageQueue<MSG>::forceEnqueue(MessagePtr& msg)
+bool ts::MessageQueue<MSG>::forceEnqueue(MessagePtr& msg, bool close_queue)
 {
     size_t size = 0;
     {
         std::lock_guard<std::mutex> lock(_mutex);
+        if (_closed) {
+            return false;
+        }
+        _closed = close_queue;
         enqueuePtr(msg);
         size = _queue.size();
     }
+
+    // Message is gone in the queued. Reset the caller's pointer.
     msg.reset();
 
     // Notify all subscribers.
     callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
         subs->handleMessageEnqueued(size);
     });
+    return true;
 }
 
 template <typename MSG>
-void ts::MessageQueue<MSG>::forceEnqueue(MSG* msg)
+bool ts::MessageQueue<MSG>::forceEnqueue(MSG* msg, bool close_queue)
 {
+    bool enqueued = false;
     size_t size = 0;
     {
         std::lock_guard<std::mutex> lock(_mutex);
-        enqueuePtr(MessagePtr(msg));
-        size = _queue.size();
+        if (!_closed) {
+            _closed = close_queue;
+            enqueuePtr(MessagePtr(msg));
+            size = _queue.size();
+            enqueued = true;
+        }
     }
 
-    // Notify all subscribers.
-    callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
-        subs->handleMessageEnqueued(size);
-    });
+    if (enqueued) {
+        // Notify all subscribers.
+        callSubscribers<MessageQueueHandlerInterface>([size](MessageQueueHandlerInterface* subs) {
+            subs->handleMessageEnqueued(size);
+        });
+    }
+    else {
+        // Queue already closed. Deallocated the message.
+        delete msg;
+    }
+    return enqueued;
 }
 
 
@@ -536,6 +591,7 @@ template <typename MSG>
 void ts::MessageQueue<MSG>::clear()
 {
     std::lock_guard<std::mutex> lock(_mutex);
+    _closed = false;
     if (!_queue.empty()) {
         _queue.clear();
         // Signal that messages have been dequeued (dropped in fact).

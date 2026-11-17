@@ -450,7 +450,9 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
         // Execute the command if there was no prior error.
         if (message == nullptr) {
-            // Flawfinder: ignore: we create a process on purpose.
+            // Restore the processing of the broken-pipe signal, in case it was ignored by the application.
+            // If we don't do this, the broken-pipe signal would be ignored too in the executed application.
+            RestorePipeSignal();
             ::execl(TS_SHELL_STRING, TS_SHELL_STRING, "-c", command8.c_str(), nullptr);
             // Should not return, so this is an error if we get there.
             error = errno;

@@ -44,7 +44,7 @@ ts::Names::Names(const Names& other, std::initializer_list<NameValue> values) :
 ts::Names::Names(const Names& other)
 {
     // Read lock (shared) on the other instance.
-    std::shared_lock<std::shared_mutex> lock(_mutex);
+    std::shared_lock<std::shared_mutex> lock(other._mutex);
 
     // Copy required fields. Don't copy subscribed visitors.
     _section_name = other._section_name;
@@ -65,7 +65,7 @@ ts::Names::Names(const Names& other)
 ts::Names::Names(Names&& other)
 {
     // Read lock (shared) on the other instance.
-    std::shared_lock<std::shared_mutex> lock(_mutex);
+    std::shared_lock<std::shared_mutex> lock(other._mutex);
 
     // Move required fields. Don't copy subscribed visitors.
     _section_name = std::move(other._section_name);
@@ -82,8 +82,11 @@ ts::Names::Names(Names&& other)
 ts::Names& ts::Names::operator=(const Names& other)
 {
     if (&other != this) {
-        // Read lock (shared) on the other instance.
+        // Read lock (shared) on this and the other instance.
+        // Warning: there is no natural hierarchy of locks here.
+        // There is a risk of dead-lock if two threads simultaneously do "x =y" and "y = x".
         std::shared_lock<std::shared_mutex> lock(_mutex);
+        std::shared_lock<std::shared_mutex> olock(other._mutex);
 
         // Copy required fields. Don't copy subscribed visitors.
         _section_name = other._section_name;
@@ -106,8 +109,11 @@ ts::Names& ts::Names::operator=(const Names& other)
 ts::Names& ts::Names::operator=(Names&& other)
 {
     if (&other != this) {
-        // Read lock (shared) on the other instance.
+        // Read lock (shared) on this and the other instance.
+        // Warning: there is no natural hierarchy of locks here.
+        // There is a risk of dead-lock if two threads simultaneously do "x =y" and "y = x".
         std::shared_lock<std::shared_mutex> lock(_mutex);
+        std::shared_lock<std::shared_mutex> olock(other._mutex);
 
         // Move required fields. Don't copy subscribed visitors.
         _section_name = std::move(other._section_name);
@@ -497,15 +503,17 @@ ts::UString ts::Names::bitMaskNamesImpl(uint_t value, const UString& separator, 
     // Now loop on bits which were not already printed.
     value &= ~done;
     for (int_t mask = 1; value != 0 && mask != 0; mask <<= 1) {
-        value &= ~mask;
-        if (!list.empty()) {
-            list += separator;
-        }
-        if (hexa) {
-            list += UString::Format(u"0x%0*X", hex_digits, mask);
-        }
-        else {
-            list += UString::Decimal(mask, 0, true, UString());
+        if ((value & mask) != 0) {
+            value &= ~mask;
+            if (!list.empty()) {
+                list += separator;
+            }
+            if (hexa) {
+                list += UString::Format(u"0x%0*X", hex_digits, mask);
+            }
+            else {
+                list += UString::Decimal(mask, 0, true, UString());
+            }
         }
     }
 

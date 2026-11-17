@@ -152,8 +152,10 @@ bool ts::InfluxArgs::loadArgs(Args& args, bool required)
     }
     if (config_file.empty()) {
         config_file = UserHomeDirectory();
-        config_file /= u".influxdbv2";
-        config_file /= u"configs";
+        if (!config_file.empty()) {
+            config_file /= u".influxdbv2";
+            config_file /= u"configs";
+        }
     }
 
     // Load the configuration file if something is missing.
