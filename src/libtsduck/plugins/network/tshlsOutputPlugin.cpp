@@ -13,6 +13,11 @@
 #include "tsPESPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
+#include "tsAccessUnitIterator.h"
+#include "tsMPEG2.h"
+#include "tsAVC.h"
+#include "tsHEVC.h"
+#include "tsVVC.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 
@@ -222,6 +227,7 @@ bool ts::hls::OutputPlugin::start()
     if (_segment_file.isOpen()) {
         _segment_file.close();
     }
+    _all_independent = true;
     if (!_playlist_file.empty()) {
         _playlist.reset(_playlist_type, _playlist_file);
         _playlist.setSegmentTargetDuration(_target_duration);
@@ -267,6 +273,9 @@ bool ts::hls::OutputPlugin::createNextSegment()
 
     // Reset the indication to close the segment file.
     _seg_close_pending = false;
+    _seg_independent.reset();
+    _seg_first_pes.clear();
+    _seg_early_pids.reset();
 
     // Add a copy of the PAT and PMT at the beginning of each segment.
     if (!_slice_only) {
@@ -335,6 +344,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
             seg.bitrate = _use_bitrate_tag ? PacketBitRate(seg_packets, seg.duration) : 0;
         }
         _playlist.addSegment(seg);
+        _all_independent = _all_independent && _seg_independent.value_or(false);
 
         // With live playlists, remove obsolete segments from the playlist.
         while (_live_depth > 0 && _playlist.segmentCount() > _live_depth) {
@@ -348,7 +358,8 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         }
 
         // Use #EXT-X-INDEPENDENT-SEGMENTS if all segments are really independent.
-        if (!_slice_only) {
+        // Once a segment is not, the tag is never written again: a live playlist shall not get it back (RFC 8216, 6.2.1).
+        if (!_slice_only && _all_independent) {
             _playlist.addCustomTag(u"EXT-X-INDEPENDENT-SEGMENTS");
         }
 
@@ -487,6 +498,85 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
 
 
 //----------------------------------------------------------------------------
+// Check if the current segment starts on a closed intra image.
+//----------------------------------------------------------------------------
+
+void ts::hls::OutputPlugin::checkIndependentSegment(const TSPacket& pkt)
+{
+    const PID pid = pkt.getPID();
+    if (_video_pid == PID_NULL) {
+        // The video PID is not known yet, remember which PID's came first.
+        _seg_early_pids.set(pid);
+    }
+    else if (pid == _video_pid && pkt.hasPayload()) {
+        if (_seg_early_pids.test(pid) || !pkt.isClear() || pkt.getPUSI() != _seg_first_pes.empty() || _seg_first_pes.size() >= 65536) {
+            // Video before the PMT, scrambled, the segment starts in the middle of a PES packet, or no picture at the start of the first PES packet.
+            _seg_independent = false;
+        }
+        else {
+            // The picture may start after a few packets of parameter sets and SEI.
+            _seg_first_pes.append(pkt.getPayload(), pkt.getPayloadSize());
+            _seg_independent = isClosedIntraImage(_seg_first_pes.data(), _seg_first_pes.size());
+        }
+        if (_seg_independent.has_value()) {
+            _seg_first_pes.clear();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the start of a video PES packet is a closed intra image.
+//----------------------------------------------------------------------------
+
+std::optional<bool> ts::hls::OutputPlugin::isClosedIntraImage(const uint8_t* data, size_t size) const
+{
+    const size_t header_size = PESPacket::HeaderSize(data, size);
+    if (header_size == 0) {
+        return false;
+    }
+    const uint8_t* const es_data = data + header_size;
+    const size_t es_size = size - header_size;
+
+    // AVC, HEVC, VVC: the first slice shall be an IDR picture.
+    AccessUnitIterator au(es_data, es_size, _video_stream_type);
+    if (au.isValid()) {
+        for (; !au.atEnd(); au.next()) {
+            const uint8_t type = au.currentAccessUnitType();
+            if (au.videoFormat() == CodecType::AVC && type >= AVC_AUT_NON_IDR && type <= AVC_AUT_IDR) {
+                return type == AVC_AUT_IDR;
+            }
+            else if (au.videoFormat() == CodecType::HEVC && type <= HEVC_AUT_RSV_VCL31) {
+                return type == HEVC_AUT_IDR_W_RADL || type == HEVC_AUT_IDR_N_LP;
+            }
+            else if (au.videoFormat() == CodecType::VVC && type <= VVC_AUT_RSV_IRAP_11) {
+                return type == VVC_AUT_IDR_W_RADL || type == VVC_AUT_IDR_N_LP;
+            }
+        }
+        return std::nullopt;
+    }
+
+    // MPEG-1/2 video: the first picture shall follow a GOP header with closed_gop set.
+    if (PESPacket::IsMPEG2Video(data, size, _video_stream_type)) {
+        for (size_t i = 0; i + 3 < es_size; ++i) {
+            if (es_data[i] == 0x00 && es_data[i + 1] == 0x00 && es_data[i + 2] == 0x01) {
+                if (es_data[i + 3] == PST_GROUP) {
+                    return i + 7 < es_size ? std::optional<bool>((es_data[i + 7] & 0x40) != 0) : std::nullopt;
+                }
+                else if (es_data[i + 3] == PST_PICTURE) {
+                    return false;
+                }
+            }
+        }
+        return std::nullopt;
+    }
+
+    // Other codecs: cannot tell.
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
 // Output method
 //----------------------------------------------------------------------------
 
@@ -528,7 +618,6 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
 
             // Check if we should close the current segment and create a new one.
             bool renew_now = false;
-            bool renew_on_pusi = false;
             if (_fixed_segment_size > 0) {
                 // Each segment shall have a fixed size.
                 renew_now = _segment_file.writePacketsCount() >= _fixed_segment_size;
@@ -542,8 +631,6 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                     // The segment file shall be closed when the estimated duration exceeds the target duration.
                     const cn::milliseconds seg_duration = PacketInterval(_pcr_analyzer.bitrate188(), _segment_file.writePacketsCount());
                     _seg_close_pending = seg_duration >= _target_duration;
-                    // With --intra-close, force renew on next PES packet if extra duration is exceeded.
-                    renew_on_pusi = seg_duration >= _target_duration + _max_extra_duration;
                 }
             }
 
@@ -559,7 +646,7 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
                         debug(u"starting new segment on new PES packet");
                         renew_now = true;
                     }
-                    else if (renew_on_pusi) {
+                    else if (_pcr_analyzer.bitrateIsValid() && PacketInterval(_pcr_analyzer.bitrate188(), _segment_file.writePacketsCount()) >= _target_duration + _max_extra_duration) {
                         debug(u"no I-frame found in last %s, starting new segment on new PES packet", _max_extra_duration);
                         renew_now = true;
                     }
@@ -571,8 +658,15 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
             }
 
             // Close current segment and recreate a new one when necessary.
+            ok = !renew_now || createNextSegment();
+
+            // Check if the segment starts on a closed intra image, for #EXT-X-INDEPENDENT-SEGMENTS.
+            if (ok && !_seg_independent.has_value()) {
+                checkIndependentSegment(*pkt);
+            }
+
             // Finally write the packet.
-            ok = (!renew_now || createNextSegment()) && writePackets(pkt, 1);
+            ok = ok && writePackets(pkt, 1);
         }
 
         // Process next packet.
