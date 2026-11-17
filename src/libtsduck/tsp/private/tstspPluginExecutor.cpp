@@ -181,7 +181,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
     timeout = false;
 
     // Loop until enough packets are available (or some error condition).
-    while (_pkt_cnt < min_pkt_cnt && !_input_end && !timeout && !next->_tsp_aborting) {
+    while (_pkt_cnt < min_pkt_cnt && !_input_end && !timeout && !next->_tsp_aborting && !_restart) {
         // If packet area for this processor is empty, wait for some packet.
         // The mutex is implicitely released, we wait for the condition
         // '_to_do' and, once we get it, implicitely relock the mutex.
@@ -283,22 +283,17 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
 
 
 //----------------------------------------------------------------------------
-// Check if there is a pending restart operation (but do not execute it).
-//----------------------------------------------------------------------------
-
-bool ts::tsp::PluginExecutor::pendingRestart()
-{
-    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
-    return _restart && _restart_data != nullptr;
-}
-
-
-//----------------------------------------------------------------------------
 // Process a pending restart operation if there is one.
 //----------------------------------------------------------------------------
 
 bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 {
+    // Initial check without locking: if there is no pending restart, immediate success.
+    if (!_restart) {
+        restarted = false;
+        return true;
+    }
+
     // Run under the protection of the global mutex.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
     // Need improvement: the global mutex remains locked during the complete restart operation.

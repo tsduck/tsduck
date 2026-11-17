@@ -137,23 +137,24 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
         size_t pkt_done = 0;
         size_t pkt_flush = 0;
 
-        while (pkt_done < pkt_cnt && !aborted) {
-
-            TSPacket* const pkt = _buffer->base() + pkt_first + pkt_done;
-            TSPacketMetadata* const pkt_data = _metadata->base() + pkt_first + pkt_done;
-            bool got_new_bitrate = false;
+        while ((pkt_done < pkt_cnt && !aborted) || pendingRestart()) {
 
             // Process restart requests.
             bool restarted = false;
             if (!processPendingRestart(restarted)) {
-                // Restart error.
+                // Restart error, exit loop.
                 aborted = true;
                 break;
             }
             else if (restarted) {
-                // Plugin was restarted, need to recheck --only-label and --except-label.
+                // Plugin was restarted, need to recheck --only-label and --except-label, and loop back.
                 _processor->getOnlyExceptLabelOption(only_labels, except_labels);
+                continue;
             }
+
+            TSPacket* const pkt = _buffer->base() + pkt_first + pkt_done;
+            TSPacketMetadata* const pkt_data = _metadata->base() + pkt_first + pkt_done;
+            bool got_new_bitrate = false;
 
             pkt_done++;
             pkt_flush++;

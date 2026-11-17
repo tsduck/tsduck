@@ -57,7 +57,7 @@ bool ts::IPInputPlugin::start()
 
 bool ts::IPInputPlugin::stop()
 {
-    _sock.close();
+    _sock.close(true);
     return AbstractDatagramInputPlugin::stop();
 }
 

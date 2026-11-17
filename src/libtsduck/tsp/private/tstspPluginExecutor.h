@@ -181,7 +181,7 @@ namespace ts::tsp {
         //! Check if there is a pending restart operation (but do not execute it).
         //! @return True if there is a pending restart operation.
         //!
-        bool pendingRestart();
+        bool pendingRestart() { return _restart; }
 
         //!
         //! Process a pending restart operation if there is one.
@@ -208,7 +208,7 @@ namespace ts::tsp {
         bool              _input_end = false;  // No more packet after current ones [*]
         BitRate           _bitrate = 0;        // Input bitrate (set by previous plugin) [*]
         BitRateConfidence _br_confidence = BitRateConfidence::LOW;  // Input bitrate confidence (set by previous plugin) [*]
-        bool              _restart = false;    // Restart the plugin asap using _restart_data
+        std::atomic_bool  _restart = false;    // Restart the plugin asap using _restart_data
         RestartDataPtr    _restart_data {};    // How to restart the plugin
 
         // Description of a restart operation.
