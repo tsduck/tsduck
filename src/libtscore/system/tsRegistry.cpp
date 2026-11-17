@@ -150,16 +150,16 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
     }
 
     // Allocate new buffer and actually get the value
-    ::DWORD bufsize = size + 10;
-    ::BYTE* buf = new ::BYTE[size = bufsize];
-    hr = ::RegQueryValueExW(hkey, value_name.wc_str(), nullptr, &type, buf, &size);
+    std::vector<::BYTE> buf(size + 10);
+    size = ::DWORD(buf.size());
+    hr = ::RegQueryValueExW(hkey, value_name.wc_str(), nullptr, &type, buf.data(), &size);
     ::RegCloseKey(hkey);
     if (hr != ERROR_SUCCESS) {
         size = 0;
         type = REG_NONE;
     }
-    size = std::max(::DWORD(0), std::min(size, bufsize - 1));
-    buf[size] = 0; // if improperly terminated string
+    size = std::max<::DWORD>(0, std::min(size, ::DWORD(buf.size() - 2)));
+    buf[size] = buf[size + 1] = 0;  // if improperly terminated wide string
 
     // Convert value to a string
     UString value;
@@ -169,20 +169,22 @@ ts::UString ts::Registry::GetValue(const UString& key, const UString& value_name
         case REG_EXPAND_SZ:
             // There is at least one nul-terminated string in. If the type is REG_MULTI_SZ,
             // there are several nul-terminated strings, ending with two nuls, but we keep only the first string.
-            value = reinterpret_cast<UChar*>(buf);
+            value = reinterpret_cast<UChar*>(buf.data());
             break;
         case REG_DWORD:
-            value = UString::Format(u"%d", *reinterpret_cast<const ::DWORD*>(buf));
+            if (size >= 4) {
+                value = UString::Format(u"%d", *reinterpret_cast<const ::DWORD*>(buf.data()));
+            }
             break;
         case REG_DWORD_BIG_ENDIAN:
-            value = UString::Format(u"%d", GetUInt32(buf));
+            if (size >= 4) {
+                value = UString::Format(u"%d", GetUInt32(buf.data()));
+            }
             break;
         default:
             break;
     }
 
-    // Return value
-    delete[] buf;
     return value;
 }
 
