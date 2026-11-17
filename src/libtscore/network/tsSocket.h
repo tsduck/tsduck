@@ -69,10 +69,27 @@ namespace ts {
         virtual bool close(bool silent = false) final;
 
         //!
-        //! Check if socket is open.
+        //! Abort the socket.
+        //! This method is a low-level, non-overridable, method to abort any current I/O on the socket and close the
+        //! underlying system socket. When a thread loops on reading/writing to a socket, the abort() method can be
+        //! called from another thread to abort blocking I/O in the socket processing thread. The socket processing
+        //! thread will then properly close() the socket. Do not attempt to use close() from another thread since it
+        //! could introduce race conditions. After abort(), the socket is still marked as open but all I/O operations
+        //! will result in an error.
+        //!
+        virtual void abort() final;
+
+        //!
+        //! Check if the socket is open (or in aboring state).
         //! @return True if socket is open.
         //!
-        bool isOpen() const { return _sock != SYS_SOCKET_INVALID; }
+        bool isOpen() const { return _sock != SYS_SOCKET_INVALID || _aborting; }
+
+        //!
+        //! Check if the socket is still open but in aboring state.
+        //! @return True if socket is in aborting state.
+        //!
+        bool isAborting() const { return _aborting; }
 
         //!
         //! Get the IP generation with which the socket was open.
@@ -210,6 +227,7 @@ namespace ts {
 
     private:
         std::atomic<SysSocketType> _sock = SYS_SOCKET_INVALID;
-        IP _gen = IP::v4;  // Current generation of the IP address. Never IP::Any.
+        std::atomic_bool _aborting = false;
+        IP _gen = IP::v4; // never IP::Any
     };
 }

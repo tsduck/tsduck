@@ -65,21 +65,17 @@ bool ts::tsswitch::CommandListener::open()
         }
     }
 
-    // Start the thread.
+    // Start the thread. Closing the TCP or UDP server will be done in the server.
     return start();
 }
 
 void ts::tsswitch::CommandListener::close()
 {
-    // Close the receiver. This will force the server thread to terminate.
+    // Abort all receiver sockets. This will force the server thread to terminate and properly close the sockets.
     _terminate = true;
-    if (_opt.remote_control.use_tls) {
-        _tls_client.close(true);
-        _tls_server.close(true);
-    }
-    else {
-        _udp_server.close(true);
-    }
+    _tls_server.abort();
+    _tls_client.abort();
+    _udp_server.abort();
 }
 
 
@@ -169,6 +165,16 @@ void ts::tsswitch::CommandListener::main()
     if (!_terminate && !error_buffer.empty()) {
         _log.info(error_buffer.messages());
     }
+
+    // Close the server in the thread which manages the connection.
+    if (_opt.remote_control.use_tls) {
+        _tls_client.close(true);
+        _tls_server.close(true);
+    }
+    else {
+        _udp_server.close(true);
+    }
+
     _log.debug(u"remote control server thread completed");
 }
 

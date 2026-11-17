@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.46-4947 (November 2026)
+VERSION 3.46-4955 (November 2026)
 
 [INC] Incompatibilities with previous versions:
 
@@ -67,6 +67,9 @@ VERSION 3.46-4947 (November 2026)
   * Fixed issue #1749:  A regression  was  introduced  in  v3.45  in TR 101 290
     analysis: consecutive PCR in range -100 .. -1 were no longer detected as an
     error.
+  * Fixed issue #1772:  The  plugin "influx" hung the complete "tsp" chain when
+    an early error in another plugin (e.g. non-existent input file) requested a
+    global shutdown before starting the packet processing.
   * Fixed a regression in input plugins "http" and "hls". The entire stream was
     loaded in memory before starting.  With plugin "hls", an entire segment was
     loaded first.  With continuous and endless "http" streams, the memory could

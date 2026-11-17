@@ -157,8 +157,7 @@ void ts::Socket::declareOpened(SysSocketType sock)
 
 bool ts::Socket::open(IP gen)
 {
-    // Early filtering of already opened socket.
-    if (_sock != SYS_SOCKET_INVALID) {
+    if (isOpen()) {
         report().error(u"socket already open");
         return false;
     }
@@ -180,13 +179,29 @@ bool ts::Socket::open(IP gen)
 
 
 //----------------------------------------------------------------------------
+// Abort the socket.
+//----------------------------------------------------------------------------
+
+void ts::Socket::abort()
+{
+    // Atomically replace the socket descriptor with invalid value.
+    const SysSocketType previous = _sock.exchange(SYS_SOCKET_INVALID);
+    if (previous != SYS_SOCKET_INVALID) {
+        // The system socket was open. Abruptly close it.
+        _aborting = true;
+        SysCloseSocket(previous);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Close the socket.
 //----------------------------------------------------------------------------
 
 bool ts::Socket::close(bool silent)
 {
     // Early filtering of already closed socket.
-    if (_sock == SYS_SOCKET_INVALID) {
+    if (!isOpen()) {
         report().log(SilentLevel(silent), u"socket not open");
         return false;
     }
@@ -208,10 +223,14 @@ bool ts::Socket::close(bool silent)
 
 bool ts::Socket::closeImplementation(bool silent)
 {
-    // Mark the socket as invalid. If the close generates reception errors in other threads,
-    // these threads can immediately check if this is a real error or the result of a close.
-    const SysSocketType previous = _sock;
-    _sock = SYS_SOCKET_INVALID;
+    // Mark the socket as invalid.
+    const SysSocketType previous = _sock.exchange(SYS_SOCKET_INVALID);
+    _aborting = false;
+
+    // If the system socket was already closed, using abort() for instance, nothing more to do at system level.
+    if (previous == SYS_SOCKET_INVALID) {
+        return true;
+    }
 
     // Shutdown should not be necessary here. However, on Linux, not using shutdown makes
     // a blocking receive hangs forever when close() is invoked by another thread. By using

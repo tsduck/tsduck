@@ -110,15 +110,11 @@ bool ts::tsp::ControlServer::open()
 void ts::tsp::ControlServer::close()
 {
     if (_is_open) {
-        // Close the server. This will force the server thread to terminate.
+        // Abort all receiver sockets. This will force the server thread to terminate and properly close the sockets.
         _terminate = true;
-        if (_options.control.use_tls) {
-            _tls_client.close(true);
-            _tls_server.close(true);
-        }
-        else {
-            _tcp_server.close(true);
-        }
+        _tls_server.abort();
+        _tls_client.abort();
+        _tcp_server.abort();
 
         // Wait for the termination of the thread.
         waitForTermination();
@@ -247,6 +243,16 @@ void ts::tsp::ControlServer::main()
     if (!_terminate && !error_buffer.empty()) {
         _log.error(error_buffer.messages());
     }
+
+    // Close the server in the thread which manages the connection.
+    if (_options.control.use_tls) {
+        _tls_client.close(true);
+        _tls_server.close(true);
+    }
+    else {
+        _tcp_server.close(true);
+    }
+
     _log.debug(u"control command thread completed");
 }
 
