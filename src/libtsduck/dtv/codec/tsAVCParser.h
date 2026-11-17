@@ -257,7 +257,7 @@ bool ts::AVCParser::expColomb(INT& val)
 {
     ts_avcparser_assert_consistent();
 
-    // See ISO/IEC 14496-10 section 9.1
+    // See ISO/IEC 14496-10, ITU H.264, section 9.1
     val = 0;
     int leading_zero_bits = -1;
     for (uint8_t b = 0; b == 0; b = readNextBit()) {
@@ -279,9 +279,9 @@ bool ts::AVCParser::expColomb(INT& val)
 template <typename INT> requires std::signed_integral<INT>
 bool ts::AVCParser::se(INT& val)
 {
-    // See ISO/IEC 14496-10 section 9.1.1
+    // See ISO/IEC 14496-10, ITU H.264, section 9.1.1.
     if (expColomb(val)) {
-        val = ((val % 2) == 0 ? -1 : 1) * (val + 1) / 2;
+        val = ((val % 2) == 0 ? -1 : 1) * INT(std::make_unsigned_t<INT>(val + 1) / 2);
         return true;
     }
     else {

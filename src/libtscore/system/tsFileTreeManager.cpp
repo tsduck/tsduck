@@ -55,7 +55,10 @@ bool ts::FileTreeManager::cleanupOldFiles(const Time& current)
             else {
                 _report.debug(u"file %d deleted (modified: %s, due: %s, current: %s)", filename, mod, it->first, current);
                 // File was deleted. Also delete empty directories, up to root directory of this file tree.
-                for (auto parent = filename.parent_path(); fs::is_empty(parent) && !fs::equivalent(parent, _root); parent = parent.parent_path()) {
+                for (auto parent = filename.parent_path();
+                     fs::is_empty(parent, &ErrCodeReport(_report, u"error checking", parent)) && !fs::equivalent(parent, _root, &ErrCodeReport(_report, u"error checking", parent));
+                     parent = parent.parent_path())
+                {
                     if (!fs::remove(parent, &ErrCodeReport(_report, u"error deleting empty directory", parent))) {
                         success = false;
                         break;

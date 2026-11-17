@@ -44,7 +44,9 @@ void ts::DSMCCGroupInfoIndication::deserialize(PSIBuffer& buf)
         group.group_size = buf.getUInt32();
         group.group_compatibility.deserialize(buf);
         const uint16_t group_info_length = buf.getUInt16();
-        buf.getBytes(group.group_info, group_info_length);
+        if (!buf.error() && buf.remainingReadBytes() >= group_info_length) {
+            buf.getBytes(group.group_info, group_info_length);
+        }
     }
     const uint16_t private_data_length = buf.getUInt16();
     buf.getBytes(private_data, private_data_length);

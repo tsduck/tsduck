@@ -504,13 +504,27 @@ cn::milliseconds ts::ISOTime::DurationFromISO(const UString& str)
         }
 
         // Apply the designator factor on the integral part.
-        result += integ * factor;
+        if (mul_overflow(integ, factor)) {
+            return invalid;
+        }
+        const cn::milliseconds::rep incr = integ * factor;
+        if (add_overflow(result, incr)) {
+            return invalid;
+        }
+        result += incr;
 
         // Process the optional decimal part.
         if (dec > 0) {
             cn::milliseconds::rep dec_factor = cn::milliseconds::rep(Power10(dec_width));
             if (dec_factor > 0 && dec_factor <= factor) {
-                result += (dec * factor) / dec_factor;
+                if (mul_overflow(dec, factor)) {
+                    return invalid;
+                }
+                const cn::milliseconds::rep x = (dec * factor) / dec_factor;
+                if (add_overflow(result, x)) {
+                    return invalid;
+                }
+                result += x;
             }
         }
     }

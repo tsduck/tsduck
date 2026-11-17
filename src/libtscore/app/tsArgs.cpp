@@ -1412,7 +1412,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
             error(u"invalid range of integer values \"%s\" for %s", val.value(), opt.display());
             return false;
         }
-        arg.int_count = size_t(last + 1 - arg.int_base);
+        arg.int_count = size_t((last - arg.int_base) + 1);
     }
     else {
         error(u"invalid integer value %s for %s", val.value(), opt.display());
@@ -1425,7 +1425,7 @@ bool ts::Args::validateParameter(IOption& opt, const std::optional<UString>& val
             error(u"value for %s must be >= %'d", opt.display(), opt.min_value);
             return false;
         }
-        else if (arg.int_base + int64_t(arg.int_count) - 1 > opt.max_value) {
+        else if (arg.int_base + (int64_t(arg.int_count) - 1) > opt.max_value) {
             error(u"value for %s must be <= %'d", opt.display(), opt.max_value);
             return false;
         }

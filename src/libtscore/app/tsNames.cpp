@@ -190,6 +190,10 @@ void ts::Names::addValueImplLocked(const UString& name, uint_t first, uint_t las
     for (auto vis : _visitors) {
         for (uint_t i = first; i <= last; ++i) {
             vis->handleNameValue(*this, i, name);
+            if (i == std::numeric_limits<uint_t>::max()) {
+                // Nefarious case where i == last == uint_t max -> ++i wraps down.
+                break;
+            }
         }
     }
 }
@@ -676,6 +680,10 @@ size_t ts::Names::visit(Visitor* visitor) const
                     visit_count++;
                     if (!visitor->handleNameValue(*sec, i, ent.second->name)) {
                         return visit_count;
+                    }
+                    if (i == std::numeric_limits<uint_t>::max()) {
+                        // Nefarious case where i == last == uint_t max -> ++i wraps down.
+                        break;
                     }
                 }
             }
