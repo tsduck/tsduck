@@ -662,7 +662,7 @@ bool ts::ForkPipe::Launch(const ts::UString& command, ts::Report& report, ts::Fo
 // This static method launches a command and gets its output as text.
 //----------------------------------------------------------------------------
 
-bool ts::ForkPipe::GetOutput(UString& output, const UString& command, Report& report, bool include_stderr)
+bool ts::ForkPipe::GetOutput(UString& output, const UString& command, Report& report, bool include_stderr, size_t max_bytes)
 {
     // Run the command.
     ForkPipe exe(&report);
@@ -677,7 +677,7 @@ bool ts::ForkPipe::GetOutput(UString& output, const UString& command, Report& re
     size_t size = 0;
     size_t ret_size = 0;
     out8.resize(chunk_size);
-    while (exe.readStream(out8.data() + size, out8.size() - size, ret_size)) {
+    while (size < max_bytes && exe.readStream(out8.data() + size, out8.size() - size, ret_size)) {
         size = std::min(size + ret_size, out8.size());
         out8.resize(size + chunk_size);
     }

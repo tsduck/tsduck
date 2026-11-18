@@ -11,7 +11,7 @@
 
 // Default foolproof counter. Used to detect internal error and infinite loops
 // in the trees of delegations. Shouldn't be necessary but I am paranoid.
-#define FOOLPROOF 1000
+#define FOOLPROOF 512
 
 // Global mutex. Used when delegations are modified. See comment in header file.
 TS_STATIC_VARIABLE(std::recursive_mutex, GlobalReportMutex);
@@ -40,27 +40,21 @@ ts::Report::~Report()
         std::lock_guard<std::recursive_mutex> lock(GlobalReportMutex());
 
         // Unlink other reports which delegated to this. Possible race condition if delegators exist.
-        if (!_delegators.empty()) {
-            debug(u"internal error, possible race condition, destructing Report 0x%X with %d delegators", size_t(this), _delegators.size());
-            for (auto child : _delegators) {
-                child->_delegate = nullptr;
-                child->_transactions += 1;
-                if (child->_max_severity != child->_last_max_severity) {
-                    child->_max_severity = child->_last_max_severity;
-                    child->setDelegatorsMaxSeverityLocked(child->_last_max_severity, nullptr, FOOLPROOF);
-                }
+        for (auto child : _delegators) {
+            child->_delegate = nullptr;
+            child->_transactions += 1;
+            if (child->_max_severity != child->_last_max_severity) {
+                child->_max_severity = child->_last_max_severity;
+                child->setDelegatorsMaxSeverityLocked(child->_last_max_severity, nullptr, FOOLPROOF);
             }
-            _delegators.clear();
         }
+        _delegators.clear();
         _has_delegators = false;
 
         // Finally, remove ourselves from our delegate.
-        const auto deleg = _delegate.load();
+        Report* const deleg = _delegate.exchange(nullptr);
         if (deleg != nullptr) {
-            _delegate = nullptr;
-            if (deleg->_delegators.erase(this) == 0) {
-                deleg->error(u"internal error, destructing Report 0x%X, unknown in its delegate 0x%X", size_t(this), size_t(deleg));
-            }
+            deleg->_delegators.erase(this);
             deleg->_transactions += 1;
             deleg->_has_delegators = !deleg->_delegators.empty();
         }

@@ -593,7 +593,7 @@ cn::nanoseconds::rep ts::_SetTimersPrecisionNanoSecond(cn::nanoseconds::rep requ
     // The old-school UNIX method is getting the "jiffies per second". However, it returns 100 (10 ms)
     // on most systems. This is usually a deceptive indicator because most systems are more capable.
     //
-    // const unsigned long jps = ::sysconf(_SC_CLK_TCK);
+    // const long jps = ::sysconf(_SC_CLK_TCK);
     // if (jps > 0) {
     //     precision = std::max(precision, cn::nanoseconds::rep(std::nano::den / jps));
     // }
@@ -624,6 +624,7 @@ namespace {
     void CloseOnForkExecHandler()
     {
         // Close all file descriptors. No need to use the mutex here, in the child process.
+        std::lock_guard<std::mutex> lock(CloseOnForkExecMutex());
         auto& list(CloseOnForkExecList());
         for (int fd : list) {
             ::close(fd);

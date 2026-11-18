@@ -276,7 +276,7 @@ namespace ts {
     inline bool SearchWildcard(CONTAINER& container, const UString& root, const UString& pattern, size_t max_levels = 64, bool skip_symlinks = true)
     {
         container.clear();
-        return SearchWildcardAndAppend(container, root, pattern, max_levels);
+        return SearchWildcardAndAppend(container, root, pattern, max_levels, skip_symlinks);
     }
 
     //!

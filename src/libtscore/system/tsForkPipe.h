@@ -168,9 +168,10 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @param [in] include_stderr If false, the standard error of the command is the same as the parent process.
         //! If true, the standard error is merged with the standard output in @a output.
+        //! @param [in] max_bytes Maximum number of output bytes to grab from the process output.
         //! @return True on success, false on error.
         //!
-        static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false);
+        static bool GetOutput(UString& output, const UString& command, Report& report, bool include_stderr = false, size_t max_bytes = NPOS);
 
         // Implementation of Device.
         virtual SysHandleType getReadHandle() const override;

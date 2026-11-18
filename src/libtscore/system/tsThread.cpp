@@ -48,18 +48,12 @@ ts::Thread::Thread(const ThreadAttributes& attributes) :
 ts::Thread::~Thread()
 {
     // Make sure that the parent class has completed the waitForTermination() or has never started the thread.
-    // Get the mutex on checking the started flag but release it before waiting.
-    _mutex.lock();
     if (_started) {
         std::cerr << std::endl
                   << "*** Internal error, Thread subclass \"" << _typename
                   << "\" did not wait for its termination, probably safe, maybe not..."
                   << std::endl << std::endl << std::flush;
-        _mutex.unlock();
         waitForTermination();
-    }
-    else {
-        _mutex.unlock();
     }
 }
 
