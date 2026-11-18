@@ -129,6 +129,15 @@ namespace ts::xml {
         bool getChildren(ElementVector& children, const UString& name, size_t min_count = 0, size_t max_count = UNLIMITED) const;
 
         //!
+        //! Check that children of a given name, case-insensitive, are in a bounded number of instances.
+        //! @param [in] name Name of the child element to search.
+        //! @param [in] min_count Minimum required number of elements of that name.
+        //! @param [in] max_count Maximum allowed number of elements of that name.
+        //! @return True on success, false if the number of elements of that name is not in the right range.
+        //!
+        bool checkChildren(const UString& name, size_t min_count, size_t max_count = UNLIMITED) const;
+
+        //!
         //! Check if the element contains at least 1 named child element, case-insensitive.
         //! @param [in] name Name of the child element to search.
         //! @return True if present, false if not present.

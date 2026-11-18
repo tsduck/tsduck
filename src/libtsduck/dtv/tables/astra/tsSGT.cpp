@@ -126,7 +126,7 @@ void ts::SGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     for (size_t start = 0;;) {
         buf.putReserved(16);
         // Reserve and restore 2 bytes for service_loop_length.
-        buf.pushWriteSize(buf.remainingWriteBytes() - 2);
+        buf.pushWriteSize(buf.size() - 2);
         start = buf.putPartialDescriptorListWithLength(descs, start);
         buf.popState();
 

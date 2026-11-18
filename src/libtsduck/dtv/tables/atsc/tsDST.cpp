@@ -174,25 +174,30 @@ void ts::DST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         PSIBuffer appbuf(buf.duck(), MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE - payload_min_size - 4);
 
         // Serialize the complete application description in appbuf.
-        app.compatibility_descriptor.serialize(buf);
-        buf.pushWriteSequenceWithLeadingLength(16);
+        app.compatibility_descriptor.serialize(appbuf);
+        appbuf.pushWriteSequenceWithLeadingLength(16);
         if (app.app_id_description.has_value()) {
-            buf.putUInt16(app.app_id_description.value());
-            buf.putBytes(app.app_id);
+            appbuf.putUInt16(app.app_id_description.value());
+            appbuf.putBytes(app.app_id);
         }
-        buf.popState();
-        buf.putUInt8(uint8_t(app.taps.size()));
+        appbuf.popState();
+        appbuf.putUInt8(uint8_t(app.taps.size()));
         for (const auto& tap : app.taps) {
-            buf.putUInt8(tap.second.protocol_encapsulation);
-            buf.putBits(tap.second.action_type, 7);
-            buf.putBit(tap.second.resource_location);
-            tap.second.tap.serialize(buf);
-            buf.putDescriptorListWithLength(tap.second.descs, 0, NPOS, 16);
+            appbuf.putUInt8(tap.second.protocol_encapsulation);
+            appbuf.putBits(tap.second.action_type, 7);
+            appbuf.putBit(tap.second.resource_location);
+            tap.second.tap.serialize(appbuf);
+            appbuf.putDescriptorListWithLength(tap.second.descs, 0, NPOS, 16);
         }
-        buf.putDescriptorListWithLength(app.descs, 0, NPOS, 16);
-        buf.putUInt16(uint16_t(app.app_data.size()));
-        buf.putBytes(app.app_data);
+        appbuf.putDescriptorListWithLength(app.descs, 0, NPOS, 16);
+        appbuf.putUInt16(uint16_t(app.app_data.size()));
+        appbuf.putBytes(app.app_data);
         const size_t app_size = appbuf.currentWriteByteOffset();
+
+        if (appbuf.error()) {
+            buf.setUserError();
+            return;
+        }
 
         // If we are not at the beginning of the application loop, make sure that the entire
         // application fits in the section. If it does not fit, start a new section.
@@ -223,7 +228,7 @@ void ts::DST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     size_t start = 0;
     for (;;) {
         // Reduce the write area to keep space for service_private_data_length.
-        buf.pushWriteSize(buf.remainingWriteBytes() - 2);
+        buf.pushWriteSize(buf.size() - 2);
         // Serialize as many descritors as possible.
         start = buf.putPartialDescriptorListWithLength(descs, start, NPOS, 16);
         buf.popState();
@@ -389,7 +394,7 @@ bool ts::DST::analyzeXML(DuckContext& duck, const xml::Element* element)
         auto& app(apps.newEntry());
         static const UString OTHER_TAGS = UString(u"app_id,app_data,tap,") + DSMCCCompatibilityDescriptor::DEFAULT_XML_NAME;
         ok = app.compatibility_descriptor.fromXML(duck, &xapp) &&
-             xapp.getHexaTextChild(app.app_data, u"app_data");
+             xapp.getHexaTextChild(app.app_data, u"app_data") &&
              app.descs.fromXML(duck, &xapp, OTHER_TAGS);
         for (auto& xid : xapp.children(u"app_id", &ok, 0, 1)) {
             app.app_id_description = uint16_t(0); // uint16_t cast required by MSVC.

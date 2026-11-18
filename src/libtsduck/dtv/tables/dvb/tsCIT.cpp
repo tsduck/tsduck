@@ -101,6 +101,12 @@ void ts::CIT::deserializePayload(PSIBuffer& buf, const Section& section)
         }
     }
 
+    // The number of prepend strings is limited to 255 (index 0 to 254) because index 255 (0xFF) is reserved as "none".
+    if (prepend_strings.size() > 255) {
+        buf.setUserError();
+        return;
+    }
+
     // Get list of CRID.
     while (buf.canRead()) {
         CRID cr;

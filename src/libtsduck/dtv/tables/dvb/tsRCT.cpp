@@ -339,6 +339,11 @@ void ts::RCT::Link::serializePayload(PSIBuffer& buf) const
         dvb_binary_locator.serializePayload(buf);
     }
     buf.putReserved(2);
+    if (promotional_texts.size() > 0x3F) {
+        // Count won't fit in 6 bits.
+        buf.setUserError();
+        return;
+    }
     buf.putBits(promotional_texts.size(), 6);
     for (const auto& text : promotional_texts) {
         text.serializePayload(buf);
@@ -636,6 +641,7 @@ bool ts::RCT::Link::analyzeXML(DuckContext& duck, const xml::Element* element)
               element->getAttribute(media_uri, u"media_uri", link_type == 0 || link_type == 2) &&
               element->getBoolAttribute(default_icon_flag, u"default_icon_flag", true) &&
               element->getIntAttribute(icon_id, u"icon_id", true, 0, 0, 0x07) &&
+              element->checkChildren(u"promotional_text", 0, 0x3F) &&
               descs.fromXML(duck, element, u"dvb_binary_locator,promotional_text");
 
     for (auto& xdvb : element->children(u"dvb_binary_locator", &ok, link_type == 1 || link_type == 2 ? 1 : 0, 1)) {

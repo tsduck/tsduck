@@ -240,7 +240,7 @@ void ts::EIT::setActual(bool is_actual)
     }
     else {
         _table_id = TID_EIT_S_OTH_MIN + (_table_id & 0x0F);
-        last_table_id = TID_EIT_S_ACT_MIN + (last_table_id & 0x0F);
+        last_table_id = TID_EIT_S_OTH_MIN + (last_table_id & 0x0F);
     }
 }
 

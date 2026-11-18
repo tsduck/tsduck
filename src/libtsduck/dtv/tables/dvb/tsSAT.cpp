@@ -92,7 +92,7 @@ static uint8_t padding_size_K(size_t map_size)
 
 uint16_t ts::SAT::tableIdExtension() const
 {
-    return uint16_t((satellite_table_id & 0x3f) << 10) | uint16_t(table_count & 0x3FF);
+    return uint16_t((satellite_table_id & 0x3F) << 10) | uint16_t(table_count & 0x3FF);
 }
 
 
@@ -435,6 +435,11 @@ void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
     else {
         buf.putReservedZero(4);
     }
+    if (delivery_system_ids.size() > 0x3FF || new_delivery_system_ids.size() > 0x3FF || obsolescent_delivery_system_ids.size() > 0x3FF) {
+        // Counts won't fit in 10 bits.
+        buf.setUserError();
+        return;
+    }
     buf.putBits(delivery_system_ids.size(), 10);
     for (const auto& it : delivery_system_ids) {
         buf.putUInt32(it);
@@ -521,9 +526,9 @@ bool ts::SAT::cell_fragment_info_type::fromXML(const xml::Element* element)
 
     xml::ElementVector delivery_systems, new_delivery_systems, obsolescent_delivery_systems;
     if (ok) {
-        ok = element->getChildren(delivery_systems, u"delivery_system") &&
-            element->getChildren(new_delivery_systems, u"new_delivery_system") &&
-            element->getChildren(obsolescent_delivery_systems, u"obsolescent_delivery_system");
+        ok = element->getChildren(delivery_systems, u"delivery_system", 0, 0x3FF) &&
+             element->getChildren(new_delivery_systems, u"new_delivery_system", 0, 0x3FF) &&
+             element->getChildren(obsolescent_delivery_systems, u"obsolescent_delivery_system", 0, 0x3FF);
     }
     if (ok) {
         for (size_t j = 0; ok && j < delivery_systems.size(); j++) {
@@ -1178,6 +1183,11 @@ void ts::SAT::satellite_position_v3_info_type::v3_satellite_type::serialize(PSIB
     if (metadata.has_value()) {
         metadata->serialize(buf);
     }
+    if (ephemeris_data.size() > 0xFFFF) {
+        // Count won't fit in 16 bits.
+        buf.setUserError();
+        return;
+    }
     buf.putBits(ephemeris_data.size(), 16);
     for (const auto& it : ephemeris_data) {
         it.serialize(buf);
@@ -1462,7 +1472,7 @@ void ts::SAT::deserializePayload(PSIBuffer& buf, const Section& section)
 {
     // Get common properties (should be identical in all sections)
     const uint16_t tid_ext = section.tableIdExtension();
-    satellite_table_id = (tid_ext & 0x3F00) >> 10;
+    satellite_table_id = (tid_ext >> 10) & 0x3F;
     table_count = tid_ext & 0x03FF;
 
     switch (satellite_table_id) {

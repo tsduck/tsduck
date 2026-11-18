@@ -157,6 +157,11 @@ void ts::AEIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
             }
             const size_t src_size = srcbuf.currentWriteByteOffset();
 
+            if (srcbuf.error()) {
+                buf.setUserError();
+                return;
+            }
+
             // If we are not at the beginning of the event source loop, make sure that the entire
             // event source fits in the section. If it does not fit, start a new section.
             if (src_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {

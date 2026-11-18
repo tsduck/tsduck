@@ -110,9 +110,14 @@ void ts::NRT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         PSIBuffer resbuf(buf.duck(), MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE - payload_min_size);
 
         // Serialize the complete resource description in resbuf.
-        res->compatibility_descriptor.serialize(buf);
-        res->resource_descriptor.serialize(buf);
+        res->compatibility_descriptor.serialize(resbuf);
+        res->resource_descriptor.serialize(resbuf);
         const size_t res_size = resbuf.currentWriteByteOffset();
+
+        if (resbuf.error()) {
+            buf.setUserError();
+            return;
+        }
 
         // If we are not at the beginning of the resource loop, make sure that the entire
         // resource fits in the section. If it does not fit, start a new section.

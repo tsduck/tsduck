@@ -231,6 +231,7 @@ bool ts::AMT::analyzeXML(DuckContext& duck, const xml::Element* element)
         ok = xsrv.getIntAttribute(service_id, u"service_id", true) && ok;
         if (ok && services.contains(service_id)) {
             element->report().error(u"duplicate service_id %n in <%s>, line %d", service_id, element->name(), element->lineNumber());
+            ok = false;
         }
         auto& srv(services[service_id]);
         ok = xsrv.getIPAttribute(srv.src, u"src", true) &&

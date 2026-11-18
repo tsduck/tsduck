@@ -155,6 +155,10 @@ void ts::LTST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
         const size_t src_size = srcbuf.currentWriteByteOffset();
 
+        if (srcbuf.error()) {
+            buf.setUserError();
+            return;
+        }
 
         // If we are not at the beginning of the data source loop, make sure that the entire
         // data source fits in the section. If it does not fit, start a new section.

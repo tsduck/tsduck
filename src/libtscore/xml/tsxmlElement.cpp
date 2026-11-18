@@ -270,6 +270,36 @@ bool ts::xml::Element::getChildren(ElementVector& children, const UString& searc
     }
 }
 
+
+//-------------------------------------------------------------------------------
+// Check that children are in a bounded number of instances.
+//-------------------------------------------------------------------------------
+
+bool ts::xml::Element::checkChildren(const UString& search_name, size_t min_count, size_t max_count) const
+{
+    // Filter invalid parameters.
+    if (search_name.empty()) {
+        return false;
+    }
+
+    // Loop on all children.
+    size_t count = 0;
+    for (const Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
+        if (child->nameMatch(search_name) && ++count > max_count) {
+            report().error(u"<%s>, line %d, contains %d <%s>, allowed %d to %d", name(), lineNumber(), count, search_name, min_count, max_count);
+            return false;
+        }
+    }
+
+    // Check cardinality.
+    if (count < min_count) {
+        report().error(u"<%s>, line %d, contains %d <%s>, at least %d required", name(), lineNumber(), count, search_name, min_count);
+        return false;
+    }
+    return true;
+}
+
+
 //-------------------------------------------------------------------------------
 // Check if named child elements are present in an XML element, case-insensitive.
 //-------------------------------------------------------------------------------
