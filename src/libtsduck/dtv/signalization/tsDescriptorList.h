@@ -433,7 +433,7 @@ namespace ts {
         //! are serialized. Upon return, @a size is updated to the remaining size
         //! of the buffer. Descriptors are written one by one until either the end
         //! of the list or until one descriptor does not fit.
-        //! @param [in] start Start searializing at this index.
+        //! @param [in] start Start serializing at this index.
         //! @return The index of the first descriptor that could not be serialized
         //! (or count() if all descriptors were serialized). In the first case,
         //! the returned index can be used as @a start parameter to serialized the
@@ -444,7 +444,7 @@ namespace ts {
         //!
         //! Serialize the content of the descriptor list in a byte block.
         //! @param [in,out] bb A byte block into which the descriptor list is appended.
-        //! @param [in] start Start searializing at this index.
+        //! @param [in] start Start serializing at this index.
         //! @return The size in bytes of the serialized data.
         //!
         size_t serialize(ByteBlock& bb, size_t start = 0) const;

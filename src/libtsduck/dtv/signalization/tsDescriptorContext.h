@@ -33,7 +33,7 @@ namespace ts {
     //! different types of descriptors. The DescriptorContext provides the table id, the
     //! standards, CAS id, private specifier, or registration id which disambiguate the
     //! resolution.
-     //!
+    //!
     class TSDUCKDLL DescriptorContext
     {
         TS_NOBUILD_NOCOPY(DescriptorContext);

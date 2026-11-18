@@ -107,18 +107,19 @@ void ts::Service::clear()
     clearId();
     clearTSId();
     clearONId();
-    clearPMTPID();
     clearLCN();
+    clearPMTPID();
     clearTypeDVB();
     clearTypeATSC();
-    clearName();
-    clearProvider();
+    clearRunningStatus();
     clearEITsPresent();
     clearEITpfPresent();
     clearCAControlled();
-    clearRunningStatus();
     clearMajorIdATSC();
-    clearMajorIdATSC();
+    clearMinorIdATSC();
+    clearHidden();
+    clearName();
+    clearProvider();
 }
 
 
@@ -224,8 +225,9 @@ ts::UString ts::Service::toString() const
     }
 
 // Sort1: LCN, ONId, TSId, Id, name, provider, type, PMT PID
-bool ts::Service::Sort1 (const Service& s1, const Service& s2)
+bool ts::Service::Sort1(const Service& s1, const Service& s2)
 {
+    // Specific sort criteria.
     _SORT_(_lcn)
     _SORT_(_onid)
     _SORT_(_tsid)
@@ -235,12 +237,22 @@ bool ts::Service::Sort1 (const Service& s1, const Service& s2)
     _SORT_(_type_dvb)
     _SORT_(_type_atsc)
     _SORT_(_pmt_pid)
-    return true; // Default: remain stable
+    // Common sort criteria (arbitrary order).
+    _SORT_(_major_id_atsc)
+    _SORT_(_minor_id_atsc)
+    _SORT_(_ca_controlled)
+    _SORT_(_eitpf_present)
+    _SORT_(_eits_present)
+    _SORT_(_running_status)
+    _SORT_(_hidden)
+    // Default: remain stable
+    return true;
 }
 
 // Sort2: name, provider, LCN, ONId, TSId, Id, type, PMT PID
-bool ts::Service::Sort2 (const Service& s1, const Service& s2)
+bool ts::Service::Sort2(const Service& s1, const Service& s2)
 {
+    // Specific sort criteria.
     _SORT_(_name)
     _SORT_(_provider)
     _SORT_(_lcn)
@@ -250,12 +262,22 @@ bool ts::Service::Sort2 (const Service& s1, const Service& s2)
     _SORT_(_type_dvb)
     _SORT_(_type_atsc)
     _SORT_(_pmt_pid)
-    return true; // Default: remain stable
+    // Common sort criteria (arbitrary order).
+    _SORT_(_major_id_atsc)
+    _SORT_(_minor_id_atsc)
+    _SORT_(_ca_controlled)
+    _SORT_(_eitpf_present)
+    _SORT_(_eits_present)
+    _SORT_(_running_status)
+    _SORT_(_hidden)
+    // Default: remain stable
+    return true;
 }
 
 // Sort3: ONId, TSId, Id, type, name, provider, LCN, PMT PID
-bool ts::Service::Sort3 (const Service& s1, const Service& s2)
+bool ts::Service::Sort3(const Service& s1, const Service& s2)
 {
+    // Specific sort criteria.
     _SORT_(_onid)
     _SORT_(_tsid)
     _SORT_(_id)
@@ -265,5 +287,14 @@ bool ts::Service::Sort3 (const Service& s1, const Service& s2)
     _SORT_(_provider)
     _SORT_(_lcn)
     _SORT_(_pmt_pid)
-    return true; // Default: remain stable
+    // Common sort criteria (arbitrary order).
+    _SORT_(_major_id_atsc)
+    _SORT_(_minor_id_atsc)
+    _SORT_(_ca_controlled)
+    _SORT_(_eitpf_present)
+    _SORT_(_eits_present)
+    _SORT_(_running_status)
+    _SORT_(_hidden)
+    // Default: remain stable
+    return true;
 }

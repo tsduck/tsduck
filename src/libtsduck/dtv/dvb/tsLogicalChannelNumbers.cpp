@@ -251,7 +251,7 @@ bool ts::LogicalChannelNumbers::updateService(Service& srv, bool replace) const
         const auto it = findLCN(srv.getId(), srv.getTSId(), onid);
         if (it != _lcn_map.end()) {
             srv.setLCN(it->second.lcn);
-            srv.setHidden(it->second.visible);
+            srv.setHidden(!it->second.visible);
             return true;
         }
     }

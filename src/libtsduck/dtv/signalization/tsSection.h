@@ -288,16 +288,24 @@ namespace ts {
         static bool StartLongSection(const uint8_t* data, size_t size);
 
         //!
+        //! This static method checks if a data area of at least 3 bytes can be the start of a short section.
+        //! @param [in] data Address of the data area.
+        //! @param [in] size Size in bytes of the data area.
+        //! @return True if the section is a short one.
+        //!
+        static bool StartShortSection(const uint8_t* data, size_t size);
+
+        //!
         //! Check if the section is a long one.
         //! @return True if the section is a long one.
         //!
-        bool isLongSection() const { return isValid() && StartLongSection(content(), size()); }
+        bool isLongSection() const;
 
         //!
         //! Check if the section is a short one.
         //! @return True if the section is a short one.
         //!
-        bool isShortSection() const { return isValid() && !isLongSection(); }
+        bool isShortSection() const;
 
         //!
         //! Check if the section is a private one (ie. not MPEG-defined).

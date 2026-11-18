@@ -265,13 +265,16 @@ void ts::SectionFile::rebuildTables()
             const TID tid = _sections[i]->tableId();
             const uint16_t tidext = _sections[i]->tableIdExtension();
             const size_t count = _sections[i]->lastSectionNumber() + 1;
+            const uint8_t version = _sections[i]->version();
             bool ok = true;
             SectionPtrVector secs;
+            secs.push_back(_sections[i]);
             for (size_t i0 = 1; ok && i0 < count; ++i0) {
                 secs.push_back(_sections[i + i0]);
                 ok = _sections[i + i0]->tableId() == tid &&
                      _sections[i + i0]->tableIdExtension() == tidext &&
-                     _sections[i + i0]->sectionNumber() == i0;
+                     _sections[i + i0]->sectionNumber() == i0 &&
+                     _sections[i + i0]->version() == version;
             }
             if (ok) {
                 // All sections are present in order, this is a table.

@@ -260,17 +260,17 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, uint8_t*& data, size
             uint8_t* const nbytes = data + 3;  // place-holder for number of bytes
             data += 4; size -= 4; max_size -= 4;
 
-            // Encode the text string.
+            // Encode the text string. Each segment must fit in 255 bytes max.
             if (mode == MODE_UTF16) {
-                // Two bytes per char, max 128 chars.
-                for (size_t i = 0; size >= 2 && max_size >= 2 && i < 128 && i < str->text.size(); ++i) {
+                // Two bytes per char, max 127 chars.
+                for (size_t i = 0; size >= 2 && max_size >= 2 && i < 127 && i < str->text.size(); ++i) {
                     PutUInt16(data, uint16_t(str->text[i]));
                     data += 2; size -= 2; max_size -= 2;
                 }
             }
             else {
-                // One byte per char, max 256 chars.
-                for (size_t i = 0; size >= 1 && max_size >= 1 && i < 256 && i < str->text.size(); ++i) {
+                // One byte per char, max 255 chars.
+                for (size_t i = 0; size >= 1 && max_size >= 1 && i < 255 && i < str->text.size(); ++i) {
                     *data++ = uint8_t(str->text[i] & 0x00FF);
                     size--; max_size--;
                 }
@@ -332,17 +332,17 @@ size_t ts::ATSCMultipleString::serialize(DuckContext& duck, ByteBlock& data, siz
         data.appendUInt8(0);  // place-holder for number of bytes
         max_size -= 7;
 
-        // Encode the text string.
+        // Encode the text string. Each segment must fit in 255 bytes max.
         if (mode == MODE_UTF16) {
-            // Two bytes per char, max 128 chars.
-            for (size_t i = 0; max_size >= 2 && i < 128 && i < str->text.size(); ++i) {
+            // Two bytes per char, max 127 chars.
+            for (size_t i = 0; max_size >= 2 && i < 127 && i < str->text.size(); ++i) {
                 data.appendUInt16(str->text[i]);
                 max_size -= 2;
             }
         }
         else {
-            // One byte per char, max 256 chars.
-            for (size_t i = 0; max_size >= 1 && i < 256 && i < str->text.size(); ++i) {
+            // One byte per char, max 255 chars.
+            for (size_t i = 0; max_size >= 1 && i < 255 && i < str->text.size(); ++i) {
                 data.appendUInt8(uint8_t(str->text[i] & 0x00FF));
                 max_size--;
             }

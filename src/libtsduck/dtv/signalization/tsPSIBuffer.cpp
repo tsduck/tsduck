@@ -222,8 +222,7 @@ ts::UString ts::PSIBuffer::getStringWithByteLength(const Charset* charset)
 
 bool ts::PSIBuffer::getStringWithByteLength(ts::UString& str, const Charset* charset)
 {
-    const size_t size = getUInt8();
-    return getString(str, std::min<size_t>(size, remainingReadBytes()), charset);
+    return getString(str, getUInt8(), charset);
 }
 
 
@@ -551,7 +550,7 @@ bool ts::PSIBuffer::putMultipleString(const ATSCMultipleString& mss, size_t max_
 {
     // Must start on a byte boundary.
     if (readOnly() || writeError() || !writeIsByteAligned()) {
-        setReadError();
+        setWriteError();
         return false;
     }
 
@@ -577,7 +576,7 @@ bool ts::PSIBuffer::putMultipleStringWithLength(const ATSCMultipleString& mss, s
 {
     // Must start on a byte boundary.
     if (readOnly() || writeError() || !writeIsByteAligned()) {
-        setReadError();
+        setWriteError();
         return false;
     }
 

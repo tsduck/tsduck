@@ -200,6 +200,7 @@ void ts::ISDBTInformationPacket::EquipmentControl::deserialize(DuckContext& duck
     buf.getBits(equipment_id, 12);
     renewal_flag = buf.getBool();
     static_delay_flag = buf.getBool();
+    buf.skipReservedBits(1);
     time_offset_polarity = buf.getBool();
     buf.getBits(time_offset, 24);
 }

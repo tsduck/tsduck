@@ -213,13 +213,61 @@ void ts::Section::reload(TID tid,
 size_t ts::Section::UncheckedSectionSize(const void* content, size_t content_size)
 {
     const uint8_t* data = reinterpret_cast<const uint8_t*>(content);
-    return content == nullptr || content_size < MIN_SHORT_SECTION_SIZE ? 0 : 3 + (GetUInt16(data + 1) & 0x0FFF);
+    return content == nullptr || content_size < MIN_SHORT_SECTION_SIZE ? 0 : MIN_SHORT_SECTION_SIZE + (GetUInt16(data + 1) & 0x0FFF);
 }
 
 size_t ts::Section::SectionSize(const void* content, size_t content_size)
 {
     const size_t length = UncheckedSectionSize(content, content_size);
     return length > content_size ? 0 : length;
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a data area of at least 3 bytes can be the start of a section.
+//----------------------------------------------------------------------------
+
+bool ts::Section::StartLongSection(const uint8_t* data, size_t size)
+{
+    // According to MPEG, a long section has bit section_syntax_indicator set to 1.
+    // However, the DVB spec is incompatible with MPEG for the Stuffing Table (ST).
+    // In a DVB-ST, the section is always a short one, regardless of the section_syntax_indicator.
+    return UncheckedSectionSize(data, size) >= MIN_LONG_SECTION_SIZE &&
+           (data[1] & 0x80) != 0 &&
+           data[0] != TID_ST;
+}
+
+bool ts::Section::StartShortSection(const uint8_t* data, size_t size)
+{
+    // See comment in StartLongSection().
+    return data != nullptr &&
+           size >= MIN_SHORT_SECTION_SIZE &&
+           ((data[1] & 0x80) == 0 || data[0] == TID_ST);
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the section is a long or short one.
+//----------------------------------------------------------------------------
+
+bool ts::Section::isLongSection() const
+{
+    return isValid() && StartLongSection(content(), size());
+}
+
+bool ts::Section::isShortSection() const
+{
+    return isValid() && StartShortSection(content(), size());
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the section has a "diversified" payload.
+//----------------------------------------------------------------------------
+
+bool ts::Section::hasDiversifiedPayload() const
+{
+    return isValid() && !IdenticalBytes(payload(), payloadSize());
 }
 
 
@@ -234,7 +282,8 @@ void ts::Section::validate(CRC32::Validation crc_op)
     const size_t dsize = size();
     const size_t total_size = SectionSize(daddr, dsize);
     const bool is_long = StartLongSection(daddr, dsize);
-    if (total_size == 0) {
+    const bool is_short = StartShortSection(daddr, dsize);
+    if (total_size == 0 || (!is_long && !is_short)) {
         // Could not get the section from header => invalid header.
         invalidate(INV_HEADER);
         return;
@@ -366,29 +415,6 @@ ts::Standards ts::Section::definingStandards(Standards current_standards) const
 {
     // The defining standard is taken from table id.
     return PSIRepository::Instance().getTableStandards(tableId(), sourcePID(), current_standards);
-}
-
-
-//----------------------------------------------------------------------------
-// Check if a data area of at least 3 bytes can be the start of a long section.
-//----------------------------------------------------------------------------
-
-bool ts::Section::StartLongSection(const uint8_t* data, size_t size)
-{
-    // According to MPEG, a long section has bit section_syntax_indicator set to 1.
-    // However, the DVB spec is incompatible with MPEG for the Stuffing Table (ST).
-    // In a DVB-ST, the section is always a short one, regardless of the section_syntax_indicator.
-    return data != nullptr && size >= MIN_SHORT_SECTION_SIZE && (data[1] & 0x80) != 0 && data[0] != TID_ST;
-}
-
-
-//----------------------------------------------------------------------------
-// Check if the section has a "diversified" payload.
-//----------------------------------------------------------------------------
-
-bool ts::Section::hasDiversifiedPayload() const
-{
-    return isValid() && !IdenticalBytes(payload(), payloadSize());
 }
 
 

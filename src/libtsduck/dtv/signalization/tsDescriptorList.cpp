@@ -587,7 +587,7 @@ size_t ts::DescriptorList::serialize(ByteBlock& bb, size_t start) const
     const size_t previous_size = bb.size();
 
     // Increase the byte block size by the size of the descriptor list.
-    const size_t added_size = binarySize();
+    const size_t added_size = binarySize(start);
     bb.resize(previous_size + added_size);
 
     // Serialize the descriptor list into the extended area.
