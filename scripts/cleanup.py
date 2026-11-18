@@ -63,7 +63,7 @@ def cleanup_directory(root, keep, remove, norecurse, dry_run):
     # Lookup and clean all files in directory.
     for file_name in cleanup_list(os.listdir(root)):
         file_path = root + os.sep + file_name
-        is_dir = os.path.isdir(file_path)
+        is_dir = os.path.isdir(file_path) and not os.path.islink(file_path)
         if not match_any(file_name, keep) and match_any(file_name, remove):
             print('---- removing %s' % file_path)
             if not dry_run:

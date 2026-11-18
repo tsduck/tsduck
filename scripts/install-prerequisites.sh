@@ -78,7 +78,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -n)       DRYRUN=true ;;
         --static) STATIC=true ;;
-        NO*=*)    eval ${1/=*/}=true ;;
+        NO*=*)    [[ ${1%%=*} =~ ^NO[A-Z]+$ ]] && declare "${1%%=*}=true" ;;
         *)        PKGOPTS+=("$1") ;;
     esac
     shift
