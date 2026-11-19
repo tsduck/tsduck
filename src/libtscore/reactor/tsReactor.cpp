@@ -39,7 +39,7 @@
 // Static constants.
 //----------------------------------------------------------------------------
 
-const bool ts::Reactor::_active_trace = !ts::GetEnvironment(u"TS_REACTOR_TRACE").empty();
+const bool ts::Reactor::_default_active_trace = !ts::GetEnvironment(u"TS_REACTOR_TRACE").empty();
 const ts::UString ts::Reactor::_trace_prefix(u"[reactor-trace] ");
 
 

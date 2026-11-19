@@ -391,6 +391,14 @@ namespace ts {
         //--------------------------------------------------------------------
 
         //!
+        //! Enable or disable the low-level trace mechanism.
+        //! By default, the trace is initially enabled is the environment variable @c TS_REACTOR_TRACE
+        //! is defined to some non-empty value.
+        //! @param [in] on If true, enable trace for this reactor. Disable trace otherwise.
+        //!
+        void enableTrace(bool on) { _active_trace = on; }
+
+        //!
         //! Issue a low-level trace message if environment variable TS_REACTOR_TRACE is defined with a non-empty value.
         //! This is typically use to troubleshoot the internals of a Reactor on a given platform.
         //! @param [in] fmt Format string with embedded '\%' sequences.
@@ -483,17 +491,19 @@ namespace ts {
             virtual void handleUserEvent(Reactor& reactor, EventId id) override;
         };
 
+        // Global trace mechanism.
+        static const bool _default_active_trace;  // Check if trace() shall report messages.
+        static const UString _trace_prefix;       // Prefix of trace() messages.
+
         // Reactor private members.
         GutsBase* _guts = nullptr;
+        bool      _active_trace = _default_active_trace;
         bool      _is_open = false;
         bool      _exit_requested = false;    // Exit event loop when possible.
         bool      _exit_success = true;       // Exit status for event loop.
         int       _exit_counter = 0;          // Reference counter for addExitReference() / freeExitReference().
         std::set<EventData*> _events {};      // Existing allocated events.
         BroadcastHandler _broadcast {*this};  // Handler for broadcast events.
-
-        static const bool    _active_trace;   // Check if trace() shall report messages.
-        static const UString _trace_prefix;   // Prefix of trace() messages.
 
         // Deletion of EventData: An EventData can be triggered (event, timer, I/O) and then canceled or deleted
         // by the application. However, the trigger remains in the kernel queue (epoll, kqueue, IOCP) and will be

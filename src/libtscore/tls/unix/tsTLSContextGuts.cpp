@@ -488,8 +488,17 @@ bool ts::TLSContext::provideReceivedData(const void* data, size_t size, size_t& 
             }
         }
 
-        // Extract clear data from the SSL context.
+        // If a handshake is in progress, explicitly continue it with the received data.
+        // If the handshake completes inside SSL_read() instead, _renegotiating remains set and
+        // _need_receive is set again on SSL_ERROR_WANT_READ. When the peer sent the last handshake
+        // message (TLS 1.2 full handshake), there is nothing to send which could call getDataToSend()
+        // and clear _renegotiating: the caller waits forever for input which never comes.
         _need_receive = false;
+        if (_renegotiating && !continueRenegotiation()) {
+            return false;
+        }
+
+        // Extract clear data from the SSL context.
         for (;;) {
             const size_t start = clear_data.size();
             static constexpr size_t chunk = TLS_MAX_PACKET_SIZE;
