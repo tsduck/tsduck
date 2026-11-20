@@ -31,7 +31,8 @@ namespace ts {
         //!
         //! Indicates the the additional substream that belongs to the subregiion and identifies its delivery mechanism
         //!
-        class substream_type {
+        class substream_type
+        {
         public:
             //!
             //! 1 bit. When Flag[0] is set to '1' and each HEVC tile substream is carried in its own ES (signalled by the SubstreamMarkingFlag in the
@@ -74,15 +75,8 @@ namespace ts {
         //! Array of 7 bit fields indicates additional SubstreamIDs that belong to the subregion when the reassembly process according
         //! to "Carriage of HEVC motion-constrained tile sets as separate elementary streams" or "Carriage of HEVC motion-constrained
         //! tile sets in a common ES using AF descriptors "is executed.
+        //!
         std::vector<substream_type> Substreams {};
-
-    private:
-        //!
-        //! 1 bit. When set to '1', this descriptor indicates the index j > 0 of the pattern signalled by the HEVC subregion descriptor
-        //! to be used to calculate additional SubstreamIDs. If the value of the field descriptor_length specifying the size of this
-        //! descriptor excluding preceding header bytes is 1, the value of ReferenceFlag is reserved.
-        //!
-        uint8_t ReferenceFlag = 1;
 
     public:
         //!

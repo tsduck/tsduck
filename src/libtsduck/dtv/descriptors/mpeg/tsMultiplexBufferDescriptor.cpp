@@ -68,7 +68,7 @@ void ts::MultiplexBufferDescriptor::DisplayDescriptor(TablesDisplay& disp, const
 {
     if (buf.canReadBytes(6)) {
         disp << margin << UString::Format(u"MB buffer size: %'d bytes", buf.getUInt24()) << std::endl;
-        const uint32_t tb = buf.getUInt24();
+        const uint64_t tb = buf.getUInt24();
         disp << margin << UString::Format(u"TB leak rate: %'d (%'d bits/s)", tb, 400 * tb) << std::endl;
     }
 }

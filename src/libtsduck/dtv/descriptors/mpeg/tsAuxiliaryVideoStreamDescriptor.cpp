@@ -249,7 +249,7 @@ void ts::AuxiliaryVideoStreamDescriptor::si_message_type::parallax_params_type::
 {
     disp << margin << "Parallax zero: " << buf.getUInt16();
     disp << ", scale: " << buf.getUInt16();
-    disp << ", wref: " << buf.getUInt16() << "cm, dref: ";
+    disp << ", dref: " << buf.getUInt16() << "cm, wref: ";
     disp << buf.getUInt16() << "cm" << std::endl;
 }
 

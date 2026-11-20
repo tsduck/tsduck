@@ -50,8 +50,8 @@ namespace ts {
         uint8_t   segmentation_type_id = 0;                //!< Segmentation type.
         uint8_t   segment_num = 0;                         //!< Segment number.
         uint8_t   segments_expected = 0;                   //!< Expected number of segments.
-        uint8_t   sub_segment_num = 0;                     //!< Sub-segment number (if segmentation_type_id == 0x34 or 0x36).
-        uint8_t   sub_segments_expected = 0;               //!< Expected number of sub-segments (if segmentation_type_id == 0x34 or 0x36).
+        uint8_t   sub_segment_num = 0;                     //!< Sub-segment number. @see hasSubSegments()
+        uint8_t   sub_segments_expected = 0;               //!< Expected number of sub-segments. @see hasSubSegments()
 
         //!
         //! Default constructor.
@@ -82,6 +82,19 @@ namespace ts {
         //! @return Value based on the segmentation_type_id.
         //!
         bool isOut() const;
+
+        //!
+        //! Check if the descriptor has sub segments (fields sub_segment_num and sub_segments_expected).
+        //! @return True if the descriptor has sub-segments.
+        //!
+        bool hasSubSegments() const { return HasSubSegments(segmentation_type_id); }
+
+        //!
+        //! Check if an SCTE 35 segmentation_descriptor has sub segments for a given segmentation type id.
+        //! @param [in] segmentation_type_id The segmentation type id.
+        //! @return True if the descriptor has sub-segments.
+        //!
+        static bool HasSubSegments(uint8_t segmentation_type_id);
 
         // Inherited methods
         DeclareDisplayDescriptor();

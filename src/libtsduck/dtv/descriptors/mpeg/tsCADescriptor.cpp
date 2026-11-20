@@ -199,15 +199,14 @@ bool ts::CADescriptor::AddFromCommandLine(DuckContext& duck, DescriptorList& dli
 
 size_t ts::CADescriptor::SearchByPID(const DescriptorList& dlist, PID pid, size_t start_index)
 {
-    bool found = false;
-    for (; !found && start_index < dlist.count(); start_index++) {
+    while (start_index < dlist.count()) {
         const Descriptor& desc(dlist[start_index]);
-        found = desc.isValid() &&
-                desc.tag() == DID_MPEG_CA &&
-                desc.payloadSize() >= 4 &&
-                (GetUInt16(desc.payload() + 2) & 0x1FFF) == pid;
+        if (desc.isValid() && desc.tag() == DID_MPEG_CA && desc.payloadSize() >= 4 && (GetUInt16(desc.payload() + 2) & 0x1FFF) == pid) {
+            return start_index;
+        }
+        start_index++;
     }
-    return start_index;
+    return dlist.count();
 }
 
 

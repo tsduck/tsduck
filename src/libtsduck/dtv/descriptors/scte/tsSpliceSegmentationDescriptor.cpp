@@ -59,6 +59,24 @@ void ts::SpliceSegmentationDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
+// Check if an SCTE 35 segmentation_descriptor has sub segments.
+//----------------------------------------------------------------------------
+
+bool ts::SpliceSegmentationDescriptor::HasSubSegments(uint8_t segmentation_type_id)
+{
+    // See ANSI/SCTE 35-1 2023r2, section 10.3.3.
+    return segmentation_type_id == 0x34 ||
+           segmentation_type_id == 0x30 ||
+           segmentation_type_id == 0x32 ||
+           segmentation_type_id == 0x36 ||
+           segmentation_type_id == 0x38 ||
+           segmentation_type_id == 0x3A ||
+           segmentation_type_id == 0x44 ||
+           segmentation_type_id == 0x46;
+}
+
+
+//----------------------------------------------------------------------------
 // Rebuild the delivery_not_restricted flag.
 //----------------------------------------------------------------------------
 
@@ -157,7 +175,7 @@ void ts::SpliceSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putUInt8(segmentation_type_id);
         buf.putUInt8(segment_num);
         buf.putUInt8(segments_expected);
-        if (segmentation_type_id == 0x34 || segmentation_type_id == 0x36 || segmentation_type_id == 0x38 || segmentation_type_id == 0x3A) {
+        if (hasSubSegments()) {
             buf.putUInt8(sub_segment_num);
             buf.putUInt8(sub_segments_expected);
         }
@@ -209,7 +227,7 @@ void ts::SpliceSegmentationDescriptor::deserializePayload(PSIBuffer& buf)
         segmentation_type_id = buf.getUInt8();
         segment_num = buf.getUInt8();
         segments_expected = buf.getUInt8();
-        if (segmentation_type_id == 0x34 || segmentation_type_id == 0x36 || segmentation_type_id == 0x38 || segmentation_type_id == 0x3A) {
+        if (hasSubSegments()) {
             sub_segment_num = buf.getUInt8();
             sub_segments_expected = buf.getUInt8();
         }
@@ -340,7 +358,7 @@ void ts::SpliceSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element*
         root->setIntAttribute(u"segmentation_type_id", segmentation_type_id, true);
         root->setIntAttribute(u"segment_num", segment_num);
         root->setIntAttribute(u"segments_expected", segments_expected);
-        if (segmentation_type_id == 0x34 || segmentation_type_id == 0x36) {
+        if (hasSubSegments()) {
             root->setIntAttribute(u"sub_segment_num", sub_segment_num);
             root->setIntAttribute(u"sub_segments_expected", sub_segments_expected);
         }
@@ -381,11 +399,11 @@ bool ts::SpliceSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::
              element->getIntAttribute(segments_expected, u"segments_expected", true);
 
         for (auto& xupid : element->children(u"segmentation_upid", &ok, 1, 1)) {
-             xupid.getIntAttribute(segmentation_upid_type, u"type", true) &&
-             xupid.getHexaText(segmentation_upid, 0, 255);
+            ok = xupid.getIntAttribute(segmentation_upid_type, u"type", true) &&
+                 xupid.getHexaText(segmentation_upid, 0, 255);
         }
 
-        if (ok && (segmentation_type_id == 0x34 || segmentation_type_id == 0x36)) {
+        if (ok && hasSubSegments()) {
             ok = element->getIntAttribute(sub_segment_num, u"sub_segment_num", true) &&
                  element->getIntAttribute(sub_segments_expected, u"sub_segments_expected", true);
         }

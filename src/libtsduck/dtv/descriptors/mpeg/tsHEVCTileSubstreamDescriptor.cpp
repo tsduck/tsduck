@@ -29,7 +29,6 @@ ts::HEVCTileSubstreamDescriptor::HEVCTileSubstreamDescriptor() :
 
 void ts::HEVCTileSubstreamDescriptor::clearContent()
 {
-    ReferenceFlag = 1;
     SubstreamID = 0;
     PreambleFlag.reset();
     PatternReference.reset();
@@ -49,12 +48,14 @@ ts::HEVCTileSubstreamDescriptor::HEVCTileSubstreamDescriptor(DuckContext& duck, 
 
 void ts::HEVCTileSubstreamDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    buf.putBits(ReferenceFlag, 1);
+    const bool ref = PreambleFlag.has_value() && PatternReference.has_value();
+
+    buf.putBit(ref);
     buf.putBits(SubstreamID, 7);
 
     if ((PreambleFlag.has_value() && PatternReference.has_value()) || !Substreams.empty()) {
-        if (ReferenceFlag == 1) {
-            buf.putBits(PreambleFlag.value(), 1);
+        if (ref) {
+            buf.putBit(PreambleFlag.value());
             buf.putBits(PatternReference.value(), 7);
         }
         else {
@@ -73,11 +74,11 @@ void ts::HEVCTileSubstreamDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::HEVCTileSubstreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    ReferenceFlag = buf.getBits<uint8_t>(1);
+    const bool ref = buf.getBits<uint8_t>(1);
     buf.getBits(SubstreamID, 7);
     if (buf.canReadBytes(1)) {
-        if (ReferenceFlag == 1) {
-            PreambleFlag = buf.getBits<uint8_t>(1);
+        if (ref) {
+            PreambleFlag = buf.getBit();
             PatternReference = buf.getBits<uint8_t>(7);
         }
         else {
@@ -100,9 +101,9 @@ void ts::HEVCTileSubstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, con
 {
     if (buf.canReadBytes(1)) {
         bool hasReferenceAndOrSubstream = buf.canReadBytes(2);
-        uint8_t _ReferenceFlag = buf.getBits<uint8_t>(1);
+        const bool ref = buf.getBool();
         if (hasReferenceAndOrSubstream) {
-            disp << margin << "Reference flag: " << uint16_t(_ReferenceFlag) << ", s";
+            disp << margin << "Reference flag: " << uint16_t(ref) << ", s";
         }
         else {
             disp << margin << "S";
@@ -110,12 +111,12 @@ void ts::HEVCTileSubstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, con
 
         disp << "ubstream id : " << uint16_t(buf.getBits<uint8_t>(7));
         if (buf.canReadBytes(1)) {
-            if (_ReferenceFlag == 1) {
-                disp << ", preamble flag: " << buf.getBits<uint16_t>(1);
+            if (ref) {
+                disp << ", preamble flag: " << int(buf.getBit());
                 disp << ", pattern reference: " << buf.getBits<uint16_t>(7);
             }
             disp << std::endl;
-            if (_ReferenceFlag != 1) {
+            if (ref != 1) {
                 UStringVector substreams;
                 while (buf.canReadBytes(1)) {
                     uint8_t _Flag = buf.getBits<uint8_t>(1);
@@ -160,25 +161,22 @@ void ts::HEVCTileSubstreamDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::HEVCTileSubstreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    ReferenceFlag = 0;
     bool ok = element->getIntAttribute(SubstreamID, u"SubstreamID", true, 0, 0, 0x7F) ;
 
     for (auto& xref : element->children(u"Reference", &ok, 0, 1)) {
-        ReferenceFlag = 1;
         // Force a value on std::optional.
-        PreambleFlag = uint8_t(0);
-        PatternReference = uint8_t(0);
+        PreambleFlag = 0;
+        PatternReference = 0;
         ok = xref.getIntAttribute(PreambleFlag.value(), u"PreambleFlag", true, 0, 0, 1) &&
              xref.getIntAttribute(PatternReference.value(), u"PatternReference", true, 0, 0, 0x7F);
     }
 
     for (auto& xsub : element->children(u"Substream", &ok)) {
-        if (ReferenceFlag != 0) {
+        if (PreambleFlag.has_value() || PatternReference.has_value()) {
             element->report().error(u"cannot specify both Reference and Substream in <%s>, line %d", element->name(), element->lineNumber());
             ok = false;
         }
         else {
-            ReferenceFlag = 0;
             auto& newSubStream(Substreams.emplace_back());
             ok = xsub.getIntAttribute(newSubStream.Flag, u"Flag", true, 0, 0, 1) &&
                  xsub.getIntAttribute(newSubStream.AdditionalSubstreamID, u"AdditionalSubstreamID", true, 0, 0, 0x7F);

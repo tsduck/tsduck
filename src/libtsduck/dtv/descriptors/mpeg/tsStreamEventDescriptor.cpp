@@ -139,6 +139,7 @@ bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element
         }
         else {
             element->report().error(u"In <%s> at line %d, <private_data> and <private_text> are mutually exclusive", element->name(), element->lineNumber());
+            ok = false;
         }
     }
     return ok;

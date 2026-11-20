@@ -133,7 +133,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::serialize(PSIBuffer
     buf.putBit(mae_switchGroupAllowOnOff);
     buf.putBit(mae_switchGroupDefaultOnOff);
     buf.putReserved(3);
-    buf.putBits(mae_switchGroupMemberID.size()-1, 5);
+    buf.putBits(mae_switchGroupMemberID.empty() ? 0 : mae_switchGroupMemberID.size() - 1, 5);
     for (auto gm : mae_switchGroupMemberID) {
         buf.putReserved(1);
         buf.putBits(gm, 7);
@@ -149,7 +149,7 @@ void ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::serialize(PSIBuffer
     buf.putReserved(3);
     buf.putBits(mae_groupPresetKind, 5);
     buf.putReserved(4);
-    buf.putBits(groupPresetConditions.size()-1, 4);
+    buf.putBits(groupPresetConditions.empty() ? 0 : groupPresetConditions.size() - 1, 4);
     for (auto pg : groupPresetConditions) {
         pg.serialize(buf);
     }
@@ -581,10 +581,10 @@ bool ts::MPEGH3DAudioSceneDescriptor::analyzeXML(DuckContext& duck, const xml::E
 
 bool ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::fromXML(const xml::Element* element)
 {
-    bool ok = element->getIntAttribute(mae_groupID, u"groupID", true, 0, 0, 0x1f) &&
+    bool ok = element->getIntAttribute(mae_groupID, u"groupID", true, 0, 0, 0x7F) &&
               element->getBoolAttribute(mae_allowOnOff, u"allowOnOff", true) &&
               element->getBoolAttribute(mae_defaultOnOff, u"defaultOnOff", true) &&
-              element->getIntAttribute(mae_contentKind, u"contentKind", true, 0, 0, 0x0f) &&
+              element->getIntAttribute(mae_contentKind, u"contentKind", true, 0, 0, 0x0F) &&
               element->getOptionalAttribute(mae_contentLanguage, u"contentLanguage", 0, 3);
 
     for (auto& it : element->children(u"PositionInteractivity", &ok, 0, 1)) {
@@ -615,11 +615,11 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_InteractivityInfo_type::GainInteracti
 bool ts::MPEGH3DAudioSceneDescriptor::MH3D_SwitchGroup_type::fromXML(const xml::Element* element)
 {
     ByteBlock group_members;
-    bool ok = element->getIntAttribute(mae_switchGroupID, u"switchGroupID", true, 0, 0, 0x1f) &&
+    bool ok = element->getIntAttribute(mae_switchGroupID, u"switchGroupID", true, 0, 0, 0x1F) &&
               element->getBoolAttribute(mae_switchGroupAllowOnOff, u"switchGroupAllowOnOff", true) &&
               element->getBoolAttribute(mae_switchGroupDefaultOnOff, u"switchGroupDefaultOnOff", true) &&
               element->getHexaTextChild(group_members, u"SwitchGroupMembers", true, 1, 32) &&
-              element->getIntAttribute(mae_switchGroupDefaultGroupID, u"switchGroupDefaultGroupID", true, 0, 0, 0x7f);
+              element->getIntAttribute(mae_switchGroupDefaultGroupID, u"switchGroupDefaultGroupID", true, 0, 0, 0x7F);
     if (ok && !group_members.empty()) {
         for (auto member : group_members) {
             if (member <= 127) {
@@ -688,9 +688,11 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
         ok = false;
     }
     else {
-        bool gain = false, posi = false;
+        bool gain = false;
+        bool posi = false;
         ok = element->getBoolAttribute(gain, u"groupPresetDisableGainInteractivity", true) &&
-             element->getBoolAttribute(posi, u"groupPresetDisablePositionInteractivity", true);
+             element->getBoolAttribute(posi, u"groupPresetDisablePositionInteractivity", true) &&
+             ok;
         if (ok) {
             mae_groupPresetDisableGainInteractivity = gain;
             mae_groupPresetDisablePositionInteractivity = posi;
@@ -702,7 +704,7 @@ bool ts::MPEGH3DAudioSceneDescriptor::MH3D_PresetGroup_type::GroupPresetConditio
     }
     else if (hasPresetGain) {
         uint8_t preset_gain = 0;
-        ok = element->getIntAttribute(preset_gain, u"groupPresetGain", true);
+        ok = element->getIntAttribute(preset_gain, u"groupPresetGain", true) && ok;
         if (ok) {
             mae_groupPresetGain = preset_gain;
         }

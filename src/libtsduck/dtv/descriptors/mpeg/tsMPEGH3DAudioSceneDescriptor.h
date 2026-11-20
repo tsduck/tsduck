@@ -128,7 +128,7 @@ namespace ts {
             bool                 mae_switchGroupAllowOnOff = false;   //!< Indicates if the audience is allowed to completely disable the playback of the switch group.
             bool                 mae_switchGroupDefaultOnOff = false; //!< Indicates if the switch grouo is enabled or disabled for playback by default.
             std::vector<uint8_t> mae_switchGroupMemberID {};          //!< 7 bits. Group IDs of the memers of the switch group.
-            uint8_t              mae_switchGroupDefaultGroupID = 0;   //!< 7 bits. Signales the default member of the switch group.
+            uint8_t              mae_switchGroupDefaultGroupID = 0;   //!< 7 bits. Signals the default member of the switch group.
 
             //!
             //! Default constructor.

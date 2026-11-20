@@ -51,6 +51,13 @@ namespace ts {
         //!
         SpliceDTMFDescriptor(DuckContext& duck, const Descriptor& bin);
 
+        //!
+        //! Check if the DTMF string is valid.
+        //! In the dial string, only '*', '#' and '0'-'9' are allowed.
+        //! @return True if the DTMF string is valid, false otherwise.
+        //!
+        bool isValideDTMF() const;
+
         // Inherited methods
         DeclareDisplayDescriptor();
 

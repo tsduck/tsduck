@@ -32,9 +32,9 @@ ts::UWAVideoStreamDescriptor::UWAVideoStreamDescriptor() :
 
 void ts::UWAVideoStreamDescriptor::clearContent()
 {
-    cuvv_tag = 0;
+    cuvv_tag = REGID_CUVV;
     cuva_version_map = 0;
-    terminal_provide_code = 0;
+    terminal_provide_code = 0x0004;
     terminal_provide_oriented_code = 0;
 }
 
@@ -134,7 +134,9 @@ void ts::UWAVideoStreamDescriptor::buildXML(DuckContext& duck, xml::Element* roo
 
 bool ts::UWAVideoStreamDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(cuvv_tag, u"cuvv_tag", true, ts::REGID_CUVV, ts::REGID_CUVV, ts::REGID_CUVV) &&
+    // The only accepted value for cuvv_tag is REGID_CUVV.
+    // The only accepted value for terminal_provide_code is 0x0004.
+    return element->getIntAttribute(cuvv_tag, u"cuvv_tag", false, REGID_CUVV, REGID_CUVV, REGID_CUVV) &&
            element->getIntAttribute(cuva_version_map, u"cuva_version_map", true) &&
            element->getIntAttribute(terminal_provide_code, u"terminal_provide_code", true, 0x0004, 0x0004, 0x0004) &&
            element->getEnumAttribute(terminal_provide_oriented_code, VersionNumbers(), u"terminal_provide_oriented_code", true, 0x0005);

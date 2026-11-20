@@ -131,7 +131,7 @@ bool ts::EutelsatChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xm
         ok = child.getIntAttribute(entry.onetw_id, u"original_network_id", true, 0, 0x0000, 0xFFFF) &&
              child.getIntAttribute(entry.ts_id, u"transport_stream_id", true, 0, 0x0000, 0xFFFF) &&
              child.getIntAttribute(entry.service_id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             child.getIntAttribute(entry.ecn, u"eutelsat_channel_number", true, 0, 0x0000, 0x03FF);
+             child.getIntAttribute(entry.ecn, u"eutelsat_channel_number", true, 0, 0x0000, 0x0FFF);
     }
     return ok;
 }

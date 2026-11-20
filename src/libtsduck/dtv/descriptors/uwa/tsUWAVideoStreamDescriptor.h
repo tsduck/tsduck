@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // Public members:
-        uint32_t  cuvv_tag = 0;                        //!< See T/UWA 005-2.1.
+        uint32_t  cuvv_tag = REGID_CUVV;               //!< See T/UWA 005-2.1.
         uint16_t  cuva_version_map = 0;                //!< See T/UWA 005-2.1.
-        uint16_t  terminal_provide_code = 0;           //!< See T/UWA 005-2.1.
+        uint16_t  terminal_provide_code = 0x0004;      //!< See T/UWA 005-2.1.
         int       terminal_provide_oriented_code = 0;  //!< See T/UWA 005-2.1.
 
         //!

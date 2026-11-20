@@ -2,11 +2,14 @@
 
 Defined by UWA in <<UWA>>.
 
+The attribute `cuvv_tag` is required to be 0x63757676 ("cuvv" string) and `terminal_provide_code` is required to be 0x0004.
+In both cases, this is the default value.
+
 [source,xml]
 ----
 <CUVV_video_stream_descriptor
-    cuvv_tag="uint32, required to be 0x63757676"
+    cuvv_tag="uint32, default=0x63757676"
     cuva_version_map="uint16, required"
-    terminal_provide_code="uint16, required to be 0x0004"
+    terminal_provide_code="uint16, default=0x0004"
     terminal_provide_oriented_code="1.0|2.0|3.0|4.0, required"/>
 ----

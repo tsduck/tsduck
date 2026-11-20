@@ -4,7 +4,7 @@
 
     <!-- removed  schar="unint16, required" -->
     <JPEG_XS_video_descriptor
-        descriptor_version="uint8, required"
+        descriptor_version="uint8, default=0"
         horizontal_size="uint16, required"
         vertical_size="uint16, required"
         brat="uint32, required"

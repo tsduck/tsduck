@@ -45,20 +45,31 @@ ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor(DuckContext& duck, const Descript
 
 
 //----------------------------------------------------------------------------
+// Check if the DTMF string is valid.
+//----------------------------------------------------------------------------
+
+bool ts::SpliceDTMFDescriptor::isValideDTMF() const
+{
+    return DTMF.size() <= DTMF_MAX_SIZE && DTMF.find_first_not_of(u"0123456789*#") == NPOS;
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
 void ts::SpliceDTMFDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    if (DTMF.size() > DTMF_MAX_SIZE) {
-        buf.setUserError();
-    }
-    else {
+    if (isValideDTMF()) {
         buf.putUInt32(identifier);
         buf.putUInt8(preroll);
+        // Important: DTMF string is ASCII only, so number of characters is also number of bytes in UTF-8.
         buf.putBits(DTMF.size(), 3);
         buf.putBits(0xFF, 5);
         buf.putUTF8(DTMF);
+    }
+    else {
+        buf.setUserError();
     }
 }
 
@@ -112,7 +123,12 @@ void ts::SpliceDTMFDescriptor::buildXML(DuckContext& duck, xml::Element* root) c
 
 bool ts::SpliceDTMFDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
-           element->getIntAttribute(preroll, u"preroll", true) &&
-           element->getAttribute(DTMF, u"DTMF", true, u"", 0, DTMF_MAX_SIZE);
+    bool ok = element->getIntAttribute(identifier, u"identifier", false, SPLICE_ID_CUEI) &&
+              element->getIntAttribute(preroll, u"preroll", true) &&
+              element->getAttribute(DTMF, u"DTMF", true, u"", 0, DTMF_MAX_SIZE);
+    if (ok && !isValideDTMF()) {
+        element->report().error(u"invalid attribute 'DMTF' in <%s>, line %d, only '*', '#' and '0'-'9' are allowed", element->name(), element->lineNumber());
+        ok = false;
+    }
+    return ok;
 }

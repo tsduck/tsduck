@@ -150,7 +150,7 @@ bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
 
 bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index)
 {
-    if (index > dlist.count()) {
+    if (index >= dlist.count()) {
         invalidate();
         return false;
     }

@@ -253,7 +253,8 @@ void ts::JPEGXSVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 
 bool ts::JPEGXSVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool ok = element->getIntAttribute(descriptor_version, u"descriptor_version", true, 0, 0x00, 0x00) &&
+    // Field descriptor_version is a plain 8-bit value but 0 is the only supported value.
+    bool ok = element->getIntAttribute(descriptor_version, u"descriptor_version", false, 0x00, 0x00, 0x00) &&
               element->getIntAttribute(horizontal_size, u"horizontal_size", true) &&
               element->getIntAttribute(vertical_size, u"vertical_size", true) &&
               element->getIntAttribute(brat, u"brat", true) &&

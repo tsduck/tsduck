@@ -234,7 +234,7 @@ bool ts::MetadataDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
            element->getIntAttribute(metadata_format, u"metadata_format", true) &&
            element->getIntAttribute(metadata_format_identifier, u"metadata_format_identifier", metadata_format == 0xFF) &&
            element->getIntAttribute(metadata_service_id, u"metadata_service_id", true) &&
-           element->getIntAttribute(decoder_config_flags, u"decoder_config_flags", true, 0, 0, 15) &&
+           element->getIntAttribute(decoder_config_flags, u"decoder_config_flags", true, 0, 0, 7) &&
            element->getIntAttribute(decoder_config_metadata_service_id, u"decoder_config_metadata_service_id", decoder_config_flags == 4) &&
            element->getHexaTextChild(service_identification, u"service_identification", false, 0, 255) &&
            element->getHexaTextChild(decoder_config, u"decoder_config", false, 0, 255) &&
