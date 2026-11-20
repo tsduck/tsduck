@@ -76,7 +76,7 @@ void ts::ProtectionMessageDescriptor::DisplayDescriptor(TablesDisplay& disp, con
         buf.skipBits(4);
         size_t count = buf.getBits<size_t>(4);
         disp << margin << UString::Format(u"Component count: %d", count) << std::endl;
-        while (count > 0 && buf.canReadBytes(1)) {
+        while (count-- > 0 && buf.canReadBytes(1)) {
             disp << margin << UString::Format(u"Component tag: 0x%0X (%<d)", buf.getUInt8()) << std::endl;
         }
     }

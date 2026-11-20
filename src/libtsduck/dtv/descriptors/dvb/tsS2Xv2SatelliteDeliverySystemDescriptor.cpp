@@ -263,9 +263,9 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         if (_channel_bond == 1) {
             buf.skipReservedBits(7, 0);
             uint8_t _num_channel_bonds_minus1 = buf.getBits<uint8_t>(1);
-            disp << margin << "Secondary delivery system id" << (_num_channel_bonds_minus1+1 == 1 ? "" : "s") << ": ";
+            disp << margin << "Secondary delivery system id" << (_num_channel_bonds_minus1+1 == 1 ? "" : "s") << ":";
             for (uint8_t j = 0; j < _num_channel_bonds_minus1 + 1; j++) {
-                disp << UString::Format(u"0x08%X ",  buf.getUInt32() );
+                disp << UString::Format(u" 0x%08X", buf.getUInt32() );
             }
             disp << std::endl;
         }

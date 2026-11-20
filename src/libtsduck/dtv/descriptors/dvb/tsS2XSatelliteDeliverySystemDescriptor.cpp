@@ -338,10 +338,12 @@ bool ts::S2XSatelliteDeliverySystemDescriptor::getChannelXML(Channel& channel, D
         channel.input_stream_identifier = stream.value_or(0);
 
         // Expected orbital position is "XX.X" as in "19.2".
-        uint16_t o1, o2;
-        ok = orbit.scan(u"%d.%d", &o1, &o2);
+        uint16_t o1 = 0;
+        uint16_t o2 = 0;
+        uint32_t pos = 0;
+        ok = orbit.scan(u"%d.%d", &o1, &o2) && (pos = (uint32_t(o1) * 10) + o2) < 3600;
         if (ok) {
-            channel.orbital_position = (o1 * 10) + o2;
+            channel.orbital_position = uint16_t(pos);
         }
         else {
             element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", orbit, element->name(), element->lineNumber());

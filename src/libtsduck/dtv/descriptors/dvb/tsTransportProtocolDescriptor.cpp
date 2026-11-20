@@ -201,7 +201,7 @@ void ts::TransportProtocolDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBytes(selector);
 
     if (!transferSelectorBytes(buf.duck())) {
-        invalidate();
+        buf.setUserError();
     }
 }
 

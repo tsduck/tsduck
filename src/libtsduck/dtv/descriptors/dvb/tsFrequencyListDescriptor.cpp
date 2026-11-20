@@ -51,21 +51,30 @@ void ts::FrequencyListDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 6);
     buf.putBits(coding_type, 2);
-    for (auto it : frequencies) {
+    for (auto freq : frequencies) {
+        bool ok = true;
         switch (coding_type) {
             case TERRESTRIAL: // binary coding in 10 Hz unit
-                buf.putUInt32(uint32_t(it / 10));
+                ok = freq < 10 * uint64_t(std::numeric_limits<uint32_t>::max());
+                buf.putUInt32(uint32_t(freq / 10));
                 break;
             case SATELLITE: // 8-digit BCD coding in 10 kHz units
-                buf.putBCD(uint32_t(it / 10000), 8);
+                ok = freq < uint64_t(999'999'990'000);
+                buf.putBCD(uint32_t(freq / 10'000), 8);
                 break;
             case CABLE:  // 8-digit BCD coding in 100 Hz units
-                buf.putBCD(uint32_t(it / 100), 8);
+                ok = freq < uint64_t(9'999'999'900);
+                buf.putBCD(uint32_t(freq / 100), 8);
                 break;
             case UNDEFINED: // assume binary coding in Hz.
             default:
-                buf.putUInt32(uint32_t(it));
+                ok = freq < uint64_t(std::numeric_limits<uint32_t>::max());
+                buf.putUInt32(uint32_t(freq));
                 break;
+        }
+        if (!ok) {
+            buf.setUserError();
+            break;
         }
     }
 }

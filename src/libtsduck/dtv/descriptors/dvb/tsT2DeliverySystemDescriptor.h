@@ -25,6 +25,12 @@ namespace ts {
     {
     public:
         //!
+        //! Frequencies are stored in this structure in Hz in a 64-integer.
+        //! The binary encoding in the descriptor is in 10 Hz unit in a 32-bit integer.
+        //!
+        static constexpr uint64_t MAX_FREQUENCY = 10 * uint64_t(std::numeric_limits<uint32_t>::max());
+
+        //!
         //! Description of a subcell.
         //!
         struct TSDUCKDLL Subcell

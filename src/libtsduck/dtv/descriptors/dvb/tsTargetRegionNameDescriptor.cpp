@@ -53,11 +53,17 @@ void ts::TargetRegionNameDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putLanguageCode(country_code);
     buf.putLanguageCode(ISO_639_language_code);
     for (const auto& it : regions) {
+        // String is serialized with byte length but the two most significant bits are used by region_depth.
+        const size_t start = buf.currentWriteByteOffset();
         buf.pushState();
         buf.putStringWithByteLength(it.region_name);
         buf.swapState();
         buf.putBits(it.region_depth, 2);
         buf.popState();
+        if (buf.currentWriteByteOffset() - start > MAX_REGION_NAME_SIZE + 1) {
+            buf.setUserError();
+            return;
+        }
         buf.putUInt8(it.primary_region_code);
         if (it.region_depth >= 2) {
             buf.putUInt8(it.secondary_region_code);
@@ -153,7 +159,7 @@ bool ts::TargetRegionNameDescriptor::analyzeXML(DuckContext& duck, const xml::El
 
     for (auto& child : element->children(u"region", &ok)) {
         auto& region(regions.emplace_back());
-        ok = child.getAttribute(region.region_name, u"region_name", true) &&
+        ok = child.getAttribute(region.region_name, u"region_name", true, u"", 0, MAX_REGION_NAME_SIZE) &&
              child.getIntAttribute(region.primary_region_code, u"primary_region_code", true) &&
              child.getIntAttribute(region.secondary_region_code, u"secondary_region_code", false) &&
              child.getIntAttribute(region.tertiary_region_code, u"tertiary_region_code", false);

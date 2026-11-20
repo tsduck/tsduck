@@ -647,29 +647,53 @@ bool ts::ArgMix::storeInteger(INT i) const
 {
     switch (_type) {
         case POINTER | INTEGER | BIT8  | SIGNED:
-            *reinterpret_cast<int8_t*>(_value.vptr) = static_cast<int8_t>(i);
-            return true;
+            if (bound_check<int8_t>(i)) {
+                *reinterpret_cast<int8_t*>(_value.vptr) = static_cast<int8_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT8:
-            *reinterpret_cast<uint8_t*>(_value.vptr) = static_cast<uint8_t>(i);
-            return true;
+            if (bound_check<uint8_t>(i)) {
+                *reinterpret_cast<uint8_t*>(_value.vptr) = static_cast<uint8_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT16 | SIGNED:
-            *reinterpret_cast<int16_t*>(_value.vptr) = static_cast<int16_t>(i);
-            return true;
+            if (bound_check<int16_t>(i)) {
+                *reinterpret_cast<int16_t*>(_value.vptr) = static_cast<int16_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT16:
-            *reinterpret_cast<uint16_t*>(_value.vptr) = static_cast<uint16_t>(i);
-            return true;
+            if (bound_check<uint16_t>(i)) {
+                *reinterpret_cast<uint16_t*>(_value.vptr) = static_cast<uint16_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT32 | SIGNED:
-            *reinterpret_cast<int32_t*>(_value.vptr) = static_cast<int32_t>(i);
-            return true;
+            if (bound_check<int32_t>(i)) {
+                *reinterpret_cast<int32_t*>(_value.vptr) = static_cast<int32_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT32:
-            *reinterpret_cast<uint32_t*>(_value.vptr) = static_cast<uint32_t>(i);
-            return true;
+            if (bound_check<uint32_t>(i)) {
+                *reinterpret_cast<uint32_t*>(_value.vptr) = static_cast<uint32_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT64 | SIGNED:
-            *reinterpret_cast<int64_t*>(_value.vptr) = static_cast<int64_t>(i);
-            return true;
+            if (bound_check<int64_t>(i)) {
+                *reinterpret_cast<int64_t*>(_value.vptr) = static_cast<int64_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | INTEGER | BIT64:
-            *reinterpret_cast<uint64_t*>(_value.vptr) = static_cast<uint64_t>(i);
-            return true;
+            if (bound_check<uint64_t>(i)) {
+                *reinterpret_cast<uint64_t*>(_value.vptr) = static_cast<uint64_t>(i);
+                return true;
+            }
+            return false;
         case POINTER | DOUBLE:
             *reinterpret_cast<double*>(_value.vptr) = static_cast<double>(i);
             return true;

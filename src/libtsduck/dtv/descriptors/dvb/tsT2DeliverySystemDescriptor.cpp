@@ -71,17 +71,32 @@ void ts::T2DeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putUInt16(it1.cell_id);
             if (tfs) {
                 buf.pushWriteSequenceWithLeadingLength(8); // frequency_loop_length
-                for (const auto& it2 : it1.centre_frequency) {
-                    buf.putUInt32(uint32_t(it2 / 10)); // encoded in units of 10 Hz
+                for (const auto& freq : it1.centre_frequency) {
+                    if (freq > MAX_FREQUENCY) {
+                        buf.setUserError();
+                        return;
+                    }
+                    buf.putUInt32(uint32_t(freq / 10)); // encoded in units of 10 Hz
                 }
                 buf.popState(); // update frequency_loop_length
             }
+            else if (it1.centre_frequency.empty()) {
+                buf.putUInt32(0);
+            }
+            else if (it1.centre_frequency.front() > MAX_FREQUENCY) {
+                buf.setUserError();
+                return;
+            }
             else {
-                buf.putUInt32(uint32_t((it1.centre_frequency.empty() ? 0 : it1.centre_frequency.front()) / 10)); // encoded in units of 10 Hz
+                buf.putUInt32(uint32_t(it1.centre_frequency.front() / 10)); // encoded in units of 10 Hz
             }
             buf.pushWriteSequenceWithLeadingLength(8); // subcell_info_loop_length
             for (const auto& it2 : it1.subcells) {
                 buf.putUInt8(it2.cell_id_extension);
+                if (it2.transposer_frequency > MAX_FREQUENCY) {
+                    buf.setUserError();
+                    return;
+                }
                 buf.putUInt32(uint32_t(it2.transposer_frequency / 10)); // encoded in units of 10 Hz
             }
             buf.popState(); // update subcell_info_loop_length
@@ -286,13 +301,13 @@ bool ts::T2DeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
             ok = xcell.getIntAttribute(cell.cell_id, u"cell_id", true);
 
             for (auto& xfreq : xcell.children(u"centre_frequency", &ok, tfs ? 0 : 1, tfs ? xml::UNLIMITED : 1)) {
-                ok = xfreq.getIntAttribute(cell.centre_frequency.emplace_back(), u"value", true);
+                ok = xfreq.getIntAttribute(cell.centre_frequency.emplace_back(), u"value", true, 0, 0, MAX_FREQUENCY);
             }
 
             for (auto& xsub : xcell.children(u"subcell", &ok)) {
                 auto& sub(cell.subcells.emplace_back());
                 ok = xsub.getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
-                     xsub.getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
+                     xsub.getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true, 0, 0, MAX_FREQUENCY);
             }
         }
     }

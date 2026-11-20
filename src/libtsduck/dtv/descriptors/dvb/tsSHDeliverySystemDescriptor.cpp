@@ -358,7 +358,8 @@ bool ts::SHDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::El
                 ok = xint.getIntAttribute(mod.nof_late_taps, u"nof_late_taps", true, 0, 0, 0x3F) &&
                      xint.getIntAttribute(mod.nof_slices, u"nof_slices", true, 0, 0, 0x3F) &&
                      xint.getIntAttribute(mod.slice_distance, u"slice_distance", true, 0, 0, 0xFF) &&
-                     xint.getIntAttribute(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F);
+                     xint.getIntAttribute(mod.non_late_increments, u"non_late_increments", true, 0, 0, 0x3F) &&
+                     ok;
             }
             else if (attr_count != 0) {
                 ok = false;

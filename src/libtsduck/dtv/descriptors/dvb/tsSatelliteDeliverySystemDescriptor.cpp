@@ -410,10 +410,11 @@ bool ts::SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const 
         UStringVector fields;
         uint16_t p1 = 0;
         uint16_t p2 = 0;
+        uint32_t pos = 0;
         orbit.split(fields, u'.');
-        ok = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10;
+        ok = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10 && (pos = (uint32_t(p1) * 10) + p2) < 3600;
         if (ok) {
-            orbital_position = (p1 * 10) + p2;
+            orbital_position = uint16_t(pos);
         }
         else {
             element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", orbit, element->name(), element->lineNumber());

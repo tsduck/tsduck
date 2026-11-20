@@ -50,10 +50,18 @@ void ts::CellFrequencyLinkDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (const auto& it1 : cells) {
         buf.putUInt16(it1.cell_id);
+        if (it1.frequency > MAX_FREQUENCY) {
+            buf.setUserError();
+            return;
+        }
         buf.putUInt32(uint32_t(it1.frequency / 10)); // coded in 10 Hz unit
-        buf.pushWriteSequenceWithLeadingLength(8);    // start write sequence
+        buf.pushWriteSequenceWithLeadingLength(8);   // start write sequence
         for (const auto& it2 : it1.subcells) {
             buf.putUInt8(it2.cell_id_extension);
+            if (it2.transposer_frequency > MAX_FREQUENCY) {
+                buf.setUserError();
+                return;
+            }
             buf.putUInt32(uint32_t(it2.transposer_frequency / 10)); // coded in 10 Hz unit
         }
         buf.popState(); // end write sequence
@@ -132,11 +140,11 @@ bool ts::CellFrequencyLinkDescriptor::analyzeXML(DuckContext& duck, const xml::E
     for (auto& xcell : element->children(u"cell", &ok)) {
         auto& cell(cells.emplace_back());
         ok = xcell.getIntAttribute(cell.cell_id, u"cell_id", true) &&
-             xcell.getIntAttribute(cell.frequency, u"frequency", true);
+             xcell.getIntAttribute(cell.frequency, u"frequency", true, 0, 0, MAX_FREQUENCY);
         for (auto& xsub : xcell.children(u"subcell", &ok)) {
             auto& sub(cell.subcells.emplace_back());
             ok = xsub.getIntAttribute(sub.cell_id_extension, u"cell_id_extension", true) &&
-                 xsub.getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true);
+                 xsub.getIntAttribute(sub.transposer_frequency, u"transposer_frequency", true, 0, 0, MAX_FREQUENCY);
         }
     }
     return ok;

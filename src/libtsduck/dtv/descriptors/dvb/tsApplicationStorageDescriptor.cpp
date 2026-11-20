@@ -92,7 +92,7 @@ void ts::ApplicationStorageDescriptor::DisplayDescriptor(TablesDisplay& disp, co
         disp << margin << "Is launchable with older version: " << UString::YesNo(buf.getBool()) << std::endl;
         buf.skipBits(6);
         disp << margin << UString::Format(u"Version: %n", buf.getBits<uint32_t>(31)) << std::endl;
-        disp << margin << UString::Format(u"Storage property: %n", buf.getUInt8()) << std::endl;
+        disp << margin << UString::Format(u"Priority: %n", buf.getUInt8()) << std::endl;
     }
 }
 

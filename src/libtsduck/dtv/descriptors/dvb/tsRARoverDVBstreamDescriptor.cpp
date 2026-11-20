@@ -112,8 +112,8 @@ void ts::RARoverDVBstreamDescriptor::DisplayDescriptor(TablesDisplay& disp, cons
         disp << margin << "Weighting: " << int(buf.getBits<uint8_t>(6));
         disp << ", complete: " << UString::TrueFalse(buf.getBool()) << std::endl;
         bool scheduled_flag = buf.getBool();
-        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
+        disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Service id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Component tag: %n", buf.getUInt8()) << std::endl;
         if (scheduled_flag) {

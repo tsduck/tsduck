@@ -119,7 +119,7 @@ void ts::SSUDataBroadcastIdDescriptor::deserializePayload(PSIBuffer& buf)
 {
     if (buf.getUInt16() != 0x000A || buf.error()) {
         // Not the right type of data_broadcast_id_descriptor
-        invalidate();
+        buf.setUserError();
     }
     else {
         buf.pushReadSizeFromLength(8); // OUI_data_length

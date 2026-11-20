@@ -74,7 +74,7 @@ void ts::HEVCTileSubstreamDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::HEVCTileSubstreamDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const bool ref = buf.getBits<uint8_t>(1);
+    const bool ref = buf.getBool();
     buf.getBits(SubstreamID, 7);
     if (buf.canReadBytes(1)) {
         if (ref) {

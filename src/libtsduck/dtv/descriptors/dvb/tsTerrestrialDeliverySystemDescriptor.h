@@ -23,6 +23,12 @@ namespace ts {
     class TSDUCKDLL TerrestrialDeliverySystemDescriptor: public AbstractDeliverySystemDescriptor
     {
     public:
+        //!
+        //! Frequencies are stored in this structure in Hz in a 64-integer.
+        //! The binary encoding in the descriptor is in 10 Hz unit in a 32-bit integer.
+        //!
+        static constexpr uint64_t MAX_FREQUENCY = 10 * uint64_t(std::numeric_limits<uint32_t>::max());
+
         // TerrestrialDeliverySystemDescriptor public members:
         uint64_t centre_frequency = 0;     //!< Frequency in Hz (warning: coded in 10 Hz units in descriptor).
         uint8_t  bandwidth = 0;            //!< Bandwidth, 0..7 (3 bits).

@@ -191,6 +191,11 @@ const ts::Names& ts::TerrestrialDeliverySystemDescriptor::TransmissionModeNames(
 
 void ts::TerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
+    if (centre_frequency > MAX_FREQUENCY) {
+        buf.setUserError();
+        return;
+    }
+
     // The frequency is coded in 10 Hz units.
     // Sometimes, the value 0xFFFFFFFF is used to say "unknown".
     buf.putUInt32(centre_frequency == 0 ? 0xFFFFFFFF : uint32_t(centre_frequency / 10));
@@ -347,7 +352,7 @@ void ts::TerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::E
 
 bool ts::TerrestrialDeliverySystemDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return element->getIntAttribute(centre_frequency, u"centre_frequency", true) &&
+    return element->getIntAttribute(centre_frequency, u"centre_frequency", true, 0, 0, MAX_FREQUENCY) &&
            element->getEnumAttribute(bandwidth, BandwidthNames(), u"bandwidth", true) &&
            element->getEnumAttribute(high_priority, PriorityNames(), u"priority", true) &&
            element->getBoolAttribute(no_time_slicing, u"no_time_slicing", true) &&

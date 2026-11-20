@@ -139,7 +139,7 @@ bool ts::RNTScanDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 {
     bool ok = true;
     for (auto& child : element->children(u"RNT_reference", &ok, 1)) {
-        RNTreferences.emplace_back().fromXML(&child);
+        ok = RNTreferences.emplace_back().fromXML(&child);
     }
     return ok;
 }

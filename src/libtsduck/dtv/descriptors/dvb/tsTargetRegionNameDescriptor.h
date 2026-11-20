@@ -24,6 +24,12 @@ namespace ts {
     {
     public:
         //!
+        //! Maximum size in bytes of a region name.
+        //! Length is stored on 6 bits.
+        //!
+        static constexpr size_t MAX_REGION_NAME_SIZE = 63;
+
+        //!
         //! Region entry.
         //!
         struct TSDUCKDLL Region

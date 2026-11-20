@@ -61,8 +61,11 @@ void ts::SimpleApplicationBoundaryDescriptor::serializePayload(PSIBuffer& buf) c
 
 void ts::SimpleApplicationBoundaryDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const size_t count = buf.getUInt8();
-    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+    for (size_t count = buf.getUInt8(); count > 0; --count) {
+        if (!buf.canRead()) {
+            buf.setUserError();
+            break;
+        }
         boundary_extension.push_back(buf.getStringWithByteLength());
     }
 }
