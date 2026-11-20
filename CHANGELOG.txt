@@ -93,6 +93,10 @@ VERSION 3.46-4955 (November 2026)
     Mode  (CRC-8 at the start of each packet was read as data),  with  ISSY  in
     Normal  Mode  (ISSY field was read as data),  and with null packet deletion
     (DNP field was read as data). Deleted null packets are now reinserted.
+  * Fixed issue #1752:  In output plugin "hls",  with --intra-close, the option
+    --max-extra-duration did not close a segment when no intra-coded image was
+    found. The tag EXT-X-INDEPENDENT-SEGMENTS was always written.  It  is  now
+    written  only  when  all segments start on an IDR picture or a closed GOP.
   * A complete security audit of the code was conducted using  Claude Opus 5.5.
     Total findings: 1 critical, 26 high, 56 medium, 133 low, 140 informational.
     All  critical,  high,  medium  issues  were fixed,  as well as most low and
