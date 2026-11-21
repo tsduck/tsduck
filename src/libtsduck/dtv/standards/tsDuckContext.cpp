@@ -27,15 +27,7 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _out(_initial_out),
     _charset_in(&DVBCharset::DVB),  // default DVB charset
     _charset_out(&DVBCharset::DVB),
-    _time_ref_config(DuckConfigFile::Instance().value(u"default.time")),
-    _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
-                    {CASID_IRDETO_MIN,     u"irdeto"},
-                    {CASID_MEDIAGUARD_MIN, u"mediaguard"},
-                    {CASID_NAGRA_MIN,      u"nagravision"},
-                    {CASID_NDS_MIN,        u"nds"},
-                    {CASID_SAFEACCESS,     u"safeaccess"},
-                    {CASID_VIACCESS_MIN,   u"viaccess"},
-                    {CASID_WIDEVINE_MIN,   u"widevine"}}
+    _time_ref_config(DuckConfigFile::Instance().value(u"default.time"))
 {
     // Initialize time reference from configuration file. Ignore errors.
     if (!_time_ref_config.empty() && !setTimeReference(_time_ref_config)) {
@@ -50,8 +42,48 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     }
 }
 
+ts::DuckContext::DuckContext(const DuckContext& other, Report* report, std::ostream* output) :
+    ReporterBase(report != nullptr ? report : &CERR),
+    _initial_out(output != nullptr ? output : &std::cout),
+    _out(_initial_out),
+    _charset_in(other._charset_in),
+    _charset_out(other._charset_out),
+    _cas_id(other._cas_id),
+    _fix_pds(other._fix_pds),
+    _default_pds(other._default_pds),
+    _default_regids(other._default_regids),
+    _use_leap_seconds(other._use_leap_seconds),
+    _cmd_standards(other._cmd_standards),
+    _acc_standards(other._acc_standards),
+    _hf_default_region(other._hf_default_region),
+    _time_reference(other._time_reference),
+    _time_ref_config(other._time_ref_config),
+    _defined_cmd_options(other._defined_cmd_options)
+{
+}
+
 ts::DuckContext::~DuckContext()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Predefined CAS names, indexed by CAS id (first in range).
+//----------------------------------------------------------------------------
+
+const std::map<uint16_t, const ts::UChar*>& ts::DuckContext::PredefinedCAS()
+{
+    static const std::map<uint16_t, const ts::UChar*> data {
+        {CASID_CONAX_MIN,      u"conax"},
+        {CASID_IRDETO_MIN,     u"irdeto"},
+        {CASID_MEDIAGUARD_MIN, u"mediaguard"},
+        {CASID_NAGRA_MIN,      u"nagravision"},
+        {CASID_NDS_MIN,        u"nds"},
+        {CASID_SAFEACCESS,     u"safeaccess"},
+        {CASID_VIACCESS_MIN,   u"viaccess"},
+        {CASID_WIDEVINE_MIN,   u"widevine"}
+    };
+    return data;
 }
 
 
@@ -410,7 +442,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmd_options_mask)
                   u"CAT or PMT to correctly identify the CA PID's.");
 
         // Predefined CAS options:
-        for (const auto& cas : _predefined_cas) {
+        for (const auto& cas : PredefinedCAS()) {
             args.option(cas.second);
             args.help(cas.second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", cas.first));
         }
@@ -659,7 +691,7 @@ bool ts::DuckContext::loadArgs(Args& args)
             count++;
         }
         // Predefined CAS options:
-        for (const auto& cas : _predefined_cas) {
+        for (const auto& cas : PredefinedCAS()) {
             if (args.present(cas.second)) {
                 _cas_id = cas.first;
                 count++;

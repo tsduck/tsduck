@@ -68,6 +68,14 @@ namespace ts {
         DuckContext(Report* report = nullptr, std::ostream* output = nullptr);
 
         //!
+        //! Copy-like constructor.
+        //! @param [in] other Other context to copy. The report and output are not copied.
+        //! @param [in] report Address of the report for log and error messages. If null, use the standard error.
+        //! @param [in] output The output stream to use, @c std::cout on null pointer.
+        //!
+        DuckContext(const DuckContext& other, Report* report = nullptr, std::ostream* output = nullptr);
+
+        //!
         //! Destructor.
         //!
         virtual ~DuckContext() override;
@@ -525,7 +533,9 @@ namespace ts {
         cn::milliseconds   _time_reference {};                // Time reference in milli-seconds from UTC (used in ISDB variants).
         UString            _time_ref_config {};               // Time reference name from TSDuck configuration file.
         int                _defined_cmd_options = 0;          // Mask of defined command line options (CMD_xxx below).
-        const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
+
+        // Predefined CAS names, indexed by CAS id (first in range).
+        static const std::map<uint16_t, const UChar*>& PredefinedCAS();
 
         // List of command line options to define and analyze.
         enum CmdOptions {

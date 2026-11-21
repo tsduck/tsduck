@@ -96,16 +96,14 @@ namespace ts {
         class SpliceCommand: public StringifyInterface
         {
             TS_NOBUILD_NOCOPY(SpliceCommand);
-        private:
-            SpliceInjectPlugin* const _plugin;
         public:
-            SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec);
+            SpliceCommand(SpliceInjectPlugin* plugin, DuckContext& ts_duck, const SectionPtr& sec);
 
             SpliceInformationTable sit {};      // The analyzed Splice Information Table.
             SectionPtr section {};              // The binary SIT section.
             uint64_t   next_pts = INVALID_PTS;  // Next PTS after which the section shall be inserted (INVALID_PTS means immediate).
             uint64_t   last_pts = INVALID_PTS;  // PTS after which the section shall no longer be inserted (INVALID_PTS means never).
-            uint64_t   interval = cn::duration_cast<PTS>(_plugin->_inject_interval).count(); // Interval between two insertions in PTS units.
+            uint64_t   interval = 0;            // Interval between two insertions in PTS units.
             size_t     count = 1;               // Remaining number of injections.
 
             // A comparison function to sort commands in the queues.
@@ -135,9 +133,10 @@ namespace ts {
             void stop();
 
         private:
-            SpliceInjectPlugin* const _plugin;
-            std::atomic_bool _terminate = false;
-            PollFiles _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
+            SpliceInjectPlugin* _plugin;
+            DuckContext         _duck {_plugin->duck, _plugin};
+            std::atomic_bool    _terminate = false;
+            PollFiles           _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
 
             // Implementation of Thread.
             virtual void main() override;
@@ -160,9 +159,10 @@ namespace ts {
             void stop();
 
         private:
-            SpliceInjectPlugin* const _plugin;
-            std::atomic_bool _terminate = false;
-            UDPReceiver _client {_plugin};
+            SpliceInjectPlugin* _plugin;
+            DuckContext         _duck {_plugin->duck, _plugin};
+            std::atomic_bool    _terminate = false;
+            UDPReceiver         _client {_plugin};
 
             // Implementation of Thread.
             virtual void main() override;
@@ -200,8 +200,8 @@ namespace ts {
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
         virtual bool doStuffing() override;
 
-        // Process a section file or message. Invoked from listener threads.
-        void processSectionMessage(const uint8_t*, size_t);
+        // Process a section file or message. Invoked from listener threads, using their thread-specific DuckContext.
+        void processSectionMessage(DuckContext& ts_duck, const uint8_t*, size_t);
 
         // Check if the specified PID creates a conflict with the inject PID. Return false on error.
         bool checkPIDConflict(PID pid);

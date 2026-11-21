@@ -547,7 +547,7 @@ bool ts::SpliceInjectPlugin::doStuffing()
 // Process a section message. Invoked from listener threads.
 //----------------------------------------------------------------------------
 
-void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t size)
+void ts::SpliceInjectPlugin::processSectionMessage(DuckContext& ts_duck, const uint8_t* addr, size_t size)
 {
     assert(addr != nullptr);
 
@@ -604,7 +604,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
     // Analyze the message as a binary, XML or JSON section file.
     // Limit the analysis of XML files to 16 levels (SCTE-35 doesn't need more).
     // Using more (the default) would allow forged sections to overflow the thread's stack.
-    SectionFile secFile(duck);
+    SectionFile secFile(ts_duck);
     if (!secFile.load(strm, type, 16)) {
         // Error loading sections, error message already reported.
         return;
@@ -616,10 +616,10 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         SectionPtr sec(*it);
         if (sec != nullptr) {
             if (sec->tableId() != TID_SCTE35_SIT) {
-                error(u"unexpected section, %s, ignored", TIDName(duck, sec->tableId(), sec->sourcePID(), CASID_NULL, NamesFlags::NAME_VALUE));
+                error(u"unexpected section, %s, ignored", TIDName(ts_duck, sec->tableId(), sec->sourcePID(), CASID_NULL, NamesFlags::NAME_VALUE));
             }
             else {
-                auto cmd = std::make_shared<SpliceCommand>(this, sec);
+                auto cmd = std::make_shared<SpliceCommand>(this, ts_duck, sec);
                 if (cmd == nullptr || !cmd->sit.isValid()) {
                     error(u"received invalid splice information section, ignored");
                 }
@@ -646,9 +646,9 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 // Splice command object constructor
 //----------------------------------------------------------------------------
 
-ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec) :
-    _plugin(plugin),
-    section(sec)
+ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin, DuckContext& ts_duck, const SectionPtr& sec) :
+    section(sec),
+    interval(cn::duration_cast<PTS>(plugin->_inject_interval).count())
 {
     // Analyze the section.
     if (section == nullptr || !section->isValid()) {
@@ -659,7 +659,7 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         // Try to interpret the section as a SIT.
         BinaryTable table;
         table.addSection(section, false, false);
-        sit.deserialize(_plugin->duck, table);
+        sit.deserialize(ts_duck, table);
     }
 
     // The initial values for the member fields are set for one immediate injection.
@@ -695,9 +695,9 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         // Otherwise, compute initial PTS and injection count.
         if (last_pts != INVALID_PTS) {
             last_pts = (last_pts + sit.pts_adjustment) & PTS_DTS_MASK;
-            count = _plugin->_inject_count;
+            count = plugin->_inject_count;
             // Preceding delay for injection in PTS units.
-            const uint64_t preceding = cn::duration_cast<ts::PTS>(_plugin->_start_delay).count();
+            const uint64_t preceding = cn::duration_cast<ts::PTS>(plugin->_start_delay).count();
             // Compute the first PTS time for injection.
             next_pts = (last_pts - preceding) & PTS_DTS_MASK;
         }
@@ -829,7 +829,7 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
             else if (data.loadFromFile(name, size_t(_plugin->_max_file_size), _plugin)) {
                 // File correctly loaded, ingest it.
                 _plugin->verbose(u"loaded file %s, %d bytes", name, data.size());
-                _plugin->processSectionMessage(data.data(), data.size());
+                _plugin->processSectionMessage(_duck, data.data(), data.size());
 
                 // Delete file after successful load when required.
                 if (_plugin->_delete_files) {
@@ -891,7 +891,7 @@ void ts::SpliceInjectPlugin::UDPListener::main()
         // Loop on incoming messages.
         while (_client.receive(inbuf.data(), inbuf.size(), insize, sender, destination, _plugin->tsp)) {
             _plugin->verbose(u"received message, %d bytes, from %s", insize, sender);
-            _plugin->processSectionMessage(inbuf.data(), insize);
+            _plugin->processSectionMessage(_duck, inbuf.data(), insize);
         }
     }
 

@@ -225,8 +225,10 @@ ts::PacketProcessStatus ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPac
         if (_unregulated || _pkt_next_data <= tsp->pluginPackets()) {
             // Time to insert data packet, if any is available immediately.
             bool got_packet = false;
+            int64_t br = 0;
             {
                 std::lock_guard<std::mutex> lock(_mutex);
+                br = _req_bitrate.toInt64();
                 // Get next packet to insert.
                 if (_section_mode) {
                     // Section mode: Get a packet from the packetizer.
@@ -250,7 +252,6 @@ ts::PacketProcessStatus ts::DataInjectPlugin::processPacket(TSPacket& pkt, TSPac
                 // Compute next insertion point if the data PID bitrate is specified.
                 // Otherwise, try to update any null packet (unbounded bitrate).
                 // Take care of floating point conversion which may result in division by zero.
-                const auto br = _req_bitrate.toInt64();
                 if (!_unregulated || br != 0) {
                     // TODO: refine this, works only for low injection bitrates.
                     _pkt_next_data += (tsp->bitrate() / br).toInt();
