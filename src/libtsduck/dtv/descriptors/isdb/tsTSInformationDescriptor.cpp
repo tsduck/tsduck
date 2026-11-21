@@ -62,6 +62,11 @@ void ts::TSInformationDescriptor::serializePayload(PSIBuffer& buf) const
     buf.swapState();    // move back at length_of_ts_name
     buf.putBits(length_of_ts_name, 6);
     buf.popState();     // move at current end of descriptor
+    if (length_of_ts_name > 0x3F) {
+        // Length too large to fit in 6 bits.
+        buf.setUserError();
+        return;
+    }
 
     for (const auto& it1 : transmission_types) {
         buf.putUInt8(it1.transmission_type_info);

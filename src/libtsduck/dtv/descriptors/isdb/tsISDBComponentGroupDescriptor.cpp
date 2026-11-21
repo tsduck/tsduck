@@ -125,21 +125,17 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::serialize(PSIBuff
 void ts::ISDBComponentGroupDescriptor::deserializePayload(PSIBuffer& buf)
 {
     component_group_type = buf.getBits<uint8_t>(3);
-    const bool    total_bit_rate_flag = buf.getBool();
-    const uint8_t num_components = buf.getBits<uint8_t>(4);
-    for (size_t i = 0; i < num_components; i++) {
-        ComponentGroup group(buf, total_bit_rate_flag);
-        components.push_back(group);
+    const bool total_bit_rate_flag = buf.getBool();
+    for (size_t count = buf.getBits<size_t>(4); count > 0 && buf.canRead(); --count) {
+        components.emplace_back(buf, total_bit_rate_flag);
     }
 }
 
 void ts::ISDBComponentGroupDescriptor::ComponentGroup::deserialize(PSIBuffer& buf, bool total_bit_rate_flag)
 {
     component_group_id = buf.getBits<uint8_t>(4);
-    const uint8_t num_ca_groups = buf.getBits<uint8_t>(4);
-    for (size_t i = 0; i < num_ca_groups; i++) {
-        CAUnit ca(buf);
-        CA_units.push_back(ca);
+    for (size_t count = buf.getBits<size_t>(4); count > 0 && buf.canRead(); --count) {
+        CA_units.emplace_back(buf);
     }
     if (total_bit_rate_flag) {
         total_bit_rate = buf.getUInt8();
@@ -150,8 +146,7 @@ void ts::ISDBComponentGroupDescriptor::ComponentGroup::deserialize(PSIBuffer& bu
 void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::deserialize(PSIBuffer& buf)
 {
     CA_unit_id = buf.getBits<uint8_t>(4);
-    const uint8_t num_of_components = buf.getBits<uint8_t>(4);
-    for (size_t i = 0; i < num_of_components; i++) {
+    for (size_t count = buf.getBits<uint8_t>(4); count > 0 && buf.canReadBytes(1); --count) {
         component_tags.push_back(buf.getUInt8());
     }
 }
@@ -166,42 +161,39 @@ void ts::ISDBComponentGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, co
     if (buf.canReadBytes(1)) {
         disp << margin << "Component group type: " << DataName(MY_XML_NAME, u"component_group_type", buf.getBits<uint8_t>(3), NamesFlags::NAME_VALUE) << std::endl;
         const bool total_bit_rate_flag = buf.getBool();
-        const size_t num_of_group = buf.getBits<uint8_t>(4);
-        for (size_t i = 0; i < num_of_group; i++) {
-            ComponentGroup comp;
-            comp.display(disp, buf, margin, total_bit_rate_flag, i);
+        const size_t num_of_group = buf.getBits<size_t>(4);
+        for (size_t i = 0; i < num_of_group && buf.canRead(); i++) {
+            ComponentGroup::Display(disp, buf, margin, total_bit_rate_flag, i);
         }
     }
 }
 
-void ts::ISDBComponentGroupDescriptor::ComponentGroup::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, bool total_bit_rate_flag, size_t group_num)
+void ts::ISDBComponentGroupDescriptor::ComponentGroup::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, bool total_bit_rate_flag, size_t group_num)
 {
-    disp << margin << UString::Format(u"Component group #%2d; id: ", group_num)
-         << DataName(MY_XML_NAME, u"component_group_id", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE)  << std::endl;
-    const size_t num_of_CA_unit = buf.getBits<uint8_t>(4);
-    for (size_t i = 0; i < num_of_CA_unit; i++) {
-        CAUnit unit;
-        unit.display(disp, buf, margin + u"  ", i);
-    }
-    if (total_bit_rate_flag) {
-        const uint8_t tbr = buf.getUInt8();
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"Component group #%2d; id: ", group_num)
+             << DataName(MY_XML_NAME, u"component_group_id", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE)  << std::endl;
+        const size_t num_of_CA_unit = buf.getBits<uint8_t>(4);
+        for (size_t i = 0; i < num_of_CA_unit && buf.canRead(); i++) {
+            CAUnit::Display(disp, buf, margin + u"  ", i);
+        }
+        if (total_bit_rate_flag && buf.canReadBytes(1)) {
+            const uint8_t tbr = buf.getUInt8();
+            disp << margin << "  "
+                 << UString::Format(u"Total bitrate: %7.2fMbps (%d)", double(float(tbr) / 4), tbr) << std::endl;
+        }
         disp << margin << "  "
-             << UString::Format(u"Total bitrate: %7.2fMbps (%d)", double(float(tbr) / 4), tbr) << std::endl;
+             << "Explanation: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
     }
-    disp << margin << "  "
-         << "Explanation: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
 }
 
-void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, size_t group_num)
+void ts::ISDBComponentGroupDescriptor::ComponentGroup::CAUnit::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, size_t group_num)
 {
-    disp << margin << UString::Format(u"CA unit #%2d", group_num) << "; id: "
-         << DataName(MY_XML_NAME, u"CA_unit_id", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE) << std::endl;
-    const size_t num_of_component = buf.getBits<uint8_t>(4);
-    ByteBlock _component_tags;
-    for (size_t i = 0; i < num_of_component; i++) {
-        _component_tags.push_back(buf.getUInt8());
+    if (buf.canReadBytes(1)) {
+        disp << margin << UString::Format(u"CA unit #%2d", group_num) << "; id: "
+             << DataName(MY_XML_NAME, u"CA_unit_id", buf.getBits<uint8_t>(4), NamesFlags::NAME_VALUE) << std::endl;
+        disp.displayVector(u"Component tags:", buf.getBytes(buf.getBits<size_t>(4)), margin);
     }
-    disp.displayVector(u"Component tags:", _component_tags, margin);
 }
 
 

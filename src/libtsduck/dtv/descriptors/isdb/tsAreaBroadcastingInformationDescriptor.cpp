@@ -65,8 +65,7 @@ void ts::AreaBroadcastingInformationDescriptor::serializePayload(PSIBuffer& buf)
 
 void ts::AreaBroadcastingInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    const size_t count = buf.getUInt8();
-    for (size_t i = 0; i < count && buf.canRead(); ++i) {
+    for (size_t count = buf.getUInt8(); count > 0 && buf.canReadBytes(7); --count) {
         Station st;
         st.station_id = buf.getUInt24();
         st.location_code = buf.getUInt16();
@@ -84,14 +83,11 @@ void ts::AreaBroadcastingInformationDescriptor::deserializePayload(PSIBuffer& bu
 
 void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, const ts::Descriptor& desc, PSIBuffer& buf, const UString& margin, const ts::DescriptorContext& context)
 {
-    if (buf.canReadBytes(1)) {
-        size_t count = buf.getUInt8();
-        while (count > 0 && buf.canReadBytes(7)) {
-            disp << margin << UString::Format(u"- Station id: %n", buf.getUInt24()) << std::endl;
-            disp << margin << UString::Format(u"  Location code: %n", buf.getUInt16()) << std::endl;
-            disp << margin << "  Broadcast signal format: " << DataName(MY_XML_NAME, u"BroadcastSignalFormat", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
-            disp.displayPrivateData(u"Additional station info", buf, buf.getUInt8(), margin + u"  ");
-        }
+    for (size_t count = buf.getUInt8(); count > 0 && buf.canReadBytes(7); --count) {
+        disp << margin << UString::Format(u"- Station id: %n", buf.getUInt24()) << std::endl;
+        disp << margin << UString::Format(u"  Location code: %n", buf.getUInt16()) << std::endl;
+        disp << margin << "  Broadcast signal format: " << DataName(MY_XML_NAME, u"BroadcastSignalFormat", buf.getUInt8(), NamesFlags::HEX_VALUE_NAME) << std::endl;
+        disp.displayPrivateData(u"Additional station info", buf, buf.getUInt8(), margin + u"  ");
     }
 }
 

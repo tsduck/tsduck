@@ -127,11 +127,14 @@ void ts::NetworkDownloadContentDescriptor::deserializePayload(PSIBuffer& buf)
             ip.emplace(addr, port);
             break;
         }
-        case 0x02: // address_type = URL
+        case 0x02: { // address_type = URL
             url = buf.getUTF8WithLength();
             break;
-        default:
+        }
+        default: { // invalid address_type
+            buf.setUserError();
             break;
+        }
     }
 
     if (compatibility_flag) {

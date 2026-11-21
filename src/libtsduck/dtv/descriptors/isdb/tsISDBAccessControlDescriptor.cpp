@@ -27,7 +27,8 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, MY_EDID, MY_XML_NAME, MY_CLASS::DisplayDescript
 
 ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(uint16_t id, PID p) :
     AbstractDescriptor(MY_EDID, MY_XML_NAME),
-    CA_system_id(id)
+    CA_system_id(id),
+    pid(p)
 {
 }
 

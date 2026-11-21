@@ -112,14 +112,13 @@ void ts::ISDBLDTLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, const 
         disp << margin << UString::Format(u"Transport stream id: %n", buf.getUInt16()) << std::endl;
         disp << margin << UString::Format(u"Original network id: %n", buf.getUInt16()) << std::endl;
 
-        while (buf.canReadBytes(3)) {
-            DescriptionType dtype;
-            dtype.display(disp, buf, margin + u" ");
+        while (buf.canReadBytes(4)) {
+            DescriptionType::Display(disp, buf, margin + u" ");
         }
     }
 }
 
-void ts::ISDBLDTLinkageDescriptor::DescriptionType::display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
+void ts::ISDBLDTLinkageDescriptor::DescriptionType::Display(TablesDisplay& disp, PSIBuffer& buf, const UString& margin)
 {
     disp << margin << "Description id: " << buf.getUInt16() << std::endl;
     buf.skipReservedBits(4);

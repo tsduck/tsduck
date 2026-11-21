@@ -147,9 +147,17 @@ bool ts::ContentAdvisoryDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
              entry.rating_description.fromXML(duck, &xregion, u"rating_description", false);
         for (auto& xdim : xregion.children(u"dimension", &ok, 0, 255)) {
             uint8_t dim = 0;
-            ok = xdim.getIntAttribute(dim, u"rating_dimension_j", true) &&
-                 xdim.getIntAttribute(entry.rating_values[dim], u"rating_value", true, 0, 0, 0x0F);
+            ok = xdim.getIntAttribute(dim, u"rating_dimension_j", true);
+            if (ok) {
+                if (entry.rating_values.contains(dim)) {
+                    element->report().error(u"duplicated attribute 'rating_dimension_j' %d in <%s> at line %d", dim, element->name(), xdim.lineNumber());
+                    ok = false;
+                }
+                else {
+                    ok = xdim.getIntAttribute(entry.rating_values[dim], u"rating_value", true, 0, 0, 0x0F);
+                }
+            }
         }
-   }
+    }
     return ok;
 }

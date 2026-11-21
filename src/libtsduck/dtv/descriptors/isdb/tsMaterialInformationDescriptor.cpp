@@ -79,9 +79,8 @@ void ts::MaterialInformationDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.getBits(descriptor_number, 4);
     buf.getBits(last_descriptor_number, 4);
-    const size_t number_of_material_set = buf.getUInt8();
-    for (size_t i = 0; i < number_of_material_set; ++i) {
-        Material mat;
+    for (size_t number_of_material_set = buf.getUInt8(); number_of_material_set > 0 && buf.canRead(); --number_of_material_set) {
+        auto& mat(material.emplace_back());
         mat.material_type = buf.getUInt8();
         buf.getStringWithByteLength(mat.material_name);
         mat.material_code_type = buf.getUInt8();
@@ -95,7 +94,6 @@ void ts::MaterialInformationDescriptor::deserializePayload(PSIBuffer& buf)
         mat.material_url_type = buf.getUInt8();
         buf.getStringWithByteLength(mat.material_url);
         buf.getBytes(mat.reserved, buf.getUInt8());
-        material.push_back(mat);
     }
 }
 

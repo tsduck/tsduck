@@ -76,7 +76,7 @@ void ts::ISDBCableTSDivisionSystemDescriptor::serializePayload(PSIBuffer& buf) c
 void ts::ISDBCableTSDivisionSystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
-        Carrier car;
+        auto& car(carriers.emplace_back());
         car.frequency = 100 * buf.getBCD<uint64_t>(8);  // coded in 100 Hz units
         buf.skipReservedBits(7);
         const bool future_use_data_flag = buf.getBool();
@@ -88,11 +88,9 @@ void ts::ISDBCableTSDivisionSystemDescriptor::deserializePayload(PSIBuffer& buf)
         if (!future_use_data_flag) {
             buf.getBytes(car.future_use_data, buf.getUInt8());
         }
-        int number_of_services = buf.getUInt8();
-        while (number_of_services-- > 0) {
+        for (size_t number_of_services = buf.getUInt8(); number_of_services > 0 && buf.canReadBytes(2); number_of_services--) {
             car.service_id.push_back(buf.getUInt16());
         }
-        carriers.push_back(car);
     }
 }
 

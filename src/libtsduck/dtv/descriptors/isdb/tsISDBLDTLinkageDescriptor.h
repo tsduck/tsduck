@@ -57,7 +57,7 @@ namespace ts {
             void deserialize(PSIBuffer&);
             void toXML(xml::Element*) const;
             bool fromXML(const xml::Element*);
-            void display(TablesDisplay&, PSIBuffer&, const UString&);
+            static void Display(TablesDisplay&, PSIBuffer&, const UString&);
             //! @endcond
         };
 

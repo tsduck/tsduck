@@ -207,47 +207,42 @@ void ts::ISDBHyperlinkDescriptor::deserializePayload(PSIBuffer& buf)
     link_destination_type = buf.getUInt8();
     switch (link_destination_type) {
         case LINK_TO_SERVICE: {
-            ServiceTriplet svc(buf);
-            link_to_service = svc;
-            }
+            link_to_service.emplace(buf);
             break;
+        }
         case LINK_TO_EVENT: {
-            EventTriplet evt(buf);
-            link_to_event = evt;
-            }
+            link_to_event.emplace(buf);
             break;
+        }
         case LINK_TO_MODULE: {
-            ModuleTriplet mod(buf);
-            link_to_module = mod;
-            }
+            link_to_module.emplace(buf);
             break;
+        }
         case LINK_TO_CONTENT: {
-            ModuleTriplet mod(buf);
-            link_to_module = mod;
-            }
+            link_to_content.emplace(buf);
             break;
+        }
         case LINK_TO_CONTENT_MODULE: {
-            ContentModuleTriplet mod(buf);
-            link_to_content_module = mod;
-            }
+            link_to_content_module.emplace(buf);
             break;
+        }
         case LINK_TO_ERT_NODE: {
-            ERTNode ert(buf);
-            link_to_ert_node = ert;
-            }
+            link_to_ert_node.emplace(buf);
             break;
+        }
         case LINK_TO_STORED_CONTENT: {
-            StoredContent uri(buf);
-            link_to_stored_content = uri;
-            }
+            link_to_stored_content.emplace(buf);
             break;
-        default:
+        }
+        default: {
             break;
+        }
     }
     buf.getBytes(private_data);
  }
 
-void ts::ISDBHyperlinkDescriptor::ServiceTriplet::deserialize(PSIBuffer& buf) {
+void ts::ISDBHyperlinkDescriptor::ServiceTriplet::deserialize(PSIBuffer& buf)
+{
     original_network_id = buf.getUInt16();
     transport_stream_id = buf.getUInt16();
     service_id = buf.getUInt16();
@@ -290,6 +285,7 @@ void ts::ISDBHyperlinkDescriptor::StoredContent::deserialize(PSIBuffer& buf)
 {
     buf.getStringWithByteLength(uri);
 }
+
 
 //----------------------------------------------------------------------------
 // Static method to display a descriptor.
@@ -403,46 +399,47 @@ void ts::ISDBHyperlinkDescriptor::buildXML(DuckContext& duck, xml::Element* root
             if (link_to_service.has_value()) {
                 link_to_service->toXML(root->addElement(u"Service"));
             }
+            break;
         }
-        break;
         case LINK_TO_EVENT: {
             if (link_to_event.has_value()) {
                 link_to_event->toXML(root->addElement(u"Event"));
             }
+            break;
         }
-        break;
         case LINK_TO_MODULE: {
             if (link_to_module.has_value()) {
                 link_to_module->toXML(root->addElement(u"Module"));
             }
+            break;
         }
-        break;
         case LINK_TO_CONTENT: {
             if (link_to_content.has_value()) {
                 link_to_content->toXML(root->addElement(u"Content"));
             }
+            break;
         }
-        break;
         case LINK_TO_CONTENT_MODULE: {
             if (link_to_content_module.has_value()) {
                 link_to_content_module->toXML(root->addElement(u"ContentModule"));
             }
+            break;
         }
-        break;
         case LINK_TO_ERT_NODE: {
             if (link_to_ert_node.has_value()) {
                 link_to_ert_node->toXML(root->addElement(u"ERTNode"));
             }
+            break;
         }
-        break;
         case LINK_TO_STORED_CONTENT: {
             if (link_to_stored_content.has_value()) {
                 link_to_stored_content->toXML(root->addElement(u"StoredContent"));
             }
+            break;
         }
-        break;
-        default:
-        break;
+        default: {
+            break;
+        }
     }
     root->addHexaTextChild(u"private_data", private_data, true);
 }
@@ -547,8 +544,9 @@ bool ts::ISDBHyperlinkDescriptor::analyzeXML(DuckContext& duck, const xml::Eleme
                 }
                 break;
             }
-            default:
+            default: {
                 break;
+            }
         }
     }
     return ok;

@@ -91,9 +91,8 @@ void ts::ISDBCAStartupDescriptor::deserializePayload(PSIBuffer& buf)
         second_load_indicator.emplace(uint8_t(0));
         buf.getBits(second_load_indicator.value(), 7);
     }
-    exclusion_CA_program_ID.resize(buf.getUInt8());
-    for (auto& p : exclusion_CA_program_ID) {
-        p = buf.getPID();
+    for (size_t count = buf.getUInt8(); count > 0 && buf.canRead(); --count) {
+        exclusion_CA_program_ID.push_back(buf.getPID());
     }
     buf.getBytes(load_security_info, buf.getUInt8());
     buf.getBytes(private_data);

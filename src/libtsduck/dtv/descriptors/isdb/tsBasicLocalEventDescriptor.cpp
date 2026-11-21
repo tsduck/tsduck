@@ -216,8 +216,8 @@ bool ts::BasicLocalEventDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
               element->getIntAttribute(end_time_NPT, u"end_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
               element->getTimeAttribute(start_time, u"start_time", segmentation_mode > 1 && segmentation_mode < 6) &&
               element->getTimeAttribute(duration, u"duration", segmentation_mode > 1 && segmentation_mode < 6) &&
-              element->getIntAttribute(start_time_extension, u"start_time_extension", false, 0) &&
-              element->getIntAttribute(duration_extension, u"duration_extension", false, 0) &&
+              element->getIntAttribute(start_time_extension, u"start_time_extension", false, 0, 0, 999) &&
+              element->getIntAttribute(duration_extension, u"duration_extension", false, 0, 0, 999) &&
               element->getHexaTextChild(reserved_data, u"reserved_data", false);
 
     // Convert seconds to milliseconds.

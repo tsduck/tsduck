@@ -211,7 +211,7 @@ bool ts::STCReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
         element->getIntAttribute(NPT_reference, u"NPT_reference", STC_reference_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
         element->getIntAttribute(STC_reference, u"STC_reference", STC_reference_mode == 1 || STC_reference_mode == 3 || STC_reference_mode == 5, 0, 0, 0x00000001FFFFFFFF) &&
         element->getTimeAttribute(time_reference, u"time_reference", STC_reference_mode == 3 || STC_reference_mode == 5) &&
-        element->getIntAttribute(time_reference_extension, u"time_reference_extension", false, 0) &&
+        element->getIntAttribute(time_reference_extension, u"time_reference_extension", false, 0, 0, 999) &&
         element->getHexaTextChild(reserved_data, u"reserved_data", false);
 
     // Convert seconds to milliseconds.
