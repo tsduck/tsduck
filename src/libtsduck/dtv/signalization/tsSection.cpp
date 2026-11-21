@@ -279,16 +279,16 @@ void ts::Section::validate(CRC32::Validation crc_op)
 {
     // Basic validity check using section size
     const uint8_t* const daddr = content();
-    const size_t dsize = size();
-    const size_t total_size = SectionSize(daddr, dsize);
-    const bool is_long = StartLongSection(daddr, dsize);
-    const bool is_short = StartShortSection(daddr, dsize);
-    if (total_size == 0 || (!is_long && !is_short)) {
+    const size_t raw_data_size = size();
+    const size_t total_section_size = SectionSize(daddr, raw_data_size);
+    const bool is_long = StartLongSection(daddr, raw_data_size);
+    const bool is_short = StartShortSection(daddr, raw_data_size);
+    if (total_section_size == 0 || (!is_long && !is_short)) {
         // Could not get the section from header => invalid header.
         invalidate(INV_HEADER);
         return;
     }
-    if (total_size != dsize) {
+    if (total_section_size != raw_data_size) {
         // Section size in header does not match data size.
         invalidate(INV_SIZE);
         return;
@@ -296,7 +296,7 @@ void ts::Section::validate(CRC32::Validation crc_op)
 
     // Extract long section header info.
     if (is_long) {
-        if (dsize < MIN_LONG_SECTION_SIZE) {
+        if (raw_data_size < MIN_LONG_SECTION_SIZE) {
             invalidate(INV_HEADER);
             return;
         }
@@ -310,7 +310,7 @@ void ts::Section::validate(CRC32::Validation crc_op)
     // Check CRC32 if required
     if (is_long) {
         // Section size, without CRC32:
-        const size_t sec_size = dsize - SECTION_CRC32_SIZE;
+        const size_t sec_size = raw_data_size - SECTION_CRC32_SIZE;
         switch (crc_op) {
             case CRC32::CHECK:
                 if (CRC32(daddr, sec_size) != GetUInt32(daddr + sec_size)) {
@@ -520,13 +520,21 @@ void ts::Section::setUInt32(size_t offset, uint32_t value, bool recompute_crc)
 void ts::Section::appendPayload(const void* data, size_t dsize, bool recompute_crc)
 {
     if (isValid() && data != nullptr && dsize != 0) {
+        // Compute new section length.
+        const size_t new_size = size() + dsize;
+        if (new_size > MAX_PRIVATE_SECTION_SIZE) {
+            // Would overflow the maximum section size, invalidate the section.
+            _status = INV_SIZE;
+            return;
+        }
+
         // Update section size in header.
-        PutUInt16(rwContent() + 1, (GetUInt16(content() + 1) & 0xF000) | uint16_t((size() + dsize - 3) & 0x0FFF));
+        PutUInt16(rwContent() + 1, (GetUInt16(rwContent() + 1) & 0xF000) | uint16_t((new_size - SHORT_SECTION_HEADER_SIZE) & 0x0FFF));
 
         // Remove trailing CRC (now invalid) at end of long section.
-        const bool is_long = isLongSection() && size() >= LONG_SECTION_HEADER_SIZE + 4;
+        const bool is_long = isLongSection();
         if (is_long) {
-            rwResize(size() - 4);
+            rwResize(size() - SECTION_CRC32_SIZE);
         }
 
         // Append the data.
@@ -534,8 +542,8 @@ void ts::Section::appendPayload(const void* data, size_t dsize, bool recompute_c
 
         // Restore a trailing CRC at end of long section and optionally recompute it.
         if (is_long) {
-            static const uint8_t byte4[4] = {0, 0, 0, 0};
-            rwAppend(byte4, sizeof(byte4));
+            static const uint8_t dummy_crc[SECTION_CRC32_SIZE] {};
+            rwAppend(dummy_crc, sizeof(dummy_crc));
             if (recompute_crc) {
                 recomputeCRC();
             }

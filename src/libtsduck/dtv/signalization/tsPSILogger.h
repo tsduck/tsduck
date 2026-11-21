@@ -151,13 +151,18 @@ namespace ts {
         bool                     _cat_ok = false;            // Got a CAT or not interested in CAT
         bool                     _sdt_ok = false;            // Got an SDT
         bool                     _bat_ok = false;            // Got a BAT
-        int                      _expected_pmt = 0;          // Expected PMT count
-        int                      _received_pmt = 0;          // Received PMT count
+        bool                     _nit_ok = false;            // Got a NIT
         PacketCounter            _clear_packets_cnt = 0;
         PacketCounter            _scrambled_packets_cnt = 0;
-        PAT                      _previous_pat {};           // Last received PAT.
-        SectionDemux             _demux {_duck, this};       // Demux reporting PSI tables.
+        PAT                      _previous_pat {};             // Last received PAT.
+        SectionDemux             _demux {_duck, this};         // Demux reporting PSI tables.
         Standards                _standards = Standards::NONE; // List of current standards in the PSI logger.
+        std::set<uint16_t>       _service_ids {};              // Set of service ids for which we got a PMT.
+        std::map<PID, std::set<uint16_t>> _pmt_to_service {};  // Key: PMT PID, value: set of remaining service ids in this PMT PID.
+
+        // Add or change a service in _pmt_to_service.
+        void addService(PID pmt_pid, uint16_t service_id);
+        void changeService(PID pmt_pid, uint16_t service_id, bool removed); // not removed = found service
 
         // Displays a binary table.
         void displayTable(const BinaryTable& table);

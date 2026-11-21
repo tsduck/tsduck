@@ -502,8 +502,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 }
             }
 
-            // Create a new Section object if necessary (ie. if a section
-            // hendler is registered or if this is a new section).
+            // Create a new Section object if necessary (ie. if a section handler is registered or if this is a new section).
             SectionPtr sect_ptr;
 
             if (section_ok && (_section_handler != nullptr || (tc != nullptr && tc->sects[section_number] == nullptr))) {

@@ -8,6 +8,7 @@
 
 #include "tsPSILogger.h"
 #include "tsDuckContext.h"
+#include "tsPMT.h"
 #include "tsArgs.h"
 #include "tsTablesDisplay.h"
 #include "tsBinaryTable.h"
@@ -159,9 +160,13 @@ bool ts::PSILogger::open()
     // Reset content.
     _xml_doc.clear();
     _x2j_conv.clear();
+    _abort = _pat_ok = _cat_ok = _sdt_ok = _bat_ok = _nit_ok = false;
     _clear_packets_cnt = _scrambled_packets_cnt = 0;
     _previous_pat.clear();
     _previous_pat.invalidate();
+    _standards = Standards::NONE;
+    _service_ids.clear();
+    _pmt_to_service.clear();
 
     // Set XML options in document.
     _xml_doc.setTweaks(_xml_tweaks);
@@ -236,7 +241,7 @@ void ts::PSILogger::close()
 
 bool ts::PSILogger::completed() const
 {
-    return _abort || (!_all_versions && _pat_ok && _cat_ok && _sdt_ok && _received_pmt >= _expected_pmt);
+    return _abort || (!_all_versions && _pat_ok && _cat_ok && _nit_ok && _sdt_ok && _pmt_to_service.empty());
 }
 
 
@@ -272,6 +277,47 @@ void ts::PSILogger::feedPacket(const TSPacket& pkt)
 
 
 //----------------------------------------------------------------------------
+// Add or remove a service in _pmt_to_service.
+//----------------------------------------------------------------------------
+
+void ts::PSILogger::addService(PID pmt_pid, uint16_t service_id)
+{
+    // Do nothing if only one version of each PMT is required and we already got the PMT for the service.
+    if (_all_versions || !_service_ids.contains(service_id)) {
+        _pmt_to_service[pmt_pid].insert(service_id);
+        _demux.addPID(pmt_pid);
+    }
+}
+
+void ts::PSILogger::changeService(PID pmt_pid, uint16_t service_id, bool removed)
+{
+    // Update occurence of the service.
+    if (removed) {
+        // Service removed from PAT, forget that we found it once, in case it reappear in a future PAT.
+        _service_ids.erase(service_id);
+    }
+    else {
+        // Found service.
+        _service_ids.insert(service_id);
+    }
+
+    // Update existence of the service.
+    if (removed || !_all_versions) {
+        // Service disappeared from PAT or we need it once only -> remove it.
+        const auto it_pmt = _pmt_to_service.find(pmt_pid);
+        if (it_pmt != _pmt_to_service.end()) {
+            it_pmt->second.erase(service_id);
+            if (it_pmt->second.empty()) {
+                // No more service expected on that PID, remove it.
+                _pmt_to_service.erase(it_pmt);
+                _demux.removePID(pmt_pid);
+            }
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // This hook is invoked when a complete table is available.
 //----------------------------------------------------------------------------
 
@@ -299,23 +345,39 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 }
                 // Reset all PMT PID's which disappeared or changed.
                 if (_previous_pat.isValid()) {
+                    // Loop on all service ids in previous PAT.
                     for (const auto& prev_it : _previous_pat.pmts) {
+                        // Check if that service id exists in the new PAT.
                         const auto new_it = pat.pmts.find(prev_it.first);
-                        if (new_it == pat.pmts.end() || new_it->second != prev_it.second) {
-                            // Service disappeared or changed PMT PID, remove the previous PMT PID.
-                            _demux.removePID(prev_it.second);
+                        if (new_it == pat.pmts.end()) {
+                            // Service disappeared.
+                            _report.debug(u"service %n disappeared from PAT", prev_it.first);
+                            _service_ids.erase(prev_it.first);
+                            changeService(prev_it.second, prev_it.first, true);
+                        }
+                        else if (new_it->second != prev_it.second) {
+                            // Service changed its PMT PID.
+                            _report.debug(u"service %n changed PMT PID from %n to %n", prev_it.first, prev_it.second, new_it->second);
+                            changeService(prev_it.second, prev_it.first, true);
                         }
                     }
                 }
                 _previous_pat = pat;
                 // Add a filter on each referenced PID to get the PMT
                 for (const auto& it : pat.pmts) {
-                    _demux.addPID(it.second);
-                    _expected_pmt++;
+                    addService(it.second, it.first);
                 }
-                // Also include NIT (considered as a PMT)
+                // Also include NIT.
                 _demux.addPID(pat.nit_pid != PID_NULL ? pat.nit_pid : PID(PID_NIT));
-                _expected_pmt++;
+            }
+            displayTable(table);
+            break;
+        }
+
+        case TID_PMT: {
+            PMT pmt(_duck, table);
+            if (pmt.isValid()) {
+                changeService(pid, pmt.service_id, false);
             }
             displayTable(table);
             break;
@@ -338,16 +400,14 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
             break;
         }
 
-        case TID_NIT_ACT:  // NIT and PMT are processed identically.
-        case TID_PMT: {
-            // Stop filtering this PID if we don't need all versions.
+        case TID_NIT_ACT:
+            // Stop filtering the NIT PID if we don't need all versions.
             if (!_all_versions) {
                 _demux.removePID(pid);
-                _received_pmt++;
             }
+            _nit_ok = true;
             displayTable(table);
             break;
-        }
 
         case TID_NIT_OTH: {
             // Ignore NIT for other networks if only one version required

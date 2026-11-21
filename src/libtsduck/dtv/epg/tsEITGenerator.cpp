@@ -409,7 +409,7 @@ bool ts::EITGenerator::loadEventsImpl(const Section& section, bool get_actual_ts
     const size_t pl_size = section.payloadSize();
 
     // Load all events in the EIT payload.
-    bool success = section.isValid() && EIT::IsEIT(section.tableId()) && pl_size >= EIT::EIT_PAYLOAD_FIXED_SIZE;
+    bool success = section.isValid() && section.isLongSection() && EIT::IsEIT(section.tableId()) && pl_size >= EIT::EIT_PAYLOAD_FIXED_SIZE;
     if (success) {
         if (get_actual_ts && !_actual_ts_id_set && EIT::IsActual(section.tableId())) {
             // Use the EIT actual TS id as current TS id.
