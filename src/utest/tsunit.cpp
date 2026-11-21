@@ -11,6 +11,7 @@
 #include <cctype>
 #include <codecvt>
 #include <locale>
+#include <chrono>
 
 #if (defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)) && !defined(WINDOWS)
     #define WINDOWS 1
@@ -638,19 +639,19 @@ int tsunit::Main::run()
     // In list mode, only print the list of tests.
     if (_list_mode) {
         // Get the list of all test suites.
-        std::list<std::string> suiteNames;
+        std::list<std::string> suite_names;
         TestRepository* repo = TestRepository::instance();
-        repo->getAllTestSuiteNames(suiteNames);
+        repo->getAllTestSuiteNames(suite_names);
         // Loop on all test suites.
-        for (const auto& sname : suiteNames) {
+        for (const auto& sname : suite_names) {
             TestSuite* suite = repo->getTestSuite(sname);
             if (suite != nullptr) {
                 // Test suite name alone
                 std::cout << suite->getName() << std::endl;
                 // Then loop on all individual tests in this test suite.
-                std::list<std::string> testNames;
-                suite->getAllTestNames(testNames);
-                for (const auto& tname : testNames) {
+                std::list<std::string> test_names;
+                suite->getAllTestNames(test_names);
+                for (const auto& tname : test_names) {
                     std::cout << "    " << suite->getName() << "::" << tname << std::endl;
                 }
             }
@@ -659,29 +660,29 @@ int tsunit::Main::run()
     }
 
     // Get optional test suite and test. When nullptr, run them all.
-    tsunit::TestSuite* testSuite = nullptr;
-    tsunit::TestCase* testCase = nullptr;
+    tsunit::TestSuite* test_suite = nullptr;
+    tsunit::TestCase* test_case = nullptr;
     if (!_test_name.empty()) {
         TestRepository* repo = TestRepository::instance();
         // First, try to interpret the name as a test suite.
-        testSuite = repo->getTestSuite(_test_name);
-        if (testSuite == nullptr) {
+        test_suite = repo->getTestSuite(_test_name);
+        if (test_suite == nullptr) {
             // Could not find a test suite, try to interpret the name as suite::test.
             const size_t sep = _test_name.rfind("::");
             if (sep != std::string::npos) {
                 // Test suite name found, try to get it.
-                testSuite = repo->getTestSuite(_test_name.substr(0, sep));
-                if (testSuite != nullptr) {
+                test_suite = repo->getTestSuite(_test_name.substr(0, sep));
+                if (test_suite != nullptr) {
                     // Test suite found, get the test name.
-                    testCase = testSuite->getTestCase(_test_name.substr(sep + 2));
-                    if (testCase == nullptr) {
+                    test_case = test_suite->getTestCase(_test_name.substr(sep + 2));
+                    if (test_case == nullptr) {
                         // Test not found, forget about test suite.
-                        testSuite = nullptr;
+                        test_suite = nullptr;
                     }
                 }
             }
         }
-        if (testSuite == nullptr) {
+        if (test_suite == nullptr) {
             std::cerr << _argv0 << ": unknown test \"" << _test_name << "\"" << std::endl;
             return EXIT_FAILURE;
         }
@@ -706,9 +707,16 @@ int tsunit::Main::run()
     }
 
     // Run the tests
-    bool success = true;
     TestRunner runner;
-    success = runner.run(testSuite, testCase);
+    const auto start = std::chrono::steady_clock::now();
+    bool success = runner.run(test_suite, test_case);
+
+    // Compute execution time.
+    const std::chrono::milliseconds duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start);
+    const int hours = int(duration.count() / 3'600'000);
+    const int minutes = int((duration.count() / 60'000) % 60);
+    const int seconds = int((duration.count() / 1'000) % 60);
+    const int millis = int(duration.count() % 1'000);
 
     // Cleanup resources
     if (Debug::_nul_device.is_open()) {
@@ -722,20 +730,27 @@ int tsunit::Main::run()
             std::cout << "with weak failures ";
         }
         std::cout << "(" << runner.getPassedCount() << " tests, " << Assertions::getPassedCount() << " assertions";
-        if (Assertions::getFailedAssumptionsCount() > 0) {
-            std::cout << ", " << Assertions::getFailedAssumptionsCount() << " weak assumptions failed";
-        }
-        std::cout << ")" << std::endl << std::endl;
     }
     else {
         std::cout << std::endl
                   << errorPrefix << "FAILURES (" << runner.getFailedCount() << " tests FAILED, " << runner.getPassedCount() << " passed, "
                   << Assertions::getFailedAssertionsCount() << " assertions FAILED, " << Assertions::getPassedCount() << " passed";
-        if (Assertions::getFailedAssumptionsCount() > 0) {
-            std::cout << ", " << Assertions::getFailedAssumptionsCount() << " weak assumptions failed";
-        }
-        std::cout << ")" << std::endl << std::endl;
     }
+    if (Assertions::getFailedAssumptionsCount() > 0) {
+        std::cout << ", " << Assertions::getFailedAssumptionsCount() << " weak assumptions failed";
+    }
+    std::cout << ", in";
+    if (hours > 0) {
+        std::cout << " " << hours << "h";
+    }
+    if (minutes > 0) {
+        std::cout << " " << minutes << "mn";
+    }
+    std::cout << " " << seconds;
+    if (hours == 0 && minutes == 0) {
+        std::cout << "." << std::setfill('0') << std::setw(3) << millis;
+    }
+    std::cout << "s)" << std::endl << std::endl;
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
