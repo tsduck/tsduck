@@ -595,29 +595,29 @@ bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t 
         debug(u"decrypting segment, %d bytes, %d-bit key", _seg_end, 8 * _seg_key.size());
         CBC<AES128> algo;
         if (!algo.setKey(_seg_key, _seg_iv)) {
-            error(u"error setting key/IV while decrypting HLS segment, segment size: %d, key size: %d, IV size: %d bytes", _seg_next, _seg_key.size(), _seg_iv.size());
+            error(u"error setting key/IV while decrypting HLS segment, segment size: %d, key size: %d, IV size: %d bytes", _seg_end, _seg_key.size(), _seg_iv.size());
             return false;
         }
         if (!algo.decrypt(_seg_data.data(), _seg_end, _seg_data.data(), _seg_data.size(), &_seg_end)) {
-            error(u"error decrypting HLS segment, segment size: %d, key size: %d, IV size: %d bytes", _seg_next, _seg_key.size(), _seg_iv.size());
+            error(u"error decrypting HLS segment, segment size: %d, key size: %d, IV size: %d bytes", _seg_end, _seg_key.size(), _seg_iv.size());
             return false;
         }
 
         // AES-CBC encrypted block must be a multiple of the block size.
         if (_seg_end < AES128::BLOCK_SIZE || _seg_end % AES128::BLOCK_SIZE != 0) {
-            error(u"invalid decrypted HLS segment size: %d", _seg_next);
+            error(u"invalid decrypted HLS segment size: %d", _seg_end);
             return false;
         }
 
         // Check and remove PKCS #7 padding.
         const size_t pad = _seg_data[_seg_end - 1];
-        bool pad_valid = pad <= AES128::BLOCK_SIZE;
+        bool pad_valid = pad > 0 && pad <= AES128::BLOCK_SIZE;
         for (size_t index = 2; pad_valid && index <= pad; ++index) {
             pad_valid = _seg_data[_seg_end - index] == pad;
         }
         if (!pad_valid) {
             error(u"invalid PKCS #7 padding in decrypted HLS segment, segment size: %d, last block: %s",
-                  _seg_next, UString::Dump(_seg_data.data() + _seg_end - AES128::BLOCK_SIZE, AES128::BLOCK_SIZE, UString::SINGLE_LINE));
+                  _seg_end, UString::Dump(_seg_data.data() + _seg_end - AES128::BLOCK_SIZE, AES128::BLOCK_SIZE, UString::SINGLE_LINE));
             return false;
         }
         _seg_end -= pad;
@@ -629,7 +629,7 @@ bool ts::hls::InputPlugin::receiveURL(WebRequest& request, void* buffer, size_t 
                 return false;
             }
             if (_seg_end % PKT_SIZE != 0) {
-                warning(u"suspect decrypted HLS segment size: %d, not a multiple of %d", _seg_next, PKT_SIZE);
+                warning(u"suspect decrypted HLS segment size: %d, not a multiple of %d", _seg_end, PKT_SIZE);
             }
         }
     }

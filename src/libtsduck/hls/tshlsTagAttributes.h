@@ -116,7 +116,7 @@ namespace ts::hls {
             const size_t dot = str.find(u'.');
             INT i = static_cast<INT>(0);
             INT j = static_cast<INT>(0);
-            if (str.substr(0, dot).toInteger(i) && (dot == NPOS || str.substr(dot+1).toJustifiedLeft(3, u'0', true).toInteger(j))) {
+            if (str.substr(0, dot).toInteger(i) && (dot == NPOS || str.substr(dot+1).toJustifiedLeft(3, u'0', true).toInteger(j)) && !mul_overflow<INT>(i, 1000)) {
                 value = (i * 1000) + j;
                 return true;
             }

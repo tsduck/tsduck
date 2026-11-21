@@ -208,9 +208,13 @@ bool ts::hls::PlayList::setSegmentTargetDuration(cn::seconds duration)
     }
 }
 
-bool ts::hls::PlayList::setMediaSequence(size_t seq)
+bool ts::hls::PlayList::setMediaSequence(uint64_t seq)
 {
-    if (setTypeMedia()) {
+    if (seq > MAX_START_MEDIA_SEQUENCE) {
+        report().error(u"HLS media sequence %'d is too large", seq);
+        return false;
+    }
+    else if (setTypeMedia()) {
         _media_sequence = seq;
         return true;
     }
@@ -715,7 +719,7 @@ void ts::hls::PlayList::reload(PlayList& new_pl)
     }
     else {
         // Start at first new segment, copy all new segments.
-        for (size_t i = _media_sequence + _segments.size() - new_pl._media_sequence; i < new_pl._segments.size(); ++i) {
+        for (uint64_t i = _media_sequence + _segments.size() - new_pl._media_sequence; i < new_pl._segments.size(); ++i) {
             _segments.push_back(new_pl._segments[i]);
         }
     }
@@ -869,6 +873,10 @@ bool ts::hls::PlayList::parse(bool strict)
                     // #EXT-X-MEDIA-SEQUENCE:number
                     if (!tag_params.toInteger(_media_sequence) && strict) {
                         report().error(u"invalid media sequence in %s", line);
+                        _valid = false;
+                    }
+                    else if (_media_sequence > MAX_START_MEDIA_SEQUENCE) {
+                        report().error(u"HLS media sequence %'d is too large in %s", _media_sequence, line);
                         _valid = false;
                     }
                     break;

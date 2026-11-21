@@ -296,14 +296,19 @@ namespace ts::hls {
         //! Get the sequence number of first segment (in media playlist).
         //! @return The sequence number of first segment.
         //!
-        size_t mediaSequence() const { return _media_sequence; }
+        uint64_t mediaSequence() const { return _media_sequence; }
 
         //!
         //! Set the sequence number of first segment in a media playlist.
         //! @param [in] seq The sequence number of first segment.
         //! @return True on success, false on error.
         //!
-        bool setMediaSequence(size_t seq);
+        bool setMediaSequence(uint64_t seq);
+
+        //!
+        //! We arbitrarily limit media sequences to 2^63 to avoid overflow in sequence computation.
+        //!
+        static constexpr uint64_t MAX_START_MEDIA_SEQUENCE = std::numeric_limits<uint64_t>::max() / 2;
 
         //!
         //! Get the end of list indicator (in media playlist).
@@ -497,7 +502,7 @@ namespace ts::hls {
         bool               _is_url = false;         // The base is an URL, not a directory name.
         URL                _url {};                 // Original URL.
         cn::seconds        _target_duration {};     // Segment target duration (media playlist).
-        size_t             _media_sequence = 0;     // Sequence number of first segment (media playlist).
+        uint64_t           _media_sequence = 0;     // Sequence number of first segment (media playlist).
         bool               _end_list = false;       // End of list indicator (media playlist).
         Time               _utc_download {};        // UTC time of download.
         Time               _utc_termination {};     // UTC time of termination (download + all segment durations).

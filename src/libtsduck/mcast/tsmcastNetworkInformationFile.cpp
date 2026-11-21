@@ -110,9 +110,8 @@ bool ts::mcast::NetworkInformationFile::BroadcastNetwork::parseXML(const xml::El
             st.dvbt2.emplace();
             ok = dp.getIntChild(st.dvbt2->plp_id, u"plp_id", strict) &&
                  dp.getIntChild(st.dvbt2->t2_system_id, u"T2_system_id", strict);
-            for (auto& xt2 : e.children(u"long_T2_system_delivery_descriptor", &ok, 0, 1)) {
-                st.dvbt2->t2_desc.emplace();
-                auto& t2(st.dvbt2->t2_desc.value());
+            for (auto& xt2 : dp.children(u"long_T2_system_delivery_descriptor", &ok, 0, 1)) {
+                auto& t2(st.dvbt2->t2_desc.emplace());
                 ok = xt2.getTextChild(t2.siso_miso, u"SISO_MISO", true, strict) &&
                      xt2.getTextChild(t2.bandwidth, u"bandwidth", true, strict) &&
                      xt2.getTextChild(t2.guard_interval, u"guard_interval", true, strict) &&

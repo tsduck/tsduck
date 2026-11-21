@@ -233,18 +233,18 @@ bool ts::mcast::FluteDemux::updateFileSize(const FluteSessionId& sid, SessionCon
         _report.error(u"file transfer length changed in the middle of transmission, was %'d, now %'d, TOI %d, %s", file.transfer_length, file_size, toi, sid);
     }
 
-    file.transfer_length = file_size;
-
-    if (_args.max_file_size > 0 && file_size > _args.max_file_size) {
-        _report.verbose(u"ignoring file from %s, TOI: %d, too large: %'d bytes", sid, toi, file_size);
-        // Mark the file as processed (ignored in the future). Deallocate everything.
-        file.processed = true;
-        file.chunks.clear();
-        return false;
+    // Ignore new size = 0 in all cases, not significant.
+    if (file_size > 0) {
+        file.transfer_length = file_size;
+        if (_args.max_file_size > 0 && file_size > _args.max_file_size) {
+            _report.verbose(u"ignoring file from %s, TOI: %d, too large: %'d bytes", sid, toi, file_size);
+            // Mark the file as processed (ignored in the future). Deallocate everything.
+            file.processed = true;
+            file.chunks.clear();
+            return false;
+        }
     }
-    else {
-        return true;
-    }
+    return true;
 }
 
 
@@ -310,7 +310,7 @@ void ts::mcast::FluteDemux::processCompleteFile(const FluteSessionId& sid, Sessi
             for (const auto& n : _args.extract_files) {
                 if (file.name.similar(n)) {
                     // Find last part of the name.
-                    size_t start = file.name.find_last_of(u"/:");
+                    size_t start = file.name.find_last_of(u"\\/:");
                     start = start >= file.name.length() ? 0 : start + 1;
                     // Build output path.
                     fs::path out(_args.output_directory);

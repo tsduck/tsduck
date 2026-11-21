@@ -26,8 +26,8 @@ void ts::mcast::NIPStreamId::clear()
 
 bool ts::mcast::NIPStreamId::operator<(const NIPStreamId& other) const
 {
-    return ((uint64_t(network_id) << 48) | (uint64_t(carrier_id) << 32) | (uint64_t(link_id) << 16) | network_id) <
-        ((uint64_t(other.network_id) << 48) | (uint64_t(other.carrier_id) << 32) | (uint64_t(other.link_id) << 16) | other.network_id);
+    return ((uint64_t(network_id) << 48) | (uint64_t(carrier_id) << 32) | (uint64_t(link_id) << 16) | service_id) <
+        ((uint64_t(other.network_id) << 48) | (uint64_t(other.carrier_id) << 32) | (uint64_t(other.link_id) << 16) | other.service_id);
 
 }
 
