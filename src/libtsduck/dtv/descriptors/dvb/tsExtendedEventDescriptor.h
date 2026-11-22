@@ -52,10 +52,8 @@ namespace ts {
         ExtendedEventDescriptor(DuckContext& duck, const Descriptor& bin);
 
         //!
-        //! Split into several descriptors if neccesary and add them in a descriptor list.
-        //!
-        //! Split the content into several ExtendedEventDescriptor if the content
-        //! is too long and add them in a descriptor list.
+        //! Split into several descriptors if necessary and add them in a descriptor list.
+        //! Split the content into several ExtendedEventDescriptor if the contentv is too long and add them in a descriptor list.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] dlist List of descriptors.
         //!

@@ -245,7 +245,7 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
         // Compute PCR value from the previous reference PCR value and the bitrate.
         // If the bitrate is unknown, keep the reference PCR, even though we know it is incorrect.
         const BitRate bitrate = tsp->bitrate();
-        const uint64_t pcr = _ref_pcr + (bitrate == 0 ? 0 : (((tsp->pluginPackets() - _ref_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt());
+        const uint64_t pcr = _ref_pcr + safe_mul_div<uint64_t>(tsp->pluginPackets() - _ref_packet, PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ, bitrate.toInt());
 
         // Replace the PCR value. We know that we can safely overwrite the payload if the
         // adaptation field must be extended since we saved the payload in the shift buffer.

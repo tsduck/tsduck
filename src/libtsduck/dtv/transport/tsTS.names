@@ -7,7 +7,7 @@ Bits = 2
 3 = odd
 
 [ts.af_descriptor_tag]
-# In  header
+# In TS header
 Bits = 8
 0x04 = Timeline descriptor
 0x05 = Location descriptor

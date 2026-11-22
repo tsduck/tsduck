@@ -138,8 +138,8 @@ bool ts::MuxPlugin::start()
     getIntValue(_max_insert_count, u"max-insert-count", 0);
     _pid_next_pkt = 0;
     _ts_pids.reset();
-    _youngest_pts = 0;
-    _pts_last_inserted = 0;
+    _youngest_pts = INVALID_PTS;
+    _pts_last_inserted = INVALID_PTS;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
     getIntValues(_set_labels, u"set-label");
@@ -204,7 +204,7 @@ ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMeta
     }
 
     PID pid = pkt.getPID();
-    uint64_t currentpts = 0;
+    uint64_t currentpts = INVALID_PTS;
 
     // Get time stamp from current packet.
     if (pid == _pts_pid && pkt.hasPTS()) {
@@ -217,24 +217,24 @@ ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMeta
     }
 
     // Handle min max pts, modify _pts_range_ok signal
-    if (currentpts > 0) {
+    if (currentpts != INVALID_PTS) {
         _youngest_pts = currentpts;
 
         // check if min-pts is reached
         if (_min_pts != 0) {
             if (_pts_pid == PID_NULL || pid == _pts_pid) {
                 if (currentpts > _min_pts  && (currentpts < _max_pts || _max_pts == 0)) {
-                    debug(u"Found minmaxpts range OK at PTS: %'d, enabling packet insertion", currentpts);
+                    debug(u"found min/max pts range OK at PTS: %'d, enabling packet insertion", currentpts);
                     _pts_range_ok = true;
                 }
             }
         }
 
         // check if inter-time is reached
-        if (_inter_time != 0 && _pts_last_inserted != 0) {
-            uint64_t calculated = _pts_last_inserted + _inter_time;
-            if (_youngest_pts > calculated) {
-                debug(u"Detected waiting time %d has passed, pts_last_insert: %d, youngest pts: %d, enabling packet insertion",  _inter_time, _pts_last_inserted, _youngest_pts);
+        if (_inter_time != 0 && _pts_last_inserted != INVALID_PTS) {
+            const uint64_t calculated = PTSTraits::Add(_pts_last_inserted, _inter_time);
+            if (PTSTraits::Sequenced(calculated, _youngest_pts)) {
+                debug(u"detected waiting time %d has passed, pts_last_insert: %d, youngest pts: %d, enabling packet insertion", _inter_time, _pts_last_inserted, _youngest_pts);
                 _pts_range_ok = true;
             }
             else {
@@ -283,7 +283,7 @@ ts::PacketProcessStatus ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacketMeta
 
     _inserted_packet_count++;
     _pts_last_inserted = _youngest_pts;   // store pts of last insertion
-    debug(u"[%d:%d] Inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)",
+    debug(u"[%d:%d] inserting Packet at PTS: %'d (pos: %'d), file: %s (pos: %'d)",
           _inter_pkt, _pid_next_pkt, _pts_last_inserted, tsp->pluginPackets(), _file.getFileName(), _inserted_packet_count);
 
     if (_inter_time != 0) {

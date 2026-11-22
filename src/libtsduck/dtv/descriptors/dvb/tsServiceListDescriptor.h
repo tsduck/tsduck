@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsDescriptorList.h"
 
 namespace ts {
     //!
@@ -80,6 +81,14 @@ namespace ts {
         //! @return True if the descriptor was modified.
         //!
         bool addService(uint16_t id, uint8_t type);
+
+        //!
+        //! Split into several descriptors if necessary and add them in a descriptor list.
+        //! Split the content into several ServiceListDescriptor if the content is too long and add them in a descriptor list.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] dlist List of descriptors.
+        //!
+        void splitAndAdd(DuckContext& duck, DescriptorList& dlist) const;
 
         // Inherited methods
         DeclareDisplayDescriptor();

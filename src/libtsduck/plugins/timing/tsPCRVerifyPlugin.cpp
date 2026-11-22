@@ -191,7 +191,7 @@ ts::PacketProcessStatus ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TSPack
                 //       = pcr1 + (seconds * sysclock)
                 //       = pcr1 + (bits * sysclock) / bitrate
                 //       = pcr1 + ((pkt2 - pkt1) * PKT_SIZE_BITS * sysclock) / bitrate
-                const int64_t epcr2 = pcr1 + (int64_t(next_pc.pcr_packet - pc.pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate;
+                const int64_t epcr2 = pcr1 + safe_mul_div<int64_t>(next_pc.pcr_packet - pc.pcr_packet, PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ, bitrate);
                 // Jitter = difference between actual and expected pcr2
                 jitter = pcr2 - epcr2;
             }

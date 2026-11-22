@@ -198,3 +198,28 @@ bool ts::ServiceListDescriptor::merge(const AbstractDescriptor& desc)
         return success;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Split into several ServiceListDescriptor if necessary and add in a list.
+//----------------------------------------------------------------------------
+
+void ts::ServiceListDescriptor::splitAndAdd(DuckContext& duck, DescriptorList& dlist) const
+{
+    if (entries.size() <= MAX_ENTRIES) {
+        // No need to split, add entire descriptor.
+        dlist.add(duck, *this);
+    }
+    else {
+        // Need to generate several smaller descriptors.
+        ServiceListDescriptor desc;
+        auto it = entries.begin();
+        while (it != entries.end()) {
+            desc.entries.clear();
+            while (it != entries.end() && desc.entries.size() < MAX_ENTRIES) {
+                desc.entries.push_back(*it++);
+            }
+            dlist.add(duck, desc);
+        }
+    }
+}

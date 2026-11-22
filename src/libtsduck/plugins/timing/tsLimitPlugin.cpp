@@ -81,9 +81,10 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
 // Start method
 //----------------------------------------------------------------------------
 
-bool ts::LimitPlugin::start()
+bool ts::LimitPlugin::getOptions()
 {
-    // Get option values
+    bool success = true;
+
     _use_wall_clock = present(u"wall-clock");
     getValue(_max_bitrate, u"bitrate");
     getIntValue(_threshold1, u"threshold1", DEFAULT_THRESHOLD1);
@@ -94,15 +95,15 @@ bool ts::LimitPlugin::start()
 
     if (_threshold4 < 1) {
         error(u"the last threshold can't be disabled");
-        return false;
+        success = false;
     }
     if (_threshold4 < _threshold1 || (_threshold4 < _threshold3 && _pids1.any()) || (_threshold4 < _threshold2 && _pids1.any())) {
         error(u"the last threshold can't be less than others");
-        return false;
+        success = false;
     }
     if (_threshold2 > _threshold3) {
         error(u"the threshold3 (audio) can't be less than threshold2 (video)");
-        return false;
+        success = false;
     }
 
     // Threshold for audio/video packets. If a list of --pid is specified, we start
@@ -110,17 +111,25 @@ bool ts::LimitPlugin::start()
     _threshold_av = _pids1.any() ? _threshold3 : _threshold1;
 
     debug(u"threshold 1: %'d, threshold 2: %'d, threshold 3: %'d, threshold 4: %'d, audio/video threshold: %'d", _threshold1, _threshold2, _threshold3, _threshold4, _threshold_av);
+    return success;
+}
 
-    // Reset plugin state.
-    _bits_second = 0;
+
+//----------------------------------------------------------------------------
+// Start method
+//----------------------------------------------------------------------------
+
+bool ts::LimitPlugin::start()
+{
+    _cur_bitrate = 0;
     _excess_point = 0;
     _excess_packets = 0;
     _excess_bits = 0;
-    _cur_bitrate = 0;
+    _bits_second = 0;
     _pid_contexts.clear();
-    _demux.reset();
-    _demux.setPIDFilter(PID_PAT);
 
+    _demux.reset();
+    _demux.addPID(PID_PAT);
     return true;
 }
 
@@ -265,22 +274,22 @@ ts::PacketProcessStatus ts::LimitPlugin::processPacket(TSPacket& pkt, TSPacketMe
         if (pc->pcr_value != INVALID_PCR && pc->pcr_value < pcr) {
             // We compute TS instant bitrate using only two consecutive PCR's
             // in one single PID. This can be not always precise. To be improved maybe.
-            const BitRate newBitrate = BitRate((tsp->pluginPackets() - pc->pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / BitRate(pcr - pc->pcr_value);
+            const BitRate new_bitrate = BitRate(safe_mul_div<int64_t>(tsp->pluginPackets() - pc->pcr_packet, PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ, pcr - pc->pcr_value));
 
             // Report state change.
-            if (_cur_bitrate > _max_bitrate && newBitrate <= _max_bitrate) {
-                verbose(u"bitrate back to normal (%'d b/s)", newBitrate);
+            if (_cur_bitrate > _max_bitrate && new_bitrate <= _max_bitrate) {
+                verbose(u"bitrate back to normal (%'d b/s)", new_bitrate);
             }
-            else if (_cur_bitrate <= _max_bitrate && newBitrate > _max_bitrate) {
-                verbose(u"bitrate exceeds maximum (%'d b/s), starting to drop packets", newBitrate);
+            else if (_cur_bitrate <= _max_bitrate && new_bitrate > _max_bitrate) {
+                verbose(u"bitrate exceeds maximum (%'d b/s), starting to drop packets", new_bitrate);
             }
-            else if (_cur_bitrate != newBitrate && (_cur_bitrate > newBitrate ? _cur_bitrate - newBitrate : newBitrate - _cur_bitrate) > _cur_bitrate / 20) {
+            else if (_cur_bitrate != new_bitrate && (_cur_bitrate > new_bitrate ? _cur_bitrate - new_bitrate : new_bitrate - _cur_bitrate) > _cur_bitrate / 20) {
                 // Report new bitrate when more than 5% change.
-                debug(u"new bitrate: %'d b/s", newBitrate);
+                debug(u"new bitrate: %'d b/s", new_bitrate);
             }
 
             // Save current bitrate.
-            _cur_bitrate = newBitrate;
+            _cur_bitrate = new_bitrate;
 
             if (_cur_bitrate <= _max_bitrate) {
                 // Current bitrate is OK, no longer drop packets, even if a past excess is not yet absorbed.

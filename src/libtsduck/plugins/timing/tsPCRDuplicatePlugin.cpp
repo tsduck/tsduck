@@ -141,7 +141,7 @@ ts::PacketProcessStatus ts::PCRDuplicatePlugin::processPacket(TSPacket& pkt, TSP
         // Compute PCR value from the previous reference PCR value and the bitrate.
         // If the bitrate is unknown, keep the reference PCR, even though we know it is incorrect.
         const BitRate bitrate = tsp->bitrate();
-        const uint64_t pcr = _ref_pcr + (bitrate == 0 ? 0 : (((tsp->pluginPackets() - _ref_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt());
+        const uint64_t pcr = _ref_pcr + safe_mul_div<uint64_t>(tsp->pluginPackets() - _ref_packet, PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ, bitrate.toInt());
 
         // Replace the PCR value. Start from a null packet. No need to care about continuity counters,
         // the packets have no payload and CC are incremented only on packets with payload.

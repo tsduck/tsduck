@@ -26,6 +26,7 @@ namespace ts {
         TS_PLUGIN_CONSTRUCTORS(LimitPlugin);
     public:
         // Implementation of plugin API.
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
@@ -41,7 +42,7 @@ namespace ts {
         static constexpr PacketCounter DEFAULT_THRESHOLD3 = 500;
         static constexpr PacketCounter DEFAULT_THRESHOLD4 = 1000;
 
-        // Plugin fields.
+        // Command line options.
         bool           _use_wall_clock = false;
         BitRate        _max_bitrate = 0;
         PacketCounter  _threshold1 = 0;
@@ -49,15 +50,17 @@ namespace ts {
         PacketCounter  _threshold3 = 0;
         PacketCounter  _threshold4 = 0;
         PacketCounter  _threshold_av = 0;    // Threshold for audio/video packets.
+        PIDSet         _pids1 {};            // PIDs to sacrifice at threshold 1.
+
+        // Working data.
         BitRate        _cur_bitrate = 0;     // Instant bitrate (between to consecutive PCR).
         PacketCounter  _excess_point = 0;    // Last packet from which we computed excess packets.
         PacketCounter  _excess_packets = 0;  // Number of packets in excess (to drop).
         PacketCounter  _excess_bits = 0;     // Number of bits in excess, in addition to packets.
-        PIDSet         _pids1 {};            // PIDs to sacrifice at threshold 1.
-        SectionDemux   _demux {duck, this};  // Demux to collect PAT and PMT's.
-        PIDContextMap  _pid_contexts {};     // One context per PID in the TS.
-        monotonic_time _clock {};            // Monotonic clock for live streams.
         size_t         _bits_second = 0;     // Number of bits in current second.
+        PIDContextMap  _pid_contexts {};     // One context per PID in the TS.
+        SectionDemux   _demux {duck, this};  // Demux to collect PAT and PMT's.
+        monotonic_time _clock {};            // Monotonic clock for live streams.
 
         // Context per PID in the TS.
         class PIDContext

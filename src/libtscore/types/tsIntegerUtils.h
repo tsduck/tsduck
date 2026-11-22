@@ -589,6 +589,19 @@ namespace ts {
     INT bounded_sub(INT a, INT b);
 
     //!
+    //! Perform a safe a*b/c without overflow.
+    //! @ingroup cpp
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] c Third integer.
+    //! @param [in] def Default value if the final result is outside the type INT, including when @a c is zero. The default is zero.
+    //! @return The value @a a * @a b / @a c.
+    //!
+    template <typename INT> requires std::integral<INT>
+    INT safe_mul_div(INT a, INT b, INT c, INT def = static_cast<INT>(0));
+
+    //!
     //! Round @a x down to previous multiple of a factor @a f.
     //! @ingroup cpp
     //! @tparam INT An integer type.
@@ -864,6 +877,29 @@ INT ts::bounded_sub(INT a, INT b)
         else {
             return a - b;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Perform a safe a*b/c without overflow.
+//----------------------------------------------------------------------------
+
+template <typename INT> requires std::integral<INT>
+INT ts::safe_mul_div(INT a, INT b, INT c, INT def)
+{
+    if (c == 0) {
+        // Division by zero is always outside range.
+        return def;
+    }
+    else if (!mul_overflow<INT>(a, b)) {
+        // Straightforward operation.
+        return (a * b) / c;
+    }
+    else {
+        // Use intemediate results using floating point.
+        const double res = (double(a) * double(b)) / double(c);
+        return res >= double(std::numeric_limits<INT>::min()) && res <= double(std::numeric_limits<INT>::max()) ? INT(res) : def;
     }
 }
 

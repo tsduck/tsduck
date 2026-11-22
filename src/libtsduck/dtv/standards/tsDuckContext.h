@@ -58,7 +58,9 @@ namespace ts {
     //!
     class TSDUCKDLL DuckContext: public ReporterBase
     {
-        TS_NOCOPY(DuckContext);
+        // There is a "copy-like" constructor.
+        TS_NOMOVE(DuckContext);
+        DuckContext& operator=(const DuckContext&) = delete;
     public:
         //!
         //! Constructor.

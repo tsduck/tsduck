@@ -295,7 +295,7 @@ void ts::NITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             if (pat.isValid()) {
                 // Set the NIT PID, if not specified on the command line.
                 if (_nit_pid == PID_NULL) {
-                    setPID(pat.nit_pid);
+                    setPID(pat.nit_pid != PID_NULL ? pat.nit_pid : PID(PID_NIT));
                 }
                 // Collect service ids when necessary.
                 if (_add_all_srv_in_sld) {
@@ -624,30 +624,28 @@ void ts::NITPlugin::updateServiceList(NIT& nit)
             // Get or create TS entry in the NIT.
             NIT::Transport& ts(nit.transports[tsid]);
 
-            // Search an existing service list descriptor in this description.
-            const size_t sld_index = ts.descs.search(DID_DVB_SERVICE_LIST);
+            // Build a large service_list_descriptor containing all existing services in the NIT,
+            // then overwritten with the collected service types.
+            ServiceListDescriptor desc_all;
 
-            if (sld_index >= ts.descs.size()) {
-                // No service list descriptor present, just add the collected one.
-                ts.descs.add(duck, sld);
-            }
-            else {
-                // There is an existing service list descriptor, merge the collected data.
-                ServiceListDescriptor desc(duck, ts.descs[sld_index]);
-                if (desc.isValid()) {
-                    // Merge the descriptors.
-                    for (const auto& it2 : sld.entries) {
-                        desc.addService(it2.service_id, it2.service_type);
-                    }
+            // Merge all existing services from the NIT.
+            ServiceListDescriptor desc;
+            size_t start = 0;
+            while ((start = ts.descs.search(duck, DID_DVB_SERVICE_LIST, desc, start)) < ts.descs.size()) {
+                for (const auto& it : desc.entries) {
+                    desc_all.addService(it.service_id, it.service_type);
                 }
-                else {
-                    // Invalid existing descriptor, use the collected one.
-                    desc = sld;
-                }
-                // Remove all existing service list descriptors and add the merged one.
-                ts.descs.removeByTag(DID_DVB_SERVICE_LIST);
-                ts.descs.add(duck, desc);
             }
+
+            // Now overwrite the collected services.
+            for (const auto& it : sld.entries) {
+                desc_all.addService(it.service_id, it.service_type);
+            }
+
+            // Remove all existing service list descriptors and add the global one.
+            // If desc_all is too large to be serialized, it is split into several descriptors.
+            ts.descs.removeByTag(DID_DVB_SERVICE_LIST);
+            desc_all.splitAndAdd(duck, ts.descs);
         }
     }
 }

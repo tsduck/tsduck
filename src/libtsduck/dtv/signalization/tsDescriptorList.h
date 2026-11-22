@@ -403,17 +403,16 @@ namespace ts {
         //! @tparam DESC A subclass of AbstractDescriptor.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] tag Tag of descriptor to search.
-        //! @param [out] desc When a descriptor with the specified tag is found,
-        //! it is deserialized into @a desc. Always check desc.isValid() on return
-        //! to check if the deserialization was successful.
+        //! @param [out] desc When a descriptor with the specified tag is found, it is deserialized into @a desc.
+        //! If the deserialization fails, the descriptor is ignored and the search continues. Therefore, it a
+        //! descriptor was found, desc.isValid() is always true on return.
         //! @param [in] start_index Start searching at this index.
         //! @param [in] pds Private data specifier.
         //! If @a pds is non-zero and @a tag is >= 0x80, return only
         //! a descriptor with the corresponding private data specifier.
         //! @return The index of the descriptor in the list or count() if no such descriptor is found.
         //!
-        template<class DESC>
-            requires std::derived_from<DESC, ts::AbstractDescriptor>
+        template<class DESC> requires std::derived_from<DESC, ts::AbstractDescriptor>
         size_t search(DuckContext& duck, DID tag, DESC& desc, size_t start_index = 0, PDS pds = 0) const;
 
         //!
