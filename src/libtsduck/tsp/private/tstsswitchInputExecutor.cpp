@@ -193,8 +193,8 @@ void ts::tsswitch::InputExecutor::main()
         for (;;) {
 
             // Input area (first packet index and packet count).
-            size_t inFirst = 0;
-            size_t inCount = 0;
+            size_t in_first = 0;
+            size_t in_count = 0;
 
             // Initial sequence under mutex protection.
             {
@@ -223,39 +223,39 @@ void ts::tsswitch::InputExecutor::main()
                 }
                 // There is some free buffer, compute first index and size of receive area.
                 // The receive area is limited by end of buffer and max input size.
-                inFirst = (_out_first + _out_count) % _buffer.size();
-                inCount = std::min(_opt.max_input_packets, std::min(_buffer.size() - _out_count, _buffer.size() - inFirst));
+                in_first = (_out_first + _out_count) % _buffer.size();
+                in_count = std::min(_opt.max_input_packets, std::min(_buffer.size() - _out_count, _buffer.size() - in_first));
             }
 
-            assert(inFirst < _buffer.size());
-            assert(inFirst + inCount <= _buffer.size());
+            assert(in_first < _buffer.size());
+            assert(in_first + in_count <= _buffer.size());
 
             // Reset packet metadata.
-            for (size_t n = inFirst; n < inFirst + inCount; ++n) {
+            for (size_t n = in_first; n < in_first + in_count; ++n) {
                 _metadata[n].reset();
             }
 
             // Receive packets.
-            if ((inCount = _input->receive(&_buffer[inFirst], &_metadata[inFirst], inCount)) == 0) {
+            if ((in_count = std::min(_input->receive(&_buffer[in_first], &_metadata[in_first], in_count), in_count)) == 0) {
                 // End of input.
                 debug(u"received end of input from plugin");
                 break;
             }
-            addPluginPackets(inCount);
+            addPluginPackets(in_count);
 
             // Fill input time stamps with monotonic clock if none was provided by the input plugin.
             // Only check the first returned packet. Assume that the input plugin generates time stamps for all or none.
-            if (!_metadata[inFirst].hasInputTimeStamp()) {
+            if (!_metadata[in_first].hasInputTimeStamp()) {
                 const cn::nanoseconds current = monotonic_time::clock::now() - _start_time;
-                for (size_t n = 0; n < inCount; ++n) {
-                    _metadata[inFirst + n].setInputTimeStamp(current, TimeSource::TSP);
+                for (size_t n = 0; n < in_count; ++n) {
+                    _metadata[in_first + n].setInputTimeStamp(current, TimeSource::TSP);
                 }
             }
 
             // Signal the presence of received packets.
             {
                 std::lock_guard<std::recursive_mutex> lock(_mutex);
-                _out_count += inCount;
+                _out_count += in_count;
             }
             _core.inputReceived(_plugin_index);
         }

@@ -330,6 +330,8 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
 
                 // Packet was not dropped and its label is in --only-label or --except-label, add it in window.
                 if (pkt->b[0] != 0 && (only_labels.none() || pkt_data->hasAnyLabel(only_labels)) && !pkt_data->hasAnyLabel(except_labels)) {
+                    pkt_data->setFlush(false);
+                    pkt_data->setBitrateChanged(false);
                     win.addPacketsReference(pkt, pkt_data, 1);
                 }
 
@@ -356,7 +358,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
         }
 
         // Let the plugin process the packet window.
-        const size_t processed_packets = _processor->processPacketWindow(win);
+        const size_t processed_packets = std::min(_processor->processPacketWindow(win), win.size());
 
         // If not all packets from the window were processed, the plugin want to terminate the stream processing.
         if (processed_packets < win.size()) {

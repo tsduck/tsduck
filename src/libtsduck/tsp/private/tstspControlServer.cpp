@@ -264,8 +264,8 @@ void ts::tsp::ControlServer::main()
 ts::CommandStatus ts::tsp::ControlServer::executeExit(const UString& command, Args& args)
 {
     if (args.present(u"abort")) {
-        // Immediate exit.
-        std::exit(EXIT_FAILURE);
+        // Immediate abort.
+        std::abort();
     }
     else {
         _log.info(u"exit requested by remote tspcontrol command");
@@ -365,9 +365,11 @@ ts::CommandStatus ts::tsp::ControlServer::executeSuspendResume(bool state, Args&
     }
     else if (index == 0) {
         args.error(u"cannot suspend/resume the input plugin");
+        return CommandStatus::ERROR;
     }
     else {
         args.error(u"invalid plugin index %d, specify 1 to %d", index, _plugins.size() + 1);
+        return CommandStatus::ERROR;
     }
     return CommandStatus::SUCCESS;
 }

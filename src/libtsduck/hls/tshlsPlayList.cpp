@@ -720,7 +720,7 @@ void ts::hls::PlayList::reload(PlayList& new_pl)
     else {
         // Start at first new segment, copy all new segments.
         for (uint64_t i = _media_sequence + _segments.size() - new_pl._media_sequence; i < new_pl._segments.size(); ++i) {
-            _segments.push_back(new_pl._segments[i]);
+            _segments.push_back(new_pl._segments[size_t(i)]);
         }
     }
 }

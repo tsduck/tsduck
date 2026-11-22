@@ -227,7 +227,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
     if (_use_watchdog) {
         _watchdog.restart();
     }
-    size_t count = _input->receive(pkt, data, max_packets);
+    size_t count = std::min(_input->receive(pkt, data, max_packets), max_packets);
     _plugin_completed = _plugin_completed || count == 0;
     if (_use_watchdog) {
         _watchdog.suspend();
