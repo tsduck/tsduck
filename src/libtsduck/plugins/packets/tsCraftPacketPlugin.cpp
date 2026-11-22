@@ -150,7 +150,7 @@ ts::CraftPacketPlugin::CraftPacketPlugin(TSP* tsp_) :
     option(u"scrambling", 0, INTEGER, 0, 1, 0, 3);
     help(u"scrambling", u"Specify the value of the transport_scrambling_control field.");
 
-    option(u"splice-countdown", 0, UINT8);
+    option(u"splice-countdown", 0, INT8);
     help(u"splice-countdown", u"Create a splicing point and set this splice countdown value in the packets. Space is required in the adaptation field.");
 
     option(u"no-splice-countdown");

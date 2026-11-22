@@ -126,11 +126,11 @@ bool ts::PSIMergePlugin::start()
 
 ts::PacketProcessStatus ts::PSIMergePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    if ((_main_label > TSPacketLabelSet::MAX && !pkt_data.hasAnyLabel()) || pkt_data.hasLabel(_main_label)) {
+    if ((_main_label > TSPacketLabelSet::MAX && !pkt_data.hasAnyLabel()) || (_main_label <= TSPacketLabelSet::MAX && pkt_data.hasLabel(_main_label))) {
         // This is a packet from the main stream.
         return _psi_merger.feedMainPacket(pkt) ? TSP_OK : TSP_END;
     }
-    else if ((_merge_label > TSPacketLabelSet::MAX && !pkt_data.hasAnyLabel()) || pkt_data.hasLabel(_merge_label)) {
+    else if ((_merge_label > TSPacketLabelSet::MAX && !pkt_data.hasAnyLabel()) || (_merge_label <= TSPacketLabelSet::MAX && pkt_data.hasLabel(_merge_label))) {
         // This is a packet from the merge stream.
         return _psi_merger.feedMergedPacket(pkt) ? TSP_OK : TSP_END;
     }

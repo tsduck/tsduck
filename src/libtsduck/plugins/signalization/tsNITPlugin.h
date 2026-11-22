@@ -42,7 +42,7 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
     private:
-        // A map of service list descriptors, indexed by ts id / original netwok id.
+        // A map of service list descriptors, indexed by TS id / original network id.
         using SLDMap = std::map<TransportStreamId, ServiceListDescriptor>;
 
         PID                _nit_pid = PID_NIT;            // PID for the NIT (default: read PAT)
@@ -88,7 +88,7 @@ namespace ts {
         // Return true if the list of collected services has been modified.
         bool mergeLastPAT();
 
-        // Merge an SDTT in the collected services.
+        // Merge an SDT in the collected services.
         // Return true if the list of collected services has been modified.
         bool mergeSDT(const SDT&);
 

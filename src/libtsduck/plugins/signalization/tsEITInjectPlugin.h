@@ -49,12 +49,13 @@ namespace ts {
         public:
             FileListener(EITInjectPlugin* plugin);
             virtual ~FileListener() override;
+            void start();
             void stop();
 
         private:
             EITInjectPlugin* const _plugin;
-            PollFiles              _poller;
-            std::atomic_bool       _terminate;
+            PollFiles              _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin};
+            std::atomic_bool       _terminate = false;
 
             // Implementation of Thread.
             virtual void main() override;

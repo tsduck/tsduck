@@ -55,6 +55,11 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
          u"By default, all PID's are modified. Several --pid options may be specified.");
 }
 
+ts::PCRAdjustPlugin::~PCRAdjustPlugin()
+{
+    freePIDContexts();
+}
+
 
 //----------------------------------------------------------------------------
 // Get options method
@@ -75,17 +80,48 @@ bool ts::PCRAdjustPlugin::getOptions()
 
 
 //----------------------------------------------------------------------------
+// Free the map of PID contexts.
+//----------------------------------------------------------------------------
+
+void ts::PCRAdjustPlugin::freePIDContexts()
+{
+    // Make sure to reset all shared_ptr in PIDContexts.
+    // Thus, we remove any potential circular reference which would prevent automatic deallocations.
+    for (const auto& it : _pid_contexts) {
+        if (it.second != nullptr) {
+            it.second->pcr_ctx.reset();
+        }
+    }
+
+    // Now, we can clear the map. All shared_ptr will be deallocated.
+    _pid_contexts.clear();
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::PCRAdjustPlugin::start()
 {
     // Reset packet processing.
-    _pid_contexts.clear();
+    freePIDContexts();
 
     // Reset demux for service analysis.
     _demux.reset();
     _demux.addPID(PID_PAT);
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::PCRAdjustPlugin::stop()
+{
+    // Free packet processing.
+    freePIDContexts();
     return true;
 }
 
@@ -257,6 +293,8 @@ ts::PacketProcessStatus ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TSPack
         // Process PCR.
         if (pkt.hasPCR()) {
             // The PID is its own PCR reference.
+            // Warning: This creates a circular reference which prevents the shared_ptr to be freeed.
+            // Make sure to use freePIDContexts().
             ctx->pcr_ctx = ctx;
             ctx->last_original_pcr = pkt.getPCR();
 

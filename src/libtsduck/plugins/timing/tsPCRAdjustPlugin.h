@@ -62,7 +62,12 @@ namespace ts {
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;
+        virtual bool stop() override;
         virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
+
+        //! @cond nodoxygen
+        virtual ~PCRAdjustPlugin() override;
+        //! @endcond
 
     private:
         // Description of PID's. Map of safe pointers to PID contexts, indexed by PID.
@@ -85,6 +90,9 @@ namespace ts {
 
         // Get the context for a PID. Create one when necessary.
         PIDContextPtr getContext(PID pid);
+
+        // Free the map of PID contexts. Required because the PIDContext may contains its own shared_ptr.
+        void freePIDContexts();
 
         // Description of one PID. One structure is created per PID in the TS.
         class PIDContext

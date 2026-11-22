@@ -18,7 +18,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"nit", ts::NITPlugin);
 //----------------------------------------------------------------------------
 
 ts::NITPlugin::NITPlugin(TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the NIT", u"[options]", u"NIT", PID_NIT)
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the NIT", u"[options]", u"NIT")
 {
     option(u"build-service-list-descriptors", 0);
     help(u"build-service-list-descriptors",
@@ -117,6 +117,8 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
 
 bool ts::NITPlugin::getOptions()
 {
+    bool success = true;
+
     getIntValue(_nit_pid, u"pid", PID_NULL);
     getIntValue(_lcn_oper, u"lcn", LCN_NONE);
     getIntValue(_sld_oper, u"sld", LCN_NONE);
@@ -142,19 +144,19 @@ bool ts::NITPlugin::getOptions()
 
     if (_use_nit_other && _build_sld) {
         error(u"--nit-other and --build-service-list-descriptors are mutually exclusive");
-        return false;
+        success = false;
     }
     if (_lcn_oper != LCN_NONE && !_remove_serv.empty()) {
         error(u"--lcn and --remove-service are mutually exclusive");
-        return false;
+        success = false;
     }
     if (_sld_oper != LCN_NONE && !_remove_serv.empty()) {
         error(u"--sld and --remove-service are mutually exclusive");
-        return false;
+        success = false;
     }
 
     // Start superclass.
-    return AbstractTablePlugin::getOptions();
+    return AbstractTablePlugin::getOptions() && success;
 }
 
 
@@ -169,16 +171,21 @@ bool ts::NITPlugin::start()
     _last_pat.invalidate();
     _last_sdt_act.invalidate();
     _collected_sld.clear();
-
-    // When we need to build service list descriptors, we need to analyze the PAT and SDT.
     _demux.reset();
-    if (_build_sld && !_use_nit_other) {
-        // If we need to add all services, including without known service type, analyze the PAT.
-        if (_add_all_srv_in_sld) {
-            _demux.addPID(PID_PAT);
-        }
-        // The service types are taken from the SDT.
+
+    // Specify NIT PID to superclass, if known.
+    if (_nit_pid != PID_NULL) {
+        setPID(_nit_pid);
+    }
+
+    // When we need to build service list descriptors, the service types are taken from the SDT.
+    if (_build_sld) {
         _demux.addPID(PID_SDT);
+    }
+
+    // If NIT PID is unknown or if we need to add all services, including without known service type, analyze the PAT.
+    if (_nit_pid == PID_NULL || (_build_sld && _add_all_srv_in_sld)) {
+        _demux.addPID(PID_PAT);
     }
 
     // Start superclass.
@@ -192,7 +199,7 @@ bool ts::NITPlugin::start()
 
 ts::PacketProcessStatus ts::NITPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Filter incoming sections
+    // Filter incoming sections we need.
     _demux.feedPacket(pkt);
 
     // Continue processing in superclass.
@@ -233,7 +240,7 @@ bool ts::NITPlugin::mergeLastPAT()
 
 
 //----------------------------------------------------------------------------
-// Merge an SDTT in the collected services.
+// Merge an SDT in the collected services.
 //----------------------------------------------------------------------------
 
 bool ts::NITPlugin::mergeSDT(const SDT& sdt)
@@ -282,12 +289,19 @@ void ts::NITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         const PID pid = table.sourcePID();
         bool modified = false;
 
-        if (tid == TID_PAT && pid == PID_PAT && _add_all_srv_in_sld) {
+        if (tid == TID_PAT && pid == PID_PAT) {
             // Got a PAT, collect all service ids.
             const PAT pat(duck, table);
             if (pat.isValid()) {
-                _last_pat = pat;
-                modified = mergeLastPAT();
+                // Set the NIT PID, if not specified on the command line.
+                if (_nit_pid == PID_NULL) {
+                    setPID(pat.nit_pid);
+                }
+                // Collect service ids when necessary.
+                if (_add_all_srv_in_sld) {
+                    _last_pat = pat;
+                    modified = mergeLastPAT();
+                }
             }
         }
         else if ((tid == TID_SDT_ACT || tid == TID_SDT_OTH) && pid == PID_SDT) {
@@ -346,6 +360,9 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     is_target =
         (!_use_nit_other && table.tableId() == TID_NIT_ACT) ||
         (_use_nit_other && table.tableId() == TID_NIT_OTH && table.tableIdExtension() == _nit_other_id);
+
+    debug(u"modify table, table id %n, PID %n, is target: %s", table.tableId(), table.sourcePID(), is_target);
+
     if (!is_target) {
         return;
     }

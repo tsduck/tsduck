@@ -31,7 +31,7 @@ namespace ts {
 
     private:
         PSIMerger _psi_merger {duck, PSIMerger::NONE};  // Engine to merge PSI/SI.
-        size_t    _main_label = NPOS;                   // Label of packets from main stream or greater than LABEL_MAX if none.
-        size_t    _merge_label = NPOS;                  // Label of packets from main stream or greater than LABEL_MAX if none.
+        size_t    _main_label = NPOS;                   // Label of packets from main stream or greater than TSPacketLabelSet::MAX if none.
+        size_t    _merge_label = NPOS;                  // Label of packets from main stream or greater than TSPacketLabelSet::MAX if none.
     };
 }

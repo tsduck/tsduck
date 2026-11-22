@@ -97,7 +97,7 @@ ts::CraftInputPlugin::CraftInputPlugin(TSP* tsp_) :
     option(u"scrambling", 0, INTEGER, 0, 1, 0, 3);
     help(u"scrambling", u"Specify the value of the transport_scrambling_control field (0 by default).");
 
-    option(u"splice-countdown", 0, UINT8);
+    option(u"splice-countdown", 0, INT8);
     help(u"splice-countdown", u"Create a splicing point and set this splice countdown value in the packets. An adaptation field is created.");
 }
 
@@ -117,22 +117,22 @@ bool ts::CraftInputPlugin::getOptions()
     // Options for packet content.
     const PID pid = intValue<PID>(u"pid");
     const bool pusi = present(u"pusi");
-    const bool transportError = present(u"error");
-    const bool transportPriority = present(u"priority");
+    const bool transport_error = present(u"error");
+    const bool transport_priority = present(u"priority");
     const uint8_t scrambling = intValue<uint8_t>(u"scrambling");
     const bool discontinuity = present(u"discontinuity");
-    const bool randomAccess = present(u"random-access");
-    const bool esPriority = present(u"es-priority");
+    const bool random_access = present(u"random-access");
+    const bool es_priority = present(u"es-priority");
     const uint64_t pcr = intValue<uint64_t>(u"pcr", INVALID_PCR);
     const uint64_t opcr = intValue<uint64_t>(u"opcr", INVALID_PCR);
-    const uint8_t spliceCountdown = intValue<uint8_t>(u"splice-countdown");
-    const bool hasSplicing = present(u"splice-countdown");
-    const bool noPayload = present(u"no-payload");
-    const bool fullPayload = !noPayload && !present(u"payload-size"); // payload uses all available size
-    size_t payloadSize = intValue<size_t>(u"payload-size");
+    const int8_t splice_countdown = intValue<int8_t>(u"splice-countdown");
+    const bool has_splicing = present(u"splice-countdown");
+    const bool no_payload = present(u"no-payload");
+    const bool full_payload = !no_payload && !present(u"payload-size"); // payload uses all available size
+    size_t payload_size = intValue<size_t>(u"payload-size");
 
     // Check consistency of options.
-    if (payloadSize > 0 && noPayload) {
+    if (payload_size > 0 && no_payload) {
         error(u"options --no-payload and --payload-size are mutually exclusive");
         return false;
     }
@@ -145,11 +145,11 @@ bool ts::CraftInputPlugin::getOptions()
     // Check if we need to set some data in adaptation field.
     const bool needAF =
         discontinuity ||
-        randomAccess ||
-        esPriority ||
+        random_access ||
+        es_priority ||
         pcr != INVALID_PCR ||
         opcr != INVALID_PCR ||
-        hasSplicing ||
+        has_splicing ||
         !privateData.empty();
 
     // Compute adaptation field size.
@@ -161,7 +161,7 @@ bool ts::CraftInputPlugin::getOptions()
     if (opcr != INVALID_PCR) {
         afSize += 6;
     }
-    if (hasSplicing) {
+    if (has_splicing) {
         afSize += 1;
     }
     if (!privateData.empty()) {
@@ -173,34 +173,34 @@ bool ts::CraftInputPlugin::getOptions()
         error(u"private data too large, cannot fit in a TS packet");
         return false;
     }
-    if (fullPayload) {
+    if (full_payload) {
         // Payload size unspecified, use the rest of the packet as payload.
-        payloadSize = 184 - afSize;
+        payload_size = 184 - afSize;
     }
-    else if (afSize + payloadSize > 184) {
+    else if (afSize + payload_size > 184) {
         error(u"payload and adaptation field too large, cannot fit in a TS packet");
         return false;
     }
     else {
         // Payload size was specified and is smaller than the rest of the packet.
         // Enlarge the adaptation field with stuffing.
-        afSize = 184 - payloadSize;
+        afSize = 184 - payload_size;
     }
-    assert(afSize + payloadSize == 184);
+    assert(afSize + payload_size == 184);
 
     // Build packet header.
     _packet = NullPacket;
     _packet.b[0] = 0x47;
     _packet.b[1] =
-        (transportError ? 0x80 : 0x00) |
+        (transport_error ? 0x80 : 0x00) |
         (pusi ? 0x40 : 0x00) |
-        (transportPriority ? 0x20 : 0x00) |
+        (transport_priority ? 0x20 : 0x00) |
         (uint8_t(pid >> 8) & 0x1F);
     _packet.b[2] = uint8_t(pid);
     _packet.b[3] =
         uint8_t((scrambling & 0x03) << 6) |
         (afSize > 0 ? 0x20 : 0x00) |
-        (payloadSize > 0 || !noPayload ? 0x10 : 0x00) |
+        (payload_size > 0 || !no_payload ? 0x10 : 0x00) |
         (_init_cc & 0x0F);
 
     // Build adaptation field.
@@ -211,11 +211,11 @@ bool ts::CraftInputPlugin::getOptions()
             // Flags byte.
             *data++ =
                 (discontinuity ? 0x80 : 0x00) |
-                (randomAccess ? 0x40 : 0x00) |
-                (esPriority ? 0x20 : 0x00) |
+                (random_access ? 0x40 : 0x00) |
+                (es_priority ? 0x20 : 0x00) |
                 (pcr != INVALID_PCR ? 0x10 : 0x00) |
                 (opcr != INVALID_PCR ? 0x08 : 0x00) |
-                (hasSplicing ? 0x04 : 0x00) |
+                (has_splicing ? 0x04 : 0x00) |
                 (privateData.empty() ? 0x00 : 0x02);
             // Optional fields in the adaptation field
             if (pcr != INVALID_PCR) {
@@ -226,8 +226,8 @@ bool ts::CraftInputPlugin::getOptions()
                 TSPacket::PutPCR(data, opcr);
                 data += TSPacket::PCR_BYTES;
             }
-            if (hasSplicing) {
-                *data++ = spliceCountdown;
+            if (has_splicing) {
+                *data++ = uint8_t(splice_countdown);
             }
             if (!privateData.empty()) {
                 *data++ = uint8_t(privateData.size());
@@ -240,7 +240,7 @@ bool ts::CraftInputPlugin::getOptions()
     }
 
     // Build payload.
-    if (payloadSize > 0) {
+    if (payload_size > 0) {
         assert(!payloadPattern.empty());
         uint8_t* data = _packet.b + 4 + afSize;
         while (data < _packet.b + PKT_SIZE) {

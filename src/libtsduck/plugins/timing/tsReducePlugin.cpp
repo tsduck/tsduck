@@ -83,7 +83,7 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
 
 bool ts::ReducePlugin::getOptions()
 {
-    bool ok = true;
+    bool success = true;
 
     getValue(_target_bitrate, u"target-bitrate");
     getValue(_input_bitrate, u"input-bitrate");
@@ -98,20 +98,22 @@ bool ts::ReducePlugin::getOptions()
     const UString fixprop = value(u"fixed-proportion");
     if (!fixprop.empty()) {
         if (_fixed_rempkt > 0 || _fixed_inpkt > 0) {
-            error(u"Specify either --fixed-proportion or legacy parameters but not both");
-            ok = false;
+            error(u"specify either --fixed-proportion or legacy parameters but not both");
+            success = false;
         }
         else if (!fixprop.scan(u"%d/%d", &_fixed_rempkt, &_fixed_inpkt) || _fixed_rempkt <= 0 || _fixed_inpkt <= 0) {
-            error(u"Invalid value '%s' for --fixed-proportion", fixprop);
-            ok = false;
+            error(u"invalid value '%s' for --fixed-proportion", fixprop);
+            success = false;
         }
     }
-    if (_target_bitrate > 0 && (_fixed_rempkt > 0 || _fixed_inpkt > 0)) {
-        error(u"Specify either fixed proportion or target bitrate but not both");
-        ok = false;
+    if ((_target_bitrate > 0 && (_fixed_rempkt > 0 || _fixed_inpkt > 0)) ||
+        (_target_bitrate <= 0 && (_fixed_rempkt <= 0 || _fixed_inpkt <= 0)))
+    {
+        error(u"specify exactly one of --target-bitrate or --fixed-proportion");
+        success = false;
     }
 
-    return ok;
+    return success;
 }
 
 

@@ -118,6 +118,8 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
 
 bool ts::InjectPlugin::getOptions()
 {
+    bool success = true;
+
     duck.loadArgs(*this);
     _sections_opt.loadArgs(duck, *this);
     getIntValue(_inject_pid, u"pid", PID_NULL);
@@ -160,12 +162,12 @@ bool ts::InjectPlugin::getOptions()
 
     if (_terminate && tsp->useJointTermination()) {
         error(u"--terminate and --joint-termination are mutually exclusive");
-        return false;
+        success = false;
     }
 
     // Get list of input section files.
     if (!_infiles.getArgs(*this)) {
-        return false;
+        success = false;
     }
 
     // Check if no or all files have a specific repetition rate.
@@ -186,12 +188,14 @@ bool ts::InjectPlugin::getOptions()
     _use_files_bitrate = opt_count == 0 && !_undefined_rates;
     if (opt_count > 1) {
         error(u"specify at most one of --replace, --bitrate, --inter-packet");
+        success = false;
     }
     if (opt_count == 0 && _undefined_rates) {
         error(u"all files must have a repetition rate when none of --replace, --bitrate, --inter-packet is used");
+        success = false;
     }
 
-    return true;
+    return success;
 }
 
 

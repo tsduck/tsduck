@@ -66,7 +66,7 @@ namespace ts {
         uint8_t   _new_cc = 0;
         bool      _set_splice_countdown = false;
         bool      _clear_splice_countdown = false;
-        uint8_t   _new_splice_countdown = 0;
+        int8_t    _new_splice_countdown = 0;
         bool      _delete_rs204 = false;
         ByteBlock _rs204 {};
 

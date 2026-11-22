@@ -457,7 +457,7 @@ void ts::EITPlugin::handleSection(SectionDemux& demux, const Section& sect)
         if (eit.isActual() && !serv.service.hasTSId(_ts_id)) {
             verbose(u"EIT-Actual has wrong TS id %n", serv.service.getTSId());
         }
-        else if (!eit.isActual() && serv.service.hasId(_ts_id)) {
+        else if (!eit.isActual() && serv.service.hasTSId(_ts_id)) {
             verbose(u"EIT-Other has same TS id as current TS");
         }
     }

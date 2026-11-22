@@ -40,6 +40,9 @@ All labels from options `--label` shall be set on a packet to be selected (logic
 [.optdoc]
 By default, a packet is selected if any label is set (logical _or_).
 
+[.optdoc]
+Options `--once` and `--all-labels` are mutually exclusive.
+
 [.opt]
 *-c* _file-name_ +
 *--copy* _file-name_
@@ -118,6 +121,9 @@ Actions which should be triggered in the meantime are ignored.
 Trigger the actions only once per label.
 When a packet with one or more labels from option `--label` has triggered the actions once,
 these labels are disabled.
+
+[.optdoc]
+Options `--once` and `--all-labels` are mutually exclusive.
 
 [.opt]
 *--start*

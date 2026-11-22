@@ -84,7 +84,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
     option(u"once");
     help(u"once",
          u"Trigger the actions only once per label. "
-         u"When a packet with one or more labels from option --label has triggered the actions, these labels are disabled.");
+         u"When a packet with one or more labels from option --label has triggered the actions, these labels are disabled. "
+         u"Options --once and --all-labels are mutually exclusive.");
 
     option(u"start");
     help(u"start", u"Trigger the actions on tsp start.");
@@ -112,6 +113,8 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
 
 bool ts::TriggerPlugin::getOptions()
 {
+    bool success = true;
+
     getChronoValue(_min_inter_time, u"min-inter-time");
     getIntValue(_min_inter_packet, u"min-inter-packet");
     getValue(_execute, u"execute");
@@ -129,11 +132,16 @@ bool ts::TriggerPlugin::getOptions()
     _all_packets = !_on_start && !_on_stop && _labels.none();
     _wait_mode = present(u"synchronous") ? ForkPipe::SYNCHRONOUS : ForkPipe::ASYNCHRONOUS;
 
+    if (_all_packets && _once) {
+        error(u"--once and --all-labels are mutually exclusive");
+        success = false;
+    }
     if (!_copy_source.empty() && _copy_dest.empty()) {
         error(u"--destination is required with --copy");
-        return false;
+        success = false;
     }
-    return true;
+
+    return success;
 }
 
 
@@ -153,7 +161,7 @@ bool ts::TriggerPlugin::start()
             return false;
         }
         if (!_sock.setDefaultDestination(_udp_destination) ||
-            (!_udp_local.hasAddress() && !_sock.setOutgoingMulticast(_udp_local)) ||
+            (_udp_local.hasAddress() && !_sock.setOutgoingMulticast(_udp_local)) ||
             (_udp_ttl > 0 && !_sock.setTTL(_udp_ttl)))
         {
             _sock.close();

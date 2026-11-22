@@ -395,9 +395,7 @@ ts::PacketProcessStatus ts::EITInjectPlugin::processPacket(TSPacket& pkt, TSPack
 // Constructor.
 ts::EITInjectPlugin::FileListener::FileListener(EITInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _plugin(plugin),
-    _poller(UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_plugin),
-    _terminate(false)
+    _plugin(plugin)
 {
 }
 
@@ -405,6 +403,13 @@ ts::EITInjectPlugin::FileListener::FileListener(EITInjectPlugin* plugin) :
 ts::EITInjectPlugin::FileListener::~FileListener()
 {
     stop();
+}
+
+// Start the thread.
+void ts::EITInjectPlugin::FileListener::start()
+{
+    _terminate = false;
+    Thread::start();
 }
 
 // Terminate the thread.
@@ -416,7 +421,6 @@ void ts::EITInjectPlugin::FileListener::stop()
     // Wait for actual thread termination
     Thread::waitForTermination();
 }
-
 
 // Invoked in the context of the file listener thread.
 void ts::EITInjectPlugin::FileListener::main()

@@ -30,7 +30,7 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
 {
     _patch_xml.defineArgs(*this);
 
-    option<BitRate>(u"bitrate", 'b');
+    option<BitRate>(u"bitrate", 'b', 0, 1, 100);
     help(u"bitrate",
          u"Specifies the bitrate in bits / second of the " + _table_name + " PID if a new one is "
          u"created. The default is " + _default_bitrate.toString() + u" b/s.");
@@ -95,6 +95,7 @@ void ts::AbstractTablePlugin::setPID(PID pid)
 {
     // Reset demux and packetizer if we change PID.
     if (pid != _pid) {
+        debug(u"setting %s PID %n", _table_name, pid);
         _pid = pid;
         _found_pid = false;
         _demux.reset();
@@ -113,9 +114,11 @@ bool ts::AbstractTablePlugin::start()
 {
     // Initialize the demux and packetizer
     _demux.reset();
-    _demux.addPID(_pid);
     _pzer.reset();
-    _pzer.setPID(_pid);
+    if (_pid != PID_NULL) {
+        _demux.addPID(_pid);
+        _pzer.setPID(_pid);
+    }
 
     // Reset other states
     _found_pid = _found_table = false;
@@ -231,7 +234,7 @@ void ts::AbstractTablePlugin::reinsertTable(BinaryTable& table, TID initial_tid,
 ts::PacketProcessStatus ts::AbstractTablePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     const PID pid = pkt.getPID();
-    if (pid == _pid) {
+    if (_pid != PID_NULL && pid == _pid) {
         _found_pid = true;
     }
 
@@ -250,6 +253,7 @@ ts::PacketProcessStatus ts::AbstractTablePlugin::processPacket(TSPacket& pkt, TS
     // Create a new table when necessary.
     if (!_found_table && _pkt_create > 0 && tsp->pluginPackets() >= _pkt_create) {
         // Let the subclass create a new empty table.
+        debug(u"creating %s, packet %'d", _table_name, tsp->pluginPackets());
         BinaryTable table;
         createNewTable(table);
         // Now pretend to have collected the table from the stream
@@ -278,7 +282,7 @@ ts::PacketProcessStatus ts::AbstractTablePlugin::processPacket(TSPacket& pkt, TS
             _pkt_insert += (ts_bitrate / _bitrate).toInt();
         }
     }
-    else if (pid == _pid) {
+    else if (_found_pid && pid == _pid) {
         // Replace an existing input PID packet.
         _pzer.getNextPacket(pkt);
     }
