@@ -207,7 +207,7 @@ bool ts::TLSContext::SystemGuts::initBIO()
     }
     else {
         // Associate the BIO to the SSL session. At this point, the ownership of the BIO is transfered to the SSL*.
-        // The two BIO will be freeed by SSL_free(). Do not call BIO_free() after this point.
+        // The two BIO will be freed by SSL_free(). Do not call BIO_free() after this point.
         SSL_set_bio(ssl, rbio, wbio);
         return true;
     }

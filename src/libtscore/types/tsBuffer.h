@@ -24,7 +24,7 @@ namespace ts {
     //! @ingroup libtscore cpp
     //!
     //! A buffer has the following properties:
-    //! - Internal memory space (freeed with the buffer object) or external memory area.
+    //! - Internal memory space (freed with the buffer object) or external memory area.
     //! - Access mode: read/write or read-only.
     //! - Maximum size (in bytes).
     //! - Read pointer (in bits).

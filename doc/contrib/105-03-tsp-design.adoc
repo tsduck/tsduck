@@ -12,16 +12,62 @@
 This section is a brief description of the design and internals of `tsp`.
 It contains some reference information for `tsp` maintainers.
 
-`tsp` is designed to clearly separate the technical aspects of the buffer management
-and dynamics of a chain of plugins from the specialized plugin processing
-(TS input, TS output, packet processing).
+`tsp` is designed to clearly separate the technical aspects of the buffer
+management and dynamics of a chain of plugins from the specialized plugin
+processing (TS input, TS output, packet processing).
 
 [#pdevexec]
 ==== Plugin Executors
 
-Each plugin executes in a separate thread.
-The base class for all plugin threads is `ts::tsp::PluginExecutor`.
-Derived classes are used for input, output and packet processing plugins.
+Each plugin executes in a separate thread.  The base class for all plugin
+threads is `ts::tsp::PluginExecutor`.  Derived classes are used for input,
+output and packet processing plugins.
+
+The following class diagram illustrates the relationships between classes.
+
+.TSP class diagram
+image::tsp-class-diagram.png[align="center",alt="tsp class diagram"]
+
+The left side describes the `tsp` framework. One instance of a transport stream
+process is class `TSProcessor`. Each plugin is managed by a thread. Each thread
+is an instance of one of the three subclasses of `PluginExecutor` (which is a
+distant subclass of `Thread`).
+
+All plugins executors are also subclasses of `RingNode` through which they are
+linked into a circular list. The instance of `TSProcessor` contains links to the
+first (input) plugin executor and the last (output) one. All processor plugin
+executors are linked in the circular ring between the input and output plugin
+executors.
+
+The output and input plugin executors are linked together, closing the circular
+list of plugin executors. This is how packets which are freed from the global
+buffer after output are immediately passed to the next plugin executor (the
+input one) for reuse as input buffers.
+
+The right side of the class diagram describes the structure of a plugin. Each
+plugin (in a dedicated shared library or in the libtsduck library) is an
+instance of one of the three subclasses of `Plugin`. This instance is created by
+the corresponding plugin executor in the `tsp` framework, when the instance of
+`TSProcessor` starts.
+
+Note that all plugin classes are distant subclasses of `Args` and
+`Report`. Thus, a plugin class can directly define its command line arguments
+and report error or informational messages.
+
+Each plugin has access to its own dedicated instance of `TSP` (the protected
+field `tsp` from class `Plugin`). This instance is in fact a view of the
+corresponding plugin executor (because `PluginExecutor` is a subclass of
+`TSP`). `TSP` is the interface through which a plugin communicates with its
+plugin executor.
+
+The instance of `TSProcessor` is created with an associated instance of `Report`
+which is the real unique message reporting facility in the `tsp` framework. All
+other `Report`, superclass of all plugins and all plugin executors, redirect to
+this one. The application shall use a thread-safe subclass of `Report` because
+it is concurrently used by all plugin threads. In practice, this is usually an
+instance of `AsyncReport`, or a subclass of it. `AsyncReport` uses a
+low-priority thread to asynchronously report the message, avoiding to block
+plugin threads when displaying or writing messages.
 
 [#pdevbuffer]
 ==== Transport packets buffer

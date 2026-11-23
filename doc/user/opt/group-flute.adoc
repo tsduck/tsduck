@@ -184,7 +184,7 @@ Log a message describing the structure of each FLUTE packet.
 [.optdoc]
 Maximum size of files in the FLUTE carousel to analyze or extract.
 Each received file is accumulated in memory, chunk by chunk, until the file is complete.
-After processing the file, all chunks are freeed.
+After processing the file, all chunks are freed.
 This option is useful when the stream contains many large files which clutter the memory during their reception.
 All files which are announced as larger than the specified size are ignored.
 

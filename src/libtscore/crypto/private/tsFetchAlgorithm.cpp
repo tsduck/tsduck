@@ -63,7 +63,7 @@ ts::FetchHashAlgorithm::FetchHashAlgorithm(const char* algo, const char* provide
     OpenSSL::Providers::Instance().load(provider);
     _algo = EVP_MD_fetch(nullptr, algo, OpenSSL::Providers::Properties(provider).c_str());
 #else
-    // With OpenSSL v1, this is a predefined context which shall not be freeed.
+    // With OpenSSL v1, this is a predefined context which shall not be freed.
     _algo = EVP_get_digestbyname(algo);
 #endif
 
@@ -108,7 +108,7 @@ ts::FetchCipherAlgorithm::FetchCipherAlgorithm(const char* algo, const char* pro
     OpenSSL::Providers::Instance().load(provider);
     _algo = EVP_CIPHER_fetch(nullptr, algo, OpenSSL::Providers::Properties(provider).c_str());
 #else
-    // With OpenSSL v1, this is a predefined context which shall not be freeed.
+    // With OpenSSL v1, this is a predefined context which shall not be freed.
     _algo = EVP_get_cipherbyname(algo);
 #endif
     OpenSSL::DebugErrors();

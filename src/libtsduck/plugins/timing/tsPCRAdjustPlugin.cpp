@@ -293,7 +293,7 @@ ts::PacketProcessStatus ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TSPack
         // Process PCR.
         if (pkt.hasPCR()) {
             // The PID is its own PCR reference.
-            // Warning: This creates a circular reference which prevents the shared_ptr to be freeed.
+            // Warning: This creates a circular reference which prevents the shared_ptr to be freed.
             // Make sure to use freePIDContexts().
             ctx->pcr_ctx = ctx;
             ctx->last_original_pcr = pkt.getPCR();

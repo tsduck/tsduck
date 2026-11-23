@@ -596,7 +596,7 @@ bool ts::TSPacket::setPrivateData(const void* data, size_t size, bool shift_payl
             endAF = 5 + b[4];
             const size_t remove = endPreviousData - endNewData;
             MemCopy(b + endNewData, b + endPreviousData, endAF - endPreviousData);
-            // Erase freeed space (now stuffing).
+            // Erase freed space (now stuffing).
             MemSet(b + endAF - remove, 0xFF, remove);
         }
         else if (endNewData > endPreviousData) {

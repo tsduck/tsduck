@@ -50,7 +50,7 @@ void ts::mcast::FluteDemuxArgs::defineArgs(Args& args)
     args.help(u"max-file-size",
               u"Maximum size of files to analyze or extract. "
               u"Each received file is accumulated in memory, chunk by chunk, until the file is complete. "
-              u"After processing the file, all chunks are freeed. "
+              u"After processing the file, all chunks are freed. "
               u"This option is useful when the stream contains many large files which clutter the memory during their reception. "
               u"All files which are announced as larger than the specified size are ignored. "
               u"By default, all files are received and analyzed or saved.");
