@@ -63,29 +63,14 @@ const ts::Names& ts::Reactor::EventTypeNames()
 
 
 //----------------------------------------------------------------------------
-// Reactor constructors and destructor.
+// Reactor constructors are in system-specific source.
+// Only the destructor is common.
 //----------------------------------------------------------------------------
-
-ts::Reactor::Reactor(Report* report) :
-    ReporterBase(report),
-    _guts(allocateGuts())
-{
-}
-
-ts::Reactor::Reactor(ReporterBase* delegate) :
-    ReporterBase(delegate),
-    _guts(allocateGuts())
-{
-}
 
 ts::Reactor::~Reactor()
 {
-    if (_guts != nullptr) {
-        if (_is_open) {
-            close(true);
-        }
-        delete _guts;
-        _guts = nullptr;
+    if (_is_open) {
+        close(true);
     }
 }
 
@@ -94,22 +79,22 @@ ts::Reactor::~Reactor()
 // Base class for Guts.
 //----------------------------------------------------------------------------
 
-#define TS_NO_PRH  _reactor.report().error(u"process handles are not supported on this system")
-#define TS_NO_AIO  _reactor.report().error(u"asynchronous I/O are not supported on this system")
-#define TS_NO_NBIO _reactor.report().error(u"immediate I/O are not supported on this system")
+#define TS_NO_PRH(ret)  { _reactor.report().error(u"process handles are not supported on this system"); return (ret); }
+#define TS_NO_AIO(ret)  { _reactor.report().error(u"asynchronous I/O are not supported on this system"); return (ret); }
+#define TS_NO_NBIO(ret) { _reactor.report().error(u"immediate I/O are not supported on this system"); return (ret); }
 
 ts::Reactor::GutsBase::~GutsBase() {}
-void* ts::Reactor::GutsBase::newProcessHandleTermination(ReactorHandlerInterface*, SysHandleType) { TS_NO_PRH; return nullptr; }
-void* ts::Reactor::GutsBase::newAsynchronousIO(ReactorHandlerInterface*, SysSocketType) { TS_NO_AIO; return nullptr; }
-bool ts::Reactor::GutsBase::cancelAsynchronousIO(EventId, bool) { TS_NO_AIO; return false; }
-bool ts::Reactor::GutsBase::cancelAndWaitAsynchronousIO(EventId, Device::IOSB&, bool) { TS_NO_AIO; return false; }
-bool ts::Reactor::GutsBase::deleteAsynchronousIO(EventId, bool) { TS_NO_AIO; return false; }
-void* ts::Reactor::GutsBase::newReadNotify(ReactorHandlerInterface*, SysSocketType) { TS_NO_NBIO; return nullptr; }
-bool ts::Reactor::GutsBase::deleteReadNotify(EventId, bool) { TS_NO_NBIO; return false; }
-bool ts::Reactor::GutsBase::deleteReadNotify(SysSocketType, bool) { TS_NO_NBIO; return false; }
-void* ts::Reactor::GutsBase::newWriteNotify(ReactorHandlerInterface*, SysSocketType) { TS_NO_NBIO; return nullptr; }
-bool ts::Reactor::GutsBase::deleteWriteNotify(EventId, bool) { TS_NO_NBIO; return false; }
-bool ts::Reactor::GutsBase::deleteWriteNotify(SysSocketType, bool) { TS_NO_NBIO; return false; }
+void* ts::Reactor::GutsBase::newProcessHandleTermination(ReactorHandlerInterface*, SysHandleType) TS_NO_PRH(nullptr)
+void* ts::Reactor::GutsBase::newAsynchronousIO(ReactorHandlerInterface*, SysSocketType) TS_NO_AIO(nullptr)
+bool ts::Reactor::GutsBase::cancelAsynchronousIO(EventId, bool) TS_NO_AIO(false)
+bool ts::Reactor::GutsBase::cancelAndWaitAsynchronousIO(EventId, Device::IOSB&, bool) TS_NO_AIO(false)
+bool ts::Reactor::GutsBase::deleteAsynchronousIO(EventId, bool) TS_NO_AIO(false)
+void* ts::Reactor::GutsBase::newReadNotify(ReactorHandlerInterface*, SysSocketType) TS_NO_NBIO(nullptr)
+bool ts::Reactor::GutsBase::deleteReadNotify(EventId, bool) TS_NO_NBIO(false)
+bool ts::Reactor::GutsBase::deleteReadNotify(SysSocketType, bool) TS_NO_NBIO(false)
+void* ts::Reactor::GutsBase::newWriteNotify(ReactorHandlerInterface*, SysSocketType) TS_NO_NBIO(nullptr)
+bool ts::Reactor::GutsBase::deleteWriteNotify(EventId, bool) TS_NO_NBIO(false)
+bool ts::Reactor::GutsBase::deleteWriteNotify(SysSocketType, bool) TS_NO_NBIO(false)
 
 
 //----------------------------------------------------------------------------

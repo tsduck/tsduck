@@ -22,9 +22,9 @@
 // System-specific parts are stored in a private structure.
 //----------------------------------------------------------------------------
 
-class ts::TLSCertificate::SystemGuts
+class ts::TLSCertificate::Guts
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(Guts);
 public:
     TLSCertificate&      tls;
     ::PCCERT_CONTEXT     cert = nullptr;
@@ -32,8 +32,8 @@ public:
     ::NCRYPT_KEY_HANDLE  key = 0;
 
     // Constructor and destructor.
-    SystemGuts(TLSCertificate& c) : tls(c) {}
-    ~SystemGuts();
+    Guts(TLSCertificate& c) : tls(c) {}
+    ~Guts();
 
     // Reset the guts.
     void reset();
@@ -62,25 +62,31 @@ public:
 
 
 //----------------------------------------------------------------------------
-// System-specific constructor and destructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-void ts::TLSCertificate::allocateGuts()
+ts::TLSCertificate::TLSCertificate(Report* report) :
+    ReporterBase(report),
+    _guts(std::make_unique<Guts>(*this))
 {
-    _guts = new SystemGuts(*this);
 }
 
-void ts::TLSCertificate::deleteGuts()
+ts::TLSCertificate::TLSCertificate(ReporterBase* delegate) :
+    ReporterBase(delegate),
+    _guts(std::make_unique<Guts>(*this))
 {
-    delete _guts;
 }
 
-ts::TLSCertificate::SystemGuts::~SystemGuts()
+ts::TLSCertificate::~TLSCertificate()
+{
+}
+
+ts::TLSCertificate::Guts::~Guts()
 {
     reset();
 }
 
-void ts::TLSCertificate::SystemGuts::reset()
+void ts::TLSCertificate::Guts::reset()
 {
     if (cert != nullptr) {
         ::CertFreeCertificateContext(cert);
@@ -114,7 +120,7 @@ void* ts::TLSCertificate::getCertificate() const
 // Get a certificate name.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TLSCertificate::SystemGuts::GetCertificateName(::PCCERT_CONTEXT cert, ::DWORD type)
+ts::UString ts::TLSCertificate::Guts::GetCertificateName(::PCCERT_CONTEXT cert, ::DWORD type)
 {
     ::DWORD size = ::CertGetNameStringW(cert, type, 0, nullptr, nullptr, 0);
     std::vector<::WCHAR> name(std::max<size_t>(1, size));
@@ -303,16 +309,16 @@ bool ts::TLSCertificate::loadCertificate(const UString& certificate_path, const 
     }
 
     // Get the certificate store.
-    ::HCERTSTORE store = SystemGuts::CertStoreRepository::Instance().getStore(store_name, report());
+    ::HCERTSTORE store = Guts::CertStoreRepository::Instance().getStore(store_name, report());
     if (store == nullptr) {
         return false;
     }
 
     // Search the certificate in the store. Only consider certificates with a private key.
     while ((_guts->cert = ::CertFindCertificateInStore(store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_HAS_PRIVATE_KEY, nullptr, _guts->cert)) != nullptr) {
-        if (SystemGuts::GetCertificateName(_guts->cert, CERT_NAME_FRIENDLY_DISPLAY_TYPE) == certificate_path ||
-            SystemGuts::GetCertificateName(_guts->cert, CERT_NAME_SIMPLE_DISPLAY_TYPE) == certificate_path ||
-            SystemGuts::GetCertificateName(_guts->cert, CERT_NAME_DNS_TYPE) == certificate_path)
+        if (Guts::GetCertificateName(_guts->cert, CERT_NAME_FRIENDLY_DISPLAY_TYPE) == certificate_path ||
+            Guts::GetCertificateName(_guts->cert, CERT_NAME_SIMPLE_DISPLAY_TYPE) == certificate_path ||
+            Guts::GetCertificateName(_guts->cert, CERT_NAME_DNS_TYPE) == certificate_path)
         {
             report().debug(u"found certificate \"%s\"", certificate_path);
             return true;
@@ -335,11 +341,11 @@ bool ts::TLSCertificate::loadCertificate(const UString& certificate_path, const 
 // Certificate stores.
 //----------------------------------------------------------------------------
 
-TS_DEFINE_SINGLETON(ts::TLSCertificate::SystemGuts::CertStoreRepository);
-ts::TLSCertificate::SystemGuts::CertStoreRepository::CertStoreRepository() {}
+TS_DEFINE_SINGLETON(ts::TLSCertificate::Guts::CertStoreRepository);
+ts::TLSCertificate::Guts::CertStoreRepository::CertStoreRepository() {}
 
 // Destructor: close opened stores.
-ts::TLSCertificate::SystemGuts::CertStoreRepository::~CertStoreRepository()
+ts::TLSCertificate::Guts::CertStoreRepository::~CertStoreRepository()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     for (auto& it : _stores) {
@@ -351,7 +357,7 @@ ts::TLSCertificate::SystemGuts::CertStoreRepository::~CertStoreRepository()
 }
 
 // Get or open a certificate store.
-::HCERTSTORE ts::TLSCertificate::SystemGuts::CertStoreRepository::getStore(const UString& store_name, Report& report)
+::HCERTSTORE ts::TLSCertificate::Guts::CertStoreRepository::getStore(const UString& store_name, Report& report)
 {
     // Resolve certificate store name.
     ::DWORD flags = CERT_STORE_OPEN_EXISTING_FLAG | CERT_STORE_READONLY_FLAG;

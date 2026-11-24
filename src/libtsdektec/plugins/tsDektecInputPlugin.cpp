@@ -77,7 +77,7 @@ size_t ts::DektecInputPlugin::stackUsage() const
 
 ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive packets from a Dektec DVB-ASI or demodulator device", u"[options]"),
-    _guts(new Guts)
+    _guts(std::make_unique<Guts>())
 {
     // Share same option --dvbt-bandwidth for DVB-T2 and DVB-T.
     assert(DTAPI_DVBT2_5MHZ == DTAPI_MOD_DVBT_5MHZ);
@@ -357,11 +357,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 
 ts::DektecInputPlugin::~DektecInputPlugin()
 {
-    if (_guts != nullptr) {
-        DektecInputPlugin::stop();
-        delete _guts;
-        _guts = nullptr;
-    }
+    DektecInputPlugin::stop();
 }
 
 

@@ -14,10 +14,24 @@
 #include "tsIPProtocols.h"
 #include "tsSysUtils.h"
 #include "tsOpenSSL.h"
+#include "tsFeatures.h"
 
 // Some OpenSSL macros use C-style casts and we need to disable warnings.
 TS_LLVM_NOWARNING(old-style-cast)
 TS_GCC_NOWARNING(old-style-cast)
+
+
+//----------------------------------------------------------------------------
+// Register for options --version and --support.
+//----------------------------------------------------------------------------
+
+#if !defined(TS_WINDOWS) && defined(TS_NO_OPENSSL)
+#define SUPPORT ts::Features::UNSUPPORTED
+#else
+#define SUPPORT ts::Features::SUPPORTED
+#endif
+
+TS_REGISTER_FEATURE(u"tls", u"TLS library", SUPPORT, ts::TLSContext::GetLibraryVersion);
 
 
 //----------------------------------------------------------------------------
@@ -38,9 +52,10 @@ ts::UString ts::TLSContext::GetLibraryVersion()
 
 #define TS_NOT_IMPL { report().error(TS_NO_OPENSSL_MESSAGE); return false; }
 
-class ts::TLSContext::SystemGuts {};
-void ts::TLSContext::allocateGuts() { _guts = new SystemGuts; }
-void ts::TLSContext::deleteGuts() { delete _guts; }
+class ts::TLSContext::Guts {};
+ts::TLSContext::TLSContext(Report* report) : ReporterBase(report) {}
+ts::TLSContext::TLSContext(ReporterBase* delegate) : ReporterBase(delegate) {}
+ts::TLSContext::~TLSContext() {}
 void ts::TLSContext::reset() {}
 bool ts::TLSContext::initClient(const TLSConnectionBase&) TS_NOT_IMPL
 bool ts::TLSContext::initServer(void*) TS_NOT_IMPL
@@ -56,9 +71,9 @@ bool ts::TLSContext::initShutdown(bool) TS_NOT_IMPL
 // System-specific parts are stored in a private structure.
 //----------------------------------------------------------------------------
 
-class ts::TLSContext::SystemGuts: public OpenSSL::Controlled
+class ts::TLSContext::Guts: public OpenSSL::Controlled
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(Guts);
 public:
     TLSContext& tls;
     SSL_CTX*    ssl_ctx = nullptr;
@@ -67,8 +82,8 @@ public:
     BIO*        wbio = nullptr;  // Outgoing TLS data -> written by OpenSSL
 
     // Constructor and destructor.
-    SystemGuts(TLSContext& c) : tls(c) {}
-    virtual ~SystemGuts() override;
+    Guts(TLSContext& c) : tls(c) {}
+    virtual ~Guts() override;
 
     // Process the status of an OpenSSL function. Return false on error.
     bool processStatus(int return_code, const UChar* label, bool silent = false);
@@ -82,22 +97,28 @@ public:
 
 
 //----------------------------------------------------------------------------
-// System-specific constructor and destructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-void ts::TLSContext::allocateGuts()
+ts::TLSContext::TLSContext(Report* report) :
+    ReporterBase(report),
+    _guts(std::make_unique<Guts>(*this))
 {
-    _guts = new SystemGuts(*this);
 }
 
-void ts::TLSContext::deleteGuts()
+ts::TLSContext::TLSContext(ReporterBase* delegate) :
+    ReporterBase(delegate),
+    _guts(std::make_unique<Guts>(*this))
 {
-    delete _guts;
 }
 
-ts::TLSContext::SystemGuts::~SystemGuts()
+ts::TLSContext::~TLSContext()
 {
-    SystemGuts::terminate();
+}
+
+ts::TLSContext::Guts::~Guts()
+{
+    Guts::terminate();
 }
 
 void ts::TLSContext::reset()
@@ -106,7 +127,7 @@ void ts::TLSContext::reset()
     _server_side = _need_receive = _shutdowning = _end_session = _renegotiating = false;
 }
 
-void ts::TLSContext::SystemGuts::terminate()
+void ts::TLSContext::Guts::terminate()
 {
     // The ownershipt of the two BIO was transfered to the SSL* object. They will be freed by SSL_free(). Simply reset the pointers.
     rbio = wbio = nullptr;
@@ -127,7 +148,7 @@ void ts::TLSContext::SystemGuts::terminate()
 // Process the status of an OpenSSL function. Return false on error.
 //----------------------------------------------------------------------------
 
-bool ts::TLSContext::SystemGuts::processStatus(int return_code, const UChar* label, bool silent)
+bool ts::TLSContext::Guts::processStatus(int return_code, const UChar* label, bool silent)
 {
     // Update shutdown and eof mark.
     const int shut = SSL_get_shutdown(ssl);
@@ -187,7 +208,7 @@ bool ts::TLSContext::SystemGuts::processStatus(int return_code, const UChar* lab
 // Initialize the read and write BIO of the SSL session.
 //----------------------------------------------------------------------------
 
-bool ts::TLSContext::SystemGuts::initBIO()
+bool ts::TLSContext::Guts::initBIO()
 {
     assert(ssl != nullptr);
     assert(rbio == nullptr);

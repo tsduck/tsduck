@@ -215,16 +215,12 @@ void ts::ReactiveWebRequest::Guts::reset()
 
 ts::ReactiveWebRequest::ReactiveWebRequest(Reactor& reactor) :
     ReactiveBase(reactor),
-    _guts(new Guts(*this))
+    _guts(std::make_unique<Guts>(*this))
 {
 }
 
 ts::ReactiveWebRequest::~ReactiveWebRequest()
 {
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
     _args.deleteTemporaryCookiesFile(report());
 }
 

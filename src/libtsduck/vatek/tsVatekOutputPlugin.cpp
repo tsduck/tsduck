@@ -123,7 +123,7 @@ bool ts::VatekOutputPlugin::isRealTime()
 
 ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to an AstroMeta (formerly VATek) modulator device", u"[options]"),
-    _guts(new Guts(this))
+    _guts(std::make_unique<Guts>(this))
 {
     option(u"device", 'd', UNSIGNED);
     help(u"device",
@@ -408,11 +408,6 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
 
 ts::VatekOutputPlugin::~VatekOutputPlugin()
 {
-    if (_guts != nullptr) {
-        VatekOutputPlugin::stop();
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 

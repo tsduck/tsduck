@@ -416,9 +416,11 @@ namespace ts {
     private:
         // All dirty system-specific stuff is moved into a Guts internal structure.
         // Basic common error checking is done at Reactor level. The rest is done in Guts.
-        // The virtual functions which only apply to immediate or asynchronous I/O have
-        // a default implementation which return an error. An implementation of Reactor only
-        // need to implement the supported model.
+        class Guts;
+
+        // The class Guts is defined as a subclass of GutBase. The virtual functions which only
+        // apply to immediate or asynchronous I/O have a default implementation which returns
+        // an error. An implementation of Reactor only need to implement the supported model.
         class TSCOREDLL GutsBase
         {
         protected:
@@ -450,10 +452,6 @@ namespace ts {
             virtual bool deleteWriteNotify(EventId id, bool silent);
             virtual bool deleteWriteNotify(SysSocketType sock, bool silent);
         };
-
-        // The class Guts is defined as a subclass of GutBase in the system-specific source code.
-        class Guts;
-        GutsBase* allocateGuts();
 
         // Types of source events. Can be used as bit mask in rare cases (read+write with epoll for instance).
         enum EventType : uint8_t {
@@ -496,14 +494,14 @@ namespace ts {
         static const UString _trace_prefix;       // Prefix of trace() messages.
 
         // Reactor private members.
-        GutsBase* _guts = nullptr;
-        bool      _active_trace = _default_active_trace;
-        bool      _is_open = false;
-        bool      _exit_requested = false;    // Exit event loop when possible.
-        bool      _exit_success = true;       // Exit status for event loop.
-        int       _exit_counter = 0;          // Reference counter for addExitReference() / freeExitReference().
-        std::set<EventData*> _events {};      // Existing allocated events.
-        BroadcastHandler _broadcast {*this};  // Handler for broadcast events.
+        std::unique_ptr<GutsBase> _guts {};
+        bool                      _active_trace = _default_active_trace;
+        bool                      _is_open = false;
+        bool                      _exit_requested = false;  // Exit event loop when possible.
+        bool                      _exit_success = true;     // Exit status for event loop.
+        int                       _exit_counter = 0;        // Reference counter for addExitReference() / freeExitReference().
+        std::set<EventData*>      _events {};               // Existing allocated events.
+        BroadcastHandler          _broadcast {*this};       // Handler for broadcast events.
 
         // Deletion of EventData: An EventData can be triggered (event, timer, I/O) and then canceled or deleted
         // by the application. However, the trigger remains in the kernel queue (epoll, kqueue, IOCP) and will be

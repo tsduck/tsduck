@@ -79,18 +79,10 @@ ts::RISTInputPlugin::RISTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
                                 u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options] url [url...]",
                                 u"rist", u"RIST source time stamp",
-                                TSDatagramInputOptions::REAL_TIME | TSDatagramInputOptions::ALLOW_RS204)
+                                TSDatagramInputOptions::REAL_TIME | TSDatagramInputOptions::ALLOW_RS204),
+    _guts(std::make_unique<Guts>(*this))
 {
-    _guts = new Guts(*this);
     _guts->rist.defineArgs(*this);
-}
-
-ts::RISTInputPlugin::~RISTInputPlugin()
-{
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 

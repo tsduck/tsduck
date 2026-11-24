@@ -40,7 +40,7 @@ namespace ts {
 
     private:
         class Guts;
-        Guts* _guts = nullptr;
+        std::unique_ptr<Guts> _guts {};
     };
 }
 

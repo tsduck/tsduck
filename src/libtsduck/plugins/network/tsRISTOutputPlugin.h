@@ -24,9 +24,6 @@ namespace ts {
     {
         TS_PLUGIN_CONSTRUCTORS(RISTOutputPlugin);
     public:
-        //! Destructor.
-        virtual ~RISTOutputPlugin() override;
-
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;
@@ -37,7 +34,7 @@ namespace ts {
     private:
         // The actual implementation is private to the body of the class.
         class Guts;
-        Guts* _guts = nullptr;
+        std::unique_ptr<Guts> _guts {};
 
         // Implementation of TSDatagramOutputHandlerInterface.
         virtual bool sendDatagram(const void* address, size_t size) override;

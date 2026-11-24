@@ -313,16 +313,12 @@ void ts::ReactiveWebRequest::Guts::reset(bool full)
 
 ts::ReactiveWebRequest::ReactiveWebRequest(Reactor& reactor) :
     ReactiveBase(reactor),
-    _guts(new Guts(*this))
+    _guts(std::make_unique<Guts>(*this))
 {
 }
 
 ts::ReactiveWebRequest::~ReactiveWebRequest()
 {
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
     _args.deleteTemporaryCookiesFile(report());
 }
 
@@ -793,7 +789,7 @@ size_t ts::ReactiveWebRequest::Guts::CurlWriteCallback(char* ptr, size_t size, s
             guts->_request.reactor().signalEvent(guts->_event);
         }
 
-        // Store response data in the SystemGuts buffer only if a callback was specified.
+        // Store response data in the Guts buffer only if a callback was specified.
         assert(guts->_received_data != nullptr);
         if (guts->_handler != nullptr) {
             guts->_received_data->append(ptr, chunk_size);

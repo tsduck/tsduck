@@ -73,7 +73,7 @@ public:
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
     Args(u"Control Dektec devices", u"[options] [device]"),
-    _guts(new Guts(*this))
+    _guts(std::make_unique<Guts>(*this))
 {
     option(u"", 0, UNSIGNED, 0, 1);
     help(u"",
@@ -157,10 +157,6 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
 
 ts::DektecControl::~DektecControl()
 {
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 

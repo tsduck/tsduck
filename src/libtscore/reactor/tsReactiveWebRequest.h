@@ -107,9 +107,8 @@ namespace ts {
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
         class Guts;
-
-        Guts*            _guts = nullptr;
-        WebRequestArgs   _args {};
-        WebRequestStatus _status {};
+        std::unique_ptr<Guts> _guts {};
+        WebRequestArgs        _args {};
+        WebRequestStatus      _status {};
     };
 }

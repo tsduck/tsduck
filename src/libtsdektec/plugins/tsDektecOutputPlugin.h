@@ -36,8 +36,9 @@ namespace ts {
         virtual BitRateConfidence getBitrateConfidence() override;
 
     private:
+        // Redirect it to an internal DTAPI-dependent "guts" class.
         class Guts;
-        Guts* _guts = nullptr;
+        std::unique_ptr<Guts> _guts {};
 
         // Output start error: log error, detach channel & device, return false.
         bool startError(const UString& = UString(), unsigned int = 0); // Dtapi::DTAPI_RESULT

@@ -27,9 +27,10 @@ TS_GCC_NOWARNING(old-style-cast)
 
 #define TS_NOT_IMPL { report().error(TS_NO_OPENSSL_MESSAGE); return false; }
 
-class ts::TLSCertificate::SystemGuts {};
-void ts::TLSCertificate::allocateGuts() { _guts = new SystemGuts; }
-void ts::TLSCertificate::deleteGuts() { delete _guts; }
+class ts::TLSCertificate::Guts {};
+ts::TLSCertificate::TLSCertificate(Report* report) : ReporterBase(report) {}
+ts::TLSCertificate::TLSCertificate(ReporterBase* delegate) : ReporterBase(delegate) {}
+ts::TLSCertificate::~TLSCertificate() {}
 void ts::TLSCertificate::reset() {}
 void* ts::TLSCertificate::getCertificate() const { return nullptr; }
 bool ts::TLSCertificate::createEphemeralCertificate(size_t) TS_NOT_IMPL
@@ -41,16 +42,16 @@ bool ts::TLSCertificate::loadCertificate(const UString&, const UString&, const U
 // System-specific parts are stored in a private structure.
 //----------------------------------------------------------------------------
 
-class ts::TLSCertificate::SystemGuts: public OpenSSL::Controlled
+class ts::TLSCertificate::Guts: public OpenSSL::Controlled
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(Guts);
 public:
     TLSCertificate& cert;
     SSL_CTX* ssl_ctx = nullptr;
 
     // Constructor and destructor.
-    SystemGuts(TLSCertificate& c) : cert(c) {}
-    virtual ~SystemGuts() override;
+    Guts(TLSCertificate& c) : cert(c) {}
+    virtual ~Guts() override;
 
     // Implementation of OpenSSL::Controlled.
     virtual void terminate() override;
@@ -64,25 +65,31 @@ public:
 
 
 //----------------------------------------------------------------------------
-// System-specific constructor and destructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-void ts::TLSCertificate::allocateGuts()
+ts::TLSCertificate::TLSCertificate(Report* report) :
+    ReporterBase(report),
+    _guts(std::make_unique<Guts>(*this))
 {
-    _guts = new SystemGuts(*this);
 }
 
-void ts::TLSCertificate::deleteGuts()
+ts::TLSCertificate::TLSCertificate(ReporterBase* delegate) :
+    ReporterBase(delegate),
+    _guts(std::make_unique<Guts>(*this))
 {
-    delete _guts;
 }
 
-ts::TLSCertificate::SystemGuts::~SystemGuts()
+ts::TLSCertificate::~TLSCertificate()
 {
-    SystemGuts::terminate();
 }
 
-void ts::TLSCertificate::SystemGuts::terminate()
+ts::TLSCertificate::Guts::~Guts()
+{
+    Guts::terminate();
+}
+
+void ts::TLSCertificate::Guts::terminate()
 {
     if (ssl_ctx != nullptr) {
         SSL_CTX_free(ssl_ctx);
@@ -105,7 +112,7 @@ void* ts::TLSCertificate::getCertificate() const
 // Add to certificate 'x509' X.509v3 extension id 'nid'
 //-----------------------------------------------------------------------------
 
-bool ts::TLSCertificate::SystemGuts::addExtension(X509* x509, int nid, const char* value)
+bool ts::TLSCertificate::Guts::addExtension(X509* x509, int nid, const char* value)
 {
     X509V3_CTX ctx {};
 
@@ -133,7 +140,7 @@ bool ts::TLSCertificate::SystemGuts::addExtension(X509* x509, int nid, const cha
 // Create the SSL server context.
 //-----------------------------------------------------------------------------
 
-bool ts::TLSCertificate::SystemGuts::initServerContext()
+bool ts::TLSCertificate::Guts::initServerContext()
 {
     // Clear previous certificate.
     terminate();

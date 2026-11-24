@@ -24,13 +24,9 @@ namespace {
     }
 }
 
-ts::HiDesDevice::HiDesDevice()
-{
-}
-
-ts::HiDesDevice::~HiDesDevice()
-{
-}
+class ts::HiDesDevice::Guts {};
+ts::HiDesDevice::HiDesDevice() {}
+ts::HiDesDevice::~HiDesDevice() {}
 
 bool ts::HiDesDevice::GetAllDevices(HiDesDeviceInfoList& devices, Report& report)
 {

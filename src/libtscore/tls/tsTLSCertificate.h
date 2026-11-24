@@ -97,12 +97,8 @@ namespace ts {
     private:
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
-        SystemGuts* _guts = nullptr;
-
-        // Allocate and deallocate guts (depend on implementations).
-        void allocateGuts();
-        void deleteGuts();
+        class Guts;
+        std::unique_ptr<Guts> _guts {};
 
         // Get the certificate subject (CN), built from the hostname.
         // Note: CN is now informational only and no longer used in certificate validation by most clients.

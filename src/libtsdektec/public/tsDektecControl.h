@@ -45,9 +45,10 @@ namespace ts {
         int execute();
 
     private:
+        DuckContext _duck {this};
+
         // Redirect it to an internal DTAPI-dependent "guts" class.
         class Guts;
-        DuckContext _duck {this};
-        Guts* _guts = nullptr;
+        std::unique_ptr<Guts> _guts {};
     };
 }

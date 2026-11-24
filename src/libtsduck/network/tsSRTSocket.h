@@ -180,6 +180,6 @@ namespace ts {
 
         // The actual implementation is private to the body of the class.
         class Guts;
-        Guts* _guts;
+        std::unique_ptr<Guts> _guts {};
     };
 }

@@ -52,22 +52,18 @@ public:
 
 ts::WebRequest::WebRequest(Report* report) :
     ReporterBase(report),
-    _guts(new Guts(this))
+    _guts(std::make_unique<Guts>(this))
 {
 }
 
 ts::WebRequest::WebRequest(ReporterBase* delegate) :
     ReporterBase(delegate),
-    _guts(new Guts(this))
+    _guts(std::make_unique<Guts>(this))
 {
 }
 
 ts::WebRequest::~WebRequest()
 {
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 ts::WebRequest::Guts::~Guts()
@@ -122,7 +118,7 @@ bool ts::WebRequest::open(const UString& url, size_t buffer_size)
     }
 
     // Start the transfer in the reactive environment.
-    if (!_guts->reactive.start(_guts, url, buffer_size)) {
+    if (!_guts->reactive.start(_guts.get(), url, buffer_size)) {
         _guts->reactor.close();
         return false;
     }

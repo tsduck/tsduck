@@ -35,7 +35,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~HiDesDevice();
+        ~HiDesDevice();
 
         //!
         //! Get all HiDes devices in the system.
@@ -163,8 +163,8 @@ namespace ts {
         // The implementation is highly system-dependent.
         // Redirect it to an internal system-dependent "guts" class.
         class Guts;
+        std::unique_ptr<Guts> _guts {};
 
-        bool  _is_open = false;
-        Guts* _guts = nullptr;
+        bool _is_open = false;
     };
 }

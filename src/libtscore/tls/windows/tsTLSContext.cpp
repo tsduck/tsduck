@@ -16,11 +16,14 @@
 #include "tsSChannelBuffer.h"
 #include "tsWinModuleInfo.h"
 #include "tsWinTLS.h"
+#include "tsFeatures.h"
 
 
 //----------------------------------------------------------------------------
 // Library version.
 //----------------------------------------------------------------------------
+
+TS_REGISTER_FEATURE(u"tls", u"TLS library", ts::Features::SUPPORTED, ts::TLSContext::GetLibraryVersion);
 
 ts::UString ts::TLSContext::GetLibraryVersion()
 {
@@ -32,9 +35,9 @@ ts::UString ts::TLSContext::GetLibraryVersion()
 // System-specific parts are stored in a private structure.
 //----------------------------------------------------------------------------
 
-class ts::TLSContext::SystemGuts
+class ts::TLSContext::Guts
 {
-    TS_NOBUILD_NOCOPY(SystemGuts);
+    TS_NOBUILD_NOCOPY(Guts);
 public:
     TLSContext&    tls;
 
@@ -57,8 +60,8 @@ public:
     uint8_t        incoming_buffer[TLS_MAX_PACKET_SIZE];  // Buffer of incoming data, at most one TLS packet.
 
     // Constructor and destructor.
-    SystemGuts(TLSContext& c) : tls(c) {}
-    ~SystemGuts();
+    Guts(TLSContext& c) : tls(c) {}
+    ~Guts();
 
     // Clear the context, free all resources.
     void reset();
@@ -81,22 +84,28 @@ public:
 
 
 //----------------------------------------------------------------------------
-// System-specific constructor and destructor.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-void ts::TLSContext::allocateGuts()
+ts::TLSContext::TLSContext(Report* report) :
+    ReporterBase(report),
+    _guts(std::make_unique<Guts>(*this))
 {
-    _guts = new SystemGuts(*this);
 }
 
-void ts::TLSContext::deleteGuts()
+ts::TLSContext::TLSContext(ReporterBase* delegate) :
+    ReporterBase(delegate),
+    _guts(std::make_unique<Guts>(*this))
 {
-    delete _guts;
 }
 
-ts::TLSContext::SystemGuts::~SystemGuts()
+ts::TLSContext::~TLSContext()
 {
-    SystemGuts::reset();
+}
+
+ts::TLSContext::Guts::~Guts()
+{
+    Guts::reset();
 }
 
 void ts::TLSContext::reset()
@@ -107,9 +116,9 @@ void ts::TLSContext::reset()
     _server_side = _need_receive = _shutdowning = _end_session = _renegotiating = false;
 }
 
-void ts::TLSContext::SystemGuts::reset()
+void ts::TLSContext::Guts::reset()
 {
-    tls.report().log(2, u"TLSContext::SystemGuts reset");
+    tls.report().log(2, u"TLSContext::Guts reset");
 
     // SChannel security stuff.
     if (security_context.dwLower != 0 || security_context.dwUpper != 0) {
@@ -136,7 +145,7 @@ void ts::TLSContext::SystemGuts::reset()
 // Clear and/or free outgoing buffers.
 //----------------------------------------------------------------------------
 
-void ts::TLSContext::SystemGuts::freeOutputBuffer()
+void ts::TLSContext::Guts::freeOutputBuffer()
 {
     tls.report().log(2, u"TLSContext: freeOutputBuffer, outgoing_free: %s, outgoing_size: %d", outgoing_free, outgoing_size);
 
@@ -155,7 +164,7 @@ void ts::TLSContext::SystemGuts::freeOutputBuffer()
 // Acquire TLS credentials.
 //----------------------------------------------------------------------------
 
-bool ts::TLSContext::SystemGuts::getCredentials(bool verify_peer, ::PCCERT_CONTEXT cert)
+bool ts::TLSContext::Guts::getCredentials(bool verify_peer, ::PCCERT_CONTEXT cert)
 {
     // AcquireCredentialsHandle needs a non-const string (although it does not modify it).
     static UString unisp_name(UNISP_NAME_W);
@@ -473,7 +482,7 @@ bool ts::TLSContext::continueRenegotiation()
                 ::SecPkgContext_ConnectionInfo info;
                 TS_ZERO(info);
                 if (::QueryContextAttributesW(&_guts->security_context, SECPKG_ATTR_CONNECTION_INFO, &info) == SEC_E_OK) {
-                    report().debug(u"TLS connection uses %s", SystemGuts::ProtocolToString(info.dwProtocol));
+                    report().debug(u"TLS connection uses %s", Guts::ProtocolToString(info.dwProtocol));
                 }
             }
         }
@@ -634,7 +643,7 @@ bool ts::TLSContext::provideReceivedData(const void* data, size_t size, size_t& 
 // Log a level-2 debug message with trace information.
 //----------------------------------------------------------------------------
 
-void ts::TLSContext::SystemGuts::debug2(const UChar* title, const ::SecBufferDesc* bufs)
+void ts::TLSContext::Guts::debug2(const UChar* title, const ::SecBufferDesc* bufs)
 {
     if (tls.report().maxSeverity() >= 2) {
         tls.report().log(2, u"==== %s", title != nullptr ? title : u"");
@@ -655,7 +664,7 @@ void ts::TLSContext::SystemGuts::debug2(const UChar* title, const ::SecBufferDes
 // Stringify a pointer, with offset in incoming buffer when possible.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TLSContext::SystemGuts::debugName(const void* p)
+ts::UString ts::TLSContext::Guts::debugName(const void* p)
 {
     if (p == nullptr) {
         return u"null";
@@ -697,7 +706,7 @@ namespace {
     }
 }
 
-ts::UString ts::TLSContext::SystemGuts::ProtocolToString(::DWORD protocol)
+ts::UString ts::TLSContext::Guts::ProtocolToString(::DWORD protocol)
 {
     UString str;
     ProtocolToStringHelper(str, protocol, u"PCT 1.0", SP_PROT_PCT1_CLIENT, SP_PROT_PCT1_SERVER);

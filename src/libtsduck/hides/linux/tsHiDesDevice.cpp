@@ -114,17 +114,12 @@ public:
 //----------------------------------------------------------------------------
 
 ts::HiDesDevice::HiDesDevice() :
-    _guts(new Guts)
+    _guts(std::make_unique<Guts>())
 {
 }
 
 ts::HiDesDevice::~HiDesDevice()
 {
-    // Free internal resources.
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 

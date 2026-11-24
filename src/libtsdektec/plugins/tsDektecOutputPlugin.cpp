@@ -74,7 +74,7 @@ bool ts::DektecOutputPlugin::isRealTime()
 
 ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to a Dektec DVB-ASI or modulator device", u"[options]"),
-    _guts(new Guts)
+    _guts(std::make_unique<Guts>())
 {
     // Share same option --bandwidth for DVB-T2 and DVB-T/H
     assert(DTAPI_DVBT2_5MHZ == DTAPI_MOD_DVBT_5MHZ);
@@ -747,11 +747,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 
 ts::DektecOutputPlugin::~DektecOutputPlugin()
 {
-    if (_guts != nullptr) {
-        DektecOutputPlugin::stop();
-        delete _guts;
-        _guts = nullptr;
-    }
+    DektecOutputPlugin::stop();
 }
 
 

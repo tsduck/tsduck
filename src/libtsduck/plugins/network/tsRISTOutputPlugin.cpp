@@ -71,21 +71,13 @@ public:
 
 ts::RISTOutputPlugin::RISTOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Reliable Internet Stream Transport (RIST)", u"[options] url [url...]"),
-    _guts(new Guts(this))
+    _guts(std::make_unique<Guts>(this))
 {
     _guts->datagram.defineArgs(*this);
     _guts->rist.defineArgs(*this);
 
     option(u"null-packet-deletion", 'n');
     help(u"null-packet-deletion", u"Enable null packet deletion. The receiver needs to support this.");
-}
-
-ts::RISTOutputPlugin::~RISTOutputPlugin()
-{
-    if (_guts != nullptr) {
-        delete _guts;
-        _guts = nullptr;
-    }
 }
 
 

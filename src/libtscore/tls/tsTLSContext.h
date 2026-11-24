@@ -154,8 +154,8 @@ namespace ts {
 
         // System-specific parts are stored in a private structure.
         // This is done to avoid inclusion of specialized headers in this public file.
-        class SystemGuts;
-        SystemGuts* _guts = nullptr;
+        class Guts;
+        std::unique_ptr<Guts> _guts {};
 
         // Continue renegotiation if necessary.
         bool continueRenegotiation();
@@ -178,9 +178,5 @@ namespace ts {
                              getDataSizeToSend(), needReceive());
             }
         }
-
-        // Allocate and deallocate guts (depend on implementations).
-        void allocateGuts();
-        void deleteGuts();
     };
 }

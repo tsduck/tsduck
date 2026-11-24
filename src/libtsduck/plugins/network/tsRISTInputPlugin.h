@@ -23,9 +23,6 @@ namespace ts {
     {
         TS_PLUGIN_CONSTRUCTORS(RISTInputPlugin);
     public:
-        //! Destructor.
-        virtual ~RISTInputPlugin() override;
-
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool isRealTime() override;
@@ -40,6 +37,6 @@ namespace ts {
     private:
         // The actual implementation is private to the body of the class.
         class Guts;
-        Guts* _guts = nullptr;
+        std::unique_ptr<Guts> _guts {};
     };
 }

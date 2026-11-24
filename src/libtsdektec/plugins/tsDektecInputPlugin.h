@@ -38,8 +38,9 @@ namespace ts {
         virtual bool setReceiveTimeout(cn::milliseconds timeout) override;
 
     private:
+        // Redirect it to an internal DTAPI-dependent "guts" class.
         class Guts;
-        Guts* _guts = nullptr;
+        std::unique_ptr<Guts> _guts {};
 
         // Start error: log error, detach channel & device, return false.
         bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT

@@ -112,18 +112,12 @@ public:
 //----------------------------------------------------------------------------
 
 ts::HiDesDevice::HiDesDevice() :
-    _is_open(false),
-    _guts(new Guts)
+    _guts(std::make_unique<Guts>())
 {
 }
 
 ts::HiDesDevice::~HiDesDevice()
 {
-    // Free internal resources.
-    if (_guts != 0) {
-        delete _guts;
-        _guts = 0;
-    }
 }
 
 

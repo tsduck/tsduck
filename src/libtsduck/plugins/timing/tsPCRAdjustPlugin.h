@@ -62,37 +62,27 @@ namespace ts {
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;
-        virtual bool stop() override;
         virtual PacketProcessStatus processPacket(TSPacket&, TSPacketMetadata&) override;
 
-        //! @cond nodoxygen
-        virtual ~PCRAdjustPlugin() override;
-        //! @endcond
-
     private:
-        // Description of PID's. Map of safe pointers to PID contexts, indexed by PID.
-        class PIDContext;
-        using PIDContextPtr = std::shared_ptr<PIDContext>;
-        using PIDContextMap = std::map<PID, PIDContextPtr>;
+        // Command line options:
+        BitRate  _user_bitrate = 0;          // User-specified bitrate.
+        PIDSet   _pids {};                   // User-specified list of PIDs.
+        bool     _ignore_dts = false;        // Do not modify DTS values.
+        bool     _ignore_pts = false;        // Do not modify PTS values.
+        bool     _ignore_scrambled = false;  // Do not modify scrambled PID's.
+        uint64_t _min_pcr_interval = 0;      // Minimum interval between two PCR's. Ignored if zero.
 
-        // PCRAdjustPlugin private members
-        BitRate       _user_bitrate = 0;          // User-specified bitrate.
-        PIDSet        _pids {};                   // User-specified list of PIDs.
-        bool          _ignore_dts = false;        // Do not modify DTS values.
-        bool          _ignore_pts = false;        // Do not modify PTS values.
-        bool          _ignore_scrambled = false;  // Do not modify scrambled PID's.
-        uint64_t      _min_pcr_interval = 0;      // Minimum interval between two PCR's. Ignored if zero.
-        SectionDemux  _demux {duck, this};        // Section demux to get service descriptions.
-        PIDContextMap _pid_contexts {};           // Map of all PID contexts.
+        // Working data:
+        class PIDContext;
+        std::map<PID, std::shared_ptr<PIDContext>> _pid_contexts {};
+        SectionDemux _demux {duck, this};
 
         // TableHandlerInterface implementation.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
         // Get the context for a PID. Create one when necessary.
-        PIDContextPtr getContext(PID pid);
-
-        // Free the map of PID contexts. Required because the PIDContext may contains its own shared_ptr.
-        void freePIDContexts();
+        std::shared_ptr<PIDContext> getContext(PID pid);
 
         // Description of one PID. One structure is created per PID in the TS.
         class PIDContext
@@ -100,7 +90,7 @@ namespace ts {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
             const PID     pid;                             // PID value.
-            PIDContextPtr pcr_ctx {};                      // Context for associated PCR PID.
+            std::weak_ptr<PIDContext> pcr_ctx {};          // Context for associated PCR PID (weak_ptr to avoid memory leak on shared_ptr).
             bool          scrambled = false;               // The PID contains scrambled packets.
             bool          sync_pdts = false;               // PTS and DTS are still synchronous with the PCR, do not modify them.
             uint8_t       last_cc = 0;                     // Last continuity counter in this PID.

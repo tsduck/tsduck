@@ -114,10 +114,21 @@ private:
     static_assert(offsetof(ts::Reactor::EventData, canary) == 0);
 };
 
-// Guts allocation.
-ts::Reactor::GutsBase* ts::Reactor::allocateGuts()
+
+//----------------------------------------------------------------------------
+// Reactor constructors.
+//----------------------------------------------------------------------------
+
+ts::Reactor::Reactor(Report* report) :
+    ReporterBase(report),
+    _guts(std::make_unique<Guts>(*this))
 {
-    return new Guts(*this);
+}
+
+ts::Reactor::Reactor(ReporterBase* delegate) :
+    ReporterBase(delegate),
+    _guts(std::make_unique<Guts>(*this))
+{
 }
 
 

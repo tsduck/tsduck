@@ -55,11 +55,6 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
          u"By default, all PID's are modified. Several --pid options may be specified.");
 }
 
-ts::PCRAdjustPlugin::~PCRAdjustPlugin()
-{
-    freePIDContexts();
-}
-
 
 //----------------------------------------------------------------------------
 // Get options method
@@ -80,48 +75,17 @@ bool ts::PCRAdjustPlugin::getOptions()
 
 
 //----------------------------------------------------------------------------
-// Free the map of PID contexts.
-//----------------------------------------------------------------------------
-
-void ts::PCRAdjustPlugin::freePIDContexts()
-{
-    // Make sure to reset all shared_ptr in PIDContexts.
-    // Thus, we remove any potential circular reference which would prevent automatic deallocations.
-    for (const auto& it : _pid_contexts) {
-        if (it.second != nullptr) {
-            it.second->pcr_ctx.reset();
-        }
-    }
-
-    // Now, we can clear the map. All shared_ptr will be deallocated.
-    _pid_contexts.clear();
-}
-
-
-//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::PCRAdjustPlugin::start()
 {
     // Reset packet processing.
-    freePIDContexts();
+    _pid_contexts.clear();
 
     // Reset demux for service analysis.
     _demux.reset();
     _demux.addPID(PID_PAT);
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Stop method
-//----------------------------------------------------------------------------
-
-bool ts::PCRAdjustPlugin::stop()
-{
-    // Free packet processing.
-    freePIDContexts();
     return true;
 }
 
@@ -175,12 +139,13 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPCR(PacketCounter packet_index,
 uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index, const BitRate& bitrate, uint64_t original_pdts)
 {
     // If the PCR PID is unknown, we cannot compute anything and keep the original PTS/DTS.
-    if (pcr_ctx == nullptr) {
+    auto pcr_ctx_ptr = pcr_ctx.lock();
+    if (pcr_ctx_ptr == nullptr) {
         return original_pdts;
     }
 
     // Estimated updated PCR for the current packet:
-    const uint64_t updated_pcr = pcr_ctx->updatedPCR(packet_index, bitrate);
+    const uint64_t updated_pcr = pcr_ctx_ptr->updatedPCR(packet_index, bitrate);
     if (updated_pcr == INVALID_PCR) {
         // There is no PCR found yet in the PCR PID, cannot compute a new PTS/DTS.
         return original_pdts;
@@ -203,7 +168,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
     else {
         // The difference between the PTS/DTS and the PCR is too high, update the PTS/DTS.
         // First, compute the original PCR for this packet:
-        const uint64_t original_pcr = PCRTraits::Next(pcr_ctx->last_original_pcr, packet_index - pcr_ctx->last_pcr_packet, bitrate);
+        const uint64_t original_pcr = PCRTraits::Next(pcr_ctx_ptr->last_original_pcr, packet_index - pcr_ctx_ptr->last_pcr_packet, bitrate);
 
         // Compute the difference between the original PTS and the original PCR.
         const int64_t diff = int64_t(original_pdts) - int64_t(original_pcr / SYSTEM_CLOCK_SUBFACTOR);
@@ -220,9 +185,9 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index
 // Get the context for a PID.
 //----------------------------------------------------------------------------
 
-ts::PCRAdjustPlugin::PIDContextPtr ts::PCRAdjustPlugin::getContext(PID pid)
+std::shared_ptr<ts::PCRAdjustPlugin::PIDContext> ts::PCRAdjustPlugin::getContext(PID pid)
 {
-    const PIDContextPtr ptr = _pid_contexts[pid];
+    const auto ptr = _pid_contexts[pid];
     return ptr == nullptr ? (_pid_contexts[pid] = std::make_shared<PIDContext>(pid)) : ptr;
 }
 
@@ -273,7 +238,7 @@ ts::PacketProcessStatus ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TSPack
 
     // Get PID context.
     const PID pid = pkt.getPID();
-    const PIDContextPtr ctx(getContext(pid));
+    const auto ctx = getContext(pid);
     const PacketCounter current_packet = tsp->pluginPackets();
 
     // Keep track of scrambled PID's (or which contain at least one scrambled packet).
@@ -328,22 +293,25 @@ ts::PacketProcessStatus ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TSPack
 
         // Look for PID's with PCR for which the PCR are outdated.
         // Keep the "most urgent" PID, ie. the one which is the most late.
-        PIDContextPtr pcr_ctx;
+        std::shared_ptr<PIDContext> pcr_ctx;
         uint64_t pcr_delay = 0;
         uint64_t pcr_value = INVALID_PCR;
         for (const auto& it : _pid_contexts) {
-            const PIDContextPtr& cur_ctx(it.second);
+            const auto& cur_ctx(it.second);
             // Consider only PID's which contain PCR, ie. which are their own PCR reference.
-            if (cur_ctx != nullptr && cur_ctx->pcr_ctx != nullptr && cur_ctx->pid == cur_ctx->pcr_ctx->pid) {
-                const uint64_t last_pcr = cur_ctx->lastPCR();
-                const uint64_t updated_pcr = cur_ctx->updatedPCR(current_packet, bitrate);
-                if (last_pcr != INVALID_PCR && updated_pcr != INVALID_PCR && updated_pcr > last_pcr) {
-                    const uint64_t delay = updated_pcr - last_pcr;
-                    if (delay > _min_pcr_interval && delay > pcr_delay) {
-                        // This is the "most late" PID so far.
-                        pcr_ctx = cur_ctx;
-                        pcr_delay = delay;
-                        pcr_value = updated_pcr;
+            if (cur_ctx != nullptr) {
+                auto cur_pcr_ctx = cur_ctx->pcr_ctx.lock();
+                if (cur_pcr_ctx != nullptr && cur_ctx->pid == cur_pcr_ctx->pid) {
+                    const uint64_t last_pcr = cur_ctx->lastPCR();
+                    const uint64_t updated_pcr = cur_ctx->updatedPCR(current_packet, bitrate);
+                    if (last_pcr != INVALID_PCR && updated_pcr != INVALID_PCR && updated_pcr > last_pcr) {
+                        const uint64_t delay = updated_pcr - last_pcr;
+                        if (delay > _min_pcr_interval && delay > pcr_delay) {
+                            // This is the "most late" PID so far.
+                            pcr_ctx = cur_ctx;
+                            pcr_delay = delay;
+                            pcr_value = updated_pcr;
+                        }
                     }
                 }
             }

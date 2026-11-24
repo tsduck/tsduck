@@ -10,31 +10,6 @@
 #include "tsSysInfo.h"
 
 
-//----------------------------------------------------------------------------
-// Constructors and destructor.
-//----------------------------------------------------------------------------
-
-ts::TLSCertificate::TLSCertificate(Report* report) :
-    ReporterBase(report)
-{
-    allocateGuts();
-}
-
-ts::TLSCertificate::TLSCertificate(ReporterBase* delegate) :
-    ReporterBase(delegate)
-{
-    allocateGuts();
-}
-
-ts::TLSCertificate::~TLSCertificate()
-{
-    if (_guts != nullptr) {
-        deleteGuts();
-        _guts = nullptr;
-    }
-}
-
-
 //-----------------------------------------------------------------------------
 // Initialize (get or create) a server certificate, if not already done.
 //-----------------------------------------------------------------------------
