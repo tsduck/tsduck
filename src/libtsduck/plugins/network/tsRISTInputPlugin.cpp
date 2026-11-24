@@ -32,6 +32,7 @@ bool ts::RISTInputPlugin::isRealTime()
 #define NORIST_ERROR_MSG u"This version of TSDuck was compiled without RIST support"
 #define NORIST_ERROR(ret) { error(NORIST_ERROR_MSG); return (ret); }
 
+class ts::RISTInputPlugin::Guts {};
 ts::RISTInputPlugin::RISTInputPlugin(TSP* t) : AbstractDatagramInputPlugin(t, 0, u"", u"", u"", u"") {}
 ts::RISTInputPlugin::~RISTInputPlugin() {}
 bool ts::RISTInputPlugin::getOptions() NORIST_ERROR(false)
@@ -69,6 +70,10 @@ public:
     // Constructor.
     Guts(Report& report) : rist(report) {}
 };
+
+ts::RISTInputPlugin::~RISTInputPlugin()
+{
+}
 
 
 //----------------------------------------------------------------------------

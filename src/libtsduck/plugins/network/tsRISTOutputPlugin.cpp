@@ -31,6 +31,7 @@ bool ts::RISTOutputPlugin::isRealTime()
 #define NORIST_ERROR_MSG u"This version of TSDuck was compiled without RIST support"
 #define NORIST_ERROR { error(NORIST_ERROR_MSG); return false; }
 
+class ts::RISTOutputPlugin::Guts {};
 ts::RISTOutputPlugin::RISTOutputPlugin(TSP* t) : OutputPlugin(t, u"", u"") {}
 ts::RISTOutputPlugin::~RISTOutputPlugin() {}
 bool ts::RISTOutputPlugin::getOptions() NORIST_ERROR
@@ -78,6 +79,10 @@ ts::RISTOutputPlugin::RISTOutputPlugin(TSP* tsp_) :
 
     option(u"null-packet-deletion", 'n');
     help(u"null-packet-deletion", u"Enable null packet deletion. The receiver needs to support this.");
+}
+
+ts::RISTOutputPlugin::~RISTOutputPlugin()
+{
 }
 
 

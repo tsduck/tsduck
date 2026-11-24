@@ -24,6 +24,10 @@ namespace ts {
     {
         TS_PLUGIN_CONSTRUCTORS(RISTOutputPlugin);
     public:
+        //! @cond nodoxygen
+        virtual ~RISTOutputPlugin() override;
+        //! @endcond
+
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;

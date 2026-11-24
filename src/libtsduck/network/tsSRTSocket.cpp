@@ -37,6 +37,7 @@ TS_REGISTER_FEATURE(u"srt", u"SRT library", SUPPORT, ts::SRTSocket::GetLibraryVe
 #define NOSRT_ERROR_MSG u"This version of TSDuck was compiled without SRT support"
 #define NOSRT_ERROR { report().error(NOSRT_ERROR_MSG); return false; }
 
+class ts::SRTSocket::Guts {};
 ts::SRTSocket::SRTSocket(Report* report) : ReporterBase(report) {}
 ts::SRTSocket::~SRTSocket() {}
 bool ts::SRTSocket::isOpen() const { return false; }

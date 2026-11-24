@@ -23,6 +23,10 @@ namespace ts {
     {
         TS_PLUGIN_CONSTRUCTORS(RISTInputPlugin);
     public:
+        //! @cond nodoxygen
+        virtual ~RISTInputPlugin() override;
+        //! @endcond
+
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool isRealTime() override;
