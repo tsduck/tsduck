@@ -13,17 +13,17 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::PluginExecutor::PluginExecutor(const InputSwitcherArgs& opt,
+ts::tsswitch::PluginExecutor::PluginExecutor(const std::shared_ptr<tsp::Core>& tsp_core,
+                                             const InputSwitcherArgs& switch_options,
                                              const PluginEventHandlerRegistry& handlers,
+                                             tsswitch::Core& switch_core,
                                              PluginType type,
-                                             const PluginOptions& pl_options,
-                                             const ThreadAttributes& attributes,
-                                             Core& core,
-                                             Report& log) :
+                                             const PluginOptions& plugin_options,
+                                             const ThreadAttributes& attributes) :
 
-    PluginThread(&log, opt.app_name, type, pl_options, attributes),
-    _opt(opt),
-    _core(core),
+    tsp::PluginThread(tsp_core, type, plugin_options, attributes),
+    _switch_core(switch_core),
+    _switch_options(switch_options),
     _handlers(handlers)
 {
 }
@@ -36,31 +36,13 @@ ts::tsswitch::PluginExecutor::~PluginExecutor()
 
 
 //----------------------------------------------------------------------------
-// Implementation of TSP. We do not use "joint termination" in tsswitch.
+// Implementation of TSP.
 //----------------------------------------------------------------------------
-
-void ts::tsswitch::PluginExecutor::useJointTermination(bool)
-{
-}
-
-void ts::tsswitch::PluginExecutor::jointTerminate()
-{
-}
-
-bool ts::tsswitch::PluginExecutor::useJointTermination() const
-{
-    return false;
-}
-
-bool ts::tsswitch::PluginExecutor::thisJointTerminated() const
-{
-    return false;
-}
 
 size_t ts::tsswitch::PluginExecutor::pluginCount() const
 {
     // All inputs plus one output.
-    return _opt.inputs.size() + 1;
+    return _switch_options.inputs.size() + 1;
 }
 
 

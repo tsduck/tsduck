@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPluginThread.h"
+#include "tstspPluginThread.h"
 #include "tsInputSwitcherArgs.h"
 #include "tsPluginEventHandlerRegistry.h"
 
@@ -24,46 +24,40 @@ namespace ts::tsswitch {
     //! Execution context of a tsswitch plugin.
     //! @ingroup libtsduck plugin
     //!
-    class PluginExecutor: public PluginThread
+    class PluginExecutor: public tsp::PluginThread
     {
         TS_NOBUILD_NOCOPY(PluginExecutor);
     public:
         //!
         //! Constructor.
-        //! @param [in] opt Command line options.
+        //! @param [in] tsp_core Shared pointer to the transport stream processor internal core API.
+        //! @param [in] switch_options Command line options for tsswitch.
         //! @param [in] handlers Registry of event handlers.
         //! @param [in] type Plugin type.
-        //! @param [in] pl_options Command line options for this plugin.
+        //! @param [in] plugin_options Command line options for this plugin.
         //! @param [in] attributes Creation attributes for the thread executing this plugin.
-        //! @param [in,out] core Command core instance.
-        //! @param [in,out] log Log report.
+        //! @param [in,out] switch_core Input switcher command core instance.
         //!
-        PluginExecutor(const InputSwitcherArgs& opt,
+        PluginExecutor(const std::shared_ptr<tsp::Core>& tsp_core,
+                       const InputSwitcherArgs& switch_options,
                        const PluginEventHandlerRegistry& handlers,
+                       tsswitch::Core& switch_core,
                        PluginType type,
-                       const PluginOptions& pl_options,
-                       const ThreadAttributes& attributes,
-                       Core& core,
-                       Report& log);
+                       const PluginOptions& plugin_options,
+                       const ThreadAttributes& attributes);
 
         //!
         //! Destructor.
         //!
         virtual ~PluginExecutor() override;
 
-        // Implementation of TSP. We do not use "joint termination" in tsswitch.
-        virtual void useJointTermination(bool) override;
-        virtual void jointTerminate() override;
-        virtual bool useJointTermination() const override;
-        virtual bool thisJointTerminated() const override;
+        // Implementation of TSP.
         virtual size_t pluginCount() const override;
         virtual void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
 
     protected:
-        const InputSwitcherArgs& _opt;   //!< Command line options.
-        Core&                    _core;  //!< Application core.
-
-    private:
-        const PluginEventHandlerRegistry& _handlers;  //!< Registry of event handlers.
+        tsswitch::Core&                   _switch_core;     //!< Input switcher command core instance.
+        const InputSwitcherArgs&          _switch_options;  //!< Command line options.
+        const PluginEventHandlerRegistry& _handlers;        //!< Registry of event handlers.
     };
 }

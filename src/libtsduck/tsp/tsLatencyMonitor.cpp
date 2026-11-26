@@ -8,6 +8,7 @@
 
 #include "tsLatencyMonitor.h"
 #include "tstslatencymonitorInputExecutor.h"
+#include "tstspCore.h"
 #include "tsFileUtils.h"
 
 
@@ -17,7 +18,8 @@
 
 ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& report) :
     _report(report),
-    _args(args)
+    _args(args),
+    _tsp_core(std::make_shared<tsp::Core>(_args, report))
 {
     // Debug message.
     if (_report.debug()) {
@@ -35,7 +37,7 @@ ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& repor
 
     // Get all input plugin options.
     for (size_t i = 0; i < _args.inputs.size(); ++i) {
-        _inputs.push_back(InputData{std::make_shared<tslatencymonitor::InputExecutor>(_args, i, *this, _report), {}});
+        _inputs.push_back(InputData{std::make_shared<tslatencymonitor::InputExecutor>(_tsp_core, _args, i, *this), {}});
     }
 
     // Init last output time
@@ -94,7 +96,7 @@ bool ts::LatencyMonitor::start()
 
 void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex)
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
     TimingDataList& timing_data_list(_inputs[pluginIndex].timing_data_list);
 
     for (size_t i = 0; i < count; i++) {

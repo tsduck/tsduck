@@ -14,16 +14,12 @@
 #pragma once
 #include "tsThread.h"
 #include "tsTSP.h"
-#include "tsPluginType.h"
+#include "tsPlugin.h"
 #include "tsPluginOptions.h"
 
-namespace ts {
-
-    class Plugin;
-
+namespace ts::tsp {
     //!
     //! Base class for threads executing a tsp plugin.
-    //! The subclasses shall implement the TSP interface.
     //! @ingroup libtsduck plugin
     //!
     class TSDUCKDLL PluginThread: public Thread, public TSP
@@ -32,18 +28,15 @@ namespace ts {
     public:
         //!
         //! Constructor.
-        //! @param [in,out] report Initial report object.
-        //! The @a report object is used to forward messages which are sent to this
-        //! PluginThread instance (PluginThread is a subclass of Report through TSP).
-        //! @param [in] appName Application name, for help messages.
+        //! @param [in] core Shared pointer to the transport stream processor internal core API.
         //! @param [in] type Plugin type.
-        //! @param [in] options Command line options for this plugin.
+        //! @param [in] plugin_options Command line options for this plugin.
         //! @param [in] attributes Creation attributes for the thread executing this plugin.
         //!
-        PluginThread(Report* report, const UString& appName, PluginType type, const PluginOptions& options, const ThreadAttributes& attributes);
+        PluginThread(const std::shared_ptr<tsp::Core>& core, PluginType type, const PluginOptions& plugin_options, const ThreadAttributes& attributes);
 
         //!
-        //! Destructor
+        //! Destructor.
         //!
         virtual ~PluginThread() override;
 
@@ -67,7 +60,7 @@ namespace ts {
         virtual Plugin* plugin() const override;
 
     private:
-        const UString _name;    // Plugin name.
-        Plugin*       _plugin;  // Plugin instance.
+        UString _plugin_name;  // Plugin name.
+        Plugin* _plugin;       // Plugin instance.
     };
 }

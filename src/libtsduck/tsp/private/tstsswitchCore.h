@@ -29,11 +29,11 @@ namespace ts::tsswitch {
     public:
         //!
         //! Constructor.
-        //! @param [in] opt Command line options.
+        //! @param [in] tsp_core Shared pointer to the transport stream processor internal core API.
+        //! @param [in] switch_options Command line options for tsswitch.
         //! @param [in] handlers Registry of plugin event handlers.
-        //! @param [in,out] log Log report.
         //!
-        Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log);
+        Core(const std::shared_ptr<tsp::Core>& tsp_core, const InputSwitcherArgs& switch_options, const PluginEventHandlerRegistry& handlers);
 
         //!
         //! Destructor.
@@ -166,12 +166,12 @@ namespace ts::tsswitch {
         using InputExecutorVector = std::vector<std::atomic<InputExecutor*>>;
 
         Report&                     _log;               // Asynchronous log report.
-        const InputSwitcherArgs&    _opt;               // Command line options.
+        std::shared_ptr<tsp::Core>  _tsp_core {};       // Transport stream processor core API.
+        const InputSwitcherArgs&    _switch_options;    // Input switcher command line options.
         InputExecutorVector         _inputs;            // Input plugins threads.
         OutputExecutor              _output;            // Output plugin thread.
         EventDispatcher             _event_dispatcher;  // External event dispatcher.
         WatchDog                    _receive_watchdog;  // Handle reception timeout.
-        std::recursive_mutex        _mutex {};          // Global mutex, protect access to all subsequent fields.
         std::condition_variable_any _got_input {};      // Signaled each time an input plugin reports new packets.
         size_t                      _cur_plugin = 0;    // Index of current input plugin.
         size_t                      _cur_cycle = 0;     // Current input cycle number.

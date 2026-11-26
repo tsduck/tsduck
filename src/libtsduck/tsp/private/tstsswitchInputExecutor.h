@@ -27,17 +27,17 @@ namespace ts::tsswitch {
     public:
         //!
         //! Constructor.
-        //! @param [in] opt Command line options.
+        //! @param [in] tsp_core Shared pointer to the transport stream processor internal core API.
+        //! @param [in] switch_options Command line options for tsswitch.
         //! @param [in] handlers Registry of event handlers.
-        //! @param [in] index Input plugin index.
-        //! @param [in,out] core Command core instance.
-        //! @param [in,out] log Log report.
+        //! @param [in,out] switch_core Input switcher command core instance.
+        //! @param [in] plugin_index Input plugin index.
         //!
-        InputExecutor(const InputSwitcherArgs& opt,
+        InputExecutor(const std::shared_ptr<tsp::Core>& tsp_core,
+                      const InputSwitcherArgs& switch_options,
                       const PluginEventHandlerRegistry& handlers,
-                      size_t index,
-                      Core& core,
-                      Report& log);
+                      tsswitch::Core& switch_core,
+                      size_t plugin_index);
 
         //!
         //! Virtual destructor.

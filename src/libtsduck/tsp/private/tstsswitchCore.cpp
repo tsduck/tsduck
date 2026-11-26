@@ -7,24 +7,26 @@
 //----------------------------------------------------------------------------
 
 #include "tstsswitchCore.h"
+#include "tstspCore.h"
 
 
 //----------------------------------------------------------------------------
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log) :
-    _log(log),
-    _opt(opt),
-    _inputs(_opt.inputs.size()),
-    _output(_opt, handlers, *this, _log), // load output plugin and analyze options
-    _event_dispatcher(_opt, _log),
-    _receive_watchdog(this, _opt.receive_timeout, 0, _log),
-    _cur_plugin(_opt.first_input)
+ts::tsswitch::Core::Core(const std::shared_ptr<tsp::Core>& tsp_core, const InputSwitcherArgs& switch_options, const PluginEventHandlerRegistry& handlers) :
+    _log(tsp_core->report()),
+    _tsp_core(tsp_core),
+    _switch_options(switch_options),
+    _inputs(_switch_options.inputs.size()),
+    _output(tsp_core, switch_options, handlers, *this), // load output plugin and analyze options
+    _event_dispatcher(_switch_options, _log),
+    _receive_watchdog(this, _switch_options.receive_timeout, 0, _log),
+    _cur_plugin(_switch_options.first_input)
 {
     // Load all input plugins, analyze their options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
-        _inputs[i] = new InputExecutor(opt, handlers, i, *this, log);
+        _inputs[i] = new InputExecutor(tsp_core, switch_options, handlers, *this, i);
         // Set the asynchronous logger as report method for all executors.
         input(i)->delegateReport(&_log);
         input(i)->setMaxSeverity(_log.maxSeverity());
@@ -68,8 +70,8 @@ bool ts::tsswitch::Core::start()
     }
 
     // Start with the designated first input plugin.
-    assert(_opt.first_input < _inputs.size());
-    _cur_plugin = _opt.first_input;
+    assert(_switch_options.first_input < _inputs.size());
+    _cur_plugin = _switch_options.first_input;
 
     // Start all input threads (but do not open the input "devices").
     bool success = true;
@@ -82,7 +84,7 @@ bool ts::tsswitch::Core::start()
         // If one input thread could not start, abort all started threads.
         stop(false);
     }
-    else if (_opt.fast_switch) {
+    else if (_switch_options.fast_switch) {
         // Option --fast-switch, start all plugins, they continue to receive in parallel.
         for (size_t i = 0; i < _inputs.size(); ++i) {
             input(i)->startInput(i == _cur_plugin);
@@ -93,8 +95,8 @@ bool ts::tsswitch::Core::start()
         input(_cur_plugin)->startInput(true);
 
         // If there is a primary input which is not the first one, start it as well.
-        if (_opt.primary_input < _inputs.size() && _opt.primary_input != _cur_plugin) {
-            input(_opt.primary_input)->startInput(false);
+        if (_switch_options.primary_input < _inputs.size() && _switch_options.primary_input != _cur_plugin) {
+            input(_switch_options.primary_input)->startInput(false);
         }
     }
 
@@ -113,7 +115,7 @@ void ts::tsswitch::Core::stop(bool success)
 {
     // Wake up all threads waiting for something on the Switch object.
     {
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
         _terminate = true;
         _got_input.notify_all();
     }
@@ -134,25 +136,25 @@ void ts::tsswitch::Core::stop(bool success)
 
 void ts::tsswitch::Core::setInput(size_t index)
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
     setInputLocked(index, false);
 }
 
 void ts::tsswitch::Core::nextInput()
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
     setInputLocked((_cur_plugin + 1) % _inputs.size(), false);
 }
 
 void ts::tsswitch::Core::previousInput()
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
     setInputLocked((_cur_plugin > 0 ? _cur_plugin : _inputs.size()) - 1, false);
 }
 
 size_t ts::tsswitch::Core::currentInput()
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
     return _cur_plugin;
 }
 
@@ -170,22 +172,22 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
         _log.debug(u"switch input %d to %d", _cur_plugin, index);
 
         // The processing depends on the switching mode.
-        if (_opt.delayed_switch) {
+        if (_switch_options.delayed_switch) {
             // With --delayed-switch, first start the next plugin.
             // The current plugin will be stopped when the first packet is received in the next plugin.
             // The primary input is never stopped (and consequently never restarted).
             enqueue(Action(SUSPEND_TIMEOUT));
-            if (index != _opt.primary_input) {
+            if (index != _switch_options.primary_input) {
                 enqueue(Action(START, index, false));
             }
             enqueue(Action(WAIT_INPUT, index));
-            if (_cur_plugin == _opt.primary_input) {
+            if (_cur_plugin == _switch_options.primary_input) {
                 enqueue(Action(NOTIF_CURRENT, _cur_plugin, false));
             }
             enqueue(Action(SET_CURRENT, index));
             enqueue(Action(NOTIF_CURRENT, index, true));
             enqueue(Action(RESTART_TIMEOUT));
-            if (_cur_plugin != _opt.primary_input) {
+            if (_cur_plugin != _switch_options.primary_input) {
                 enqueue(Action(ABORT_INPUT, _cur_plugin, abortCurrent));
                 enqueue(Action(STOP, _cur_plugin));
                 enqueue(Action(WAIT_STOPPED, _cur_plugin));
@@ -196,7 +198,7 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
             // With --fast-switch, don't start/stop plugins. Just inform the plugin that it is current.
             // The primary input is never stopped (and consequently never restarted).
             enqueue(Action(SUSPEND_TIMEOUT));
-            if (_opt.fast_switch || _cur_plugin == _opt.primary_input) {
+            if (_switch_options.fast_switch || _cur_plugin == _switch_options.primary_input) {
                 enqueue(Action(NOTIF_CURRENT, _cur_plugin, false));
             }
             else {
@@ -205,7 +207,7 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
                 enqueue(Action(WAIT_STOPPED, _cur_plugin));
             }
             enqueue(Action(SET_CURRENT, index));
-            if (_opt.fast_switch || index == _opt.primary_input) {
+            if (_switch_options.fast_switch || index == _switch_options.primary_input) {
                 enqueue(Action(NOTIF_CURRENT, index, true));
             }
             else {
@@ -228,7 +230,7 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
 
 void ts::tsswitch::Core::handleWatchDogTimeout(WatchDog& watchdog)
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
     const size_t next = (_cur_plugin + 1) % _inputs.size();
     // Verbose message under mutex is not a good idea when option --synchronous-log is set.
     _log.verbose(u"receive timeout, switching to next plugin (#%d to #%d)", _cur_plugin, next);
@@ -419,7 +421,7 @@ bool ts::tsswitch::Core::getOutputArea(size_t& pluginIndex, TSPacket*& first, TS
     assert(pluginIndex < _inputs.size());
 
     // Loop on _got_input condition until the current input plugin has something to output.
-    std::unique_lock<std::recursive_mutex> lock(_mutex);
+    std::unique_lock<std::recursive_mutex> lock(_tsp_core->globalMutex());
     for (;;) {
         if (_terminate) {
             first = nullptr;
@@ -465,7 +467,7 @@ bool ts::tsswitch::Core::outputSent(size_t pluginIndex, size_t count)
 
 bool ts::tsswitch::Core::inputStarted(size_t pluginIndex, bool success)
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
 
     // Execute all commands if waiting on this event.
     execute(Action(WAIT_STARTED, pluginIndex, success));
@@ -486,7 +488,7 @@ bool ts::tsswitch::Core::inputStarted(size_t pluginIndex, bool success)
 
 bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 {
-    std::lock_guard<std::recursive_mutex> lock(_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
 
     // Restart the receive timeout, if any, when the current input receives packets.
     if (pluginIndex == _cur_plugin) {
@@ -498,17 +500,17 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 
     // If input is detected on the primary input and the current plugin is not this one
     // after executing all actions, then automatically switch to it.
-    if (pluginIndex == _opt.primary_input && _cur_plugin != _opt.primary_input) {
-        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", _cur_plugin, _opt.primary_input);
+    if (pluginIndex == _switch_options.primary_input && _cur_plugin != _switch_options.primary_input) {
+        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", _cur_plugin, _switch_options.primary_input);
         // Remove all pending actions.
         _log.debug(u"clearing action queue, %s events canceled", _actions.size());
         _actions.clear();
         // Define a new set of actions.
         enqueue(Action(SUSPEND_TIMEOUT));
         enqueue(Action(NOTIF_CURRENT, _cur_plugin, false));
-        enqueue(Action(SET_CURRENT, _opt.primary_input));
-        enqueue(Action(NOTIF_CURRENT, _opt.primary_input, true));
-        if (!_opt.fast_switch) {
+        enqueue(Action(SET_CURRENT, _switch_options.primary_input));
+        enqueue(Action(NOTIF_CURRENT, _switch_options.primary_input, true));
+        if (!_switch_options.fast_switch) {
             enqueue(Action(ABORT_INPUT, _cur_plugin, true));
             enqueue(Action(STOP, _cur_plugin));
             enqueue(Action(WAIT_STOPPED, _cur_plugin));
@@ -516,7 +518,7 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
         enqueue(Action(RESTART_TIMEOUT));
         // Execute actions.
         execute();
-        assert(_cur_plugin == _opt.primary_input);
+        assert(_cur_plugin == _switch_options.primary_input);
     }
 
     if (pluginIndex == _cur_plugin) {
@@ -540,7 +542,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
 
     // Locked sequence.
     {
-        std::lock_guard<std::recursive_mutex> lock(_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_tsp_core->globalMutex());
 
         // Count end of cycle when the last plugin terminates.
         if (pluginIndex == _inputs.size() - 1) {
@@ -548,7 +550,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
         }
 
         // Check if the complete processing is terminated.
-        stopRequest = _opt.terminate || (_opt.cycle_count > 0 && _cur_cycle >= _opt.cycle_count);
+        stopRequest = _switch_options.terminate || (_switch_options.cycle_count > 0 && _cur_cycle >= _switch_options.cycle_count);
 
         if (stopRequest) {
             // Need to stop now. Remove any further action, except waiting for termination.
@@ -561,7 +563,7 @@ bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
             const size_t next = (_cur_plugin + 1) % _inputs.size();
             enqueue(Action(SUSPEND_TIMEOUT));
             enqueue(Action(SET_CURRENT, next));
-            if (_opt.fast_switch) {
+            if (_switch_options.fast_switch) {
                 // Already started, never stop, simply notify.
                 enqueue(Action(NOTIF_CURRENT, next, true));
             }

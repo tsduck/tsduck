@@ -14,46 +14,41 @@
 #pragma once
 #include "tsReport.h"
 #include "tsAbortInterface.h"
+#include "tsPluginType.h"
 #include "tsTS.h"
 
 namespace ts {
 
+    // Forward class declaration for private part.
     class Plugin;
     class Object;
+    namespace tsp {
+        class Core;
+    }
 
     //!
     //! TSP callback for plugins.
-    //!
     //! @ingroup libtsduck plugin
     //!
-    //! Each plugin has an associated TSP object to communicate with the
-    //! Transport Stream Processor main executable.
+    //! Each plugin has an associated TSP object to communicate with the TSProcessor instance.
     //!
     //! Message output
     //! --------------
-    //!
-    //! A shared library must exclusively use the tsp object for text
-    //! display and must never use @c std::cout, @c printf or alike. When
-    //! called in multi-threaded context, the supplied tsp object is
-    //! thread-safe and asynchronous (the methods return to the
-    //! caller without waiting for the message to be printed).
+    //! A shared library must exclusively use the tsp object for text display and must never use @c std::cout,
+    //! @c printf or alike. When called in multi-threaded context, the supplied tsp object is thread-safe and
+    //! asynchronous (the methods return to the caller without waiting for the message to be printed).
     //!
     //! "Joint termination" support
     //! ---------------------------
+    //! A plugin can decide to terminate tsp on its own (returning end of input, output error or
+    //! @link ts::TSP_END @endlink). The termination is unconditional, regardless of the state of the other plugins.
     //!
-    //! A plugin can decide to terminate tsp on its own (returning end of
-    //! input, output error or @link ts::TSP_END @endlink). The termination is unconditional,
-    //! regardless of the state of the other plugins.
+    //! The idea behind "joint termination" is to terminate tsp when several plugins have jointly terminated their processing.
     //!
-    //! The idea behind "joint termination" is to terminate tsp when several
-    //! plugins have jointly terminated their processing.
+    //! First, a plugin must decide to use "joint termination". This is usually done in method start(),
+    //! using useJointTermination (bool) when the option -\-joint-termination is specified on the command line.
     //!
-    //! First, a plugin must decide to use "joint termination". This is
-    //! usually done in method start(), using useJointTermination (bool)
-    //! when the option -\-joint-termination is specified on the command line.
-    //!
-    //! When the plugin has completed its work, it reports this using
-    //! jointTerminate().
+    //! When the plugin has completed its work, it reports this using jointTerminate().
     //!
     class TSDUCKDLL TSP: public Report, public AbortInterface
     {
@@ -135,7 +130,7 @@ namespace ts {
 
         //!
         //! Check for aborting application.
-        //!
+        //! Implementation of AbortInterface.
         //! The plugin may invoke this method to check if the application is
         //! aborting for some reason (user interrupt for instance).
         //! @return True if the tsp application is currently aborting.
@@ -144,7 +139,6 @@ namespace ts {
 
         //!
         //! Signal a plugin event.
-        //!
         //! If the application has registered plugin events for this kind of events, they will be invoked.
         //! @param [in] event_code A plugin-defined 32-bit code describing the event type.
         //! There is no predefined list of event codes. Plugin should define their own codes.
@@ -156,34 +150,32 @@ namespace ts {
 
         //!
         //! Activates or deactivates "joint termination".
-        //!
-        //! This method activates or deactivates "joint termination" for the
-        //! calling plugin. It should be invoked during the plugin's start().
+        //! This method activates or deactivates "joint termination" for the calling plugin.
+        //! It should be invoked during the plugin's start(). Only packet processing plugins
+        //! can use joint termination. The concept has no meaning in the input or output cases.
         //! @param [in] on True to activate or false to deactivate joint termination.
+        //! @return True on success, false on error (if the plugin is an input or output one).
         //!
-        virtual void useJointTermination(bool on) = 0;
-
-        //!
-        //! Signaling "joint termination".
-        //!
-        //! This method is used by the plugin to declare that its execution is
-        //! potentially terminated in the context of "joint termination".
-        //! After invoking this method, any packet which is processed by
-        //! the plugin may be ignored by tsp.
-        //!
-        virtual void jointTerminate() = 0;
+        bool useJointTermination(bool on);
 
         //!
         //! Check if the calling plugin uses "joint termination".
         //! @return True if the calling plugin uses "joint termination".
         //!
-        virtual bool useJointTermination() const = 0;
+        bool useJointTermination() const { return _use_jt; }
+
+        //!
+        //! Signaling "joint termination".
+        //! This method is used by the plugin to declare that its execution is potentially terminated in the context of "joint termination".
+        //! After invoking this method, any packet which is processed by the plugin may be ignored by tsp.
+        //!
+        void jointTerminate();
 
         //!
         //! Check if the calling plugin has already declared "joint termination".
         //! @return True if the calling plugin has already declared "joint termination".
         //!
-        virtual bool thisJointTerminated() const = 0;
+        bool thisJointTerminated() const { return _jt_completed; }
 
         //!
         //! Virtual desctructor.
@@ -191,6 +183,7 @@ namespace ts {
         virtual ~TSP() override;
 
     protected:
+        std::shared_ptr<tsp::Core> _core;            //!< Pointer to the transport stream processor core API.
         bool              _use_realtime = false;     //!< The plugin should use realtime defaults.
         BitRate           _tsp_bitrate = 0;          //!< TSP input bitrate.
         BitRateConfidence _tsp_bitrate_confidence = BitRateConfidence::LOW;  //!< TSP input bitrate confidence.
@@ -199,11 +192,11 @@ namespace ts {
 
         //!
         //! Constructor for subclasses.
-        //! @param [in] max_severity Initial maximum severity of reported messages.
+        //! @param [in] core Shared pointer to the transport stream processor core API.
         //! @param [in] prefix The prefix to prepend to all messages.
-        //! @param [in] report New report object to which messages are delegated.
+        //! @param [in] type Plugin type.
         //!
-        TSP(int max_severity, const UString& prefix = UString(), Report* report = nullptr);
+        TSP(const std::shared_ptr<tsp::Core>& core, const UString& prefix, PluginType type);
 
         //!
         //! Account for more processed packets in this plugin object.
@@ -224,8 +217,11 @@ namespace ts {
         void restartPluginSession() { _plugin_packets = 0; }
 
     private:
-        PacketCounter _total_packets = 0;   // Total processed packets in the plugin thread.
-        PacketCounter _plugin_packets = 0;  // Total processed packets in the plugin object.
+        PluginType    _plugin_type;           // Plugin type.
+        bool          _use_jt = false;        // Use "joint termination"
+        bool          _jt_completed = false;  // Completed, for "joint termination"
+        PacketCounter _total_packets = 0;     // Total processed packets in the plugin thread.
+        PacketCounter _plugin_packets = 0;    // Total processed packets in the plugin object.
 
         // A dirty hack for the default implementation of ts::ProcessorPlugin::processPacketWindow().
         friend class ProcessorPlugin;

@@ -27,22 +27,19 @@ namespace ts::tsp {
     public:
         //!
         //! Constructor.
-        //! @param [in] options Command line options for tsp.
+        //! @param [in] core Shared pointer to the transport stream processor internal core API.
+        //! @param [in] tsp_options Command line options for tsp.
         //! @param [in] handlers Registry of event handlers.
-        //! @param [in] plugin_index Index of command line options for this plugin in @a options.
         //! @param [in] attributes Creation attributes for the thread executing this plugin.
-        //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
-        //! @param [in,out] report Where to report logs.
         //!
-        ProcessorExecutor(const TSProcessorArgs& options,
+        ProcessorExecutor(const std::shared_ptr<tsp::Core>& core,
+                          const TSProcessorArgs& tsp_options,
                           const PluginEventHandlerRegistry& handlers,
                           size_t plugin_index,
-                          const ThreadAttributes& attributes,
-                          std::recursive_mutex& global_mutex,
-                          Report* report);
+                          const ThreadAttributes& attributes);
 
         //!
-        //! Virtual destructor.
+        //! Destructor.
         //!
         virtual ~ProcessorExecutor() override;
 

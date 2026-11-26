@@ -14,13 +14,10 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tslatencymonitor::InputExecutor::InputExecutor(const LatencyMonitorArgs& opt,
-                                                   size_t index,
-                                                   LatencyMonitor& monitor,
-                                                   Report& log) :
+ts::tslatencymonitor::InputExecutor::InputExecutor(const std::shared_ptr<tsp::Core>& tsp_core, const LatencyMonitorArgs& opt, size_t index, LatencyMonitor& monitor) :
 
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginThread(&log, opt.app_name, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
+    tsp::PluginThread(tsp_core, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _monitor(monitor),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _plugin_index(index),
@@ -41,24 +38,6 @@ ts::tslatencymonitor::InputExecutor::~InputExecutor()
 //----------------------------------------------------------------------------
 // Implementation of TSP. We do not use "joint termination" in tslatencymonitor.
 //----------------------------------------------------------------------------
-
-void ts::tslatencymonitor::InputExecutor::useJointTermination(bool)
-{
-}
-
-void ts::tslatencymonitor::InputExecutor::jointTerminate()
-{
-}
-
-bool ts::tslatencymonitor::InputExecutor::useJointTermination() const
-{
-    return false;
-}
-
-bool ts::tslatencymonitor::InputExecutor::thisJointTerminated() const
-{
-    return false;
-}
 
 size_t ts::tslatencymonitor::InputExecutor::pluginCount() const
 {

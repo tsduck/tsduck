@@ -14,18 +14,18 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::InputExecutor::InputExecutor(const InputSwitcherArgs& opt,
+ts::tsswitch::InputExecutor::InputExecutor(const std::shared_ptr<tsp::Core>& tsp_core,
+                                           const InputSwitcherArgs& switch_options,
                                            const PluginEventHandlerRegistry& handlers,
-                                           size_t index,
-                                           Core& core,
-                                           Report& log) :
+                                           tsswitch::Core& switch_core,
+                                           size_t plugin_index) :
 
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
-    PluginExecutor(opt, handlers, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), core, log),
+    PluginExecutor(tsp_core, switch_options, handlers, switch_core, PluginType::INPUT, switch_options.inputs[plugin_index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
-    _plugin_index(index),
-    _buffer(opt.buffered_packets),
-    _metadata(opt.buffered_packets)
+    _plugin_index(plugin_index),
+    _buffer(_switch_options.buffered_packets),
+    _metadata(_switch_options.buffered_packets)
 {
     // Make sure that the input plugins display their index.
     setLogName(UString::Format(u"%s[%d]", pluginName(), _plugin_index));
@@ -180,11 +180,11 @@ void ts::tsswitch::InputExecutor::main()
         debug(u"starting input plugin");
         const bool started = _input->start();
         debug(u"input plugin started, status: %s", started);
-        _core.inputStarted(_plugin_index, started);
+        _switch_core.inputStarted(_plugin_index, started);
 
         if (!started) {
             // Failed to start.
-            _core.inputStopped(_plugin_index, false);
+            _switch_core.inputStopped(_plugin_index, false);
             // Loop back, waiting for a new session.
             continue;
         }
@@ -201,7 +201,7 @@ void ts::tsswitch::InputExecutor::main()
                 // Wait for free buffer or stop.
                 std::unique_lock<std::recursive_mutex> lock(_mutex);
                 while (_out_count >= _buffer.size() && !_stop_request && !_terminated) {
-                    if (_is_current || !_opt.fast_switch) {
+                    if (_is_current || !_switch_options.fast_switch) {
                         // This is the current input, we must not lose packet.
                         // Wait for the output thread to free some packets.
                         _todo.wait(lock);
@@ -210,7 +210,7 @@ void ts::tsswitch::InputExecutor::main()
                         // Not the current input plugin in --fast-switch mode.
                         // Drop older packets, free at most --max-input-packets.
                         assert(_out_first < _buffer.size());
-                        const size_t freeCount = std::min(_opt.max_input_packets, _buffer.size() - _out_first);
+                        const size_t freeCount = std::min(_switch_options.max_input_packets, _buffer.size() - _out_first);
                         assert(freeCount <= _out_count);
                         _out_first = (_out_first + freeCount) % _buffer.size();
                         _out_count -= freeCount;
@@ -224,7 +224,7 @@ void ts::tsswitch::InputExecutor::main()
                 // There is some free buffer, compute first index and size of receive area.
                 // The receive area is limited by end of buffer and max input size.
                 in_first = (_out_first + _out_count) % _buffer.size();
-                in_count = std::min(_opt.max_input_packets, std::min(_buffer.size() - _out_count, _buffer.size() - in_first));
+                in_count = std::min(_switch_options.max_input_packets, std::min(_buffer.size() - _out_count, _buffer.size() - in_first));
             }
 
             assert(in_first < _buffer.size());
@@ -257,7 +257,7 @@ void ts::tsswitch::InputExecutor::main()
                 std::lock_guard<std::recursive_mutex> lock(_mutex);
                 _out_count += in_count;
             }
-            _core.inputReceived(_plugin_index);
+            _switch_core.inputReceived(_plugin_index);
         }
 
         // At end of session, make sure that the output buffer is not in use by the output plugin.
@@ -276,7 +276,7 @@ void ts::tsswitch::InputExecutor::main()
 
         // End of input session.
         debug(u"stopping input plugin");
-        _core.inputStopped(_plugin_index, _input->stop());
+        _switch_core.inputStopped(_plugin_index, _input->stop());
     }
 
     debug(u"input thread terminated");

@@ -19,14 +19,13 @@
 
 namespace ts {
 
-    // Forward class declaration for private part.
-    //! @cond nodoxygen
+    // Forward class declarations for private part.
     namespace tsp {
         class InputExecutor;
         class OutputExecutor;
         class ControlServer;
+        class Core;
     }
-    //! @endcond
 
     //!
     //! Core of the TSP Transport Stream Processor.
@@ -89,9 +88,9 @@ namespace ts {
         // as all protected operations are fast (pointer update, simple arithmetic).
 
         Report&               _report;                     // Common log object.
-        std::recursive_mutex  _global_mutex {};            // Global mutex.
+        TSProcessorArgs       _tsp_options {};             // TS processing options.
+        std::shared_ptr<tsp::Core> _core {};               // TS process core API.
         std::atomic_bool      _terminating = false;        // In the process of terminating everything.
-        TSProcessorArgs       _args {};                    // Processing options.
         tsp::InputExecutor*   _input = nullptr;            // Input processor execution thread.
         tsp::OutputExecutor*  _output = nullptr;           // Output processor execution thread.
         tsp::ControlServer*   _control = nullptr;          // TSP control command server thread.

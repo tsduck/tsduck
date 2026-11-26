@@ -7,6 +7,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsTSProcessorCommonArgs.h"
+#include "tstspCore.h"
 #include "tsApplicationSharedLibrary.h"
 #include "tsEnvironment.h"
 #include "tsAlgorithm.h"
@@ -181,17 +183,15 @@ namespace {
     class ReportTSP: public ts::TSP
     {
         TS_NOBUILD_NOCOPY(ReportTSP);
+    private:
+        ts::TSProcessorCommonArgs _args {};
     public:
-        ReportTSP(Report& report) : ts::TSP(report.maxSeverity(), ts::UString(), &report) {}
+        ReportTSP(ts::PluginType type, Report& report) : ts::TSP(std::make_shared<ts::tsp::Core>(_args, report), ts::UString(), type) {}
         virtual ts::UString pluginName() const override { return ts::UString(); }
         virtual ts::Plugin* plugin() const override { return nullptr; }
         virtual size_t pluginIndex() const override { return 0; }
         virtual size_t pluginCount() const override { return 0; }
         virtual void signalPluginEvent(uint32_t, ts::Object*) const override {}
-        virtual void useJointTermination(bool on) override {}
-        virtual void jointTerminate() override {}
-        virtual bool useJointTermination() const override { return false; }
-        virtual bool thisJointTerminated() const override { return false; }
     };
 }
 
@@ -255,38 +255,38 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         }
     }
 
-    // A minimal TSP, used to build temporary plugins.
-    ReportTSP tsp(report);
-
-    // List capabilities.
+    // List capabilities: activate each plugin using a minimal implementation of TSP.
+    ReportTSP input_tsp(PluginType::INPUT, report);
     if ((flags & LIST_INPUT) != 0) {
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp input plugins:\n\n";
         }
         for (const auto& it : _input_plugins) {
-            Plugin* p = it.second(&tsp);
+            Plugin* p = it.second(&input_tsp);
             ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
         }
     }
 
+    ReportTSP output_tsp(PluginType::OUTPUT, report);
     if ((flags & LIST_OUTPUT) != 0) {
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp output plugins:\n\n";
         }
         for (const auto& it : _output_plugins) {
-            Plugin* p = it.second(&tsp);
+            Plugin* p = it.second(&output_tsp);
             ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
         }
     }
 
+    ReportTSP proc_tsp(PluginType::PROCESSOR, report);
     if ((flags & LIST_PACKET) != 0) {
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp packet processor plugins:\n\n";
         }
         for (const auto& it : _processor_plugins) {
-            Plugin* p = it.second(&tsp);
+            Plugin* p = it.second(&proc_tsp);
             ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
         }

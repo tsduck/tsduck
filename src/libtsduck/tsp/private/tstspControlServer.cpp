@@ -8,6 +8,7 @@
 
 #include "tstspControlServer.h"
 #include "tstspPluginExecutor.h"
+#include "tstspCore.h"
 #include "tsReporterGuard.h"
 #include "tsReportBuffer.h"
 #include "tsTextStream.h"
@@ -19,15 +20,15 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, std::recursive_mutex& global_mutex, InputExecutor* input) :
-    _options(options),
-    _log(log.maxSeverity(), u"control commands: ", &log),
-    _global_mutex(global_mutex),
+ts::tsp::ControlServer::ControlServer(const std::shared_ptr<tsp::Core>& core, TSProcessorArgs& tsp_options, InputExecutor* input) :
+    _core(core),
+    _tsp_options(tsp_options),
+    _log(_core->report().maxSeverity(), u"control commands: ", &_core->report()),
     _input(input)
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
-        std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
 
         // The output plugin "precedes" the input plugin in the ring.
         _output = _input->ringPrevious<OutputExecutor>();
@@ -66,7 +67,7 @@ ts::tsp::ControlServer::~ControlServer()
 
 bool ts::tsp::ControlServer::open()
 {
-    if (!_options.control.server_addr.hasPort()) {
+    if (!_tsp_options.control.server_addr.hasPort()) {
         // No control server, do nothing.
         return true;
     }
@@ -74,11 +75,11 @@ bool ts::tsp::ControlServer::open()
         _log.error(u"tsp control command server already started");
         return false;
     }
-    else if (_options.control.use_tls) {
+    else if (_tsp_options.control.use_tls) {
         // Open the TCP/TLS server.
-        if (!_tls_server.open(_options.control.server_addr.generation()) ||
-            !_tls_server.reusePort(_options.control.reuse_port) ||
-            !_tls_server.bind(_options.control.server_addr) ||
+        if (!_tls_server.open(_tsp_options.control.server_addr.generation()) ||
+            !_tls_server.reusePort(_tsp_options.control.reuse_port) ||
+            !_tls_server.bind(_tsp_options.control.server_addr) ||
             !_tls_server.listen(16))
         {
             _tls_server.close(true);
@@ -91,9 +92,9 @@ bool ts::tsp::ControlServer::open()
         // Open the TCP/clear server.
         // The server will accept and process one client at a time.
         // Therefore, be generous with the backlog.
-        if (!_tcp_server.open(_options.control.server_addr.generation()) ||
-            !_tcp_server.reusePort(_options.control.reuse_port) ||
-            !_tcp_server.bind(_options.control.server_addr) ||
+        if (!_tcp_server.open(_tsp_options.control.server_addr.generation()) ||
+            !_tcp_server.reusePort(_tsp_options.control.reuse_port) ||
+            !_tcp_server.bind(_tsp_options.control.server_addr) ||
             !_tcp_server.listen(16))
         {
             _tcp_server.close(true);
@@ -110,6 +111,8 @@ bool ts::tsp::ControlServer::open()
 void ts::tsp::ControlServer::close()
 {
     if (_is_open) {
+        _log.debug(u"requesting control server termination");
+
         // Abort all receiver sockets. This will force the server thread to terminate and properly close the sockets.
         _terminate = true;
         _tls_server.abort();
@@ -141,7 +144,7 @@ void ts::tsp::ControlServer::main()
 
     // Loop on incoming connections.
     // Since the commands are expected to be short, treat only one at a time.
-    if (_options.control.use_tls) {
+    if (_tsp_options.control.use_tls) {
 
         // Loop on incoming TLS/TCP clients.
         while (!_terminate) {
@@ -156,7 +159,7 @@ void ts::tsp::ControlServer::main()
             if (accepted) {
 
                 // Process a request. In case of error, getRequest() closes the connection
-                RestServer rest(_options.control, _log);
+                RestServer rest(_tsp_options.control, _log);
                 if (rest.getRequest(_tls_client)) {
 
                     // The command is in the POST data.
@@ -217,11 +220,11 @@ void ts::tsp::ControlServer::main()
             TextStream text_client(tcp_client);
 
             // Filter allowed sources. Set receive timeout on the connection and read one line.
-            if (!_options.control.isAllowed(IPAddress(client_addr))) {
+            if (!_tsp_options.control.isAllowed(IPAddress(client_addr))) {
                 _log.warning(u"connection attempt from unauthorized source %s (ignored)", client_addr);
                 text_client.writeLine("error: client address is not authorized");
             }
-            else if (tcp_client.setReceiveTimeout(_options.control.receive_timeout) && text_client.readLine(command_line, nullptr)) {
+            else if (tcp_client.setReceiveTimeout(_tsp_options.control.receive_timeout) && text_client.readLine(command_line, nullptr)) {
                 _log.verbose(u"received from %s: %s", client_addr, command_line);
 
                 // Reset the severity of the connection before analysing the line.
@@ -245,7 +248,7 @@ void ts::tsp::ControlServer::main()
     }
 
     // Close the server in the thread which manages the connection.
-    if (_options.control.use_tls) {
+    if (_tsp_options.control.use_tls) {
         _tls_client.close(true);
         _tls_server.close(true);
     }
@@ -264,8 +267,8 @@ void ts::tsp::ControlServer::main()
 ts::CommandStatus ts::tsp::ControlServer::executeExit(const UString& command, Args& args)
 {
     if (args.present(u"abort")) {
-        // Immediate abort.
-        std::abort();
+        // Immediate exit.
+        std::exit(EXIT_SUCCESS);
     }
     else {
         _log.info(u"exit requested by remote tspcontrol command");
@@ -293,7 +296,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeSetLog(const UString& command, 
     _log.log(level, u"set log level to %s", Severity::Enums().name(level));
 
     // Also set the log severity on each individual plugin.
-    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
     PluginExecutor* proc = _input;
     do {
         proc->plugin()->setMaxSeverity(level);

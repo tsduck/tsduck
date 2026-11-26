@@ -188,7 +188,10 @@ void ts::Socket::abort()
     const SysSocketType previous = _sock.exchange(SYS_SOCKET_INVALID);
     if (previous != SYS_SOCKET_INVALID) {
         // The system socket was open. Abruptly close it.
+        // See comment in closeImplementation() which explains why shutdown() is required on Linux.
+        report().debug(u"aborting socket %d", long(previous));
         _aborting = true;
+        ::shutdown(previous, SYS_SOCKET_SHUT_RDWR);
         SysCloseSocket(previous);
     }
 }

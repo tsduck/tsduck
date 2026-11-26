@@ -32,12 +32,11 @@ namespace ts::tsp {
     public:
         //!
         //! Constructor.
-        //! @param [in,out] options Command line options for tsp.
-        //! @param [in,out] log Log report.
-        //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
+        //! @param [in] core Shared pointer to the transport stream processor internal core API.
+        //! @param [in] tsp_options Command line options for tsp.
         //! @param [in] input Input plugin executor (start of plugin chain).
         //!
-        ControlServer(TSProcessorArgs& options, Report& log, std::recursive_mutex& global_mutex, InputExecutor* input);
+        ControlServer(const std::shared_ptr<tsp::Core>& core, TSProcessorArgs& tsp_options, InputExecutor* input);
 
         //!
         //! Destructor.
@@ -56,17 +55,17 @@ namespace ts::tsp {
         void close();
 
     private:
-        std::atomic_bool      _is_open = false;
-        std::atomic_bool      _terminate = false;
-        TSProcessorArgs&      _options;
-        Report                _log;
-        TSPControlCommand     _reference {_log};
-        TCPServer             _tcp_server {&_log};
-        TLSServer             _tls_server {&_log, _options.control};
-        TLSConnection         _tls_client {&_log, _options.control};
-        std::recursive_mutex& _global_mutex;
-        InputExecutor*        _input = nullptr;
-        OutputExecutor*       _output = nullptr;
+        std::shared_ptr<tsp::Core> _core;
+        TSProcessorArgs&  _tsp_options;
+        std::atomic_bool  _is_open = false;
+        std::atomic_bool  _terminate = false;
+        Report            _log;
+        TSPControlCommand _reference {_log};
+        TCPServer         _tcp_server {&_log};
+        TLSServer         _tls_server {&_log, _tsp_options.control};
+        TLSConnection     _tls_client {&_log, _tsp_options.control};
+        InputExecutor*    _input = nullptr;
+        OutputExecutor*   _output = nullptr;
         std::vector<ProcessorExecutor*> _plugins {};  // Packet processing plugins
 
         // Implementation of Thread.

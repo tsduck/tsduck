@@ -12,41 +12,38 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tstspJointTermination.h"
+#include "tstspPluginThread.h"
 #include "tsRingNode.h"
 #include "tsTSProcessorArgs.h"
 #include "tsPluginEventHandlerRegistry.h"
-#include "tsPlugin.h"
 
 namespace ts::tsp {
     //!
     //! Execution context of a tsp plugin.
     //! @ingroup libtsduck plugin
     //!
-    class PluginExecutor: public JointTermination, public RingNode
+    class PluginExecutor: public PluginThread, public RingNode
     {
         TS_NOBUILD_NOCOPY(PluginExecutor);
     public:
         //!
         //! Constructor.
-        //! @param [in] options Command line options for tsp.
+        //! @param [in] core Shared pointer to the transport stream processor internal core API.
+        //! @param [in] tsp_options Command line options for tsp.
         //! @param [in] handlers Registry of event handlers.
         //! @param [in] type Plugin type.
-        //! @param [in] pl_options Command line options for this plugin.
+        //! @param [in] plugin_options Command line options for this plugin.
         //! @param [in] attributes Creation attributes for the thread executing this plugin.
-        //! @param [in,out] global_mutex Global mutex to synchronize access to the packet buffer.
-        //! @param [in,out] report Where to report logs.
         //!
-        PluginExecutor(const TSProcessorArgs& options,
+        PluginExecutor(const std::shared_ptr<tsp::Core>& core,
+                       const TSProcessorArgs& tsp_options,
                        const PluginEventHandlerRegistry& handlers,
                        PluginType type,
-                       const PluginOptions& pl_options,
-                       const ThreadAttributes& attributes,
-                       std::recursive_mutex& global_mutex,
-                       Report* report);
+                       const PluginOptions& plugin_options,
+                       const ThreadAttributes& attributes);
 
         //!
-        //! Virtual destructor.
+        //! Destructor.
         //!
         virtual ~PluginExecutor() override;
 
@@ -124,9 +121,10 @@ namespace ts::tsp {
         virtual void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
 
     protected:
-        PacketBuffer*         _buffer = nullptr;    //!< Description of shared packet buffer.
-        PacketMetadataBuffer* _metadata = nullptr;  //!< Description of shared packet metadata buffer.
-        std::atomic_bool      _suspended = false;   //!< The plugin is suspended / resumed.
+        const TSProcessorArgs& _tsp_options;         //!< TSP command line options.
+        PacketBuffer*          _buffer = nullptr;    //!< Description of shared packet buffer.
+        PacketMetadataBuffer*  _metadata = nullptr;  //!< Description of shared packet metadata buffer.
+        std::atomic_bool       _suspended = false;   //!< The plugin is suspended / resumed.
 
         //!
         //! Pass processed packets to the next packet processor.

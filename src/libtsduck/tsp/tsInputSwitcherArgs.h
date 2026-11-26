@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTSProcessorCommonArgs.h"
 #include "tsPluginOptions.h"
 #include "tsIPSocketAddress.h"
 #include "tsRestArgs.h"
@@ -25,10 +26,9 @@ namespace ts {
     //! Transport stream input switcher command-line options.
     //! @ingroup libtsduck plugin
     //!
-    class TSDUCKDLL InputSwitcherArgs
+    class TSDUCKDLL InputSwitcherArgs: public TSProcessorCommonArgs
     {
     public:
-        UString             app_name {};            //!< Application name, for help messages.
         bool                fast_switch = false;    //!< Fast switch between input plugins.
         bool                delayed_switch = false; //!< Delayed switch between input plugins.
         bool                terminate = false;      //!< Terminate when one input plugin completes.

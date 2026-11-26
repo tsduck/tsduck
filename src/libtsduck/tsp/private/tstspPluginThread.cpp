@@ -6,7 +6,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPluginThread.h"
+#include "tstspPluginThread.h"
+#include "tstspCore.h"
 #include "tsPluginRepository.h"
 #include "tsEnvironment.h"
 
@@ -15,10 +16,10 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginType type, const PluginOptions& options, const ThreadAttributes& attributes) :
+ts::tsp::PluginThread::PluginThread(const std::shared_ptr<tsp::Core>& core, PluginType type, const PluginOptions& plugin_options, const ThreadAttributes& attributes) :
     Thread(),
-    TSP(report->maxSeverity(), options.name + u": ", report),
-    _name(options.name),
+    TSP(core, plugin_options.name + u": ", type),
+    _plugin_name(plugin_options.name),
     _plugin(nullptr)
 {
     const UChar* shell_opt = nullptr;
@@ -26,7 +27,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     // Create the plugin instance object
     switch (type) {
         case PluginType::INPUT: {
-            PluginRepository::InputPluginFactory allocator = PluginRepository::Instance().getInput(_name, *report);
+                PluginRepository::InputPluginFactory allocator = PluginRepository::Instance().getInput(_plugin_name, core->report());
             if (allocator != nullptr) {
                 _plugin = allocator(this);
                 shell_opt = u" -I";
@@ -34,7 +35,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
             break;
         }
         case PluginType::OUTPUT: {
-            PluginRepository::OutputPluginFactory allocator = PluginRepository::Instance().getOutput(_name, *report);
+            PluginRepository::OutputPluginFactory allocator = PluginRepository::Instance().getOutput(_plugin_name, core->report());
             if (allocator != nullptr) {
                 _plugin = allocator(this);
                 shell_opt = u" -O";
@@ -42,10 +43,10 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
             break;
         }
         case PluginType::PROCESSOR: {
-            PluginRepository::ProcessorPluginFactory allocator = PluginRepository::Instance().getProcessor(_name, *report);
+            PluginRepository::ProcessorPluginFactory allocator = PluginRepository::Instance().getProcessor(_plugin_name, core->report());
             if (allocator != nullptr) {
                 _plugin = allocator(this);
-               shell_opt = u" -P";
+                shell_opt = u" -P";
             }
             break;
         }
@@ -59,12 +60,12 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     }
 
     // Configure plugin object.
-    _plugin->setShell(appName + shell_opt);
-    _plugin->setMaxSeverity(report->maxSeverity());
+    _plugin->setShell(core->commonArgs().app_name + shell_opt);
+    _plugin->setMaxSeverity(core->report().maxSeverity());
 
     // Submit the plugin arguments for analysis.
     // Do not process argument redirection, already done at tsp command level.
-    _plugin->analyze(options.name, options.args, false);
+    _plugin->analyze(_plugin_name, plugin_options.args, false);
 
     // The process should have terminated on argument error.
     assert(_plugin->valid());
@@ -80,7 +81,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     // Exit application when a thread terminates on an exception. This is required because
     // a dead plugin thread will block the processing chain and the application will hang.
     ThreadAttributes attr(attributes);
-    attr.setName(_name);
+    attr.setName(_plugin_name);
     attr.setStackSize(stackSize);
     attr.setExitOnException(true);
     Thread::setAttributes(attr);
@@ -91,7 +92,7 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::PluginThread::~PluginThread()
+ts::tsp::PluginThread::~PluginThread()
 {
     // Deallocate plugin instance, if allocated.
     if (_plugin != nullptr) {
@@ -105,12 +106,12 @@ ts::PluginThread::~PluginThread()
 // Implementation of TSP interface.
 //----------------------------------------------------------------------------
 
-ts::UString ts::PluginThread::pluginName() const
+ts::UString ts::tsp::PluginThread::pluginName() const
 {
-    return _name;
+    return _plugin_name;
 }
 
-ts::Plugin* ts::PluginThread::plugin() const
+ts::Plugin* ts::tsp::PluginThread::plugin() const
 {
     return _plugin;
 }
@@ -119,7 +120,7 @@ ts::Plugin* ts::PluginThread::plugin() const
 // Set the plugin name as displayed in log messages.
 //----------------------------------------------------------------------------
 
-void ts::PluginThread::setLogName(const UString& name)
+void ts::tsp::PluginThread::setLogName(const UString& name)
 {
-    setReportPrefix((name.empty() ? _name : name) + u": ");
+    setReportPrefix((name.empty() ? _plugin_name : name) + u": ");
 }

@@ -14,12 +14,12 @@
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsswitch::OutputExecutor::OutputExecutor(const InputSwitcherArgs& opt,
+ts::tsswitch::OutputExecutor::OutputExecutor(const std::shared_ptr<tsp::Core>& tsp_core,
+                                             const InputSwitcherArgs& switch_options,
                                              const PluginEventHandlerRegistry& handlers,
-                                             Core& core,
-                                             Report& log) :
+                                             tsswitch::Core& switch_core) :
 
-    PluginExecutor(opt, handlers, PluginType::OUTPUT, opt.output, ThreadAttributes(), core, log),
+    PluginExecutor(tsp_core, switch_options, handlers, switch_core, PluginType::OUTPUT, switch_options.output, ThreadAttributes()),
     _output(dynamic_cast<OutputPlugin*>(plugin())),
     _terminate(false)
 {
@@ -38,7 +38,7 @@ ts::tsswitch::OutputExecutor::~OutputExecutor()
 size_t ts::tsswitch::OutputExecutor::pluginIndex() const
 {
     // The output plugin comes last.
-    return _opt.inputs.size();
+    return _switch_options.inputs.size();
 }
 
 
@@ -56,7 +56,7 @@ void ts::tsswitch::OutputExecutor::main()
     size_t count = 0;
 
     // Loop until there are packets to output.
-    while (!_terminate && _core.getOutputArea(pluginIndex, first, metadata, count)) {
+    while (!_terminate && _switch_core.getOutputArea(pluginIndex, first, metadata, count)) {
         log(2, u"got %d packets from plugin %d, terminate: %s", count, pluginIndex, _terminate);
         if (!_terminate && count > 0) {
 
@@ -64,7 +64,7 @@ void ts::tsswitch::OutputExecutor::main()
             const bool success = _output->send(first, metadata, count);
 
             // Signal to the input plugin that the buffer can be reused..
-            _core.outputSent(pluginIndex, count);
+            _switch_core.outputSent(pluginIndex, count);
 
             // Abort the whole process in case of output error.
             if (success) {
@@ -72,7 +72,7 @@ void ts::tsswitch::OutputExecutor::main()
             }
             else {
                 debug(u"stopping output plugin");
-                _core.stop(false);
+                _switch_core.stop(false);
                 _terminate = true;
             }
         }

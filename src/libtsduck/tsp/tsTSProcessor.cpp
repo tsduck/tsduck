@@ -11,6 +11,7 @@
 #include "tstspOutputExecutor.h"
 #include "tstspProcessorExecutor.h"
 #include "tstspControlServer.h"
+#include "tstspCore.h"
 
 
 //----------------------------------------------------------------------------
@@ -18,7 +19,8 @@
 //----------------------------------------------------------------------------
 
 ts::TSProcessor::TSProcessor(Report& report) :
-    _report(report)
+    _report(report),
+    _core(std::make_shared<tsp::Core>(_tsp_options, report))
 {
 }
 
@@ -84,7 +86,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 {
     // Initial sequence under mutex protection.
     {
-        std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+        std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
 
         // Check if we are already started.
         if (_input != nullptr || _terminating) {
@@ -93,10 +95,10 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         }
 
         // Keep command line options for further use.
-        _args = args;
+        _tsp_options = args;
 
         // Check or adjust a few parameters.
-        _args.ts_buffer_size = std::max(_args.ts_buffer_size, TSProcessorArgs::MIN_BUFFER_SIZE);
+        _tsp_options.ts_buffer_size = std::max(_tsp_options.ts_buffer_size, TSProcessorArgs::MIN_BUFFER_SIZE);
 
         // Clear errors on the report, used to check further initialisation errors.
         _report.resetErrors();
@@ -108,27 +110,27 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         // plugin has a hight priority to make room in the buffer, but not as
         // high as the input which must remain the top-most priority?
 
-        _input = new tsp::InputExecutor(_args, *this, _args.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()), _global_mutex, &_report);
-        _output = new tsp::OutputExecutor(_args, *this, _args.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()), _global_mutex, &_report);
+        _input = new tsp::InputExecutor(_core, _tsp_options, *this, _tsp_options.input, ThreadAttributes().setPriority(ts::ThreadAttributes::GetMaximumPriority()));
+        _output = new tsp::OutputExecutor(_core, _tsp_options, *this, _tsp_options.output, ThreadAttributes().setPriority(ts::ThreadAttributes::GetHighPriority()));
         _output->ringInsertAfter(_input);
 
         // Check if at least one plugin prefers real-time defaults.
-        bool realtime = _args.realtime == Tristate::True || _input->isRealTime() || _output->isRealTime();
+        bool realtime = _tsp_options.realtime == Tristate::True || _input->isRealTime() || _output->isRealTime();
 
-        for (size_t i = 0; i < _args.plugins.size(); ++i) {
-            tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_args, *this, i, ThreadAttributes(), _global_mutex, &_report);
+        for (size_t i = 0; i < _tsp_options.plugins.size(); ++i) {
+            tsp::PluginExecutor* p = new tsp::ProcessorExecutor(_core, _tsp_options, *this, i, ThreadAttributes());
             p->ringInsertBefore(_output);
             realtime = realtime || p->isRealTime();
         }
 
         // Check if realtime defaults are explicitly disabled.
-        if (_args.realtime == Tristate::False) {
+        if (_tsp_options.realtime == Tristate::False) {
             realtime = false;
         }
 
         // Now, we definitely know if we are in offline or realtime mode.
         // Adjust some default parameters.
-        _args.applyDefaults(realtime);
+        _tsp_options.applyDefaults(realtime);
 
         // Exit on error when initializing the plugins.
         if (_report.gotErrors()) {
@@ -151,7 +153,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != _input);
 
         // Allocate a memory-resident buffer of TS packets
-        _packet_buffer = new PacketBuffer(_args.ts_buffer_size / ts::PKT_SIZE);
+        _packet_buffer = new PacketBuffer(_tsp_options.ts_buffer_size / ts::PKT_SIZE);
         if (!_packet_buffer->isLocked()) {
             _report.debug(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
                           _packet_buffer->lockErrorCode().value(), _packet_buffer->lockErrorCode().message());
@@ -198,7 +200,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
     } while ((proc = proc->ringNext<tsp::PluginExecutor>()) != _input);
 
     // Create a control server thread. Display but ignore errors (not a fatal error).
-    _control = new tsp::ControlServer(_args, _report, _global_mutex, _input);
+    _control = new tsp::ControlServer(_core, _tsp_options, _input);
     _control->open();
 
     return true;
@@ -211,7 +213,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
 bool ts::TSProcessor::isStarted()
 {
-    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
     return _input != nullptr && !_terminating;
 }
 
@@ -224,7 +226,7 @@ void ts::TSProcessor::abort()
 {
     _report.debug(u"aborting all plugins...");
 
-    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
 
     if (_input != nullptr) {
         // Place all threads in "aborted" state so that each thread will see its

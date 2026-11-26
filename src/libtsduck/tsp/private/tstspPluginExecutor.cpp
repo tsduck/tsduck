@@ -7,27 +7,28 @@
 //----------------------------------------------------------------------------
 
 #include "tstspPluginExecutor.h"
-#include "tsPluginRepository.h"
+#include "tstspCore.h"
+#include "tsPlugin.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
+ts::tsp::PluginExecutor::PluginExecutor(const std::shared_ptr<tsp::Core>& core,
+                                        const TSProcessorArgs& tsp_options,
                                         const PluginEventHandlerRegistry& handlers,
                                         PluginType type,
-                                        const PluginOptions& pl_options,
-                                        const ThreadAttributes& attributes,
-                                        std::recursive_mutex& global_mutex,
-                                        Report* report) :
+                                        const PluginOptions& plugin_options,
+                                        const ThreadAttributes& attributes) :
 
-    JointTermination(options, type, pl_options, attributes, global_mutex, report),
+    PluginThread(core, type, plugin_options, attributes),
+    _tsp_options(tsp_options),
     _handlers(handlers)
 {
     // Preset common default options.
     if (plugin() != nullptr) {
-        plugin()->resetContext(options.duck_args);
+        plugin()->resetContext(tsp_options.duck_args);
     }
 }
 
@@ -44,7 +45,7 @@ ts::tsp::PluginExecutor::~PluginExecutor()
 size_t ts::tsp::PluginExecutor::pluginCount() const
 {
     // Input plugin, all processor plugins, output plugin.
-    return _options.plugins.size() + 2;
+    return _tsp_options.plugins.size() + 2;
 }
 
 
@@ -65,7 +66,7 @@ void ts::tsp::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* plu
 
 void ts::tsp::PluginExecutor::setAbort()
 {
-    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
     _tsp_aborting = true;
     ringPrevious<PluginExecutor>()->_to_do.notify_one();
 }
@@ -121,7 +122,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
     log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", count, bitrate, input_end, aborted);
 
     // We access data under the protection of the global mutex.
-    std::lock_guard<std::recursive_mutex> lock(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock(_core->globalMutex());
 
     // Update our buffer: we remove the first 'count' packets from the beginning of our slice of the buffer.
     _pkt_first = (_pkt_first + count) % _buffer->count();
@@ -175,7 +176,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
     }
 
     // We access data under the protection of the global mutex.
-    std::unique_lock<std::recursive_mutex> lock(_global_mutex);
+    std::unique_lock<std::recursive_mutex> lock(_core->globalMutex());
 
     PluginExecutor* next = ringNext<PluginExecutor>();
     timeout = false;
@@ -257,7 +258,7 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
     // Acquire the global mutex to modify global data.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
     {
-        std::lock_guard<std::recursive_mutex> lock1(_global_mutex);
+        std::lock_guard<std::recursive_mutex> lock1(_core->globalMutex());
 
         // If there was a previous pending restart operation, cancel it.
         if (_restart_data != nullptr) {
@@ -298,7 +299,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
     // Need improvement: the global mutex remains locked during the complete restart operation.
     // This is probably too long but some serious investigation is required before fixing this.
-    std::lock_guard<std::recursive_mutex> lock1(_global_mutex);
+    std::lock_guard<std::recursive_mutex> lock1(_core->globalMutex());
 
     // If there is no pending restart, immediate success.
     if (!_restart || _restart_data == nullptr) {
@@ -323,7 +324,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
     restartPluginSession();
 
     // Reset the execution context to cleanup previous plugin-specific options or accumulated data.
-    plugin()->resetContext(_options.duck_args);
+    plugin()->resetContext(_tsp_options.duck_args);
 
     // Redirect error messages from command line analysis to the remote tspcontrol.
     Report* previous_report = plugin()->delegateReport(&_restart_data->report);

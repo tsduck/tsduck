@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTSProcessorCommonArgs.h"
 #include "tsPluginOptions.h"
 #include "tsDuckContext.h"
 #include "tsRestArgs.h"
@@ -22,12 +23,9 @@ namespace ts {
     //! Transport stream processor options and their command line options.
     //! @ingroup libtsduck plugin
     //!
-    class TSDUCKDLL TSProcessorArgs
+    class TSDUCKDLL TSProcessorArgs: public TSProcessorCommonArgs
     {
     public:
-        UString           app_name {};              //!< Application name, for help messages.
-        bool              ignore_jt = false;        //!< Ignore "joint termination" options in plugins.
-        bool              log_plugin_index = false; //!< Log plugin index with plugin name.
         size_t            ts_buffer_size = DEFAULT_BUFFER_SIZE; //!< Size in bytes of the global TS packet buffer.
         size_t            max_flush_pkt = 0;        //!< Max processed packets before flush.
         size_t            max_input_pkt = 0;        //!< Max packets per input operation.
@@ -58,7 +56,6 @@ namespace ts {
         static constexpr PacketCounter DEFAULT_INIT_BITRATE_PKT_INTERVAL = 1000;              //!< Default initial bitrate reevaluation interval, in packets.
         static constexpr cn::milliseconds DEFAULT_BITRATE_INTERVAL = cn::milliseconds(5000);  //!< Default bitrate adjustment interval, in milliseconds.
         static constexpr cn::milliseconds DEFAULT_CONTROL_TIMEOUT = cn::milliseconds(5000);   //!< Default control command reception timeout, in milliseconds.
-
 
         //!
         //! Constructor.

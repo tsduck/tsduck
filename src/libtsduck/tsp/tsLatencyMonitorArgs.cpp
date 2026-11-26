@@ -38,7 +38,10 @@ void ts::LatencyMonitorArgs::defineArgs(Args& args)
 
 bool ts::LatencyMonitorArgs::loadArgs(Args& args)
 {
+    // Common parameters.
     app_name = args.appName();
+
+    // LatencyMonitor parameters.
     args.getPathValue(output_name, u"output-file");
     args.getChronoValue(buffer_time, u"buffer-time", cn::seconds(1));
     args.getChronoValue(output_interval, u"output-interval", cn::seconds(1));

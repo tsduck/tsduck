@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPluginThread.h"
+#include "tstspPluginThread.h"
 #include "tsLatencyMonitorArgs.h"
 #include "tsInputPlugin.h"
 
@@ -25,32 +25,25 @@ namespace ts {
         //! Execution context of a tslatencymonitor input plugin.
         //! @ingroup libtsduck plugin
         //!
-        class InputExecutor: public PluginThread
+        class InputExecutor: public tsp::PluginThread
         {
             TS_NOBUILD_NOCOPY(InputExecutor);
         public:
             //!
             //! Constructor.
+            //! @param [in] tsp_core Shared pointer to the transport stream processor internal core API.
             //! @param [in] opt Command line options.
             //! @param [in] index Input plugin index.
             //! @param [in,out] monitor Monitor instance
-            //! @param [in,out] log Log report.
             //!
-            InputExecutor(const LatencyMonitorArgs& opt,
-                          size_t index,
-                          LatencyMonitor& monitor,
-                          Report& log);
+            InputExecutor(const std::shared_ptr<tsp::Core>& tsp_core, const LatencyMonitorArgs& opt, size_t index, LatencyMonitor& monitor);
 
             //!
             //! Virtual destructor.
             //!
             ~InputExecutor() override;
 
-            // Implementation of TSP. We do not use "joint termination" in tslatencymonitor.
-            void useJointTermination(bool) override;
-            void jointTerminate() override;
-            bool useJointTermination() const override;
-            bool thisJointTerminated() const override;
+            // Implementation of TSP.
             size_t pluginCount() const override;
             void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
             size_t pluginIndex() const override;

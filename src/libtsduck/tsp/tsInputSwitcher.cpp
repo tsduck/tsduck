@@ -9,6 +9,7 @@
 #include "tsInputSwitcher.h"
 #include "tstsswitchCore.h"
 #include "tstsswitchCommandListener.h"
+#include "tstspCore.h"
 
 
 //----------------------------------------------------------------------------
@@ -16,12 +17,14 @@
 //----------------------------------------------------------------------------
 
 ts::InputSwitcher::InputSwitcher(Report& report) :
-    _report(report)
+    _report(report),
+    _tsp_core(std::make_shared<tsp::Core>(_switch_options, report))
 {
 }
 
 ts::InputSwitcher::InputSwitcher(const InputSwitcherArgs& args, Report& report) :
-    _report(report)
+    _report(report),
+    _tsp_core(std::make_shared<tsp::Core>(_switch_options, report))
 {
     _success = start(args);
     waitForTermination();
@@ -41,14 +44,14 @@ ts::InputSwitcher::~InputSwitcher()
 bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
 {
     // Filter already started.
-    if (_core != nullptr) {
+    if (_switch_core != nullptr) {
         _report.error(u"input switcher already started");
         return false;
     }
 
     // Keep command line options for further use.
-    _args = args;
-    _args.enforceDefaults();
+    _switch_options = args;
+    _switch_options.enforceDefaults();
 
     // Debug message.
     if (_report.debug()) {
@@ -67,17 +70,17 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
     _report.resetErrors();
 
     // Create the tsswitch core instance.
-    _core = new tsswitch::Core(_args, *this, _report);
+    _switch_core = new tsswitch::Core(_tsp_core, _switch_options, *this);
     _success = !_report.gotErrors();
 
     // If a remote control is specified, start a UDP listener thread.
-    if (_success && _args.remote_control.server_addr.hasPort()) {
-        _remote = new tsswitch::CommandListener(*_core, _args, _report);
+    if (_success && _switch_options.remote_control.server_addr.hasPort()) {
+        _remote = new tsswitch::CommandListener(*_switch_core, _switch_options, _report);
         _success = _remote->open();
     }
 
     // Start the processing.
-    _success = _success && _core->start();
+    _success = _success && _switch_core->start();
 
     if (!_success) {
         internalCleanup();
@@ -92,34 +95,34 @@ bool ts::InputSwitcher::start(const InputSwitcherArgs& args)
 
 void ts::InputSwitcher::setInput(size_t pluginIndex)
 {
-    if (_core != nullptr) {
-        _core->setInput(pluginIndex);
+    if (_switch_core != nullptr) {
+        _switch_core->setInput(pluginIndex);
     }
 }
 
 void ts::InputSwitcher::nextInput()
 {
-    if (_core != nullptr) {
-        _core->nextInput();
+    if (_switch_core != nullptr) {
+        _switch_core->nextInput();
     }
 }
 
 void ts::InputSwitcher::previousInput()
 {
-    if (_core != nullptr) {
-        _core->previousInput();
+    if (_switch_core != nullptr) {
+        _switch_core->previousInput();
     }
 }
 
 size_t ts::InputSwitcher::currentInput()
 {
-    return _core == nullptr ? 0 : _core->currentInput();
+    return _switch_core == nullptr ? 0 : _switch_core->currentInput();
 }
 
 void ts::InputSwitcher::stop()
 {
-    if (_core != nullptr) {
-        _core->stop(true);
+    if (_switch_core != nullptr) {
+        _switch_core->stop(true);
     }
 }
 
@@ -138,9 +141,9 @@ void ts::InputSwitcher::internalCleanup()
     }
 
     // Then, terminate the core.
-    if (_core != nullptr) {
-        delete _core;
-        _core = nullptr;
+    if (_switch_core != nullptr) {
+        delete _switch_core;
+        _switch_core = nullptr;
     }
 }
 
@@ -151,8 +154,8 @@ void ts::InputSwitcher::internalCleanup()
 
 void ts::InputSwitcher::waitForTermination()
 {
-    if (_core != nullptr) {
-        _core->waitForTermination();
+    if (_switch_core != nullptr) {
+        _switch_core->waitForTermination();
     }
     internalCleanup();
 }

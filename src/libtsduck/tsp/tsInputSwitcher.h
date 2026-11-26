@@ -17,7 +17,10 @@
 
 namespace ts {
 
-    // Used in private part.
+    // Forward class declarations for private part.
+    namespace tsp {
+        class Core;
+    }
     namespace tsswitch {
         class Core;
         class CommandListener;
@@ -66,7 +69,7 @@ namespace ts {
         //! Check if the input switcher is started.
         //! @return True if the input switcher is in progress, false otherwise.
         //!
-        bool isStarted() const { return _core != nullptr; }
+        bool isStarted() const { return _switch_core != nullptr; }
 
         //!
         //! Switch to another input plugin.
@@ -120,8 +123,9 @@ namespace ts {
 
     private:
         Report&                    _report;
-        InputSwitcherArgs          _args {};
-        tsswitch::Core*            _core = nullptr;
+        InputSwitcherArgs          _switch_options {};
+        std::shared_ptr<tsp::Core> _tsp_core {};
+        tsswitch::Core*            _switch_core = nullptr;
         tsswitch::CommandListener* _remote = nullptr;
         std::atomic_bool           _success = false;
 

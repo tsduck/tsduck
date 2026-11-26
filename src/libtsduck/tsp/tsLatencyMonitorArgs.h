@@ -12,6 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTSProcessorCommonArgs.h"
 #include "tsPluginOptions.h"
 #include "tsArgs.h"
 
@@ -20,10 +21,9 @@ namespace ts {
     //! Transport stream latency monitor command-line options
     //! @ingroup libtsduck plugin
     //!
-    class TSDUCKDLL LatencyMonitorArgs
+    class TSDUCKDLL LatencyMonitorArgs: public TSProcessorCommonArgs
     {
     public:
-        UString             app_name {};          //!< Application name, for help messages.
         PluginOptionsVector inputs {};            //!< Input plugins descriptions.
         fs::path            output_name {};       //!< Output file name (empty means stderr).
         cn::seconds         buffer_time {1};      //!< Buffer time of timing data list.

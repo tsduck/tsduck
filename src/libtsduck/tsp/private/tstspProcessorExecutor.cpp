@@ -11,21 +11,20 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::tsp::ProcessorExecutor::ProcessorExecutor(const TSProcessorArgs& options,
+ts::tsp::ProcessorExecutor::ProcessorExecutor(const std::shared_ptr<tsp::Core>& core,
+                                              const TSProcessorArgs& tsp_options,
                                               const PluginEventHandlerRegistry& handlers,
                                               size_t plugin_index,
-                                              const ThreadAttributes& attributes,
-                                              std::recursive_mutex& global_mutex,
-                                              Report* report) :
+                                              const ThreadAttributes& attributes) :
 
-    PluginExecutor(options, handlers, PluginType::PROCESSOR, options.plugins[plugin_index], attributes, global_mutex, report),
+    PluginExecutor(core, tsp_options, handlers, PluginType::PROCESSOR, tsp_options.plugins[plugin_index], attributes),
     _processor(dynamic_cast<ProcessorPlugin*>(PluginThread::plugin())),
     _plugin_index(1 + plugin_index) // include first input plugin in the count
 {
-    if (options.log_plugin_index) {
+    if (_tsp_options.log_plugin_index) {
         // Make sure that plugins display their index.
         setLogName(UString::Format(u"%s[%d]", pluginName(), _plugin_index));
     }
@@ -230,7 +229,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
             // Do not wait to process pkt_cnt packets before notifying the next processor.
             // Perform periodic flush to avoid waiting too long before two output operations.
             // Also propagate new bitrate values immediately.
-            if (pkt_data->getFlush() || got_new_bitrate || pkt_done == pkt_cnt || (_options.max_flush_pkt > 0 && pkt_flush >= _options.max_flush_pkt)) {
+            if (pkt_data->getFlush() || got_new_bitrate || pkt_done == pkt_cnt || (_tsp_options.max_flush_pkt > 0 && pkt_flush >= _tsp_options.max_flush_pkt)) {
                 aborted = !passPackets(pkt_flush, output_bitrate, br_confidence, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }
@@ -337,7 +336,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
 
                 // If --max-flushed-packets is set and we have enough packets for both the window size
                 // and --max-flushed-packets, stop building the window now.
-                if (_options.max_flush_pkt > 0 && pkt_offset + 1 >= _options.max_flush_pkt && win.size() >= window_size && pkt_offset + 1 < allocated_packets) {
+                if (_tsp_options.max_flush_pkt > 0 && pkt_offset + 1 >= _tsp_options.max_flush_pkt && win.size() >= window_size && pkt_offset + 1 < allocated_packets) {
                     // Will use only the first part of the allocated packets.
                     // When we call passPackets() later, we pass only this part.
                     // The remaining part (unused for now) will be returned again by waitWork().

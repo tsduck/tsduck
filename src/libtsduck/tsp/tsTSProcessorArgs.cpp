@@ -178,6 +178,11 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
 
 bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
 {
+    // Common parameters.
+    app_name = args.appName();
+    log_plugin_index = args.present(u"log-plugin-index");
+    ignore_jt = args.present(u"ignore-joint-termination");
+
     // Get control port parameters.
     // Without proper authentication, the local host is the only allowed client by default.
     bool success = control.loadServerArgs(args, u"control") &&
@@ -193,8 +198,6 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
         success = false;
     }
 
-    app_name = args.appName();
-    log_plugin_index = args.present(u"log-plugin-index");
     ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
     args.getValue(fixed_bitrate, u"bitrate", 0);
     args.getChronoValue(bitrate_adj, u"bitrate-adjust-interval", DEFAULT_BITRATE_INTERVAL);
@@ -204,7 +207,6 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(init_input_pkt, u"initial-input-packets", 0);
     args.getIntValue(instuff_start, u"add-start-stuffing", 0);
     args.getIntValue(instuff_stop, u"add-stop-stuffing", 0);
-    ignore_jt = args.present(u"ignore-joint-termination");
     args.getTristateValue(realtime, u"realtime");
     args.getChronoValue(receive_timeout, u"receive-timeout");
     args.getChronoValue(final_wait, u"final-wait", cn::milliseconds(-1));

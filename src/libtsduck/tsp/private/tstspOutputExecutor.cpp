@@ -7,25 +7,25 @@
 //----------------------------------------------------------------------------
 
 #include "tstspOutputExecutor.h"
+#include "tstspCore.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::tsp::OutputExecutor::OutputExecutor(const TSProcessorArgs& options,
+ts::tsp::OutputExecutor::OutputExecutor(const std::shared_ptr<tsp::Core>& core,
+                                        const TSProcessorArgs& tsp_options,
                                         const PluginEventHandlerRegistry& handlers,
-                                        const PluginOptions& pl_options,
-                                        const ThreadAttributes& attributes,
-                                        std::recursive_mutex& global_mutex,
-                                        Report* report) :
+                                        const PluginOptions& plugin_options,
+                                        const ThreadAttributes& attributes) :
 
-    PluginExecutor(options, handlers, PluginType::OUTPUT, pl_options, attributes, global_mutex, report),
+    PluginExecutor(core, tsp_options, handlers, PluginType::OUTPUT, plugin_options, attributes),
     _output(dynamic_cast<OutputPlugin*>(PluginThread::plugin()))
 {
-    if (options.log_plugin_index) {
+    if (_tsp_options.log_plugin_index) {
         // Make sure that plugins display their index. Output plugin is always last.
-        setLogName(UString::Format(u"%s[%d]", pluginName(), options.plugins.size() + 1));
+        setLogName(UString::Format(u"%s[%d]", pluginName(), _tsp_options.plugins.size() + 1));
     }
 }
 
@@ -90,7 +90,7 @@ void ts::tsp::OutputExecutor::main()
         }
 
         // Check if "joint termination" agreed on a last packet to output
-        const PacketCounter jt_limit = totalPacketsBeforeJointTermination();
+        const PacketCounter jt_limit = _core->totalPacketsBeforeJointTermination();
         if (totalPacketsInThread() + pkt_cnt > jt_limit) {
             pkt_cnt = totalPacketsInThread() > jt_limit ? 0 : size_t (jt_limit - totalPacketsInThread());
             aborted = true;
@@ -121,7 +121,7 @@ void ts::tsp::OutputExecutor::main()
 
             // Output contiguous ranges of non-dropped packets with respect to --max-output-packets.
             while (!aborted && out_cnt > 0) {
-                const size_t out_subcnt = std::min(out_cnt, _options.max_output_pkt);
+                const size_t out_subcnt = std::min(out_cnt, _tsp_options.max_output_pkt);
                 if (_suspended) {
                     // Don't output packet when the plugin is suspended.
                     addNonPluginPackets(out_subcnt);

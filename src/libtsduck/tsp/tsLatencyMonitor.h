@@ -19,7 +19,10 @@
 
 namespace ts {
 
-    // Used in private part.
+    // Forward class declarations for private part.
+    namespace tsp {
+        class Core;
+    }
     namespace tslatencymonitor {
         class InputExecutor;
     }
@@ -75,14 +78,14 @@ namespace ts {
         };
         using InputDataVector = std::vector<InputData>;
 
-        Report&              _report;
-        LatencyMonitorArgs   _args {};
-        InputDataVector      _inputs {};
-        std::recursive_mutex _mutex {};              // Global mutex, protect access to all subsequent fields.
-        double               _max_latency = 0;       // Maximum latency between two inputs
-        Time                 _last_output_time {};   // Timestamp to record last output time
-        std::ofstream        _output_stream {};      // Output stream file
-        std::ostream*        _output_file = nullptr; // Reference to actual output stream file
+        Report&            _report;
+        LatencyMonitorArgs _args {};
+        InputDataVector    _inputs {};
+        std::shared_ptr<tsp::Core> _tsp_core {};   // TS processor core API, to communicate with the TSP instance of each plugin.
+        double             _max_latency = 0;       // Maximum latency between two inputs
+        Time               _last_output_time {};   // Timestamp to record last output time
+        std::ofstream      _output_stream {};      // Output stream file
+        std::ostream*      _output_file = nullptr; // Reference to actual output stream file
 
         // Generate csv header
         void csvHeader();
