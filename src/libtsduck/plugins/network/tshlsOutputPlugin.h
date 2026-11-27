@@ -70,6 +70,10 @@ namespace ts::hls {
         uint8_t            _video_stream_type = ST_NULL;  // Stream type for video PID in PMT.
         bool               _seg_started = false;          // Generation of output segments has started.
         bool               _seg_close_pending = false;    // Close the current segment when possible.
+        std::optional<bool> _seg_independent {};          // Current segment starts on a closed intra image (unset while unknown).
+        ByteBlock          _seg_first_pes {};             // Start of the first video PES packet of the current segment, while unknown.
+        PIDSet             _seg_early_pids {};            // PID's in the current segment before the video PID was known.
+        bool               _all_independent = true;       // All segments so far started on a closed intra image.
         TSFile             _segment_file {this};          // Output segment file.
         UStringList        _live_segment_files {};        // List of current segments in a live stream.
         hls::PlayList      _playlist {this};              // Generated playlist.
@@ -93,5 +97,11 @@ namespace ts::hls {
 
         // Write packets into the current segment file, adjust CC in PAT and PMT PID.
         bool writePackets(const TSPacket*, size_t);
+
+        // Check if the current segment starts on a closed intra image, from its first packets.
+        void checkIndependentSegment(const TSPacket&);
+
+        // Check if the start of a video PES packet is a closed intra image. Unset if more data is needed.
+        std::optional<bool> isClosedIntraImage(const uint8_t* data, size_t size) const;
     };
 }
